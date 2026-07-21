@@ -1,0 +1,12 @@
+# Dependencies & build
+node_modules/
+dist/
+
+# Local / env
+.DS_Store
+*.local
+.env
+.env.*
+
+# Tooling
+.superpowers
