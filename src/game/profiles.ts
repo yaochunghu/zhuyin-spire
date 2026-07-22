@@ -11,6 +11,10 @@ const LEGACY_PHRASE_KEY = 'zhuyin-spire-phrase-settings-v1';
 const LEGACY_GAME_SETTINGS_KEY = 'zhuyin-spire-game-settings-v1';
 const LEGACY_TUTORIAL_KEY = 'zhuyin-spire-tutorial-complete-v1';
 const MAX_PROFILES = 4;
+export const MAX_NICKNAME_LENGTH = 12;
+const MAX_PROFILE_STORE_BYTES = 1_000_000;
+const MAX_CUSTOM_WORDS = 256;
+const MAX_LESSONS = 128;
 const AVATARS = ['🧒', '👧', '👦', '🐣', '🐰', '🐻'] as const;
 
 function announceProfileChange(): void {
@@ -76,9 +80,28 @@ export function defaultLessonProgress(): LessonProgress {
   };
 }
 
-function cleanStringList(value: unknown): string[] {
+function cleanStringList(value: unknown, maxItems = MAX_CUSTOM_WORDS): string[] {
   if (!Array.isArray(value)) return [];
-  return [...new Set(value.map(String).map((item) => item.trim()).filter(Boolean))];
+  return [
+    ...new Set(
+      value
+        .slice(0, maxItems * 2)
+        .filter((item): item is string => typeof item === 'string')
+        .map((item) => item.normalize('NFC').replace(/[\p{Cc}\p{Cf}]/gu, '').trim())
+        .filter((item) => item.length > 0 && Array.from(item).length <= 80),
+    ),
+  ].slice(0, maxItems);
+}
+
+/** Keep display names local, short, and free of invisible control characters. */
+export function sanitizeNickname(value: unknown): string {
+  if (typeof value !== 'string') return '';
+  const visible = value
+    .normalize('NFC')
+    .replace(/[\p{Cc}\p{Cf}]/gu, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return Array.from(visible).slice(0, MAX_NICKNAME_LENGTH).join('');
 }
 
 export function parseCastingPreferences(value: unknown): CastingPreferences {
@@ -96,9 +119,9 @@ export function parseCastingPreferences(value: unknown): CastingPreferences {
   const rawWeights = data.modeWeights;
   const weights = rawWeights && typeof rawWeights === 'object'
     ? {
-        recognize: Math.max(0, Number(rawWeights.recognize) || 0),
-        listen: Math.max(0, Number(rawWeights.listen) || 0),
-        listenHard: Math.max(0, Number(rawWeights.listenHard) || 0),
+        recognize: Math.min(1_000, Math.max(0, Number(rawWeights.recognize) || 0)),
+        listen: Math.min(1_000, Math.max(0, Number(rawWeights.listen) || 0)),
+        listenHard: Math.min(1_000, Math.max(0, Number(rawWeights.listenHard) || 0)),
       }
     : defaults.modeWeights;
   if (weights.recognize + weights.listen + weights.listenHard <= 0) {
@@ -128,6 +151,7 @@ function legacyPreferences(): CastingPreferences {
   try {
     const raw = localStorage.getItem(LEGACY_PHRASE_KEY);
     if (!raw) return defaults;
+    if (raw.length > 100_000) return defaults;
     const data = JSON.parse(raw) as {
       packs?: unknown;
       includeWords?: unknown;
@@ -148,6 +172,7 @@ function legacyTutorialEnabled(): boolean {
   try {
     const raw = localStorage.getItem(LEGACY_GAME_SETTINGS_KEY);
     if (!raw) return true;
+    if (raw.length > 10_000) return true;
     const data = JSON.parse(raw) as { tutorialEnabled?: unknown };
     return typeof data.tutorialEnabled === 'boolean' ? data.tutorialEnabled : true;
   } catch {
@@ -190,23 +215,24 @@ function sanitizeHistory(value: unknown): CastingHistory {
   const raw = value as { lessons?: unknown };
   if (!raw.lessons || typeof raw.lessons !== 'object') return { lessons: {} };
   const lessons: Record<string, LessonProgress> = {};
-  for (const [key, candidate] of Object.entries(raw.lessons)) {
+  for (const [key, candidate] of Object.entries(raw.lessons).slice(0, MAX_LESSONS)) {
+    if (!key || Array.from(key).length > 100 || /[\p{Cc}\p{Cf}]/u.test(key)) continue;
     if (!candidate || typeof candidate !== 'object') continue;
     const data = candidate as Partial<LessonProgress>;
     lessons[key] = {
-      attempts: Math.max(0, Math.floor(Number(data.attempts) || 0)),
-      correct: Math.max(0, Math.floor(Number(data.correct) || 0)),
-      totalResponseMs: Math.max(0, Math.floor(Number(data.totalResponseMs) || 0)),
+      attempts: Math.min(10_000_000, Math.max(0, Math.floor(Number(data.attempts) || 0))),
+      correct: Math.min(10_000_000, Math.max(0, Math.floor(Number(data.correct) || 0))),
+      totalResponseMs: Math.min(1_000_000_000_000, Math.max(0, Math.floor(Number(data.totalResponseMs) || 0))),
       recentResults: Array.isArray(data.recentResults)
         ? data.recentResults.filter((item): item is boolean => typeof item === 'boolean').slice(-8)
         : [],
-      remainingAnswerKeys: cleanStringList(data.remainingAnswerKeys),
+      remainingAnswerKeys: cleanStringList(data.remainingAnswerKeys, 256),
       remainingPromptIdsByAnswer:
         data.remainingPromptIdsByAnswer && typeof data.remainingPromptIdsByAnswer === 'object'
           ? Object.fromEntries(
-              Object.entries(data.remainingPromptIdsByAnswer).map(([answer, ids]) => [
+              Object.entries(data.remainingPromptIdsByAnswer).slice(0, 256).map(([answer, ids]) => [
                 answer,
-                cleanStringList(ids),
+                cleanStringList(ids, 128),
               ]),
             )
           : {},
@@ -220,20 +246,23 @@ function sanitizeHistory(value: unknown): CastingHistory {
 function sanitizeProfile(value: unknown, index: number): LearnerProfileV1 | null {
   if (!value || typeof value !== 'object') return null;
   const data = value as Partial<LearnerProfileV1>;
-  if (typeof data.id !== 'string' || !data.id) return null;
+  if (typeof data.id !== 'string' || !/^[A-Za-z0-9_-]{1,80}$/.test(data.id)) return null;
   return {
     id: data.id,
-    name: typeof data.name === 'string' && data.name.trim()
-      ? data.name.trim().slice(0, 20)
-      : `小玩家 ${index + 1}`,
-    avatar: typeof data.avatar === 'string' ? data.avatar : AVATARS[index % AVATARS.length]!,
-    createdAt: Number(data.createdAt) || Date.now(),
+    name: sanitizeNickname(data.name) || `小玩家 ${index + 1}`,
+    avatar: AVATARS.includes(data.avatar as (typeof AVATARS)[number])
+      ? data.avatar!
+      : AVATARS[index % AVATARS.length]!,
+    createdAt:
+      Number.isFinite(Number(data.createdAt)) && Number(data.createdAt) > 0
+        ? Math.floor(Number(data.createdAt))
+        : Date.now(),
     tutorialEnabled: data.tutorialEnabled !== false,
     tutorialComplete: data.tutorialComplete === true,
-    practiceCorrect: Math.max(0, Math.floor(Number(data.practiceCorrect) || 0)),
+    practiceCorrect: Math.min(10_000_000, Math.max(0, Math.floor(Number(data.practiceCorrect) || 0))),
     cleared: data.cleared === true,
     earBadge: data.earBadge === true,
-    completedRuns: Math.max(0, Math.floor(Number(data.completedRuns) || 0)),
+    completedRuns: Math.min(1_000_000, Math.max(0, Math.floor(Number(data.completedRuns) || 0))),
     casting: parseCastingPreferences(data.casting),
     castingHistory: sanitizeHistory(data.castingHistory),
   };
@@ -243,6 +272,7 @@ function readStore(): LearnerProfileStoreV1 {
   try {
     const raw = localStorage.getItem(STORE_KEY);
     if (raw) {
+      if (raw.length > MAX_PROFILE_STORE_BYTES) throw new Error('Profile store too large');
       const data = JSON.parse(raw) as Partial<LearnerProfileStoreV1>;
       const profiles = Array.isArray(data.profiles)
         ? data.profiles
@@ -326,7 +356,7 @@ export function createProfile(name: string, avatar: string): LearnerProfileV1 | 
   if (store.profiles.length >= MAX_PROFILES) return null;
   const profile: LearnerProfileV1 = {
     id: makeId(),
-    name: name.trim().slice(0, 20) || `小玩家 ${store.profiles.length + 1}`,
+    name: sanitizeNickname(name) || `小玩家 ${store.profiles.length + 1}`,
     avatar: AVATARS.includes(avatar as (typeof AVATARS)[number]) ? avatar : AVATARS[0],
     createdAt: Date.now(),
     tutorialEnabled: true,

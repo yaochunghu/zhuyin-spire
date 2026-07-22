@@ -7,6 +7,7 @@ import {
 /** Parent-facing game options. Kept separate from run saves so old saves remain valid. */
 
 const SETTINGS_KEY = 'zhuyin-spire-game-settings-v1';
+const MAX_SETTINGS_BYTES = 10_000;
 
 export type AnimationSpeed = 1 | 2;
 
@@ -44,7 +45,7 @@ export function loadGameSettings(): GameSettingsV1 {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
     const parsed = raw
-      ? parseGameSettings(JSON.parse(raw) as unknown)
+      ? parseGameSettings(JSON.parse(raw.length <= MAX_SETTINGS_BYTES ? raw : '{}') as unknown)
       : defaultGameSettings();
     return { ...parsed, tutorialEnabled: profile.tutorialEnabled };
   } catch {

@@ -1,13 +1,19 @@
 /**
  * Debug enablement — no DOM.
- * On when: Vite DEV, or ?debug=1, or localStorage zhuyin-debug=1
+ * Production builds exclude debug UI unless explicitly built with
+ * VITE_ENABLE_DEBUG_TOOLS=true. Query/localStorage switches can only activate
+ * tools inside one of those debug-capable builds.
  */
 
 const LS_KEY = 'zhuyin-debug';
 
 let skipCast = false;
 
+export const DEBUG_BUILD_ENABLED =
+  import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEBUG_TOOLS === 'true';
+
 export function isDebugEnabled(): boolean {
+  if (!DEBUG_BUILD_ENABLED) return false;
   try {
     if (typeof window !== 'undefined') {
       const q = new URLSearchParams(window.location.search);
@@ -21,17 +27,15 @@ export function isDebugEnabled(): boolean {
   } catch {
     /* ignore */
   }
-  try {
-    // Vite injects import.meta.env.DEV
-    if (import.meta.env?.DEV) return true;
-  } catch {
-    /* ignore */
-  }
-  return false;
+  return DEBUG_BUILD_ENABLED;
 }
 
 export function setDebugPersisted(on: boolean): void {
   try {
+    if (!DEBUG_BUILD_ENABLED) {
+      localStorage.removeItem(LS_KEY);
+      return;
+    }
     if (on) localStorage.setItem(LS_KEY, '1');
     else localStorage.removeItem(LS_KEY);
   } catch {
@@ -40,9 +44,9 @@ export function setDebugPersisted(on: boolean): void {
 }
 
 export function getDebugSkipCast(): boolean {
-  return skipCast;
+  return DEBUG_BUILD_ENABLED && skipCast;
 }
 
 export function setDebugSkipCast(on: boolean): void {
-  skipCast = on;
+  skipCast = DEBUG_BUILD_ENABLED && on;
 }

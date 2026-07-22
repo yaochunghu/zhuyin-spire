@@ -246,13 +246,16 @@ window.addEventListener('zhuyin-profile-change', () => {
 
 render();
 
-// Debug layer (body-mounted; DEV / ?debug=1 / localStorage)
-void import('./debug/debugFlags').then(({ isDebugEnabled }) => {
-  if (!isDebugEnabled()) return;
-  void import('./debug/debugPanel').then(({ mountDebugLayer }) => {
-    mountDebugLayer({
-      getRun: () => runState,
-      render,
+// Vite folds this condition at build time, so ordinary public builds do not
+// emit the debug-panel chunk at all.
+if (import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEBUG_TOOLS === 'true') {
+  void import('./debug/debugFlags').then(({ isDebugEnabled }) => {
+    if (!isDebugEnabled()) return;
+    void import('./debug/debugPanel').then(({ mountDebugLayer }) => {
+      mountDebugLayer({
+        getRun: () => runState,
+        render,
+      });
     });
   });
-});
+}

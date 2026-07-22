@@ -231,7 +231,7 @@ test('learner profiles keep their own curriculum and survive reload', async ({
     '每位孩子有自己的存檔、教學、徽章和練習紀錄',
   );
 
-  await page.getByLabel('新小玩家名稱').fill('米米');
+  await page.getByLabel('新小玩家暱稱，不要填真名').fill('米米');
   await page.getByLabel('新小玩家圖示').selectOption('🐰');
   await page.getByRole('button', { name: '＋ 新增' }).click();
   await expect(page.getByRole('heading', { name: '小玩家 · 🐰 米米' })).toBeVisible();

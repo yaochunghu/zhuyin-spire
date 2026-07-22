@@ -12,6 +12,7 @@ import {
   getCastingPreferences,
   getProfiles,
   learnerAvatars,
+  MAX_NICKNAME_LENGTH,
   maxLearnerProfiles,
   saveCastingPreferences,
   switchProfile,
@@ -22,6 +23,7 @@ import {
   resetTutorialCompletion,
   updateGameSettings,
 } from '../game/settings';
+import { clearAllAppData } from '../game/privacy';
 
 const PACK_LABELS: Record<PhrasePack, string> = {
   core: '基礎本',
@@ -39,6 +41,7 @@ const PACK_LABELS: Record<PhrasePack, string> = {
 interface OptionsContext {
   allowProfileSwitch?: boolean;
   focusProfiles?: boolean;
+  focusPrivacy?: boolean;
 }
 
 let root: HTMLElement | null = null;
@@ -142,9 +145,9 @@ function renderProfiles(): HTMLElement {
     creator.className = 'profile-create';
     const name = document.createElement('input');
     name.type = 'text';
-    name.maxLength = 20;
-    name.placeholder = `小玩家 ${profiles.length + 1}`;
-    name.setAttribute('aria-label', '新小玩家名稱');
+    name.maxLength = MAX_NICKNAME_LENGTH;
+    name.placeholder = `暱稱（不要填真名）`;
+    name.setAttribute('aria-label', '新小玩家暱稱，不要填真名');
     const avatar = document.createElement('select');
     avatar.setAttribute('aria-label', '新小玩家圖示');
     for (const value of learnerAvatars()) {
@@ -374,6 +377,47 @@ function renderCurriculum(): HTMLElement {
   return box;
 }
 
+function renderPrivacy(): HTMLElement {
+  const box = section('🔒 隱私與這台裝置的資料');
+  box.classList.add('privacy-options-section');
+  box.tabIndex = -1;
+
+  const summary = document.createElement('p');
+  summary.className = 'adult-text privacy-summary';
+  summary.textContent =
+    '暱稱、學習紀錄、設定和存檔只留在這個瀏覽器。請不要填孩子的真名。遊戲沒有帳號、廣告、分析追蹤或麥克風錄音。';
+  box.appendChild(summary);
+
+  const hosting = document.createElement('p');
+  hosting.className = 'adult-text privacy-summary';
+  hosting.textContent =
+    'GitHub Pages 會為安全目的記錄訪客 IP。未來改用自訂網址時，這個暫用網址的進度不會轉移。';
+  box.appendChild(hosting);
+
+  const policy = document.createElement('a');
+  policy.className = 'btn-secondary options-wide-btn privacy-policy-link';
+  policy.href = 'https://github.com/yaochunghu/zhuyin-spire/blob/main/PRIVACY.md';
+  policy.target = '_blank';
+  policy.rel = 'noopener noreferrer';
+  policy.textContent = '閱讀完整隱私說明';
+  box.appendChild(policy);
+
+  const erase = document.createElement('button');
+  erase.type = 'button';
+  erase.className = 'btn-secondary options-wide-btn privacy-erase-btn';
+  erase.textContent = '清除這台裝置的所有遊戲資料';
+  erase.addEventListener('click', () => {
+    const confirmed = window.confirm(
+      '這會刪除所有小玩家、學習紀錄、設定和爬塔存檔，無法復原。確定要清除嗎？',
+    );
+    if (!confirmed) return;
+    clearAllAppData();
+    window.location.reload();
+  });
+  box.appendChild(erase);
+  return box;
+}
+
 function closeOptions(): void {
   root?.remove();
   root = null;
@@ -483,11 +527,14 @@ function paint(): void {
   dialog.appendChild(tutorial);
 
   dialog.appendChild(renderCurriculum());
+  dialog.appendChild(renderPrivacy());
   backdrop.appendChild(dialog);
   root.appendChild(backdrop);
   if (initialFocusPending) {
     initialFocusPending = false;
-    if (context.focusProfiles) {
+    if (context.focusPrivacy) {
+      dialog.querySelector<HTMLElement>('.privacy-options-section')?.focus();
+    } else if (context.focusProfiles) {
       dialog.querySelector<HTMLButtonElement>('.profile-choice')?.focus();
     } else {
       close.focus();

@@ -1,0 +1,55 @@
+name: Bug report
+description: Report a reproducible game problem without personal information.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping. Do not include a child's real name, learning history,
+        saved browser data, identifying screenshots, or security vulnerabilities.
+        Report vulnerabilities privately through the Security tab.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Combat
+        - Casting / learning
+        - Map
+        - Cards / deck
+        - Options / profiles
+        - Accessibility / tablet layout
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Use fictional nicknames and non-identifying examples only.
+      placeholder: "1. Open…\n2. Tap…\n3. Observe…"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual result
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser and device
+      placeholder: Safari 19, iPad landscape
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I removed real names, learner records, saved data, and identifying screenshots.
+          required: true
+        - label: This is not a security vulnerability.
+          required: true
