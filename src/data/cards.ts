@@ -1,10 +1,21 @@
+import type { CastBinding, CastingGateId } from '../game/casting/types';
+
 export type CardType = 'attack' | 'block' | 'skill';
 
 /** Who the card may target in multi-enemy combat */
 export type TargetType = 'self' | 'singleEnemy' | 'allEnemies';
 
+/** The primary combat problem a card solves. */
+export type CardJob =
+  | 'frontload'
+  | 'area'
+  | 'defense'
+  | 'scaling'
+  | 'draw'
+  | 'energy';
+
 export interface EffectDef {
-  kind: 'damage' | 'block' | 'draw';
+  kind: 'damage' | 'block' | 'draw' | 'energy' | 'echo' | 'echoGuard';
   amount: number;
   hits?: number;
 }
@@ -27,6 +38,10 @@ export interface CardDef {
   name: string;
   type: CardType;
   cost: number;
+  /** Stable combat illustration; cue emoji changes with the spelling prompt. */
+  icon?: string;
+  /** Main deck-building job, shown as a small readable card tag. */
+  job?: CardJob;
   value: number;
   hits?: number;
   bonusBlock?: number;
@@ -49,9 +64,11 @@ export const CARDS: Record<string, CardDef> = {
   bo: {
     id: 'bo',
     zhuyin: 'ㄅ',
-    name: '爸爸拳',
+    name: '音波擊',
     type: 'attack',
     cost: 1,
+    icon: '💫',
+    job: 'frontload',
     value: 3,
     cues: [
       { word: '爸爸', emoji: '👨', spell: 'ㄅㄚˋ' },
@@ -59,29 +76,38 @@ export const CARDS: Record<string, CardDef> = {
       { word: '筆', emoji: '✏️', spell: 'ㄅㄧˇ' },
       { word: '杯子', emoji: '🥤', spell: 'ㄅㄟ' }, // 家裡
     ],
-    description: '造成 3 點傷害',
+    effects: [{ kind: 'damage', amount: 3 }],
+    description: '造成 3 點傷害。',
   },
   po: {
     id: 'po',
     zhuyin: 'ㄆ',
-    name: '跑步踢',
+    name: '共鳴震',
     type: 'attack',
-    cost: 1,
-    value: 4,
+    cost: 2,
+    icon: '🔔',
+    job: 'scaling',
+    value: 5,
+    effects: [
+      { kind: 'damage', amount: 5 },
+      { kind: 'echo', amount: 2 },
+    ],
     cues: [
       { word: '跑步', emoji: '🏃', spell: 'ㄆㄠˇ' },
       { word: '蘋果', emoji: '🍎', spell: 'ㄆㄧㄥˊ' },
       { word: '泡泡', emoji: '💭', spell: 'ㄆㄠˋ' },
       { word: '朋友', emoji: '👫', spell: 'ㄆㄥˊ' }, // 公園
     ],
-    description: '造成 4 點傷害',
+    description: '造成 5 點傷害。附上 2 回合回音。',
   },
   mo: {
     id: 'mo',
     zhuyin: 'ㄇ',
-    name: '貓咪盾',
+    name: '音波盾',
     type: 'block',
     cost: 1,
+    icon: '🛡️',
+    job: 'defense',
     value: 4,
     cues: [
       { word: '貓咪', emoji: '🐱', spell: 'ㄇㄠ' },
@@ -89,22 +115,30 @@ export const CARDS: Record<string, CardDef> = {
       { word: '帽子', emoji: '🎩', spell: 'ㄇㄠˋ' },
       { word: '門', emoji: '🚪', spell: 'ㄇㄣˊ' }, // 家裡
     ],
-    description: '獲得 4 點護盾',
+    effects: [{ kind: 'block', amount: 4 }],
+    description: '獲得 4 點護盾。',
   },
   fo: {
     id: 'fo',
     zhuyin: 'ㄈ',
-    name: '飛機盾',
-    type: 'block',
+    name: '邊擋邊唱',
+    type: 'skill',
     cost: 1,
-    value: 4,
+    icon: '🎶',
+    job: 'draw',
+    value: 3,
+    draw: 1,
+    effects: [
+      { kind: 'block', amount: 3 },
+      { kind: 'draw', amount: 1 },
+    ],
     cues: [
       { word: '飛機', emoji: '✈️', spell: 'ㄈㄟ' },
       { word: '風', emoji: '🌬️', spell: 'ㄈㄥ' },
       { word: '飯', emoji: '🍚', spell: 'ㄈㄢˋ' },
       { word: '風扇', emoji: '🌀', spell: 'ㄈㄥ' }, // 家裡
     ],
-    description: '獲得 4 點護盾',
+    description: '獲得 3 點護盾。抽 1 張牌。',
   },
   de: {
     id: 'de',
@@ -124,9 +158,11 @@ export const CARDS: Record<string, CardDef> = {
   te: {
     id: 'te',
     zhuyin: 'ㄊ',
-    name: '兔子連擊',
+    name: '雙拍連擊',
     type: 'attack',
     cost: 1,
+    icon: '🥁',
+    job: 'frontload',
     value: 2,
     hits: 2,
     cues: [
@@ -135,7 +171,8 @@ export const CARDS: Record<string, CardDef> = {
       { word: '糖果', emoji: '🍬', spell: 'ㄊㄤˊ' },
       { word: '拖鞋', emoji: '🩴', spell: 'ㄊㄨㄛ' }, // 家裡
     ],
-    description: '造成 2 點傷害，兩次',
+    effects: [{ kind: 'damage', amount: 2, hits: 2 }],
+    description: '造成 2 點傷害，兩次。',
   },
   ne: {
     id: 'ne',
@@ -155,64 +192,78 @@ export const CARDS: Record<string, CardDef> = {
   le: {
     id: 'le',
     zhuyin: 'ㄌ',
-    name: '老虎抽牌',
+    name: '翻譜',
     type: 'skill',
     cost: 1,
+    icon: '📖',
+    job: 'draw',
     value: 0,
-    draw: 1,
+    draw: 2,
+    effects: [{ kind: 'draw', amount: 2 }],
     cues: [
       { word: '老虎', emoji: '🐯', spell: 'ㄌㄠˇ' },
       { word: '老鼠', emoji: '🐭', spell: 'ㄌㄠˇ' },
       { word: '籃球', emoji: '🏀', spell: 'ㄌㄢˊ' },
       { word: '溜滑梯', emoji: '🛝', spell: 'ㄌㄧㄡ' }, // 公園
     ],
-    description: '抽 1 張牌',
+    description: '抽 2 張牌。',
   },
   ge: {
     id: 'ge',
     zhuyin: 'ㄍ',
-    name: '狗狗刃',
+    name: '響亮一擊',
     type: 'attack',
     cost: 1,
-    value: 5,
+    icon: '💥',
+    job: 'frontload',
+    value: 6,
+    effects: [{ kind: 'damage', amount: 6 }],
     cues: [
       { word: '狗', emoji: '🐶', spell: 'ㄍㄡˇ' },
       { word: '哥哥', emoji: '🧒', spell: 'ㄍㄜ' },
       { word: '歌', emoji: '🎵', spell: 'ㄍㄜ' },
       { word: '公園', emoji: '🏞️', spell: 'ㄍㄨㄥ' }, // 公園
     ],
-    description: '造成 5 點傷害',
+    description: '造成 6 點傷害。',
   },
   ke: {
     id: 'ke',
     zhuyin: 'ㄎ',
-    name: '褲子盾',
+    name: '厚實音牆',
     type: 'block',
     cost: 1,
-    value: 5,
+    icon: '🧱',
+    job: 'defense',
+    value: 7,
+    effects: [{ kind: 'block', amount: 7 }],
     cues: [
       { word: '褲子', emoji: '👖', spell: 'ㄎㄨˋ' },
       { word: '咳嗽', emoji: '😷', spell: 'ㄎㄜˊ' },
       { word: '可樂', emoji: '🥤', spell: 'ㄎㄜˇ' },
       { word: '客廳', emoji: '🛋️', spell: 'ㄎㄜˋ' }, // 家裡
     ],
-    description: '獲得 5 點護盾',
+    description: '獲得 7 點護盾。',
   },
   he: {
     id: 'he',
     zhuyin: 'ㄏ',
-    name: '猴子火圈',
+    name: '回音針',
     type: 'attack',
-    cost: 2,
-    value: 4,
-    bonusBlock: 2,
+    cost: 1,
+    icon: '📍',
+    job: 'scaling',
+    value: 2,
+    effects: [
+      { kind: 'damage', amount: 2 },
+      { kind: 'echo', amount: 2 },
+    ],
     cues: [
       { word: '猴子', emoji: '🐵', spell: 'ㄏㄡˊ' },
       { word: '火圈', emoji: '🔥', spell: 'ㄏㄨㄛˇ' },
       { word: '花', emoji: '🌸', spell: 'ㄏㄨㄚ' },
       { word: '花園', emoji: '🏡', spell: 'ㄏㄨㄚ' }, // 家裡／公園
     ],
-    description: '造成 4 點傷害，獲得 2 點護盾',
+    description: '造成 2 點傷害。附上 2 回合回音。',
   },
   ji: {
     id: 'ji',
@@ -291,31 +342,38 @@ export const CARDS: Record<string, CardDef> = {
   shi: {
     id: 'shi',
     zhuyin: 'ㄕ',
-    name: '獅子盾',
-    type: 'block',
-    cost: 2,
-    value: 7,
+    name: '共鳴護唱',
+    type: 'skill',
+    cost: 1,
+    icon: '🌱',
+    job: 'scaling',
+    value: 0,
+    effects: [{ kind: 'echoGuard', amount: 2 }],
     cues: [
       { word: '獅子', emoji: '🦁', spell: 'ㄕ' },
       { word: '石頭', emoji: '🪨', spell: 'ㄕˊ' },
       { word: '書', emoji: '📖', spell: 'ㄕㄨ' },
       { word: '樹', emoji: '🌳', spell: 'ㄕㄨˋ' }, // 公園
     ],
-    description: '獲得 7 點護盾',
+    description: '這場戰鬥：每當回音響起，獲得 2 點護盾。',
   },
   ri: {
     id: 'ri',
     zhuyin: 'ㄖ',
-    name: '熱鬧斬',
+    name: '日光音波',
     type: 'attack',
     cost: 1,
+    icon: '☀️',
+    job: 'area',
     value: 3,
+    target: 'allEnemies',
+    effects: [{ kind: 'damage', amount: 3 }],
     cues: [
       { word: '熱鬧', emoji: '🎉', spell: 'ㄖㄜˋ' },
       { word: '熱', emoji: '🔥', spell: 'ㄖㄜˋ' },
       { word: '日', emoji: '🌞', spell: 'ㄖˋ' },
     ],
-    description: '造成 3 點傷害',
+    description: '對所有怪物造成 3 點傷害。',
   },
   zi: {
     id: 'zi',
@@ -362,16 +420,20 @@ export const CARDS: Record<string, CardDef> = {
   yi: {
     id: 'yi',
     zhuyin: 'ㄧ',
-    name: '衣服刺',
-    type: 'attack',
+    name: '深呼吸',
+    type: 'skill',
     cost: 0,
-    value: 1,
+    icon: '🌬️',
+    job: 'energy',
+    value: 0,
+    target: 'self',
+    effects: [{ kind: 'energy', amount: 1 }],
     cues: [
       { word: '衣服', emoji: '👕', spell: 'ㄧ' },
       { word: '椅子', emoji: '🪑', spell: 'ㄧˇ' },
       { word: '醫生', emoji: '🩺', spell: 'ㄧ' },
     ],
-    description: '造成 1 點傷害',
+    description: '獲得 1 點能量。',
   },
   wu: {
     id: 'wu',
@@ -442,20 +504,11 @@ export const CARDS: Record<string, CardDef> = {
   },
 };
 
-/**
- * Lean starter: theme 熱鬧 + basic tools.
- * Power cards (動物園/獅子/猴子) come from rewards — must earn them.
- */
+/** Echo Mage starter: three designs, deliberately repetitive for onboarding. */
 export const STARTER_DECK_IDS: string[] = [
-  'bo',
-  'bo',
-  'mo',
-  'mo',
-  'fo',
-  'ri', // 熱鬧
+  'bo', 'bo', 'bo', 'bo', 'bo',
+  'mo', 'mo', 'mo', 'mo',
   'po',
-  'yi',
-  'wu',
 ];
 
 /**
@@ -485,54 +538,31 @@ export const PRACTICE_CARD_IDS: string[] = [
 /** Lifetime correct practice spells needed for 📚 badge */
 export const PRACTICE_BADGE_THRESHOLD = 10;
 
+/** The first character's complete Act I reward pool: exactly nine designs. */
 export const REWARD_POOL_IDS: string[] = [
-  // Theme set weighted a bit higher in rewards
-  'de',
-  'shi',
-  'ri',
-  'he',
-  'po',
-  'te',
-  'ne',
-  'le',
-  'ge',
-  'ke',
-  'yu',
-  'bo',
-  'mo',
-  'ji',
-  'qi',
-  'xi',
-  'zhi',
-  'chi',
-  'zi',
-  'ci',
-  'si',
-  'a',
-  'o',
-  'e',
-  'fo',
-  'yi',
-  'wu',
+  'ge', // loud single-target hit
+  'ri', // all-enemy answer
+  'ke', // efficient defense
+  'te', // multi-hit
+  'he', // cheaper Echo setup
+  'shi', // combat-long Echo scaling
+  'le', // draw
+  'yi', // energy smoothing
+  'fo', // defend + draw hybrid
 ];
 
-export const ELITE_REWARD_POOL_IDS: string[] = [
-  'de',
-  'shi',
-  'he',
-  'ri',
-  'ge',
-  'ke',
-  'te',
-  'ne',
-  'le',
-  'xi',
-  'e',
-  'ji',
-  'chi',
-  'yu',
-  'zhi',
-  'si',
+export const ELITE_REWARD_POOL_IDS: string[] = [...REWARD_POOL_IDS];
+
+/** Existing placeholder content remains available after Act I. */
+export const LATER_ACT_REWARD_POOL_IDS: string[] = [
+  'de', 'shi', 'ri', 'he', 'po', 'te', 'ne', 'le', 'ge', 'ke', 'yu',
+  'bo', 'mo', 'ji', 'qi', 'xi', 'zhi', 'chi', 'zi', 'ci', 'si', 'a',
+  'o', 'e', 'fo', 'yi', 'wu',
+];
+
+export const LATER_ACT_ELITE_REWARD_POOL_IDS: string[] = [
+  'de', 'shi', 'he', 'ri', 'ge', 'ke', 'te', 'ne', 'le', 'xi', 'e',
+  'ji', 'chi', 'yu', 'zhi', 'si',
 ];
 
 /** Common symbols for spell-bank distractors */
@@ -584,6 +614,25 @@ export function getCard(id: string): CardDef {
   const card = CARDS[id];
   if (!card) throw new Error(`Unknown card: ${id}`);
   return card;
+}
+
+/**
+ * Current cards retain `zhuyin` for display compatibility while casting uses a
+ * provider-neutral lesson binding. Pure vowels teach their whole rime family.
+ */
+export function getCardCastBinding(
+  def: CardDef,
+  gateId: CastingGateId = 'zhuyin',
+): CastBinding {
+  if (gateId !== 'zhuyin') {
+    throw new Error(`Card ${def.id} has no ${gateId} casting binding`);
+  }
+  const vowelFamily = def.zhuyin === 'ㄚ' || def.zhuyin === 'ㄛ' || def.zhuyin === 'ㄜ';
+  return {
+    gateId,
+    lessonFamilyId: vowelFamily ? `vowel:${def.zhuyin}` : `initial:${def.zhuyin}`,
+    displayGlyph: def.zhuyin,
+  };
 }
 
 export function pickCue(def: CardDef, rng: () => number = Math.random): Cue {

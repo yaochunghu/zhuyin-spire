@@ -23,7 +23,7 @@ src/
   game/battle/     Combat implementation (modular)
   ui/              DOM views + drag/FX (no balance constants of record)
   debug/           Playtest overlay (DEV / ?debug=1)
-  styles/main.css  Kid-friendly UI, 1080p stages, debug panel
+  styles/main.css  Kid-friendly responsive stages, options, debug panel
 ```
 
 **Rule of thumb:** numbers live in `data/balance.ts` (and content files). Views call `game/state` / combat APIs; they should not invent economy.
@@ -36,8 +36,8 @@ src/
 
 | Screen | Role |
 |--------|------|
-| `title` | New run / continue / practice / phrase settings |
-| `relicPick` | Weak starter relic |
+| `title` | New run / continue / practice |
+| `relicPick` | Character selection (legacy internal name kept for v1 saves) |
 | `map` | Climb current act web |
 | `rest` / `removeCard` | Campfire heal or deck remove |
 | `shop` / `shopRemove` | Buy cards / paid remove |
@@ -51,7 +51,7 @@ src/
 Typical climb loop:
 
 ```
-title → relicPick → map ⇄ (combat → castCheck → combat)* → reward → map
+title → character pick (`relicPick`) → map ⇄ (combat → castCheck → combat)* → reward → map
                  ⇄ rest / shop / treasure
                  → boss → actClear → next act map → … → victory
 ```
@@ -64,11 +64,12 @@ Owned by `main.ts` as a single mutable object; UI modules reach it via `ui/runti
 
 Important fields:
 
-- **Hero:** `heroHp`, `heroMaxHp`, `deck[]`, `gold`, `relicId`
+- **Hero:** `heroHp`, `heroMaxHp`, `deck[]`, `gold`, `characterId`, `relicId`
 - **Map:** `runMap` (3 acts), `actIndex`, `currentNodeId`, `activeNodeId`, `visitedIds`, `pathIds`
 - **Combat:** `combat: CombatState | null`
 - **Cast:** `cast: { prompt, cardDef } | null`
 - **Meta UI:** `flash`, `floatText`, shop/reward pending fields
+- **Tutorial (ephemeral):** `tutorial`, plus optional saved `tutorialEligibleRun` so old saves are not retrofitted
 
 Map navigation helpers: `getAvailableMapNodes`, `selectMapNode`, `getActiveNode`.
 
@@ -96,13 +97,18 @@ Play pipeline (product):
 3. Correct spell → `resolveCastSuccess` (effects + discard); wrong → `resolveCastFizzle` (energy already spent).
 4. End turn → enemy intents → draw next hand.
 
+The first-run tutorial is an ephemeral state machine in `state.ts`. Only the active
+row-0 fight is replaced; generated/saved map encounter data and the player's deck
+remain unchanged. Completion belongs to the active learner profile outside the run save.
+
 ---
 
 ## Save system
 
 File: `src/game/save.ts`
 
-- Key: `zhuyin-spire-run-v1`
+- Key: `zhuyin-spire-run-v1:<profile-id>`; the first profile mirrors the old
+  `zhuyin-spire-run-v1` key for migration compatibility
 - **Stable screens only** (map, rest, shop, reward, actClear, relicPick, …) — **not** mid-combat or mid-cast
 - Title offers continue vs new game; new game clears save
 
@@ -110,8 +116,9 @@ Other localStorage keys (non-run):
 
 | Key | Use |
 |-----|-----|
-| `zhuyin-spire-phrase-settings-v1` | Parent phrase packs / word lists |
-| Practice counters | Lifetime correct + 📚 badge |
+| `zhuyin-spire-learner-profiles-v1` | Per-child curriculum, learning, tutorial, badges, and profile list |
+| `zhuyin-spire-game-settings-v1` | Device-global 1×/2× gameplay motion + migration field |
+| Legacy phrase/tutorial/practice keys | Read into the first learner on migration |
 | `zhuyin-debug` | Persist debug enable outside DEV |
 
 ---
@@ -120,12 +127,16 @@ Other localStorage keys (non-run):
 
 | Module | Role |
 |--------|------|
-| `data/phrases.ts` | Large bank keyed by 注音 |
-| `game/phraseSettings.ts` | Parent pack filters |
-| `game/castCheck.ts` | Mode pick, prompt build, spell check |
+| `data/phrases.ts` | Topic-tagged core/broad Zhuyin phrase bank |
+| `game/profiles.ts` | Learners, curriculum, results, persistent shuffle state |
+| `game/casting/*` | Subject-neutral contract, registry, and Zhuyin provider |
+| `game/castCheck.ts` | Compatibility facade used by run state |
 | `game/speech.ts` | Listen mode / 再聽 |
 | `game/coach.ts` | Adult tip strip |
 | `ui/castView.ts` | Big 注音 keyboard + practice room |
+| `ui/options.ts` | Body-mounted global, accessible Options dialog |
+
+Full contract and future-provider checklist: [CASTING_GATES.md](./CASTING_GATES.md).
 
 ---
 

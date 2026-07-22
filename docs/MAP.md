@@ -51,15 +51,15 @@ Layout notes baked into generation:
 
 ---
 
-## UI layout (1080p)
+## Responsive UI layout
 
-Goals:
+`mapView.ts` converts row/column plus organic jitter into normalized percentages.
+Edges resize with the panel while node hit targets remain fixed at 56px (boss 64px).
+The stage renders at the actual viewport size—there is no 1920×1080 uniform scale.
 
-- Fit a **1080p-ish** window **without scrolling** the whole map stage
-- **Dense, organic** web — not artificial full-bleed 7-lane stretch
-- Side margins; graph **max-width ~1180px** (`mapView.ts` constants)
-
-CSS/stage: scale-to-fit combat/map stages in `styles/main.css`. If the map looks too cramped or too sparse, adjust pitch constants in `mapView.ts` before rewriting generation.
+The web has a minimum usable height and its panel scrolls when fifteen floors do not
+fit. Rendering centers the next available room and shows `目前第 N/15 層`. Locked
+nodes and unused edges keep visible contrast but remain below available/visited paths.
 
 ---
 

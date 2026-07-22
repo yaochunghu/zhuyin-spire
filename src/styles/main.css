@@ -167,6 +167,36 @@ button:disabled {
   filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.4));
 }
 
+.profile-title-button {
+  min-width: min(360px, 100%);
+  min-height: 64px;
+  padding: 8px 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text);
+  background: rgba(53, 38, 80, 0.9);
+  border: 2px solid var(--panel-border);
+  box-shadow: var(--shadow);
+}
+
+.profile-title-avatar {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.profile-title-button strong,
+.profile-title-button small {
+  display: block;
+}
+
+.profile-title-button small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
 .badge {
   background: #2d4a3a;
   color: var(--ok);
@@ -687,8 +717,22 @@ button:disabled {
   border: 1px solid rgba(200, 180, 255, 0.22);
   border-radius: 10px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 3px;
+}
+
+.card-job {
+  width: fit-content;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffe7a3;
+  font-size: 0.68rem;
+  font-weight: 900;
+  line-height: 1.3;
+  white-space: nowrap;
 }
 
 .card-desc {
@@ -2060,6 +2104,95 @@ button:disabled {
   color: var(--accent) !important;
 }
 
+.character-screen {
+  overflow-y: auto;
+  padding-block: max(20px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-bottom));
+}
+
+.character-choices {
+  max-width: 680px;
+}
+
+.character-card {
+  gap: 10px;
+  min-height: 440px;
+  padding: clamp(18px, 4vw, 30px);
+  border-color: #d8b45c;
+  background:
+    radial-gradient(circle at 50% 12%, rgba(255, 223, 128, 0.18), transparent 34%),
+    linear-gradient(160deg, rgba(61, 45, 95, 0.98), rgba(29, 24, 54, 0.98));
+}
+
+.character-emoji {
+  font-size: 5.2rem;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.35));
+}
+
+.character-name {
+  color: #ffe18a;
+  font-size: clamp(1.65rem, 5vw, 2.35rem);
+  font-weight: 950;
+}
+
+.character-title {
+  font-size: 1.05rem !important;
+  font-weight: 800;
+}
+
+.character-theme {
+  max-width: 520px;
+  color: #f7f0ff;
+  font-size: 1rem;
+  font-weight: 750;
+  line-height: 1.55;
+}
+
+.starter-deck-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.starter-deck-summary span,
+.combat-power {
+  padding: 5px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(10, 8, 25, 0.42);
+  font-weight: 900;
+}
+
+.starting-relic {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(100%, 520px);
+  padding: 12px 16px;
+  border: 2px solid rgba(255, 220, 120, 0.55);
+  border-radius: 16px;
+  background: rgba(255, 215, 106, 0.09);
+  text-align: left;
+  line-height: 1.45;
+}
+
+.starting-relic-emoji {
+  flex: 0 0 auto;
+  font-size: 2.5rem;
+}
+
+.character-pick-cta {
+  min-height: 54px;
+  display: grid;
+  place-items: center;
+  padding: 8px 18px;
+  border-radius: 14px;
+  background: #f0b429;
+  color: #231600;
+  font-size: 1.1rem;
+  font-weight: 950;
+}
+
 .relic-pill {
   border-color: var(--accent2) !important;
 }
@@ -3135,6 +3268,62 @@ button.combat-pile-btn:disabled {
   max-width: 220px;
 }
 
+.enemy-status {
+  padding: 4px 10px;
+  border: 2px solid #f2c95c;
+  border-radius: 999px;
+  background: rgba(66, 42, 90, 0.92);
+  color: #fff0a8;
+  font-size: 0.82rem;
+  font-weight: 950;
+  line-height: 1.2;
+  box-shadow: 0 0 14px rgba(244, 202, 90, 0.22);
+}
+
+.enemy-status.status-used {
+  opacity: 0.58;
+  filter: grayscale(0.35);
+}
+
+.hero-combat-powers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.combat-power {
+  padding: 3px 8px;
+  color: #dfffe9;
+  font-size: 0.73rem;
+}
+
+.combat-power.relic-ready {
+  color: #fff0a8;
+  border-color: rgba(255, 222, 120, 0.5);
+}
+
+.strike-float-echo {
+  color: #ffe779 !important;
+  text-shadow: 0 2px 0 #5b3700, 0 0 14px rgba(255, 225, 90, 0.8) !important;
+}
+
+.strike-float-energy {
+  color: #bfffe3 !important;
+}
+
+.enemy-status-pop,
+.echo-trigger-pop,
+.energy-gain-pop {
+  animation: statusPop 0.42s ease-out;
+}
+
+@keyframes statusPop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.09); filter: brightness(1.35); }
+  100% { transform: scale(1); }
+}
+
 .enemy-poof {
   animation: enemyPoof 0.45s ease forwards;
 }
@@ -3652,4 +3841,737 @@ button.combat-pile-btn:disabled {
   display: none;
 }
 
+/* —— Responsive tablet stages + global options (no 1920×1080 scaling) —— */
+html,
+body {
+  width: 100%;
+  overflow-x: hidden;
+}
 
+.global-controls {
+  position: fixed;
+  z-index: 85;
+  top: max(10px, env(safe-area-inset-top));
+  right: max(10px, env(safe-area-inset-right));
+  display: flex;
+  gap: 8px;
+}
+
+.global-control-btn {
+  width: 64px;
+  min-width: 64px;
+  min-height: 64px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font-size: 1.35rem;
+  color: var(--text);
+  background: rgba(42, 31, 61, 0.94);
+  border: 2px solid #8a6bbb;
+  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.35);
+}
+
+#zhuyin-options-root {
+  position: fixed;
+  inset: 0;
+  /* Options must stay above the development panel as well as game FX. */
+  z-index: 12000;
+}
+
+.options-backdrop {
+  width: 100%;
+  height: 100%;
+  padding: max(18px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right))
+    max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+  display: grid;
+  place-items: center;
+  background: rgba(9, 5, 16, 0.78);
+}
+
+.options-dialog {
+  width: min(860px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-padding-block: 104px 24px;
+  padding: clamp(16px, 3vw, 28px);
+  border: 3px solid var(--accent);
+  border-radius: 24px;
+  background: linear-gradient(160deg, #392753, #211632);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
+}
+
+.options-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding-bottom: 8px;
+  background: #392753;
+}
+
+.options-head p,
+.options-section p {
+  margin: 4px 0 0;
+}
+
+.options-close {
+  min-width: 64px;
+  padding: 0;
+}
+
+.options-section {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(184, 168, 212, 0.35);
+}
+
+.options-section h2 {
+  margin: 0 0 10px;
+  font-size: 1.1rem;
+  color: var(--accent);
+}
+
+.option-choice-row,
+.options-pack-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.option-choice {
+  flex: 1 1 120px;
+  min-height: 64px;
+  color: var(--text);
+  background: #302344;
+  border: 2px solid #73579d;
+  scroll-margin-block: 104px 24px;
+}
+
+.option-choice.on {
+  color: #17251f;
+  background: var(--accent2);
+  border-color: #c9fff2;
+  box-shadow: 0 0 0 3px rgba(126, 224, 200, 0.25);
+}
+
+.options-wide-btn {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.profile-choice-list {
+  display: grid;
+  gap: 8px;
+}
+
+.profile-choice-row {
+  display: flex;
+  gap: 8px;
+}
+
+.profile-choice {
+  text-align: left;
+}
+
+.profile-delete {
+  flex: 0 0 64px;
+  min-width: 64px;
+  padding: 0;
+}
+
+.profile-create {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) 76px minmax(120px, auto);
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.profile-create input,
+.profile-create select,
+.curriculum-advanced textarea {
+  min-height: 64px;
+  padding: 10px 12px;
+  color: var(--text);
+  background: #241a35;
+  border: 2px solid #73579d;
+  border-radius: 12px;
+  font: inherit;
+}
+
+.profile-create select {
+  font-size: 1.5rem;
+}
+
+.options-subheading {
+  color: #eee3ff;
+  font-weight: 800;
+}
+
+.option-wrap-row .option-choice {
+  flex-basis: 112px;
+}
+
+.curriculum-ranges {
+  display: grid;
+  gap: 8px;
+}
+
+.curriculum-range {
+  min-height: 54px;
+  display: grid;
+  grid-template-columns: minmax(118px, auto) minmax(180px, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: rgba(20, 12, 32, 0.35);
+  font-weight: 800;
+}
+
+.curriculum-range input {
+  width: 100%;
+  min-height: 44px;
+  accent-color: var(--accent2);
+}
+
+.curriculum-advanced {
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid rgba(184, 168, 212, 0.35);
+  border-radius: 12px;
+}
+
+.curriculum-advanced summary {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.curriculum-advanced textarea {
+  width: 100%;
+  min-height: 84px;
+  margin-top: 8px;
+  resize: vertical;
+}
+
+.curriculum-options .warn-banner {
+  margin-top: 10px;
+}
+
+.mana-condition {
+  min-height: 48px;
+  padding: 8px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 2px solid #8c72b5;
+  border-radius: 999px;
+  background: rgba(39, 28, 59, 0.92);
+  color: #f6ecff;
+  font-weight: 900;
+}
+
+.mana-clear {
+  border-color: #ffe08a;
+}
+
+.mana-echoing {
+  border-color: #8ed9ff;
+}
+
+.mana-misty {
+  border-color: #aaa2c3;
+}
+
+.mana-focus {
+  padding-left: 8px;
+  border-left: 1px solid currentColor;
+  color: var(--accent2);
+  font-size: 0.9rem;
+}
+
+.cast-choice-grid {
+  width: min(560px, 100%);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 12px;
+}
+
+.cast-choice-key {
+  width: 100%;
+  min-height: 88px;
+}
+
+@media (max-width: 620px) {
+  .profile-create {
+    grid-template-columns: 1fr 76px;
+  }
+
+  .profile-create button {
+    grid-column: 1 / -1;
+  }
+
+  .curriculum-range {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
+.map-stage,
+.combat-stage {
+  width: 100%;
+  height: 100%;
+  transform: none !important;
+  flex-shrink: 1;
+}
+
+.map-stage {
+  padding: max(10px, env(safe-area-inset-top))
+    max(12px, env(safe-area-inset-right))
+    max(10px, env(safe-area-inset-bottom))
+    max(12px, env(safe-area-inset-left));
+  gap: 8px;
+}
+
+.map-stage-top {
+  padding-right: 144px;
+}
+
+.map-floor-progress {
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.map-panel {
+  width: min(1180px, 100%);
+  height: auto;
+  max-width: 1180px;
+  min-height: 0;
+  align-items: flex-start;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  border-radius: 20px;
+}
+
+.map-web {
+  width: 100%;
+  height: max(760px, calc(100dvh - 150px));
+  min-height: 760px;
+  overflow: hidden;
+}
+
+.map-edges {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.map-dot {
+  translate: -50% -50%;
+  min-width: 48px;
+  min-height: 48px;
+}
+
+.map-edge {
+  stroke: #796892;
+  stroke-width: 3;
+  opacity: 0.72;
+  vector-effect: non-scaling-stroke;
+}
+
+.map-edge.edge-dim {
+  stroke: #9a86b9;
+  opacity: 0.82;
+}
+
+.map-dot.locked {
+  opacity: 0.56;
+  filter: grayscale(0.18);
+  background: #39284f;
+  border-color: #806b9f;
+}
+
+.combat-stage {
+  padding: max(10px, env(safe-area-inset-top))
+    max(12px, env(safe-area-inset-right))
+    max(10px, env(safe-area-inset-bottom))
+    max(12px, env(safe-area-inset-left));
+  grid-template-rows: minmax(135px, 1fr) auto auto auto minmax(190px, auto);
+  gap: 6px;
+}
+
+.tutorial-active .combat-stage {
+  grid-template-rows: auto minmax(125px, 1fr) auto auto auto minmax(180px, auto);
+}
+
+.tutorial-guide {
+  min-height: 64px;
+  padding: 10px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 14px;
+  text-align: center;
+  color: #fff;
+  background: linear-gradient(180deg, #5a407d, #3c2a58);
+  border: 3px solid var(--accent);
+  border-radius: 18px;
+  box-shadow: 0 0 0 4px rgba(255, 215, 106, 0.16);
+}
+
+.tutorial-guide strong {
+  color: var(--accent);
+  font-size: 1.12rem;
+}
+
+.tutorial-guide span {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.tutorial-guide small {
+  flex-basis: 100%;
+  color: #bfffea;
+}
+
+.tutorial-active .combat-pile-row,
+.tutorial-active .adult-coach {
+  opacity: 0.48;
+  pointer-events: none;
+}
+
+.tutorial-step-shield + .enemy-row .intent-now {
+  outline: 5px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.tutorial-focus {
+  opacity: 1 !important;
+  outline: 5px solid var(--accent2) !important;
+  outline-offset: 3px;
+  animation: tutorialFocus 0.9s ease-in-out infinite !important;
+  z-index: 8;
+}
+
+@keyframes tutorialFocus {
+  50% {
+    filter: brightness(1.18);
+    box-shadow: 0 0 0 9px rgba(126, 224, 200, 0.2);
+  }
+}
+
+.combat-stage .enemy-row {
+  padding: 6px 10px;
+}
+
+.combat-stage .enemy-slot {
+  min-width: 120px;
+}
+
+.combat-stage .enemy-slot .enemy-emoji {
+  font-size: clamp(2.6rem, 6vh, 3.4rem);
+}
+
+.combat-stage .hero-drop-zone {
+  min-height: 82px;
+  max-height: 106px;
+  padding: 6px 18px;
+}
+
+.combat-stage .hero-actor {
+  font-size: 3.2rem;
+}
+
+.combat-bottom-row {
+  --end-turn-lane: 114px;
+  position: relative;
+  display: block;
+  min-height: 180px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0 var(--end-turn-lane);
+  overflow: hidden;
+}
+
+.combat-stage .hand {
+  width: 100%;
+  max-width: none;
+  min-height: 180px;
+  box-sizing: border-box;
+  justify-content: safe center;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.combat-stage .hand.hand-fan {
+  padding-inline: 12px;
+}
+
+.combat-stage .hand .card {
+  flex-basis: 128px;
+  width: 128px;
+  min-height: 180px;
+  scroll-snap-align: center;
+  padding: 7px;
+}
+
+.combat-stage .hand .card .zhuyin {
+  font-size: 2.45rem;
+}
+
+.combat-stage .hand .card .card-desc {
+  font-size: 0.82rem;
+}
+
+.combat-stage .end-turn-btn {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 104px;
+  min-width: 104px;
+  min-height: 180px;
+  height: 180px;
+}
+
+@media (orientation: landscape) {
+  /* The controls float above the stage. Only the top content avoids their
+     footprint; the stage background and centered hand remain full-width. */
+  .combat-stage .enemy-row,
+  .tutorial-guide {
+    padding-right: 154px;
+  }
+}
+
+.spell-reveal-overlay {
+  pointer-events: auto;
+}
+
+.spell-reveal-card {
+  width: min(440px, 90vw);
+}
+
+.spell-reveal-emoji,
+.spell-reveal-word {
+  opacity: 0;
+  animation: spellMeaningIn 0.35s ease-out 0.5s forwards;
+}
+
+.spell-reveal-symbol {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(12px) scale(0.75);
+  animation: spellSymbolIn 0.28s cubic-bezier(0.2, 1.2, 0.4, 1) forwards;
+  animation-delay: calc(var(--symbol-index) * 0.11s + 0.08s);
+}
+
+.spell-reveal-correction .spell-reveal-card {
+  border-color: #9ad4ff;
+}
+
+.spell-reveal-continue {
+  width: 100%;
+  margin-top: 10px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.18s ease;
+}
+
+.spell-reveal-overlay.can-continue .spell-reveal-continue {
+  opacity: 1;
+  visibility: visible;
+}
+
+@keyframes spellSymbolIn {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes spellMeaningIn {
+  to {
+    opacity: 1;
+  }
+}
+
+.enemy-shield-bar.shield-clang {
+  animation: shieldClang 0.28s ease;
+}
+
+.enemy-shield-bar.enemy-shield-crack {
+  border-color: #d8ecff;
+  box-shadow: 0 0 0 3px rgba(154, 212, 255, 0.45);
+}
+
+.enemy-shield-bar.enemy-shield-break {
+  animation: shieldBreak 0.4s ease forwards;
+}
+
+.enemy-shield-bar.enemy-shield-ring {
+  position: relative;
+  overflow: visible;
+}
+
+.enemy-shield-ring::after {
+  content: '';
+  position: absolute;
+  inset: -10px;
+  border: 4px solid #bfe8ff;
+  border-radius: 999px;
+  animation: shieldRing 0.45s ease-out forwards;
+}
+
+@keyframes shieldRing {
+  to {
+    opacity: 0;
+    transform: scale(1.55);
+  }
+}
+
+[data-game-speed='2'] .map-dot.selected-flash,
+[data-game-speed='2'] .enemy-flinch,
+[data-game-speed='2'] .enemy-impact,
+[data-game-speed='2'] .hero-hit,
+[data-game-speed='2'] .shield-clang,
+[data-game-speed='2'] .shield-break,
+[data-game-speed='2'] .hand-card-land,
+[data-game-speed='2'] .strike-float,
+[data-game-speed='2'] .shield-chip {
+  animation-duration: 0.22s;
+}
+
+[data-game-speed='2'] .outcome-actor,
+[data-game-speed='2'] .outcome-poof,
+[data-game-speed='2'] .outcome-caption,
+[data-game-speed='2'] .burst-particle,
+[data-game-speed='2'] .confetti-piece {
+  animation-duration: 0.5s !important;
+}
+
+@media (orientation: portrait) and (max-width: 900px) {
+  .map-stage-top {
+    padding-right: 144px;
+  }
+
+  .map-stage-hint,
+  .map-legend {
+    display: none;
+  }
+
+  .map-web {
+    height: 980px;
+  }
+
+  .map-panel {
+    flex: 1 1 auto;
+  }
+
+  .combat-stage {
+    padding-top: max(74px, calc(env(safe-area-inset-top) + 64px));
+    padding-right: max(10px, env(safe-area-inset-right));
+    grid-template-rows: minmax(180px, 1fr) auto auto auto minmax(230px, auto);
+  }
+
+  .tutorial-active .combat-stage {
+    grid-template-rows: auto minmax(170px, 1fr) auto auto auto minmax(225px, auto);
+  }
+
+  .enemy-row {
+    gap: 6px;
+  }
+
+  .combat-stage .enemy-slot {
+    padding: 4px;
+    min-width: 0;
+  }
+
+  .combat-stage .intent-next,
+  .combat-stage .enemy-name-adult,
+  .combat-log {
+    display: none;
+  }
+
+  .combat-stage .hero-drop-zone {
+    width: 100%;
+  }
+
+  .combat-stage .hand {
+    min-height: 225px;
+    padding-inline: 8px;
+    scroll-snap-type: x mandatory;
+  }
+
+  .combat-stage .hand.hand-fan .card,
+  .combat-stage .hand.hand-fan-tight .card {
+    margin-left: 0;
+  }
+
+  .combat-stage .hand .card {
+    flex-basis: 156px;
+    width: 156px;
+    min-height: 218px;
+  }
+
+  .combat-stage .end-turn-btn {
+    width: 96px;
+    min-width: 96px;
+    min-height: 218px;
+    height: 218px;
+  }
+
+  .combat-bottom-row {
+    --end-turn-lane: 106px;
+  }
+}
+
+@media (max-height: 760px) and (orientation: landscape) {
+  .combat-stage .enemy-name-adult,
+  .combat-stage .intent-next,
+  .combat-stage .combat-log {
+    display: none;
+  }
+
+  .combat-stage .hero-drop-zone {
+    min-height: 72px;
+    max-height: 84px;
+  }
+
+  .combat-stage .hand .card {
+    min-height: 174px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shake,
+  .enemy-flinch,
+  .enemy-impact,
+  .hero-hit,
+  .hero-zone-hit {
+    animation: none !important;
+  }
+
+  .shield-chip,
+  .enemy-shield-ring::after {
+    display: none !important;
+  }
+
+  .map-dot.available,
+  .tutorial-focus {
+    animation: none !important;
+    outline-width: 5px !important;
+  }
+}

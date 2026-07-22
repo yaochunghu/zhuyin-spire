@@ -10,97 +10,22 @@ import {
 } from '../game/state';
 import type { MapNode } from '../data/map';
 import { sfx } from '../game/audio';
+import { gameplayMs } from '../game/settings';
 import { cardFaceHtml } from './cards';
 import { appendCoach, render, run, session } from './runtime';
 
 const SELECT_FLASH_MS = 480;
-const STAGE_W = 1920;
-const STAGE_H = 1080;
-
-/**
- * Map graph panel: tall path web, **not** stretched full stage width.
- * Side margins stay empty so the climb feels organic (StS-like density).
- */
-const PANEL_H = 860;
-/** Preferred column pitch — denser than full-bleed 7-lane stretch */
-const IDEAL_COL_W = 104;
-const IDEAL_ROW_H = 54;
-const MIN_SIDE_MARGIN = 200;
-const MAX_GRAPH_W = 1180;
-
-function applyStageScale(wrap: HTMLElement, stage: HTMLElement): void {
-  const fit = () => {
-    const sw = wrap.clientWidth || window.innerWidth;
-    const sh = wrap.clientHeight || window.innerHeight;
-    const scale = Math.min(sw / STAGE_W, sh / STAGE_H);
-    stage.style.transform = `scale(${Math.max(0.2, scale)})`;
-  };
-  fit();
-  requestAnimationFrame(fit);
-}
-
-/**
- * Organic density: tight columns/rows, centered with space on the sides.
- * Never stretches 7 lanes across the full 1920 stage.
- */
-function layoutMetrics(cols: number, maxRow: number) {
-  const padY = 24;
-  const usableH = PANEL_H - padY * 2;
-  const rowGaps = Math.max(1, maxRow);
-
-  // Height-first fit (15 floors) then keep columns close
-  let rowH = Math.min(IDEAL_ROW_H, usableH / rowGaps);
-  rowH = Math.max(46, rowH);
-
-  // Column pitch tracks row density (web, not stretched grid)
-  let colW = IDEAL_COL_W * (rowH / IDEAL_ROW_H);
-  colW = Math.max(88, Math.min(112, colW));
-
-  const nodeSize = Math.max(48, Math.min(colW, rowH) * 0.72);
-  const bossSize = nodeSize * 1.18;
-
-  // Graph content width; center inside stage with generous side margins
-  let graphW = (cols - 1) * colW + nodeSize + 48;
-  graphW = Math.min(graphW, MAX_GRAPH_W);
-  // If still too wide, compress columns slightly
-  if ((cols - 1) * colW + nodeSize + 48 > MAX_GRAPH_W) {
-    colW = (MAX_GRAPH_W - nodeSize - 48) / Math.max(1, cols - 1);
-    graphW = MAX_GRAPH_W;
-  }
-
-  const padX = nodeSize / 2 + 16;
-  // Outer panel is graph-sized; stage centers it for side breathing room
-  const panelW = Math.max(graphW, (cols - 1) * colW + nodeSize + padX * 2);
-
-  // Organic jitter — strong enough to break the lattice look
-  const jitterScaleX = Math.min(1.35, (colW * 0.28) / 12);
-  const jitterScaleY = Math.min(1.35, (rowH * 0.28) / 8);
-
-  return {
-    panelW,
-    panelH: PANEL_H,
-    padX,
-    padY,
-    colW,
-    rowH,
-    nodeSize,
-    bossSize,
-    jitterScaleX,
-    jitterScaleY,
-    minSideMargin: MIN_SIDE_MARGIN,
-  };
-}
 
 function nodeCenter(
   n: MapNode,
-  actMaxRow: number,
-  m: ReturnType<typeof layoutMetrics>,
+  cols: number,
+  maxRow: number,
 ): { x: number; y: number } {
-  const jx = (n.layoutX ?? 0) * m.jitterScaleX;
-  const jy = (n.layoutY ?? 0) * m.jitterScaleY;
+  const xBase = cols <= 1 ? 50 : 8 + (n.col / (cols - 1)) * 84;
+  const yBase = maxRow <= 0 ? 50 : 4 + ((maxRow - n.row) / maxRow) * 92;
   return {
-    x: m.padX + n.col * m.colW + jx,
-    y: m.padY + (actMaxRow - n.row) * m.rowH + jy,
+    x: Math.max(4, Math.min(96, xBase + (n.layoutX ?? 0) * 0.16)),
+    y: Math.max(3, Math.min(97, yBase + (n.layoutY ?? 0) * 0.11)),
   };
 }
 
@@ -135,34 +60,32 @@ export function renderMap(): HTMLElement {
     </div>
     <div class="map-stage-title">
       <span class="kid-prompt map-act-title">${act.emoji} ${act.title}</span>
-      <span class="adult-text map-stage-hint">亮圈＝可走 · 由下往上 · 一屏看完</span>
+      <span class="kid-stat map-floor-progress">目前第 ${Math.min(15, (available[0]?.row ?? act.maxRow) + 1)}/15 層</span>
+      <span class="adult-text map-stage-hint">亮圈＝可走 · 由下往上</span>
     </div>
   `;
   stage.appendChild(top);
 
   // —— Organic fitted graph (centered; side margins on stage) ——
-  const m = layoutMetrics(act.cols, act.maxRow);
-  const graphW = m.panelW;
-  const graphH = m.panelH;
-  const pos = (n: MapNode) => nodeCenter(n, act.maxRow, m);
+  const graphW = 1000;
+  const graphH = 1000;
+  const pos = (n: MapNode) => nodeCenter(n, act.cols, act.maxRow);
 
   const panel = document.createElement('div');
   panel.className = 'map-panel';
-  // Panel only as wide as the web — stage flex centers it → side space
-  panel.style.width = `${graphW}px`;
-  panel.style.height = `${graphH}px`;
-  panel.style.maxWidth = `${MAX_GRAPH_W}px`;
-
   const canvas = document.createElement('div');
   canvas.className = 'map-web';
-  canvas.style.width = `${graphW}px`;
-  canvas.style.height = `${graphH}px`;
 
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('class', 'map-edges');
   svg.setAttribute('width', String(graphW));
   svg.setAttribute('height', String(graphH));
   svg.setAttribute('viewBox', `0 0 ${graphW} ${graphH}`);
+  // HTML nodes use percentages across the whole map-web. Stretching this
+  // normalized SVG plane to the same box keeps every edge endpoint aligned on
+  // rectangular tablet layouts instead of letterboxing the routes as a square.
+  svg.setAttribute('preserveAspectRatio', 'none');
+  svg.setAttribute('aria-hidden', 'true');
 
   for (const n of actNodes) {
     const from = pos(n);
@@ -172,10 +95,13 @@ export function renderMap(): HTMLElement {
       if (!t) continue;
       const to = pos(t);
       const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      line.setAttribute('x1', String(from.x));
-      line.setAttribute('y1', String(from.y));
-      line.setAttribute('x2', String(to.x));
-      line.setAttribute('y2', String(to.y));
+      line.setAttribute('x1', String((from.x / 100) * graphW));
+      line.setAttribute('y1', String((from.y / 100) * graphH));
+      line.setAttribute('x2', String((to.x / 100) * graphW));
+      line.setAttribute('y2', String((to.y / 100) * graphH));
+      line.dataset.fromNodeId = n.id;
+      line.dataset.toNodeId = t.id;
+      line.setAttribute('vector-effect', 'non-scaling-stroke');
       const onPath =
         pathSet.has(n.id) && (pathSet.has(t.id) || availableIds.has(t.id));
       const fromVisited = visited.has(n.id) || n.id === currentOnThisAct;
@@ -194,7 +120,7 @@ export function renderMap(): HTMLElement {
     const isHere = n.id === currentOnThisAct;
     const isDone = visited.has(n.id);
     const isLocked = !isAvail && !isDone && !isHere;
-    const size = n.kind === 'boss' ? m.bossSize : m.nodeSize;
+    const size = n.kind === 'boss' ? 64 : 56;
 
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -204,11 +130,11 @@ export function renderMap(): HTMLElement {
     if (isDone) btn.classList.add('done');
     if (isLocked) btn.classList.add('locked');
     if (n.kind === 'boss') btn.classList.add('boss');
-    btn.style.left = `${p.x - size / 2}px`;
-    btn.style.top = `${p.y - size / 2}px`;
+    btn.style.left = `${p.x}%`;
+    btn.style.top = `${p.y}%`;
     btn.style.width = `${size}px`;
     btn.style.height = `${size}px`;
-    btn.style.fontSize = `${Math.max(0.85, size * 0.028)}rem`;
+    btn.style.fontSize = `${Math.max(0.95, size * 0.028)}rem`;
     btn.dataset.nodeId = n.id;
     btn.dataset.act = String(n.act);
     btn.innerHTML = `<span class="map-dot-emoji">${n.emoji}</span>`;
@@ -230,7 +156,7 @@ export function renderMap(): HTMLElement {
           selectMapNode(run(), n.id);
           session.mapSelectBusy = false;
           render();
-        }, SELECT_FLASH_MS);
+        }, gameplayMs(SELECT_FLASH_MS));
       });
     }
     canvas.appendChild(btn);
@@ -289,11 +215,12 @@ export function renderMap(): HTMLElement {
 
   el.appendChild(stage);
 
-  requestAnimationFrame(() => applyStageScale(el, stage));
-  if (typeof ResizeObserver !== 'undefined') {
-    const ro = new ResizeObserver(() => applyStageScale(el, stage));
-    ro.observe(el);
-  }
+  requestAnimationFrame(() => {
+    panel.querySelector<HTMLElement>('.map-dot.available')?.scrollIntoView({
+      block: 'center',
+      inline: 'center',
+    });
+  });
 
   return el;
 }

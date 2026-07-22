@@ -16,6 +16,23 @@ export interface EnemyUnit {
   block: number;
   intentIndex: number;
   alive: boolean;
+  /** Echo: first incoming attack each player turn gains +2 damage. */
+  echoTurns: number;
+  echoTriggeredThisTurn: boolean;
+}
+
+/** One ordered hit, including the monster shield state before and after it. */
+export interface PlayerImpact {
+  enemyId: string;
+  hitIndex: number;
+  blockBefore: number;
+  blocked: number;
+  blockAfter: number;
+  hpDamage: number;
+  killed: boolean;
+  /** Optional damage additions, kept separate so feedback can explain them. */
+  echoBonus?: number;
+  relicBonus?: number;
 }
 
 /** Visual / motion events for UI */
@@ -25,12 +42,12 @@ export type CombatFx =
   | { type: 'shuffle'; count: number }
   | {
       type: 'playerStrike';
-      damage: number;
-      hits: number;
-      killed: boolean;
-      targetIds?: string[];
+      impacts: PlayerImpact[];
     }
   | { type: 'playerBlock'; amount: number }
+  | { type: 'playerEnergy'; amount: number }
+  | { type: 'playerPower'; power: 'echoGuard'; amount: number }
+  | { type: 'enemyStatus'; enemyId: string; status: 'echo'; turns: number }
   | {
       type: 'enemyStrike';
       blockBefore: number;
@@ -60,6 +77,11 @@ export interface CombatState {
   block: number;
   energy: number;
   maxEnergy: number;
+  /** Character relic: spent by the first damaging hit of this combat. */
+  firstAttackBonusDamage: number;
+  firstAttackBonusReady: boolean;
+  /** Battle-long scaling from 共鳴護唱. */
+  echoGuardAmount: number;
   drawPile: CombatCard[];
   hand: CombatCard[];
   discardPile: CombatCard[];

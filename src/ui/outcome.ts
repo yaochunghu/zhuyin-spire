@@ -1,4 +1,5 @@
 import { sfx } from '../game/audio';
+import { gameplayMs, loadGameSettings } from '../game/settings';
 import { session } from './runtime';
 
 function confettiLayer(): HTMLElement {
@@ -51,6 +52,8 @@ export function playOutcomeOverlay(
     return;
   }
   session.outcomeAnimPlaying = true;
+  const speed = loadGameSettings().animationSpeed;
+  const motionMs = (ms: number): number => gameplayMs(ms, speed);
 
   const overlay = document.createElement('div');
   overlay.className = `outcome-overlay outcome-${kind}`;
@@ -61,7 +64,7 @@ export function playOutcomeOverlay(
 
   if (kind === 'kill') {
     sfx.monsterPoof();
-    window.setTimeout(() => sfx.win(), 280);
+    window.setTimeout(() => sfx.win(), motionMs(280));
 
     const monster = document.createElement('div');
     monster.className = 'outcome-actor kill-actor';
@@ -87,7 +90,7 @@ export function playOutcomeOverlay(
     if (opts.isBoss) overlay.appendChild(confettiLayer());
   } else {
     sfx.heroFaint();
-    window.setTimeout(() => sfx.lose(), 400);
+    window.setTimeout(() => sfx.lose(), motionMs(400));
 
     const hero = document.createElement('div');
     hero.className = 'outcome-actor faint-actor';
@@ -121,6 +124,6 @@ export function playOutcomeOverlay(
       overlay.remove();
       session.outcomeAnimPlaying = false;
       onDone();
-    }, 220);
-  }, ms);
+    }, motionMs(220));
+  }, motionMs(ms));
 }

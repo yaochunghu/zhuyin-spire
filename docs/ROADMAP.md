@@ -1,10 +1,14 @@
 # Roadmap
 
-## Shipped (v0.1.0 baseline)
+## Shipped (v0.2.0)
 
 - Vite + TypeScript SPA; touch-first preschool UI; adult coach strip  
 - Full first-syllable 注音 cast (including 聲調); listen mode (Web Speech zh-TW)  
 - Practice room + lifetime 📚 badge; large phrase bank + parent packs  
+- Up to four learner profiles with separate runs, teaching progress, tutorials,
+  and detailed curriculum settings
+- Reusable casting-provider boundary, persistent anti-repeat bags, vowel-family
+  lessons, and ambient mana cues
 - Modular combat (`game/battle/*`); multi-enemy encounters + roles/intents  
 - Drag-and-drop card play (enemy / shield zones); draw/discard FX  
 - StS hand rules (draw 5, max hand 10)  
@@ -14,6 +18,7 @@
 - localStorage mid-run save (stable screens)  
 - Debug overlay (skip cast, jump screens, force combat outcomes)  
 - Project docs + standalone git (this documentation package)
+- Playable GitHub Pages release build
 
 ---
 
@@ -21,13 +26,24 @@
 
 Ordered by “resume playtest” value — not a binding schedule:
 
-1. **Full Act I playtest / balance pass** (with and without skip cast)  
-2. **Cast screen polish** — optional 1080p stage consistency with combat/map  
-3. **Coach on cast** — ensure adult tips don’t cover the hand / cast keys  
-4. **FX edge cases** — any remaining float/remount glitches  
-5. **More content** — cards, enemies, encounters, phrase packs  
-6. **Remote git** — GitHub repo if not yet pushed  
-7. Optional later: CI (`npm run build` on PR), more acts polish, audio files instead of procedural only  
+1. **Approve the design foundation** — review the four bibles linked from
+   [INDEX.md](./INDEX.md), especially identity, fun, clarity, and obvious risk;
+   individual numbers remain playtestable
+2. **Implement the content foundation** — Attack/Skill/Power and rarity types,
+   physical card UIDs, safe V1→V2 deck migration, typed effects, and validation
+3. **Add cards and upgrades in reviewed waves** — preserve the 12 anchors and
+   all 27 live IDs, then verify fixed-height cards and the designer viewer at
+   each tablet viewport
+4. **Add Smith, expanded relics, and potions** — keep acquisition and temporary
+   upgrades instance-safe; test timing hooks before increasing content volume
+5. **Add events and encounters one act at a time** — seeded simulation and
+   cast-off/cast-on playtests before enabling the next act
+6. **Add the 20-level difficulty track, keys, and Act IV last** — only after the
+   base three-act game passes save/load, tablet, and accessibility gates
+7. **Remote git / CI** — dedicated GitHub repository and build/test checks if not
+   already configured
+8. Optional later: second character/theme using a reviewed English or math
+   provider contract, plus recorded audio assets
 
 ---
 

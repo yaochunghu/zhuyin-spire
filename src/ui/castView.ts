@@ -2,6 +2,11 @@ import { ENEMIES } from '../data/enemies';
 import { getEnemy, livingEnemies } from '../game/combat';
 import { sfx } from '../game/audio';
 import { cancelSpeech, speakCue, speakCueWithAutoReplay } from '../game/speech';
+import { isCastAnswerCorrect } from '../game/castCheck';
+import {
+  LEARNING_REVEAL_CONTINUE_MS,
+  LEARNING_REVEAL_TOTAL_MS,
+} from '../game/settings';
 import {
   answerCast,
   answerPractice,
@@ -23,26 +28,59 @@ import {
 export function playSpellReveal(
   info: { word: string; emoji: string; spell: string },
   onDone: () => void,
+  kind: 'success' | 'correction' = 'success',
 ): void {
   const overlay = document.createElement('div');
-  overlay.className = 'spell-reveal-overlay';
-  overlay.setAttribute('role', 'status');
+  overlay.className = `spell-reveal-overlay spell-reveal-${kind}`;
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-label', kind === 'success' ? '答對了' : '正確答案');
+  const symbols = [...info.spell]
+    .map(
+      (symbol, index) =>
+        `<span class="spell-reveal-symbol" style="--symbol-index:${index}">${symbol}</span>`,
+    )
+    .join('');
   overlay.innerHTML = `
     <div class="spell-reveal-card">
       <div class="spell-reveal-emoji">${info.emoji}</div>
       <div class="spell-reveal-word adult-read-aloud">${info.word}</div>
-      <div class="spell-reveal-spell">${info.spell}</div>
-      <div class="spell-reveal-ok kid-prompt">✨</div>
+      <div class="spell-reveal-spell" aria-label="${info.spell}">${symbols}</div>
+      <div class="spell-reveal-ok kid-prompt">${kind === 'success' ? '✨ 答對了！' : '💡 正確答案'}</div>
+      <button type="button" class="btn-primary spell-reveal-continue">繼續 ▶</button>
     </div>
   `;
   document.body.appendChild(overlay);
-  window.setTimeout(() => {
+  const continueButton = overlay.querySelector<HTMLButtonElement>('.spell-reveal-continue')!;
+  let finished = false;
+  let removeTimer = 0;
+  const finish = (): void => {
+    if (finished) return;
+    finished = true;
+    window.clearTimeout(autoTimer);
     overlay.classList.add('spell-reveal-out');
-    window.setTimeout(() => {
+    removeTimer = window.setTimeout(() => {
       overlay.remove();
       onDone();
     }, 180);
-  }, 520);
+  };
+  continueButton.addEventListener('click', () => {
+    sfx.click();
+    finish();
+  });
+  const revealContinueTimer = window.setTimeout(() => {
+    if (finished) return;
+    overlay.classList.add('can-continue');
+    continueButton.focus();
+  }, kind === 'success' ? LEARNING_REVEAL_CONTINUE_MS : 800);
+  const autoTimer = window.setTimeout(
+    finish,
+    kind === 'success' ? LEARNING_REVEAL_TOTAL_MS - 180 : 1320,
+  );
+  overlay.addEventListener('remove', () => {
+    window.clearTimeout(revealContinueTimer);
+    window.clearTimeout(removeTimer);
+  });
 }
 
 export function submitSpell(): void {
@@ -52,13 +90,11 @@ export function submitSpell(): void {
   window.clearTimeout(session.autoSubmitTimer);
   cancelSpeech();
   const attempt = [...session.spellAttempt];
-  const correct =
-    attempt.length === cast.prompt.correctParts.length &&
-    attempt.every((s, i) => s === cast.prompt.correctParts[i]);
+  const correct = isCastAnswerCorrect(cast.prompt, attempt);
 
   // Capture cue + foe before combat/cast is cleared
   const cue = cast.prompt.cue;
-  const spell = cast.prompt.correctSpell;
+  const spell = cast.prompt.correctionText;
   const isPractice = run().screen === 'practice';
 
   if (isPractice) {
@@ -83,7 +119,7 @@ export function submitSpell(): void {
     };
 
     if (correct) {
-      playSpellReveal({ word: cue.word, emoji: cue.emoji, spell }, afterPractice);
+      playSpellReveal({ word: cue.text, emoji: cue.emoji, spell }, afterPractice);
     } else {
       window.setTimeout(afterPractice, 320);
     }
@@ -150,11 +186,11 @@ export function submitSpell(): void {
     })();
   };
 
-  if (correct) {
-    playSpellReveal({ word: cue.word, emoji: cue.emoji, spell }, afterReveal);
-  } else {
-    window.setTimeout(afterReveal, 280);
-  }
+  playSpellReveal(
+    { word: cue.text, emoji: cue.emoji, spell },
+    afterReveal,
+    correct ? 'success' : 'correction',
+  );
 }
 
 export function renderPractice(): HTMLElement {
@@ -167,9 +203,9 @@ export function renderCastCheck(isPractice = false): HTMLElement {
   const el = document.createElement('div');
   el.className = `screen cast-screen mode-${mode}${isPractice ? ' practice-screen' : ''}`;
 
-  const cueWord = cast.prompt.cue.word;
+  const cueWord = cast.prompt.cue.text;
   const cueEmoji = cast.prompt.cue.emoji;
-  const parts = cast.prompt.correctParts;
+  const parts = cast.prompt.answerTokens;
   const maxLen = parts.length;
 
   let cueInner = '';
@@ -204,13 +240,18 @@ export function renderCastCheck(isPractice = false): HTMLElement {
   el.innerHTML = `
     ${practiceHud}
     ${cast.prompt.speechFallback ? '<div class="warn-banner adult-text">此裝置沒有語音，請大人念出圖的意思</div>' : ''}
+    <div class="mana-condition mana-${cast.prompt.ambientMana.id}" aria-label="空氣中的魔力狀態：${cast.prompt.ambientMana.label}">
+      <span>${cast.prompt.ambientMana.icon}</span>
+      <span>${cast.prompt.ambientMana.label}</span>
+      <span class="mana-focus">魔法音 ${cast.prompt.focusGlyph}</span>
+    </div>
     <div class="cue-box">${cueInner}</div>
   `;
 
   if (mode === 'listen' || mode === 'listenHard') {
     if (!session.castSpeechPlayedForOpen) {
       sfx.listenOpen();
-      window.setTimeout(() => speakCueWithAutoReplay(cueWord), 220);
+      window.setTimeout(() => speakCueWithAutoReplay(cast.prompt.cue.speechText), 220);
       session.castSpeechPlayedForOpen = true;
     }
     const replay = document.createElement('button');
@@ -220,31 +261,16 @@ export function renderCastCheck(isPractice = false): HTMLElement {
     replay.addEventListener('click', () => {
       sfx.click();
       cancelSpeech();
-      speakCue(cueWord);
+      speakCue(cast.prompt.cue.speechText);
     });
     el.appendChild(replay);
   } else if (!session.castSpeechPlayedForOpen) {
     // Recognize: soft read-aloud once (helps adult + kid pairing)
-    window.setTimeout(() => speakCue(cueWord), 150);
+    window.setTimeout(() => speakCue(cast.prompt.cue.speechText), 150);
     session.castSpeechPlayedForOpen = true;
   }
 
   appendCoach(el, mode);
-
-  // Answer slots (how many symbols needed)
-  const slots = document.createElement('div');
-  slots.className = 'spell-slots';
-  slots.setAttribute('aria-label', '拼寫區');
-  for (let i = 0; i < maxLen; i += 1) {
-    const slot = document.createElement('div');
-    const ch = session.spellAttempt[i] ?? '';
-    slot.className = 'spell-slot' + (ch ? ' filled' : '');
-    if (!ch && i === session.spellAttempt.length) slot.classList.add('next');
-    if (ch === 'ˊ' || ch === 'ˇ' || ch === 'ˋ' || ch === '˙') slot.classList.add('tone');
-    slot.textContent = ch || '·';
-    slots.appendChild(slot);
-  }
-  el.appendChild(slots);
 
   if (session.hintSpell) {
     const reveal = document.createElement('div');
@@ -253,15 +279,48 @@ export function renderCastCheck(isPractice = false): HTMLElement {
     el.appendChild(reveal);
   }
 
-  const bankWrap = document.createElement('div');
-  bankWrap.className = 'spell-bank-wrap';
+  if (cast.prompt.inputMode === 'singleChoice') {
+    const choices = document.createElement('div');
+    choices.className = 'cast-choice-grid';
+    for (const token of cast.prompt.choiceTokens) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'spell-key cast-choice-key';
+      button.textContent = token;
+      button.disabled = session.castLocked;
+      button.addEventListener('click', () => {
+        if (session.castLocked) return;
+        session.spellAttempt = [token];
+        submitSpell();
+      });
+      choices.appendChild(button);
+    }
+    el.appendChild(choices);
+  } else {
+    // Answer slots (how many symbols needed)
+    const slots = document.createElement('div');
+    slots.className = 'spell-slots';
+    slots.setAttribute('aria-label', '拼寫區');
+    for (let i = 0; i < maxLen; i += 1) {
+      const slot = document.createElement('div');
+      const ch = session.spellAttempt[i] ?? '';
+      slot.className = 'spell-slot' + (ch ? ' filled' : '');
+      if (!ch && i === session.spellAttempt.length) slot.classList.add('next');
+      if (ch === 'ˊ' || ch === 'ˇ' || ch === 'ˋ' || ch === '˙') slot.classList.add('tone');
+      slot.textContent = ch || '·';
+      slots.appendChild(slot);
+    }
+    el.appendChild(slots);
+
+    const bankWrap = document.createElement('div');
+    bankWrap.className = 'spell-bank-wrap';
 
   const bankMain = document.createElement('div');
   bankMain.className = 'spell-bank';
   const bankTones = document.createElement('div');
   bankTones.className = 'spell-bank spell-bank-tones';
 
-  cast.prompt.symbolBank.forEach((sym, idx) => {
+  cast.prompt.choiceTokens.forEach((sym, idx) => {
     const b = document.createElement('button');
     const isTone = sym === 'ˊ' || sym === 'ˇ' || sym === 'ˋ' || sym === '˙';
     b.className = 'spell-key' + (isTone ? ' tone-key' : '');
@@ -347,7 +406,8 @@ export function renderCastCheck(isPractice = false): HTMLElement {
   controls.appendChild(back);
   controls.appendChild(clear);
   controls.appendChild(ok);
-  el.appendChild(controls);
+    el.appendChild(controls);
+  }
 
   const hint = document.createElement('button');
   hint.className = 'hint-btn';
@@ -356,10 +416,10 @@ export function renderCastCheck(isPractice = false): HTMLElement {
       '<span>💡</span><span class="adult-text"> 顯示答案（練習可多次）</span>';
     hint.disabled = false;
   } else {
-    const used = run().combat?.parentHintUsed;
+    const used = run().tutorial ? false : run().combat?.parentHintUsed;
     hint.innerHTML = used
       ? '<span class="adult-text">家長協助已用完</span>'
-      : '<span>💡</span><span class="adult-text"> 家長協助（顯示完整拼法，本場一次）</span>';
+      : `<span>💡</span><span class="adult-text"> 家長協助（顯示完整拼法${run().tutorial ? '，教學可重複' : '，本場一次'}）</span>`;
     hint.disabled = !!used;
   }
   hint.addEventListener('click', () => {

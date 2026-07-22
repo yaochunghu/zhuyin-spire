@@ -9,7 +9,7 @@ Public imports should use **`src/game/combat.ts`**, which re-exports `src/game/b
 | `battle/types.ts` | `CombatState`, `EnemyUnit`, `CombatCard`, `CombatFx`, phases |
 | `battle/fx.ts` | `pushFx` / `takePendingFx` queue |
 | `battle/piles.ts` | Shuffle, draw (respect max hand), reward id picks |
-| `battle/effects.ts` | Target types, `executeEffects` (damage/block/draw) |
+| `battle/effects.ts` | Target types, `executeEffects` (damage/block/draw/energy/Echo/scaling) |
 | `battle/playerHandler.ts` | `canPlay`, `beginPlay`, cast success/fizzle, end-turn discard |
 | `battle/enemyHandler.ts` | Spawn, select, intents, enemy turn |
 | `battle/battleManager.ts` | `createCombat`, `endTurn` |
@@ -36,6 +36,19 @@ From `data/balance.ts`:
 - **Max hand:** `MAX_HAND_SIZE = 10` (extra draws do not enter hand)
 
 Energy is per-combat; end turn discards remaining hand then enemy acts then redraw.
+
+## First-character combat rules
+
+- 🔔 **Echo 2:** the first damaging hit against that monster each player turn
+  gains +2 damage. The setup card deals its damage first and then applies Echo,
+  so it cannot trigger its own newly applied status.
+- Duration advances once at the start of the next player turn. Applying Echo and
+  following with another attack can trigger it now; it can trigger once more on
+  the following player turn.
+- 🎵 **初心音叉:** the first damaging hit of each combat gains +2. It is
+  stored separately in `PlayerImpact.relicBonus` so the FX can explain it.
+- 🌱 **共鳴護唱:** battle-long `echoGuardAmount`; every Echo trigger adds
+  that much player block.
 
 ---
 
@@ -64,6 +77,25 @@ Normal path:
 
 Cast spelling rule: **full first syllable** (聲母 + 韻母/介音 + 聲調 when not first tone). Example: 爸爸 → `ㄅㄚˋ`, not just `ㄅ`.
 
+The combat layer receives a provider-neutral prompt. Character → lesson binding →
+provider selection, persistent anti-repeat bags, and future subject rules are in
+[CASTING_GATES.md](./CASTING_GATES.md). Combat must not special-case Zhuyin,
+English, or math.
+
+Correct casts hold the completed spelling for a two-second teaching beat. A Continue
+button appears at 1.2 seconds. This pause and speech are deliberately not affected by
+the 2× gameplay setting. Wrong casts still spend the card/energy and reveal the answer.
+
+## First-run fight lesson
+
+An eligible Act I row-0 fight uses `tutorialSlime` (6 HP), a deterministic hand,
+and four steps: `shield` → `endTurn` → `attack` → `free`. The shield and
+attack prompts gate unrelated cards. After the shield succeeds, End Turn is
+highlighted but remaining affordable cards stay playable, so unused energy never
+looks broken. If wrong attempts consume the needed card or energy, End Turn becomes
+available so the lesson can redraw instead of soft-locking.
+Completion is written only in `finishFight` after victory.
+
 ---
 
 ## Card targeting
@@ -83,6 +115,16 @@ Cast spelling rule: **full first syllable** (聲母 + 韻母/介音 + 聲調 whe
 1. Battle code `pushFx` during resolution.
 2. After combat render, UI drains via `takePendingFx` / `consumeCombatFx` and plays `playCombatFxBatch`.
 3. Session flag `combatFxPlaying` blocks destructive remounts.
+
+`CombatFx.playerStrike` carries ordered `PlayerImpact[]` records. Every hit includes
+enemy id, hit index, shield before/blocked/after, HP overflow, and kill state. The UI
+can therefore clang/crack/break a monster shield before showing HP damage, including
+fully blocked hits that previously produced no strike FX.
+Optional `echoBonus` and `relicBonus` fields explain why a hit was larger than
+the printed base number.
+
+Gameplay waits and Web Animations use `gameplayMs()`. End-turn discards and redraws
+are staggered concurrently; 2× halves gameplay movement without changing teaching pauses.
 
 ### Known footgun
 

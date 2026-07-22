@@ -12,10 +12,12 @@ import { playPendingCombatFx, renderCombat } from './ui/combatView';
 import { renderCastCheck, renderPractice, submitSpell } from './ui/castView';
 import { renderActClear, renderMap } from './ui/mapView';
 import { playOutcomeOverlay } from './ui/outcome';
+import { openOptions } from './ui/options';
+import { applyGameSettingsToDocument } from './game/settings';
 import { bindUi, session } from './ui/runtime';
 import {
   renderEnd,
-  renderRelicPick,
+  renderCharacterPick,
   renderRemoveCard,
   renderRest,
   renderReward,
@@ -74,6 +76,28 @@ function muteButton(): HTMLButtonElement {
   return b;
 }
 
+function globalControls(): HTMLElement {
+  const controls = document.createElement('div');
+  controls.className = 'global-controls';
+  const mute = muteButton();
+  mute.classList.remove('mute-btn');
+  mute.classList.add('global-control-btn');
+  controls.appendChild(mute);
+
+  const options = document.createElement('button');
+  options.type = 'button';
+  options.className = 'global-control-btn';
+  options.textContent = '⚙️';
+  options.setAttribute('aria-label', '開啟遊戲選項');
+  options.addEventListener('click', (event) => {
+    event.stopPropagation();
+    sfx.click();
+    openOptions({ allowProfileSwitch: runState.screen === 'title' });
+  });
+  controls.appendChild(options);
+  return controls;
+}
+
 function appendCoach(parent: HTMLElement, castMode?: CastMode): void {
   const node = getActiveNode(runState) ?? getAvailableMapNodes(runState)[0] ?? undefined;
   const tip = coachForScreen(runState.screen, {
@@ -85,10 +109,9 @@ function appendCoach(parent: HTMLElement, castMode?: CastMode): void {
 
   const early = isEarlyLearningRuns();
   const isCombat = runState.screen === 'combat';
-  // Combat: always collapsible (never force-open over the hand). Other screens: early runs stay open.
-  const collapsed = isCombat
-    ? session.coachCollapsed
-    : session.coachCollapsed && !early;
+  // Screen entry decides the initial state. Once rendered, the player's toggle
+  // must stay authoritative; otherwise early-run tips can never be collapsed.
+  const collapsed = session.coachCollapsed;
 
   const box = document.createElement('aside');
   box.className =
@@ -101,6 +124,8 @@ function appendCoach(parent: HTMLElement, castMode?: CastMode): void {
   head.type = 'button';
   head.className = 'adult-coach-head';
   head.innerHTML = `<span>👨‍👩‍👧 ${isCombat && collapsed ? '提示' : tip.title}</span><span class="adult-coach-toggle">${collapsed ? '＋' : '－'}</span>`;
+  head.setAttribute('aria-expanded', String(!collapsed));
+  head.setAttribute('aria-label', collapsed ? '展開家長提示' : '收合家長提示');
   head.addEventListener('click', () => {
     session.coachCollapsed = !session.coachCollapsed;
     render();
@@ -132,7 +157,7 @@ function render(): void {
   }
 
   appEl.innerHTML = '';
-  appEl.appendChild(muteButton());
+  appEl.appendChild(globalControls());
 
   if (runState.flash) {
     const f = document.createElement('div');
@@ -146,7 +171,7 @@ function render(): void {
       appEl.appendChild(renderTitle());
       break;
     case 'relicPick':
-      appEl.appendChild(renderRelicPick());
+      appEl.appendChild(renderCharacterPick());
       break;
     case 'map':
       appEl.appendChild(renderMap());
@@ -197,6 +222,26 @@ bindUi({
   clearFloatSoon,
   playOutcomeOverlay,
   submitSpell,
+});
+
+applyGameSettingsToDocument();
+window.addEventListener('zhuyin-settings-change', () => {
+  applyGameSettingsToDocument();
+  const icon = appEl.querySelector<HTMLButtonElement>(
+    '.global-controls .global-control-btn',
+  );
+  if (icon) icon.textContent = volumeIcon();
+});
+window.addEventListener('zhuyin-volume-change', () => {
+  const icon = appEl.querySelector<HTMLButtonElement>(
+    '.global-controls .global-control-btn',
+  );
+  if (icon) icon.textContent = volumeIcon();
+});
+window.addEventListener('zhuyin-profile-change', () => {
+  // Profile switching is title-only, so replacing this idle title state cannot
+  // interrupt a fight, drag, cast, or animation.
+  if (runState.screen === 'title') render();
 });
 
 render();

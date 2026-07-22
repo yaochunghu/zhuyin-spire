@@ -70,6 +70,18 @@ function guard(value: number): IntentStep {
  * Elites/bosses tankier; campfires (40% max HP) are the recovery beat
  */
 export const ENEMIES: Record<string, EnemyDef> = {
+  /** First-run only. Never placed in generated maps or encounter pools. */
+  tutorialSlime: {
+    id: 'tutorialSlime',
+    name: '練習史萊姆',
+    emoji: '🟢',
+    maxHp: 6,
+    role: 'fodder',
+    act: 1,
+    tier: 'normal',
+    behaviorNote: '教學限定：固定的輕攻擊，讓孩子先學會護盾',
+    pattern: [atk(3)],
+  },
   // ─── Act I normals (distinct roles) ─────────────────────────────
   slimeWeak: {
     id: 'slimeWeak',

@@ -1,6 +1,8 @@
 import { getCard } from '../data/cards';
-import { STARTER_RELIC_IDS, getRelic } from '../data/relics';
+import { PLAYABLE_CHARACTER_IDS, getCharacter } from '../data/characters';
+import { getRelic } from '../data/relics';
 import { sfx, startMusic, warmAudio } from '../game/audio';
+import { getActiveProfile } from '../game/profiles';
 import { warmSpeech } from '../game/speech';
 import {
   PRACTICE_BADGE_THRESHOLD,
@@ -19,98 +21,22 @@ import {
   hasPracticeBadge,
   hasSavedRun,
   leaveShop,
-  pickRelic,
+  pickCharacter,
   pickReward,
   removeCardFromDeck,
   resumeSavedRun,
   skipRemoveCard,
   startRun,
 } from '../game/state';
-import { ALL_PHRASE_PACKS, totalPhraseCount, type PhrasePack } from '../data/phrases';
-import {
-  loadPhraseSettings,
-  savePhraseSettings,
-  type PhraseSettings,
-} from '../game/phraseSettings';
 import { cardFaceHtml } from './cards';
+import { openOptions } from './options';
 import { createConfettiLayer } from './outcome';
 import { appendCoach, render, run, session, showFlash } from './runtime';
-
-const PACK_LABELS: Record<PhrasePack, string> = {
-  core: '基礎本',
-  home: '家裡',
-  park: '公園',
-  food: '食物',
-  body: '身體',
-  school: '學校',
-  animals: '動物',
-  nature: '自然',
-  numbers: '數字',
-  family: '家人',
-};
-
-function renderPhrasePackPanel(): HTMLElement {
-  const box = document.createElement('div');
-  box.className = 'phrase-pack-panel';
-  const settings = loadPhraseSettings();
-  const active = new Set(settings.packs);
-
-  const head = document.createElement('p');
-  head.className = 'adult-text center';
-  head.textContent = `家長：練習主題（詞庫約 ${totalPhraseCount()} 句 · 同一注音每次換詞）`;
-  box.appendChild(head);
-
-  const row = document.createElement('div');
-  row.className = 'phrase-pack-row';
-  for (const pack of ALL_PHRASE_PACKS) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'phrase-pack-chip' + (active.has(pack) ? ' on' : '');
-    btn.textContent = PACK_LABELS[pack];
-    btn.setAttribute('aria-pressed', active.has(pack) ? 'true' : 'false');
-    btn.addEventListener('click', () => {
-      sfx.click();
-      const next = new Set(loadPhraseSettings().packs);
-      if (next.has(pack)) {
-        if (next.size <= 1) {
-          showFlash('📌');
-          return;
-        }
-        next.delete(pack);
-      } else {
-        next.add(pack);
-      }
-      const s: PhraseSettings = {
-        ...loadPhraseSettings(),
-        packs: [...next] as PhrasePack[],
-      };
-      savePhraseSettings(s);
-      render();
-    });
-    row.appendChild(btn);
-  }
-  box.appendChild(row);
-
-  const allBtn = document.createElement('button');
-  allBtn.type = 'button';
-  allBtn.className = 'btn-secondary phrase-pack-all';
-  allBtn.innerHTML = `<span class="adult-text">全部主題</span>`;
-  allBtn.addEventListener('click', () => {
-    sfx.click();
-    savePhraseSettings({
-      ...loadPhraseSettings(),
-      packs: [...ALL_PHRASE_PACKS],
-      includeWords: [],
-    });
-    render();
-  });
-  box.appendChild(allBtn);
-  return box;
-}
 
 export function renderTitle(): HTMLElement {
   const el = document.createElement('div');
   el.className = 'screen title-screen';
+  const profile = getActiveProfile();
   const canContinue = hasSavedRun();
   const badges: string[] = [];
   if (hasClearedOnce()) badges.push('<div class="badge" title="通關">🏅</div>');
@@ -133,6 +59,26 @@ export function renderTitle(): HTMLElement {
         : ''
     }
   `;
+
+  const profileButton = document.createElement('button');
+  profileButton.type = 'button';
+  profileButton.className = 'profile-title-button';
+  const profileAvatar = document.createElement('span');
+  profileAvatar.className = 'profile-title-avatar';
+  profileAvatar.textContent = profile.avatar;
+  const profileLabel = document.createElement('span');
+  const profileName = document.createElement('strong');
+  profileName.textContent = profile.name;
+  const profileHint = document.createElement('small');
+  profileHint.textContent = '切換小玩家';
+  profileLabel.append(profileName, profileHint);
+  profileButton.append(profileAvatar, profileLabel);
+  profileButton.setAttribute('aria-label', `目前是${profile.name}，切換小玩家`);
+  profileButton.addEventListener('click', () => {
+    sfx.click();
+    openOptions({ allowProfileSwitch: true, focusProfiles: true });
+  });
+  el.prepend(profileButton);
   appendCoach(el);
 
   const row = document.createElement('div');
@@ -215,35 +161,49 @@ export function renderTitle(): HTMLElement {
   const adultTitle = document.createElement('p');
   adultTitle.className = 'adult-text center';
   adultTitle.textContent = canContinue
-    ? '有進度：▶️ 繼續 · 🆕 新遊戲會覆蓋 · 📚 練習 · 右上角音量'
-    : '注音之塔 · ▶️ 爬塔 · 📚 無生命練習 · 關掉分頁後可從地圖繼續';
+    ? '有進度：▶️ 繼續 · 🆕 新遊戲會覆蓋 · 📚 練習 · 點名字可切換小玩家'
+    : '注音之塔 · ▶️ 爬塔 · 📚 無生命練習 · 每位小玩家各有自己的進度';
   el.appendChild(adultTitle);
 
-  el.appendChild(renderPhrasePackPanel());
   return el;
 }
 
-export function renderRelicPick(): HTMLElement {
+export function renderCharacterPick(): HTMLElement {
   const el = document.createElement('div');
-  el.className = 'screen relic-screen';
-  el.innerHTML = `<div class="kid-prompt">✨ 選一個</div>`;
+  el.className = 'screen relic-screen character-screen';
+  el.innerHTML = `
+    <div class="kid-prompt">🧙 選角色</div>
+    <div class="adult-text center">角色決定起始牌組、打法主題和起始遺物</div>
+  `;
   appendCoach(el);
 
   const row = document.createElement('div');
-  row.className = 'relic-choices';
-  for (const id of STARTER_RELIC_IDS) {
-    const r = getRelic(id);
+  row.className = 'relic-choices character-choices';
+  for (const id of PLAYABLE_CHARACTER_IDS) {
+    const character = getCharacter(id);
+    const relic = getRelic(character.startingRelicId);
     const btn = document.createElement('button');
-    btn.className = 'relic-card';
+    btn.className = 'relic-card character-card';
     btn.innerHTML = `
-      <div class="relic-emoji">${r.emoji}</div>
-      <div class="adult-text relic-name">${r.name}</div>
-      <div class="adult-text">${r.blurb}</div>
+      <div class="relic-emoji character-emoji">${character.emoji}</div>
+      <div class="character-name">${character.name}</div>
+      <div class="adult-text character-title">${character.title}</div>
+      <div class="character-theme">🎶 ${character.theme}</div>
+      <div class="starter-deck-summary" aria-label="起始牌組：五張攻擊、四張防守、一張回音攻擊">
+        <span>⚔️ 1⚡ ×5</span>
+        <span>🛡️ 1⚡ ×4</span>
+        <span>🔔 2⚡ ×1</span>
+      </div>
+      <div class="starting-relic">
+        <span class="starting-relic-emoji">${relic.emoji}</span>
+        <span><strong>起始遺物：${relic.name}</strong><br>${relic.blurb}</span>
+      </div>
+      <div class="character-pick-cta">選這個角色 ▶️</div>
     `;
-    btn.setAttribute('aria-label', r.name);
+    btn.setAttribute('aria-label', `選擇${character.name}，起始遺物${relic.name}`);
     btn.addEventListener('click', () => {
       sfx.relic();
-      pickRelic(run(), id);
+      pickCharacter(run(), id);
       render();
     });
     row.appendChild(btn);

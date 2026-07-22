@@ -6,6 +6,7 @@ import type { RunState } from '../game/state';
 import {
   debugAddEnergy,
   debugAddGold,
+  debugResetCastingBags,
   debugDraw,
   debugEndTurn,
   debugEnterAvailable,
@@ -16,9 +17,13 @@ import {
   debugLoseCombat,
   debugNewRun,
   debugPractice,
+  debugResetTutorial,
+  debugSetAnimationSpeed,
+  debugSetCastingMode,
   debugSetAct,
   debugSetHp,
   debugStartFight,
+  debugStartTutorial,
   debugWinCombat,
   listEncounterOptions,
   listEnemyOptions,
@@ -151,8 +156,31 @@ function buildPanel(opts: DebugMountOpts): HTMLElement {
     paintSkipToggle();
     refreshInspect(opts.getRun);
   });
-  panel.appendChild(row('Cast', [skipToggleBtn]));
+  panel.appendChild(
+    row('Cast', [
+      skipToggleBtn,
+      btn('Bag reset', () => {
+        debugResetCastingBags();
+        refreshInspect(opts.getRun);
+      }),
+      btn('See', () => debugSetCastingMode('recognize')),
+      btn('Hear', () => debugSetCastingMode('listen')),
+      btn('Hard', () => debugSetCastingMode('listenHard')),
+    ]),
+  );
   paintSkipToggle();
+
+  panel.appendChild(
+    row('Tutorial', [
+      btn('Reset', () => {
+        debugResetTutorial();
+        refreshInspect(opts.getRun);
+      }),
+      btn('Start', () => runAction(opts, debugStartTutorial)),
+      btn('1×', () => debugSetAnimationSpeed(1)),
+      btn('2×', () => debugSetAnimationSpeed(2)),
+    ]),
+  );
 
   panel.appendChild(
     row('Fight', [

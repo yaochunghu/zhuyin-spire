@@ -8,6 +8,11 @@
 
 import type { CombatCard, CombatFx } from '../game/combat';
 import { sfx } from '../game/audio';
+import {
+  gameplayMs,
+  loadGameSettings,
+  type AnimationSpeed,
+} from '../game/settings';
 
 export interface CardFxAnchors {
   drawPile: HTMLElement;
@@ -23,10 +28,19 @@ export interface CardFxAnchors {
   enemy?: HTMLElement | null;
   enemyBar?: HTMLElement | null;
   /** Multi-enemy slots keyed by instance id */
-  enemiesById?: Map<string, { emoji: HTMLElement; bar: HTMLElement | null }>;
+  enemiesById?: Map<
+    string,
+    { emoji: HTMLElement; bar: HTMLElement | null; shield: HTMLElement | null }
+  >;
 }
 
 export type CardFaceFn = (defId: string) => string;
+
+let activeBatchSpeed: AnimationSpeed | null = null;
+
+function fxMs(ms: number): number {
+  return gameplayMs(ms, activeBatchSpeed ?? loadGameSettings().animationSpeed);
+}
 
 function rectCenter(el: HTMLElement): { x: number; y: number } {
   const r = el.getBoundingClientRect();
@@ -47,7 +61,7 @@ function liveAnchors(fallback: CardFxAnchors): CardFxAnchors {
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => {
-    window.setTimeout(resolve, ms);
+    window.setTimeout(resolve, fxMs(ms));
   });
 }
 
@@ -100,7 +114,7 @@ function flyOne(
         },
       ],
       {
-        duration: durationMs,
+        duration: fxMs(durationMs),
         easing: 'cubic-bezier(0.22, 0.9, 0.3, 1)',
         fill: 'forwards',
       },
@@ -114,7 +128,7 @@ function flyOne(
           { transform: `translate(${x1}px, ${y1}px) scale(1.06)` },
           { transform: `translate(${x1}px, ${y1}px) scale(1)` },
         ],
-        { duration: 90, easing: 'ease-out' },
+        { duration: fxMs(90), easing: 'ease-out' },
       ).onfinish = () => {
         el.remove();
         resolve();
@@ -160,8 +174,8 @@ async function playDraw(
   let pileDisplay = finalDrawCount + cards.length;
   setPileCount(anchors.drawPile, pileDisplay);
 
-  for (let i = 0; i < cards.length; i += 1) {
-    const card = cards[i]!;
+  await Promise.all(cards.map(async (card, i) => {
+    await sleep(i * 75);
     // Re-query each step so we never fly to a detached node after a soft DOM change
     const live = liveAnchors(anchors);
     handSlots = [...live.hand.querySelectorAll<HTMLElement>('.card')];
@@ -177,16 +191,14 @@ async function playDraw(
     setPileCount(live.drawPile, pileDisplay);
     sfx.cardPlay();
 
-    await flyOne(faceHtml(card.defId), from, to, 360, 'card-fly-draw');
+    await flyOne(faceHtml(card.defId), from, to, 330, 'card-fly-draw');
 
     if (slot && slot.isConnected) {
       slot.classList.remove('hand-card-hidden');
       slot.classList.add('hand-card-land');
-      window.setTimeout(() => slot.classList.remove('hand-card-land'), 220);
+      window.setTimeout(() => slot.classList.remove('hand-card-land'), fxMs(220));
     }
-
-    if (i < cards.length - 1) await sleep(55);
-  }
+  }));
 
   const liveEnd = liveAnchors(anchors);
   setPileCount(liveEnd.drawPile, finalDrawCount);
@@ -222,8 +234,8 @@ async function playDiscard(
   let pileDisplay = Math.max(0, finalDiscard - cards.length);
   setPileCount(anchors.discardPile, pileDisplay);
 
-  for (let i = 0; i < cards.length; i += 1) {
-    const card = cards[i]!;
+  await Promise.all(cards.map(async (card, i) => {
+    await sleep(i * gap);
     const live = liveAnchors(anchors);
     const handCenter = rectCenter(live.hand);
     const discardCenter = rectCenter(live.discardPile);
@@ -242,8 +254,7 @@ async function playDiscard(
     pileDisplay += 1;
     setPileCount(live.discardPile, pileDisplay);
     pulsePile(live.discardPile);
-    if (i < cards.length - 1) await sleep(gap);
-  }
+  }));
 
   const liveEnd = liveAnchors(anchors);
   setPileCount(liveEnd.discardPile, finalDiscard);
@@ -264,41 +275,38 @@ function spawnFloat(near: HTMLElement | null, text: string, cls: string): void {
     flo.style.top = '28%';
   }
   document.body.appendChild(flo);
-  window.setTimeout(() => flo.remove(), 720);
+  window.setTimeout(() => flo.remove(), fxMs(720));
 }
 
-function resolveStrikeTargets(
-  fx: Extract<CombatFx, { type: 'playerStrike' }>,
-  anchors: CardFxAnchors | null,
-): { emoji: HTMLElement | null; bar: HTMLElement | null }[] {
-  const ids = fx.targetIds?.filter(Boolean) ?? [];
-  if (ids.length && anchors?.enemiesById?.size) {
-    const list = ids.map((id) => {
-      const slot = anchors.enemiesById!.get(id);
-      return {
-        emoji: slot?.emoji ?? null,
-        bar: slot?.bar ?? null,
-      };
-    });
-    if (list.some((t) => t.emoji)) return list;
+function impactTarget(enemyId: string, anchors: CardFxAnchors | null) {
+  const saved = anchors?.enemiesById?.get(enemyId);
+  const slot = document.querySelector<HTMLElement>(`[data-enemy-id="${enemyId}"]`);
+  return {
+    emoji: saved?.emoji ?? slot?.querySelector<HTMLElement>('[data-enemy]') ?? null,
+    bar: saved?.bar ?? slot?.querySelector<HTMLElement>('[data-enemy-bar]') ?? null,
+    shield:
+      saved?.shield ??
+      slot?.querySelector<HTMLElement>(`[data-enemy-shield="${enemyId}"]`) ??
+      null,
+  };
+}
+
+function burstShield(near: HTMLElement, count: number): void {
+  const rect = near.getBoundingClientRect();
+  near.classList.add('enemy-shield-ring');
+  window.setTimeout(() => near.classList.remove('enemy-shield-ring'), fxMs(520));
+  for (let i = 0; i < count; i += 1) {
+    const shard = document.createElement('span');
+    shard.className = 'shield-chip enemy-shield-chip';
+    shard.textContent = i % 2 ? '◆' : '✦';
+    shard.style.left = `${rect.left + rect.width / 2}px`;
+    shard.style.top = `${rect.top + rect.height / 2}px`;
+    const angle = (i / count) * Math.PI * 2;
+    shard.style.setProperty('--sx', `${Math.cos(angle) * (34 + Math.random() * 30)}px`);
+    shard.style.setProperty('--sy', `${Math.sin(angle) * (28 + Math.random() * 30)}px`);
+    document.body.appendChild(shard);
+    window.setTimeout(() => shard.remove(), fxMs(520));
   }
-  if (ids.length) {
-    const list = ids.map((id) => {
-      const slot = document.querySelector<HTMLElement>(`[data-enemy-id="${id}"]`);
-      return {
-        emoji: slot?.querySelector<HTMLElement>('[data-enemy]') ?? null,
-        bar:
-          slot?.querySelector<HTMLElement>('[data-enemy-bar]') ??
-          document.querySelector<HTMLElement>(`[data-enemy-bar-id="${id}"]`),
-      };
-    });
-    if (list.some((t) => t.emoji)) return list;
-  }
-  const enemy =
-    anchors?.enemy ?? document.querySelector<HTMLElement>('[data-enemy]');
-  const bar =
-    anchors?.enemyBar ?? document.querySelector<HTMLElement>('[data-enemy-bar]');
-  return [{ emoji: enemy, bar }];
 }
 
 /**
@@ -308,46 +316,108 @@ async function playPlayerStrike(
   fx: Extract<CombatFx, { type: 'playerStrike' }>,
   anchors: CardFxAnchors | null,
 ): Promise<void> {
-  const targets = resolveStrikeTargets(fx, anchors);
-  const hits = Math.max(1, fx.hits);
-  let remaining = fx.damage;
-  const base = Math.floor(fx.damage / hits);
+  for (const impact of fx.impacts) {
+    const target = impactTarget(impact.enemyId, anchors);
 
-  for (let i = 0; i < hits; i += 1) {
-    const isLast = i === hits - 1;
-    const chunk = isLast ? remaining : base;
-    remaining -= chunk;
-
-    // Cycle targets on multi-hit single-card; hit all on multi-target once each beat
-    const focus =
-      targets.length > 1 && hits === 1
-        ? targets
-        : [targets[i % targets.length]!];
-
-    const heavy = chunk >= 5 || (isLast && fx.damage >= 8);
-    if (heavy) sfx.enemyHitHeavy();
-    else sfx.enemyHit();
-
-    for (const t of focus) {
-      if (t.emoji) {
-        t.emoji.classList.remove('enemy-flinch', 'enemy-impact');
-        void t.emoji.offsetWidth;
-        t.emoji.classList.add('enemy-impact');
-        if (isLast || hits === 1) t.emoji.classList.add('enemy-flinch');
-      }
-      if (t.bar) {
-        t.bar.classList.remove('enemy-bar-flash');
-        void t.bar.offsetWidth;
-        t.bar.classList.add('enemy-bar-flash');
-      }
-      spawnFloat(t.emoji, `-${chunk}`, 'strike-float-hurt');
+    if ((impact.echoBonus ?? 0) > 0 || (impact.relicBonus ?? 0) > 0) {
+      sfx.fork();
+      const bonuses = [
+        (impact.echoBonus ?? 0) > 0 ? `🔔+${impact.echoBonus}` : '',
+        (impact.relicBonus ?? 0) > 0 ? `🎵+${impact.relicBonus}` : '',
+      ].filter(Boolean);
+      spawnFloat(target.emoji, bonuses.join(' '), 'strike-float-echo');
+      target.emoji?.classList.add('echo-trigger-pop');
+      await sleep(140);
     }
-    await sleep(hits > 1 ? 150 : 220);
-  }
 
-  if (fx.killed) {
-    await sleep(100);
+    if (impact.blockBefore > 0 && impact.blocked > 0) {
+      sfx.enemyShieldClang();
+      if (target.shield) {
+        const fill = target.shield.querySelector<HTMLElement>('span');
+        if (fill) fill.style.width = '100%';
+        target.shield.classList.remove('shield-bar-empty');
+        target.shield.classList.remove('enemy-shield-crack', 'enemy-shield-break');
+        void target.shield.offsetWidth;
+        target.shield.classList.add('shield-clang');
+      }
+      spawnFloat(target.shield ?? target.emoji, `🛡️-${impact.blocked}`, 'strike-float-block');
+      await sleep(150);
+
+      if (impact.blockAfter === 0) {
+        sfx.enemyShieldBreak();
+        if (target.shield) {
+          target.shield.classList.add('enemy-shield-break');
+          const fill = target.shield.querySelector<HTMLElement>('span');
+          if (fill) fill.style.width = '0%';
+          burstShield(target.shield, 8);
+          window.setTimeout(
+            () => target.shield?.classList.add('shield-bar-empty'),
+            fxMs(360),
+          );
+        }
+      } else {
+        sfx.enemyShieldCrack();
+        if (target.shield) {
+          target.shield.classList.add('enemy-shield-crack');
+          const fill = target.shield.querySelector<HTMLElement>('span');
+          if (fill) {
+            fill.style.width = `${(impact.blockAfter / impact.blockBefore) * 100}%`;
+          }
+        }
+      }
+      await sleep(170);
+    }
+
+    if (impact.hpDamage > 0) {
+      if (impact.hpDamage >= 5) sfx.enemyHitHeavy();
+      else sfx.enemyHit();
+      if (target.emoji) {
+        target.emoji.classList.remove('enemy-flinch', 'enemy-impact');
+        void target.emoji.offsetWidth;
+        target.emoji.classList.add('enemy-impact', 'enemy-flinch');
+      }
+      if (target.bar) {
+        target.bar.classList.remove('enemy-bar-flash');
+        void target.bar.offsetWidth;
+        target.bar.classList.add('enemy-bar-flash');
+      }
+      spawnFloat(target.emoji, `-${impact.hpDamage}`, 'strike-float-hurt');
+      await sleep(impact.killed ? 260 : 180);
+    }
   }
+}
+
+async function playEnemyStatus(
+  fx: Extract<CombatFx, { type: 'enemyStatus' }>,
+  anchors: CardFxAnchors | null,
+): Promise<void> {
+  const target = impactTarget(fx.enemyId, anchors);
+  sfx.fork();
+  spawnFloat(target.emoji, `🔔 回音 ${fx.turns}`, 'strike-float-echo');
+  const slot = document.querySelector<HTMLElement>(
+    `[data-enemy-id="${fx.enemyId}"]`,
+  );
+  slot?.classList.add('enemy-status-pop');
+  await sleep(220);
+}
+
+async function playPlayerEnergy(
+  fx: Extract<CombatFx, { type: 'playerEnergy' }>,
+): Promise<void> {
+  const energy = document.querySelector<HTMLElement>('.stat-pill.energy');
+  sfx.fork();
+  spawnFloat(energy, `⚡+${fx.amount}`, 'strike-float-energy');
+  energy?.classList.add('energy-gain-pop');
+  await sleep(180);
+}
+
+async function playPlayerPower(
+  fx: Extract<CombatFx, { type: 'playerPower' }>,
+): Promise<void> {
+  const hero = document.querySelector<HTMLElement>('.hero-actor');
+  sfx.relic();
+  spawnFloat(hero, `🌱 回音盾 +${fx.amount}`, 'strike-float-energy');
+  await sleep(220);
 }
 
 async function playPlayerBlock(
@@ -388,7 +458,7 @@ async function playEnemyBlock(
       `[data-enemy-id="${fx.enemyId}"]`,
     );
     slot?.classList.add('enemy-guarding');
-    window.setTimeout(() => slot?.classList.remove('enemy-guarding'), 400);
+    window.setTimeout(() => slot?.classList.remove('enemy-guarding'), fxMs(400));
   }
   spawnFloat(near, `+${fx.amount}🛡`, 'strike-float-block');
   await sleep(280);
@@ -460,7 +530,7 @@ async function playEnemyStrike(
         chip.style.setProperty('--sx', `${Math.cos(ang) * (30 + Math.random() * 28)}px`);
         chip.style.setProperty('--sy', `${Math.sin(ang) * (30 + Math.random() * 28)}px`);
         document.body.appendChild(chip);
-        window.setTimeout(() => chip.remove(), 480);
+        window.setTimeout(() => chip.remove(), fxMs(480));
       }
     }
     await sleep(fx.damage > 0 ? 280 : 220);
@@ -521,9 +591,9 @@ async function playShuffle(anchors: CardFxAnchors, count: number): Promise<void>
           opacity: 1,
         },
       ],
-      { duration: 260, easing: 'ease-out', fill: 'forwards' },
+      { duration: fxMs(260), easing: 'ease-out', fill: 'forwards' },
     );
-    window.setTimeout(() => el.remove(), 280);
+    window.setTimeout(() => el.remove(), fxMs(280));
     await sleep(55);
   }
   pulsePile(anchors.drawPile);
@@ -541,32 +611,44 @@ export async function playCombatFxBatch(
   faceHtml: CardFaceFn,
 ): Promise<void> {
   if (batch.length === 0) return;
-  for (const fx of batch) {
-    if (fx.type === 'playerStrike') {
-      await playPlayerStrike(fx, anchors);
-    } else if (fx.type === 'playerBlock') {
-      await playPlayerBlock(fx, anchors);
-    } else if (fx.type === 'enemyBlock') {
-      await playEnemyBlock(fx, anchors);
-    } else if (fx.type === 'enemyStrike') {
-      await playEnemyStrike(
-        fx,
-        anchors ??
-          ({
-            drawPile: document.body,
-            discardPile: document.body,
-            hand: document.body,
-          } as CardFxAnchors),
-      );
-    } else if (anchors) {
-      if (fx.type === 'shuffle') {
-        await playShuffle(anchors, fx.count);
-      } else if (fx.type === 'draw') {
-        await playDraw(fx.cards, anchors, faceHtml);
-      } else if (fx.type === 'discard') {
-        await playDiscard(fx.cards, anchors, faceHtml, fx.reason);
+  const previousSpeed = activeBatchSpeed;
+  activeBatchSpeed = loadGameSettings().animationSpeed;
+  try {
+    for (const fx of batch) {
+      if (fx.type === 'playerStrike') {
+        await playPlayerStrike(fx, anchors);
+      } else if (fx.type === 'playerBlock') {
+        await playPlayerBlock(fx, anchors);
+      } else if (fx.type === 'playerEnergy') {
+        await playPlayerEnergy(fx);
+      } else if (fx.type === 'playerPower') {
+        await playPlayerPower(fx);
+      } else if (fx.type === 'enemyStatus') {
+        await playEnemyStatus(fx, anchors);
+      } else if (fx.type === 'enemyBlock') {
+        await playEnemyBlock(fx, anchors);
+      } else if (fx.type === 'enemyStrike') {
+        await playEnemyStrike(
+          fx,
+          anchors ??
+            ({
+              drawPile: document.body,
+              discardPile: document.body,
+              hand: document.body,
+            } as CardFxAnchors),
+        );
+      } else if (anchors) {
+        if (fx.type === 'shuffle') {
+          await playShuffle(anchors, fx.count);
+        } else if (fx.type === 'draw') {
+          await playDraw(fx.cards, anchors, faceHtml);
+        } else if (fx.type === 'discard') {
+          await playDiscard(fx.cards, anchors, faceHtml, fx.reason);
+        }
       }
     }
+  } finally {
+    activeBatchSpeed = previousSpeed;
   }
 }
 
@@ -576,7 +658,10 @@ export function queryCombatAnchors(root: ParentNode = document): CardFxAnchors |
   const hand = root.querySelector<HTMLElement>('[data-hand]');
   if (!drawPile || !discardPile || !hand) return null;
 
-  const enemiesById = new Map<string, { emoji: HTMLElement; bar: HTMLElement | null }>();
+  const enemiesById = new Map<
+    string,
+    { emoji: HTMLElement; bar: HTMLElement | null; shield: HTMLElement | null }
+  >();
   root.querySelectorAll<HTMLElement>('[data-enemy-id]').forEach((slot) => {
     const id = slot.dataset.enemyId;
     if (!id) return;
@@ -585,6 +670,7 @@ export function queryCombatAnchors(root: ParentNode = document): CardFxAnchors |
     enemiesById.set(id, {
       emoji,
       bar: slot.querySelector<HTMLElement>('[data-enemy-bar]'),
+      shield: slot.querySelector<HTMLElement>('[data-enemy-shield]'),
     });
   });
 

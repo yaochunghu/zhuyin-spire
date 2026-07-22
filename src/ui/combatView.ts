@@ -19,6 +19,8 @@ import {
 } from '../game/combat';
 import { cardTargetType } from '../game/battle/effects';
 import {
+  canTutorialEndTurn,
+  canTutorialPlayCard,
   consumeCombatFx,
   playerEndTurn,
   selectCombatEnemy,
@@ -131,17 +133,6 @@ export async function playPendingCombatFx(): Promise<void> {
   }
 }
 
-function applyStageScale(wrap: HTMLElement, stage: HTMLElement): void {
-  const fit = () => {
-    const sw = wrap.clientWidth || window.innerWidth;
-    const sh = wrap.clientHeight || window.innerHeight;
-    const scale = Math.min(sw / 1920, sh / 1080);
-    stage.style.transform = `scale(${Math.max(0.2, scale)})`;
-  };
-  fit();
-  requestAnimationFrame(fit);
-}
-
 function playCardFromUi(uid: string, targetIds: string[] = []): void {
   if (session.combatFxPlaying || session.outcomeAnimPlaying) return;
   // Always scrub drag ghosts before leaving combat UI
@@ -197,7 +188,7 @@ function renderEnemySlot(
     slot.tabIndex = 0;
     slot.setAttribute(
       'aria-label',
-      `${def.name} ❤️${unit.hp}${unit.block > 0 ? ` 盾${unit.block}` : ''} ${intentTitle}${urgent ? '（危險）' : ''}${selected ? '（已選）' : ''}`,
+      `${def.name} ❤️${unit.hp}${unit.block > 0 ? ` 盾${unit.block}` : ''}${unit.echoTurns > 0 ? ` 回音${unit.echoTurns}回合` : ''} ${intentTitle}${urgent ? '（危險）' : ''}${selected ? '（已選）' : ''}`,
     );
   }
 
@@ -219,6 +210,11 @@ function renderEnemySlot(
     </div>
     <div class="enemy-emoji${opts.damaged && !dead ? ' enemy-flinch enemy-impact' : ''}${opts.castOk && !opts.damaged && !dead ? ' enemy-cast-ok' : ''}${dead ? ' enemy-poof' : ''}" data-enemy>${dead ? '💨' : def.emoji}</div>
     <div class="adult-text enemy-name-adult">${def.name}${def.isElite ? ' · 菁英' : ''}${def.isBoss ? ' · BOSS' : ''}</div>
+    ${
+      !dead && unit.echoTurns > 0
+        ? `<div class="enemy-status echo-status${unit.echoTriggeredThisTurn ? ' status-used' : ''}" data-enemy-status="${unit.id}" title="回音：本回合第一次攻擊 +2 傷害">🔔 回音 ${unit.echoTurns}</div>`
+        : ''
+    }
     <div class="enemy-bars">
       <div class="bar" data-enemy-bar data-enemy-bar-id="${unit.id}"><span style="width:${dead ? 0 : hpPct}%"></span></div>
       <div class="bar shield-bar enemy-shield-bar${!unit.block || dead ? ' shield-bar-empty' : ''}" data-enemy-shield="${unit.id}">
@@ -231,6 +227,7 @@ function renderEnemySlot(
   if (!dead) {
     const pick = (): void => {
       if (session.combatFxPlaying || session.outcomeAnimPlaying) return;
+      if (run().tutorial) return;
       sfx.click();
       selectCombatEnemy(run(), unit.id);
       render();
@@ -254,7 +251,7 @@ export function renderCombat(): HTMLElement {
   const c = run().combat!;
   const living = livingEnemies(c);
   const el = document.createElement('div');
-  el.className = 'screen combat-screen';
+  el.className = `screen combat-screen${run().tutorial ? ' tutorial-active' : ''}`;
 
   const enemyDamaged =
     !!run().floatText?.startsWith('-') &&
@@ -267,6 +264,27 @@ export function renderCombat(): HTMLElement {
   const stage = document.createElement('div');
   stage.className = 'combat-stage';
   stage.setAttribute('data-combat-stage', '');
+
+  const tutorial = run().tutorial;
+  if (tutorial) {
+    const guide = document.createElement('aside');
+    guide.className = `tutorial-guide tutorial-step-${tutorial.step}`;
+    guide.setAttribute('role', 'status');
+    const copy = {
+      shield: ['1 / 3　先看怪物', '牠要攻擊！點亮起來的 🛡️ 牌，再完成注音。'],
+      endTurn: [
+        '2 / 3　試試護盾',
+        '還有能量可以出牌。準備好就按 ✋，看護盾擋住攻擊。',
+      ],
+      attack: ['3 / 3　換你攻擊', '點亮起來的 ⚔️ 牌。只有一隻怪物，會自動瞄準。'],
+      free: ['你學會了！', '現在自己打倒練習史萊姆吧。'],
+    }[tutorial.step];
+    guide.innerHTML = `<strong>${copy[0]}</strong><span>${copy[1]}</span>`;
+    if (tutorial.wrongAttempts > 0 && tutorial.step !== 'free') {
+      guide.innerHTML += '<small>沒關係，答案已經給你看了。照著亮圈再試一次！</small>';
+    }
+    stage.appendChild(guide);
+  }
 
   // —— Enemy row (1–3) ——
   const enemyRow = document.createElement('div');
@@ -316,7 +334,7 @@ export function renderCombat(): HTMLElement {
       <div class="combat-pile-count">${count}</div>
       <div class="adult-text combat-pile-label">${label}</div>
     `;
-    btn.disabled = session.combatFxPlaying;
+    btn.disabled = session.combatFxPlaying || !!tutorial;
     btn.addEventListener('click', () => {
       if (session.combatFxPlaying || session.outcomeAnimPlaying) return;
       sfx.click();
@@ -367,7 +385,7 @@ export function renderCombat(): HTMLElement {
     (blockGained ? ' shield-bar-pulse' : '');
 
   heroZone.innerHTML = `
-    <div class="hero-actor" aria-hidden="true">🧙</div>
+    <div class="hero-actor" aria-hidden="true">${run().characterId === 'echoMage' ? '🧙‍♂️' : '🧙'}</div>
     <div class="hero-vitals">
       <div class="hero-vital-row">
         <div class="stat-pill hero-stat${heroLow ? ' danger-hp' : ''}${heroDamaged ? ' hero-hit' : ''}" data-hero-hp>❤️ ${c.heroHp}/${c.heroMaxHp}</div>
@@ -380,6 +398,10 @@ export function renderCombat(): HTMLElement {
       <div class="hero-bars">
         <div class="${heroBarCls}" data-hero-bar><span style="width:${heroPct}%"></span></div>
         <div class="${shieldBarCls}" data-hero-shield-bar><span style="width:${c.block <= 0 ? 0 : shieldPct}%"></span></div>
+      </div>
+      <div class="hero-combat-powers">
+        ${c.firstAttackBonusReady ? '<span class="combat-power relic-ready" title="初心音叉尚未使用">🎵 首擊 +2</span>' : ''}
+        ${c.echoGuardAmount > 0 ? `<span class="combat-power" title="每次回音觸發時獲得護盾">🌱 回音盾 +${c.echoGuardAmount}</span>` : ''}
       </div>
     </div>
   `;
@@ -435,10 +457,19 @@ export function renderCombat(): HTMLElement {
     // Energy/phase only — bind drag even during FX so post-FX enable works;
     // playCardFromUi still gates on combatFxPlaying.
     const energyPlayable = canPlay(c, card.uid);
+    const tutorialPlayable = canTutorialPlayCard(run(), card.uid);
     const locked = session.combatFxPlaying || session.outcomeAnimPlaying;
-    if (!energyPlayable) btn.classList.add('unplayable');
+    if (!energyPlayable || !tutorialPlayable) btn.classList.add('unplayable');
+    if (
+      tutorial &&
+      tutorialPlayable &&
+      ((tutorial.step === 'shield' && def.id === 'mo') ||
+        (tutorial.step === 'attack' && def.id === 'bo'))
+    ) {
+      btn.classList.add('tutorial-focus');
+    }
     btn.innerHTML = cardFaceHtml(def);
-    btn.disabled = !energyPlayable || locked;
+    btn.disabled = !energyPlayable || !tutorialPlayable || locked;
     btn.dataset.uid = card.uid;
     btn.setAttribute('aria-label', `注音 ${def.zhuyin}`);
     btn.style.touchAction = 'none';
@@ -458,7 +489,7 @@ export function renderCombat(): HTMLElement {
     bindCardDrag({
       cardEl: btn,
       def,
-      enabled: energyPlayable,
+      enabled: energyPlayable && tutorialPlayable,
       getTargets: () => collectDropTargets(stage, def, livingIds),
       onPlay: (targetIds) => playCardFromUi(card.uid, targetIds),
       onTap: () => playCardFromUi(card.uid, defaultTargets()),
@@ -473,7 +504,10 @@ export function renderCombat(): HTMLElement {
   end.innerHTML = `<span class="btn-emoji">✋</span>`;
   end.setAttribute('aria-label', '結束回合（過牌）');
   end.title = '結束回合';
-  end.disabled = session.combatFxPlaying || c.status !== 'playing';
+  const tutorialEndAllowed = canTutorialEndTurn(run());
+  end.disabled =
+    session.combatFxPlaying || c.status !== 'playing' || !tutorialEndAllowed;
+  if (tutorial && tutorialEndAllowed) end.classList.add('tutorial-focus');
   end.addEventListener('click', () => {
     if (session.outcomeAnimPlaying || session.combatFxPlaying) return;
     cleanupDragUi();
@@ -500,14 +534,6 @@ export function renderCombat(): HTMLElement {
   }
 
   el.appendChild(stage);
-
-  requestAnimationFrame(() => applyStageScale(el, stage));
-  if (typeof ResizeObserver !== 'undefined') {
-    const ro = new ResizeObserver(() => applyStageScale(el, stage));
-    ro.observe(el);
-  } else {
-    window.addEventListener('resize', () => applyStageScale(el, stage));
-  }
 
   return el;
 }

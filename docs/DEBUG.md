@@ -57,8 +57,10 @@ Turn **off** when testing teaching / cast UX.
 | Run nav | Map, title, new run, practice |
 | Resources | Full / low HP, ±HP, +gold, full energy, draw |
 | Combat | Kill all (win), lose fight, end turn, start encounter from dropdown |
+| Casting | Skip gate, force See/Hear/Hard for the next prompts, refill persistent bags without deleting accuracy |
+| Tutorial / motion | Reset completion, start the scripted fight immediately, set 1×/2× |
 | Map | Jump act 1/2/3, enter available room kinds when present |
-| Inspect | Readonly summary: screen, act, HP, gold, hand, enemies |
+| Inspect | Readonly summary: learner, learned families, screen, act, HP, gold, hand, enemies |
 
 Exact buttons live in `debugPanel.ts`; helpers in `debugActions.ts`.
 
@@ -69,3 +71,6 @@ Exact buttons live in `debugPanel.ts`; helpers in `debugActions.ts`.
 - Panel is separate from `#app` so full re-renders don’t wipe it.  
 - Do not ship “always on” cheats for preschool builds.  
 - Skip cast must remain **debug-gated** (product non-negotiable: real cast for real play).
+
+For tablet QA, the Playwright projects cover 1280×720, 1024×768, and 768×1024:
+`npm run test:e2e`. Unit coverage is `npm test`.
