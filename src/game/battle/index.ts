@@ -8,6 +8,7 @@ export type {
   CombatFx,
   CombatState,
   EnemyUnit,
+  PlayerImpact,
 } from './types';
 
 export { pushFx, takePendingFx } from './fx';

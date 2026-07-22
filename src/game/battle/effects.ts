@@ -4,7 +4,13 @@
  */
 
 import type { CardDef, CardType, EffectDef, TargetType } from '../../data/cards';
-import type { CombatCard, CombatFx, CombatState, EnemyUnit } from './types';
+import type {
+  CombatCard,
+  CombatFx,
+  CombatState,
+  EnemyUnit,
+  PlayerImpact,
+} from './types';
 
 export type { TargetType, EffectDef };
 
@@ -66,9 +72,10 @@ export function executeEffects(
   const effects = effectsForCard(def);
   const targets = resolveTargets(state, def, targetIds);
   let totalDamage = 0;
-  let totalHits = 0;
   let totalBlock = 0;
-  const hitTargetIds: string[] = [];
+  let totalEnergy = 0;
+  const impacts: PlayerImpact[] = [];
+  const statusFx: CombatFx[] = [];
 
   for (const eff of effects) {
     if (eff.kind === 'damage' && targets !== 'self') {
@@ -77,24 +84,44 @@ export function executeEffects(
         if (!enemy.alive) continue;
         let dealt = 0;
         for (let i = 0; i < hits; i += 1) {
-          // Block absorbs full hit amount if any block remains
-          if (enemy.block > 0) {
-            const absorb = Math.min(enemy.block, eff.amount);
-            enemy.block -= absorb;
-            const rest = eff.amount - absorb;
-            if (rest > 0) {
-              enemy.hp = Math.max(0, enemy.hp - rest);
-              dealt += rest;
+          if (!enemy.alive) break;
+          const echoBonus =
+            enemy.echoTurns > 0 && !enemy.echoTriggeredThisTurn ? 2 : 0;
+          if (echoBonus > 0) {
+            enemy.echoTriggeredThisTurn = true;
+            if (state.echoGuardAmount > 0) {
+              state.block += state.echoGuardAmount;
+              totalBlock += state.echoGuardAmount;
             }
-          } else {
-            enemy.hp = Math.max(0, enemy.hp - eff.amount);
-            dealt += eff.amount;
           }
+          const relicBonus = state.firstAttackBonusReady
+            ? state.firstAttackBonusDamage
+            : 0;
+          if (state.firstAttackBonusReady) state.firstAttackBonusReady = false;
+          const hitAmount = eff.amount + echoBonus + relicBonus;
+          const blockBefore = enemy.block;
+          const blocked = Math.min(blockBefore, hitAmount);
+          enemy.block = Math.max(0, blockBefore - blocked);
+          const hpDamage = Math.max(0, hitAmount - blocked);
+          if (hpDamage > 0) {
+            enemy.hp = Math.max(0, enemy.hp - hpDamage);
+            dealt += hpDamage;
+          }
+          const killed = enemy.hp <= 0;
+          if (killed) enemy.alive = false;
+          impacts.push({
+            enemyId: enemy.id,
+            hitIndex: i,
+            blockBefore,
+            blocked,
+            blockAfter: enemy.block,
+            hpDamage,
+            killed,
+            ...(echoBonus > 0 ? { echoBonus } : {}),
+            ...(relicBonus > 0 ? { relicBonus } : {}),
+          });
         }
         totalDamage += dealt;
-        totalHits += hits;
-        if (!hitTargetIds.includes(enemy.id)) hitTargetIds.push(enemy.id);
-        if (enemy.hp <= 0) enemy.alive = false;
       }
     } else if (eff.kind === 'block') {
       state.block += eff.amount;
@@ -102,30 +129,44 @@ export function executeEffects(
     } else if (eff.kind === 'draw') {
       drawCards(state, eff.amount);
       state.log.push(`${def.zhuyin} 成功！抽 ${eff.amount} 張`);
+    } else if (eff.kind === 'energy') {
+      state.energy += eff.amount;
+      totalEnergy += eff.amount;
+    } else if (eff.kind === 'echo' && targets !== 'self') {
+      for (const enemy of targets) {
+        if (!enemy.alive) continue;
+        enemy.echoTurns = Math.max(enemy.echoTurns, eff.amount);
+        statusFx.push({
+          type: 'enemyStatus',
+          enemyId: enemy.id,
+          status: 'echo',
+          turns: enemy.echoTurns,
+        });
+      }
+    } else if (eff.kind === 'echoGuard') {
+      state.echoGuardAmount += eff.amount;
+      pushFx({ type: 'playerPower', power: 'echoGuard', amount: eff.amount });
     }
   }
 
-  if (totalDamage > 0 || hitTargetIds.some((id) => {
-    const e = state.enemies.find((x) => x.id === id);
-    return e && !e.alive;
-  })) {
-    pushFx({
-      type: 'playerStrike',
-      damage: Math.max(totalDamage, totalHits > 0 ? 1 : 0),
-      hits: Math.max(totalHits, 1),
-      killed: livingEnemies(state).length === 0,
-      targetIds: hitTargetIds,
-    });
-  }
+  if (impacts.length > 0) pushFx({ type: 'playerStrike', impacts });
+  for (const fx of statusFx) pushFx(fx);
   if (totalBlock > 0) {
     pushFx({ type: 'playerBlock', amount: totalBlock });
   }
+  if (totalEnergy > 0) pushFx({ type: 'playerEnergy', amount: totalEnergy });
 
   if (totalDamage > 0) {
     state.log.push(`${def.zhuyin} 成功！造成 ${totalDamage} 傷害`);
   }
   if (totalBlock > 0) {
     state.log.push(`${def.zhuyin} 成功！獲得 ${totalBlock} 護盾`);
+  }
+  if (totalEnergy > 0) {
+    state.log.push(`${def.zhuyin} 成功！能量 +${totalEnergy}`);
+  }
+  if (effects.some((effect) => effect.kind === 'echoGuard')) {
+    state.log.push(`共鳴護唱：回音時護盾 +${state.echoGuardAmount}`);
   }
 
   if (livingEnemies(state).length === 0) {

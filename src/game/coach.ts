@@ -6,23 +6,17 @@
 import type { CastMode } from './castCheck';
 import type { MapNode } from '../data/map';
 import type { Screen } from './state';
-
-const RUN_KEY = 'zhuyin-spire-run-count';
+import { getActiveProfile, updateActiveProfile } from './profiles';
 
 export function getCompletedRunCount(): number {
-  try {
-    return Number(localStorage.getItem(RUN_KEY) || '0') || 0;
-  } catch {
-    return 0;
-  }
+  return getActiveProfile().completedRuns;
 }
 
 export function bumpCompletedRunCount(): void {
-  try {
-    localStorage.setItem(RUN_KEY, String(getCompletedRunCount() + 1));
-  } catch {
-    /* ignore */
-  }
+  updateActiveProfile((profile) => ({
+    ...profile,
+    completedRuns: profile.completedRuns + 1,
+  }));
 }
 
 export function isEarlyLearningRuns(): boolean {
@@ -50,8 +44,8 @@ export function coachForScreen(
       };
     case 'relicPick':
       return {
-        title: '選遺物',
-        body: '小加成：🛡️ 開場 +2 盾 · 🪙 +10 金 · 🌅 僅第 1 回合 4 能量 · 🎴 開場多抽 1 張。答錯仍會很痛。',
+        title: '選角色',
+        body: '角色會綁定自己的起始牌組和遺物。回音法師先附上🔔回音，再用攻擊觸發額外傷害；🎵初心音叉讓每場的第一次攻擊 +2。',
       };
     case 'map':
       return {

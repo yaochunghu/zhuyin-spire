@@ -1,12 +1,19 @@
 import {
   ELITE_REWARD_POOL_IDS,
+  LATER_ACT_ELITE_REWARD_POOL_IDS,
+  LATER_ACT_REWARD_POOL_IDS,
   PRACTICE_BADGE_THRESHOLD,
   PRACTICE_CARD_IDS,
   REWARD_POOL_IDS,
   STARTER_DECK_IDS,
+  getCardCastBinding,
   getCard,
   type CardDef,
 } from '../data/cards';
+import {
+  getCharacter,
+  type CharacterDef,
+} from '../data/characters';
 import {
   ACT_CLEAR_HEAL,
   GOLD_ELITE_BASE,
@@ -35,6 +42,7 @@ import {
   beginPlay,
   createCombat,
   endTurn,
+  makeCard,
   pickRewardIds,
   resolveCastFizzle,
   resolveCastSuccess,
@@ -45,14 +53,20 @@ import {
 } from './combat';
 import {
   buildCastPrompt,
-  clearRecentCastPhrases,
-  isSpellCorrect,
+  isCastAnswerCorrect,
   pickCastMode,
+  recordCastResult,
   type CastPrompt,
 } from './castCheck';
-import { cancelSpeech, isSpeechAvailable } from './speech';
+import { cancelSpeech } from './speech';
 import { clearSavedRun, saveRunCheckpoint } from './save';
 import { getDebugSkipCast } from '../debug/debugFlags';
+import {
+  isTutorialComplete,
+  loadGameSettings,
+  markTutorialComplete,
+} from './settings';
+import { getActiveProfile, updateActiveProfile } from './profiles';
 
 export type Screen =
   | 'title'
@@ -70,13 +84,18 @@ export type Screen =
   | 'defeat'
   | 'victory';
 
-const PRACTICE_CORRECT_KEY = 'zhuyin-spire-practice-correct';
-const PRACTICE_BADGE_KEY = 'zhuyin-spire-practice-badge';
-
 export interface ShopOffer {
   cardId: string;
   price: number;
   sold: boolean;
+}
+
+export type TutorialStep = 'shield' | 'endTurn' | 'attack' | 'free';
+
+/** Ephemeral: deliberately omitted from run saves. */
+export interface TutorialState {
+  step: TutorialStep;
+  wrongAttempts: number;
 }
 
 export interface RunState {
@@ -85,6 +104,7 @@ export interface RunState {
   heroMaxHp: number;
   deck: string[];
   gold: number;
+  characterId: string | null;
   relicId: string | null;
   /** Full 3-act branching map for this run */
   runMap: RunMap;
@@ -120,6 +140,9 @@ export interface RunState {
   lastClearedAct: number;
   /** Combat motion batch for UI (drained from combat.pendingFx) */
   lastCombatFx: CombatFx[];
+  tutorial: TutorialState | null;
+  /** Saved as an optional flag so pre-feature saves never gain a tutorial. */
+  tutorialEligibleRun: boolean;
 }
 
 const HERO_MAX = HERO_MAX_HP;
@@ -130,6 +153,10 @@ function emptyRunMap(): RunMap {
 
 export function getActiveRelic(state: RunState): RelicDef | null {
   return state.relicId ? getRelic(state.relicId) : null;
+}
+
+export function getActiveCharacter(state: RunState): CharacterDef | null {
+  return state.characterId ? getCharacter(state.characterId) : null;
 }
 
 export function getCurrentAct(state: RunState) {
@@ -168,6 +195,7 @@ export function createNewRun(): RunState {
     heroMaxHp: HERO_MAX,
     deck: [...STARTER_DECK_IDS],
     gold: 0,
+    characterId: null,
     relicId: null,
     runMap: emptyRunMap(),
     actIndex: 0,
@@ -191,6 +219,8 @@ export function createNewRun(): RunState {
     practiceSessionCorrect: 0,
     lastClearedAct: 0,
     lastCombatFx: [],
+    tutorial: null,
+    tutorialEligibleRun: false,
   };
 }
 
@@ -210,11 +240,11 @@ export function consumeCombatFx(state: RunState): CombatFx[] {
 
 export function startRun(state: RunState): void {
   clearSavedRun();
-  clearRecentCastPhrases();
   state.heroHp = HERO_MAX;
   state.heroMaxHp = HERO_MAX;
   state.deck = [...STARTER_DECK_IDS];
   state.gold = 0;
+  state.characterId = null;
   state.relicId = null;
   state.runMap = generateRunMap();
   state.actIndex = 0;
@@ -238,6 +268,8 @@ export function startRun(state: RunState): void {
   state.practiceSessionCorrect = 0;
   state.lastClearedAct = 0;
   state.lastCombatFx = [];
+  state.tutorial = null;
+  state.tutorialEligibleRun = true;
   state.screen = 'relicPick';
   saveRunCheckpoint(state);
 }
@@ -259,9 +291,9 @@ export function enterPractice(state: RunState): void {
 
 export function nextPracticePrompt(state: RunState): void {
   const def = rollPracticeCard();
-  let mode: 'recognize' | 'listen' = 'recognize';
-  if (isSpeechAvailable() && Math.random() < 0.28) mode = 'listen';
-  const prompt = buildCastPrompt(def, mode, Math.random, 'practice');
+  const binding = getCardCastBinding(def, 'zhuyin');
+  const mode = pickCastMode('early', Math.random, binding.lessonFamilyId);
+  const prompt = buildCastPrompt(def, mode, Math.random, 'practice', 'zhuyin');
   state.cast = { prompt, cardDef: def };
   state.screen = 'practice';
 }
@@ -270,7 +302,8 @@ export function answerPractice(state: RunState, attempt: string[]): boolean {
   if (!state.cast || state.screen !== 'practice') return false;
   cancelSpeech();
   const { prompt } = state.cast;
-  const correct = isSpellCorrect(attempt, prompt.correctParts);
+  const correct = isCastAnswerCorrect(prompt, attempt);
+  recordCastResult(prompt, correct);
   if (correct) {
     state.practiceStreak += 1;
     state.practiceSessionCorrect += 1;
@@ -291,39 +324,64 @@ export function leavePractice(state: RunState): void {
 }
 
 function bumpPracticeCorrectLifetime(): void {
-  try {
-    const n = (Number(localStorage.getItem(PRACTICE_CORRECT_KEY) || '0') || 0) + 1;
-    localStorage.setItem(PRACTICE_CORRECT_KEY, String(n));
-    if (n >= PRACTICE_BADGE_THRESHOLD) {
-      localStorage.setItem(PRACTICE_BADGE_KEY, '1');
-    }
-  } catch {
-    /* ignore */
-  }
+  updateActiveProfile((profile) => ({
+    ...profile,
+    practiceCorrect: profile.practiceCorrect + 1,
+  }));
 }
 
 export function getPracticeLifetimeCorrect(): number {
-  try {
-    return Number(localStorage.getItem(PRACTICE_CORRECT_KEY) || '0') || 0;
-  } catch {
-    return 0;
-  }
+  return getActiveProfile().practiceCorrect;
 }
 
 export function hasPracticeBadge(): boolean {
-  try {
-    return localStorage.getItem(PRACTICE_BADGE_KEY) === '1';
-  } catch {
-    return false;
-  }
+  return getPracticeLifetimeCorrect() >= PRACTICE_BADGE_THRESHOLD;
 }
 
-export function pickRelic(state: RunState, relicId: string): void {
-  state.relicId = relicId;
-  const relic = getRelic(relicId);
+export function pickCharacter(state: RunState, characterId: string): void {
+  const character = getCharacter(characterId);
+  const relic = getRelic(character.startingRelicId);
+  state.characterId = character.id;
+  state.deck = [...character.starterDeckIds];
+  state.relicId = relic.id;
   if (relic.startGold) state.gold += relic.startGold;
   state.screen = 'map';
   saveRunCheckpoint(state);
+}
+
+export function isTutorialEligible(state: RunState, node: MapNode): boolean {
+  return (
+    state.tutorialEligibleRun &&
+    loadGameSettings().tutorialEnabled &&
+    !isTutorialComplete() &&
+    state.actIndex === 0 &&
+    node.act === 1 &&
+    node.row === 0 &&
+    node.kind === 'fight' &&
+    state.currentNodeId === null &&
+    state.visitedIds.length === 0
+  );
+}
+
+function createTutorialCombat(state: RunState): CombatState {
+  const combat = createCombat(
+    state.deck,
+    'tutorialSlime',
+    state.heroHp,
+    state.heroMaxHp,
+    getActiveRelic(state),
+  );
+
+  // This ordering is local to the tutorial combat. The player's saved deck is
+  // never changed. drawPile.pop() draws from the end on later turns.
+  combat.hand = ['mo', 'bo', 'bo', 'po', 'bo'].map(makeCard);
+  combat.drawPile = ['mo', 'mo', 'mo', 'po', 'bo'].map(makeCard);
+  combat.discardPile = [];
+  combat.pending = null;
+  combat.pendingTargetIds = [];
+  combat.pendingFx = [{ type: 'draw', cards: [...combat.hand] }];
+  combat.log = ['練習史萊姆來了！先看看牠要做什麼。'];
+  return combat;
 }
 
 /** Player clicked a lit node on the map web. */
@@ -361,14 +419,18 @@ export function selectMapNode(state: RunState, nodeId: string): void {
     throw new Error(`Node ${node.id} missing enemyId/encounterId`);
   }
 
-  state.combat = createCombat(
-    state.deck,
-    node.enemyId ?? 'slime',
-    state.heroHp,
-    state.heroMaxHp,
-    getActiveRelic(state),
-    node.encounterId,
-  );
+  const tutorial = isTutorialEligible(state, node);
+  state.combat = tutorial
+    ? createTutorialCombat(state)
+    : createCombat(
+        state.deck,
+        node.enemyId ?? 'slime',
+        state.heroHp,
+        state.heroMaxHp,
+        getActiveRelic(state),
+        node.encounterId,
+      );
+  state.tutorial = tutorial ? { step: 'shield', wrongAttempts: 0 } : null;
   drainCombatFx(state);
   state.screen = 'combat';
 }
@@ -431,7 +493,7 @@ export function skipRemoveCard(state: RunState): void {
 }
 
 function openShop(state: RunState): void {
-  const ids = pickRewardIds(REWARD_POOL_IDS, 3);
+  const ids = pickRewardIds(rewardPoolFor(state, 'normal'), 3);
   state.shopOffers = ids.map((cardId, i) => ({
     cardId,
     price: SHOP_CARD_PRICES[i] ?? 45,
@@ -451,7 +513,7 @@ function openTreasure(state: RunState): void {
   state.pendingHeal = 0;
   state.rewardSource = 'treasure';
   state.rewardTier = 'normal';
-  state.rewardOptions = pickRewardIds(REWARD_POOL_IDS, 3);
+  state.rewardOptions = pickRewardIds(rewardPoolFor(state, 'normal'), 3);
   state.screen = 'reward';
   saveRunCheckpoint(state);
 }
@@ -552,16 +614,12 @@ function finishBoss(state: RunState, act: number): void {
   if (act >= 3) {
     state.screen = 'victory';
     clearSavedRun();
-    try {
-      localStorage.setItem('zhuyin-spire-cleared', '1');
-      if (state.listenSuccesses > 0) {
-        localStorage.setItem('zhuyin-spire-ear-badge', '1');
-      }
-      const n = Number(localStorage.getItem('zhuyin-spire-run-count') || '0') || 0;
-      localStorage.setItem('zhuyin-spire-run-count', String(n + 1));
-    } catch {
-      /* ignore */
-    }
+    updateActiveProfile((profile) => ({
+      ...profile,
+      cleared: true,
+      earBadge: profile.earBadge || state.listenSuccesses > 0,
+      completedRuns: profile.completedRuns + 1,
+    }));
     return;
   }
 
@@ -590,8 +648,55 @@ function currentCastStage(state: RunState) {
   return node?.castStage ?? 'early';
 }
 
-function totalEnemyHp(combat: CombatState): number {
-  return combat.enemies.reduce((sum, e) => sum + Math.max(0, e.hp), 0);
+function requiredTutorialCardId(step: TutorialStep): string | null {
+  if (step === 'shield') return 'mo';
+  if (step === 'attack') return 'bo';
+  return null;
+}
+
+export function canTutorialPlayCard(state: RunState, uid: string): boolean {
+  if (!state.tutorial || !state.combat) return true;
+  if (state.tutorial.step === 'free') return true;
+  // End Turn is the recommended next lesson, not a hard action lock. Keeping
+  // affordable cards playable makes the remaining energy behave normally.
+  if (state.tutorial.step === 'endTurn') return true;
+  const card = state.combat.hand.find((item) => item.uid === uid);
+  if (!card) return false;
+  return card.defId === requiredTutorialCardId(state.tutorial.step);
+}
+
+function tutorialRequiredCardAvailable(state: RunState): boolean {
+  if (!state.tutorial || !state.combat) return false;
+  const requiredId = requiredTutorialCardId(state.tutorial.step);
+  if (!requiredId) return false;
+  return state.combat.hand.some((card) => {
+    const def = getCard(card.defId);
+    return card.defId === requiredId && def.cost <= state.combat!.energy;
+  });
+}
+
+export function canTutorialEndTurn(state: RunState): boolean {
+  if (!state.tutorial) return true;
+  if (state.tutorial.step === 'free' || state.tutorial.step === 'endTurn') return true;
+  // Recovery route: a wrong cast can consume the required card/energy.
+  return !tutorialRequiredCardAvailable(state);
+}
+
+function advanceTutorialAfterCast(
+  state: RunState,
+  def: CardDef,
+  correct: boolean,
+): void {
+  if (!state.tutorial) return;
+  if (!correct) {
+    state.tutorial.wrongAttempts += 1;
+    return;
+  }
+  if (state.tutorial.step === 'shield' && def.id === 'mo') {
+    state.tutorial.step = 'endTurn';
+  } else if (state.tutorial.step === 'attack' && def.id === 'bo') {
+    state.tutorial.step = 'free';
+  }
 }
 
 /**
@@ -604,20 +709,19 @@ export function tryPlayCard(
   targetIds: string[] = [],
 ): void {
   if (!state.combat || state.combat.status !== 'playing') return;
+  if (!canTutorialPlayCard(state, uid)) {
+    state.flash = '👆照著亮圈玩';
+    return;
+  }
   try {
     const def = beginPlay(state.combat, uid, targetIds);
 
     if (getDebugSkipCast()) {
       const combat = state.combat;
-      const hpBefore = totalEnemyHp(combat);
-      const blockBefore = combat.block;
       resolveCastSuccess(combat, def);
+      advanceTutorialAfterCast(state, def, true);
       state.flash = '✨';
-      const dmg = hpBefore - totalEnemyHp(combat);
-      const blk = combat.block - blockBefore;
-      if (dmg > 0) state.floatText = `-${dmg}`;
-      else if (blk > 0) state.floatText = `+${blk}🛡`;
-      else state.floatText = '✨';
+      state.floatText = null;
       state.cast = null;
       state.heroHp = combat.heroHp;
       drainCombatFx(state);
@@ -631,8 +735,10 @@ export function tryPlayCard(
     }
 
     const stage = currentCastStage(state);
-    const mode = pickCastMode(stage);
-    const prompt = buildCastPrompt(def, mode, Math.random, stage);
+    const gateId = getActiveCharacter(state)?.castingGateId ?? 'zhuyin';
+    const binding = getCardCastBinding(def, gateId);
+    const mode = pickCastMode(stage, Math.random, binding.lessonFamilyId);
+    const prompt = buildCastPrompt(def, mode, Math.random, stage, gateId);
     state.cast = { prompt, cardDef: def };
     state.screen = 'castCheck';
   } catch {
@@ -665,6 +771,7 @@ export function debugStartEncounter(
   encounterId?: string,
 ): void {
   state.cast = null;
+  state.tutorial = null;
   state.combat = createCombat(
     state.deck,
     enemyId,
@@ -681,25 +788,22 @@ export function answerCast(state: RunState, attempt: string[]): void {
   if (!state.combat || !state.cast) return;
   cancelSpeech();
   const { prompt, cardDef } = state.cast;
-  const correct = isSpellCorrect(attempt, prompt.correctParts);
+  const correct = isCastAnswerCorrect(prompt, attempt);
+  recordCastResult(prompt, correct);
 
   if (correct) {
-    const hpBefore = totalEnemyHp(state.combat);
-    const blockBefore = state.combat.block;
     resolveCastSuccess(state.combat, cardDef);
+    advanceTutorialAfterCast(state, cardDef, true);
     state.flash = '✨';
     if (prompt.mode === 'listen' || prompt.mode === 'listenHard') {
       state.listenSuccesses += 1;
     }
-    const dmg = hpBefore - totalEnemyHp(state.combat);
-    const blk = state.combat.block - blockBefore;
-    if (dmg > 0) state.floatText = `-${dmg}`;
-    else if (blk > 0) state.floatText = `+${blk}🛡`;
-    else state.floatText = '✨';
+    state.floatText = null;
   } else {
     resolveCastFizzle(state.combat, cardDef);
+    advanceTutorialAfterCast(state, cardDef, false);
     state.flash = '💨';
-    state.floatText = '💨';
+    state.floatText = null;
   }
 
   state.cast = null;
@@ -722,26 +826,34 @@ export function answerCast(state: RunState, attempt: string[]): void {
 export function useParentHint(state: RunState): string | null {
   if (!state.cast) return null;
   if (state.screen === 'practice') {
-    return state.cast.prompt.correctSpell;
+    return state.cast.prompt.correctionText;
   }
   if (!state.combat) return null;
+  // The first-run lesson is allowed to help on every guided spelling.
+  if (state.tutorial) return state.cast.prompt.correctionText;
   if (state.combat.parentHintUsed) return null;
   state.combat.parentHintUsed = true;
-  return state.cast.prompt.correctSpell;
+  return state.cast.prompt.correctionText;
 }
 
 export function playerEndTurn(state: RunState): void {
   if (!state.combat || state.combat.status !== 'playing') return;
-  const hpBefore = state.combat.heroHp;
+  if (!canTutorialEndTurn(state)) {
+    state.flash = '👆先完成亮起來的步驟';
+    return;
+  }
+  const tutorialStep = state.tutorial?.step ?? null;
   const status = endTurn(state.combat);
   state.heroHp = state.combat.heroHp;
   drainCombatFx(state);
-  if (state.combat.heroHp < hpBefore) {
-    state.floatText = `-${hpBefore - state.combat.heroHp}`;
-  }
+  state.floatText = null;
   if (status === 'lost') {
     state.screen = 'defeat';
     clearSavedRun();
+    return;
+  }
+  if (state.tutorial && tutorialStep === 'endTurn') {
+    state.tutorial.step = 'attack';
   }
 }
 
@@ -755,8 +867,26 @@ function fightGold(state: RunState): number {
   return base + jitter + bonus;
 }
 
+function rewardPoolFor(
+  state: RunState,
+  tier: RewardTier,
+): string[] {
+  if (state.actIndex === 0) {
+    const characterPool = getActiveCharacter(state)?.actIRewardIds;
+    if (characterPool && characterPool.length > 0) return characterPool;
+    return tier === 'elite' ? ELITE_REWARD_POOL_IDS : REWARD_POOL_IDS;
+  }
+  return tier === 'elite'
+    ? LATER_ACT_ELITE_REWARD_POOL_IDS
+    : LATER_ACT_REWARD_POOL_IDS;
+}
+
 function finishFight(state: RunState): void {
   if (!state.combat) return;
+  if (state.tutorial) {
+    markTutorialComplete();
+    state.tutorial = null;
+  }
   state.heroHp = state.combat.heroHp;
   // No post-combat heal — campfires restore 40% max HP
   state.pendingHeal = 0;
@@ -768,7 +898,7 @@ function finishFight(state: RunState): void {
     state.pendingGold = gold;
     state.rewardSource = 'fight';
     state.rewardTier = 'elite';
-    state.rewardOptions = pickRewardIds(ELITE_REWARD_POOL_IDS, 3);
+    state.rewardOptions = pickRewardIds(rewardPoolFor(state, 'elite'), 3);
     state.screen = 'reward';
     saveRunCheckpoint(state);
     return;
@@ -782,7 +912,7 @@ function finishFight(state: RunState): void {
   const tier: RewardTier =
     node?.rewardTier ?? (node?.kind === 'elite' ? 'elite' : 'normal');
 
-  const pool = tier === 'elite' ? ELITE_REWARD_POOL_IDS : REWARD_POOL_IDS;
+  const pool = rewardPoolFor(state, tier);
   state.rewardTier = tier;
   state.rewardOptions = pickRewardIds(pool, 3);
   state.screen = 'reward';
@@ -798,19 +928,11 @@ export function pickReward(state: RunState, cardId: string | null): void {
 export { hasSavedRun, resumeSavedRun, clearSavedRun } from './save';
 
 export function hasClearedOnce(): boolean {
-  try {
-    return localStorage.getItem('zhuyin-spire-cleared') === '1';
-  } catch {
-    return false;
-  }
+  return getActiveProfile().cleared;
 }
 
 export function hasEarBadge(): boolean {
-  try {
-    return localStorage.getItem('zhuyin-spire-ear-badge') === '1';
-  } catch {
-    return false;
-  }
+  return getActiveProfile().earBadge;
 }
 
 /** Deck counts for map viewer: id → { def, count } */

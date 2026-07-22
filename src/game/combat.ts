@@ -10,6 +10,7 @@ export type {
   CombatFx,
   CombatState,
   EnemyUnit,
+  PlayerImpact,
 } from './battle';
 
 export {

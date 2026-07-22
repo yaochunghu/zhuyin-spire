@@ -10,3 +10,5 @@ dist/
 
 # Tooling
 .superpowers
+test-results/
+playwright-report/

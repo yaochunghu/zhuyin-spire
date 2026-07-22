@@ -1,6 +1,6 @@
 /**
- * Parent settings for which phrase packs feed cast checks.
- * Stored in localStorage; can later drive per-run curriculum.
+ * Compatibility facade for older phrase-pack callers. New curriculum UI and
+ * persistence use the active learner profile in `profiles.ts`.
  */
 
 import {
@@ -9,8 +9,10 @@ import {
   type Phrase,
   type PhrasePack,
 } from '../data/phrases';
-
-const KEY = 'zhuyin-spire-phrase-settings-v1';
+import {
+  getCastingPreferences,
+  saveCastingPreferences,
+} from './profiles';
 
 export interface PhraseSettings {
   /** Active packs; empty / missing = all packs */
@@ -33,33 +35,25 @@ export function defaultPhraseSettings(): PhraseSettings {
 }
 
 export function loadPhraseSettings(): PhraseSettings {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return defaultPhraseSettings();
-    const data = JSON.parse(raw) as Partial<PhraseSettings>;
-    const packs = Array.isArray(data.packs)
-      ? (data.packs.filter((p) => ALL_PHRASE_PACKS.includes(p as PhrasePack)) as PhrasePack[])
-      : [...ALL_PHRASE_PACKS];
-    return {
-      packs: packs.length ? packs : [...ALL_PHRASE_PACKS],
-      includeWords: Array.isArray(data.includeWords)
-        ? data.includeWords.map(String)
-        : [],
-      excludeWords: Array.isArray(data.excludeWords)
-        ? data.excludeWords.map(String)
-        : [],
-    };
-  } catch {
-    return defaultPhraseSettings();
-  }
+  const settings = getCastingPreferences();
+  const packs = settings.packs.filter((pack): pack is PhrasePack =>
+    ALL_PHRASE_PACKS.includes(pack as PhrasePack),
+  );
+  return {
+    packs: packs.length ? packs : [...ALL_PHRASE_PACKS],
+    includeWords: [...settings.includeWords],
+    excludeWords: [...settings.excludeWords],
+  };
 }
 
 export function savePhraseSettings(settings: PhraseSettings): void {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(settings));
-  } catch {
-    /* ignore */
-  }
+  const current = getCastingPreferences();
+  saveCastingPreferences({
+    ...current,
+    packs: settings.packs,
+    includeWords: settings.includeWords,
+    excludeWords: settings.excludeWords,
+  });
 }
 
 /** Merge card-local cues into bank as core pack phrases. */

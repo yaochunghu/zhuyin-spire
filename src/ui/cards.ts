@@ -1,4 +1,19 @@
-import { getCard, type CardDef } from '../data/cards';
+import { getCard, type CardDef, type CardJob } from '../data/cards';
+
+const JOB_LABELS: Record<CardJob, { icon: string; label: string }> = {
+  frontload: { icon: '⚔️', label: '立刻攻擊' },
+  area: { icon: '👥', label: '全體攻擊' },
+  defense: { icon: '🛡️', label: '防守' },
+  scaling: { icon: '🌱', label: '成長' },
+  draw: { icon: '📖', label: '抽牌' },
+  energy: { icon: '⚡', label: '能量' },
+};
+
+export function jobLabel(job?: CardJob): string {
+  if (!job) return '';
+  const data = JOB_LABELS[job];
+  return `${data.icon} ${data.label}`;
+}
 
 export function typeIcon(type: string): string {
   if (type === 'attack') return '⚔️';
@@ -8,7 +23,7 @@ export function typeIcon(type: string): string {
 
 export function typeLabel(type: string): string {
   if (type === 'attack') return '攻擊';
-  if (type === 'block') return '技能';
+  if (type === 'block') return '防守';
   return '能力';
 }
 
@@ -50,8 +65,9 @@ export function formatCardDescription(def: CardDef): string {
  * Still text/emoji — sized for 1080p combat hand readability.
  */
 export function cardFaceHtml(def: CardDef | ReturnType<typeof getCard>): string {
-  const emoji = def.cues[0]?.emoji ?? '';
+  const emoji = def.icon ?? def.cues[0]?.emoji ?? '';
   const desc = formatCardDescription(def);
+  const job = jobLabel(def.job);
   return `
     <div class="card-top">
       <div class="cost" aria-hidden="true">${def.cost}</div>
@@ -63,6 +79,7 @@ export function cardFaceHtml(def: CardDef | ReturnType<typeof getCard>): string 
     </div>
     <div class="card-name">${def.name}</div>
     <div class="card-desc-box">
+      ${job ? `<div class="card-job">${job}</div>` : ''}
       <div class="card-desc">${desc}</div>
     </div>
   `;

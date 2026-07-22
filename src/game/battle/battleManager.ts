@@ -7,6 +7,7 @@ import { resolveEnemyDefIds } from '../../data/encounters';
 import { ENEMIES } from '../../data/enemies';
 import type { RelicDef } from '../../data/relics';
 import {
+  advanceEnemyStatuses,
   runEnemyTurn,
   spawnEnemies,
   syncPrimaryEnemy,
@@ -41,6 +42,9 @@ export function createCombat(
     block: startBlock,
     energy: turn1Energy,
     maxEnergy,
+    firstAttackBonusDamage: relic?.firstAttackBonusDamage ?? 0,
+    firstAttackBonusReady: (relic?.firstAttackBonusDamage ?? 0) > 0,
+    echoGuardAmount: 0,
     drawPile,
     hand: [],
     discardPile: [],
@@ -64,6 +68,9 @@ export function createCombat(
   if (startBlock > 0) state.log.push(`遺物護盾 +${startBlock}`);
   if (relic?.firstTurnEnergy && relic.firstTurnEnergy > maxEnergy) {
     state.log.push(`晨光：第 1 回合 ⚡${relic.firstTurnEnergy}`);
+  }
+  if (relic?.firstAttackBonusDamage) {
+    state.log.push(`初心音叉：首次攻擊 +${relic.firstAttackBonusDamage}`);
   }
   drawCards(state, DRAW_PER_TURN);
   if (relic?.startDraw && relic.startDraw > 0) {
@@ -91,6 +98,7 @@ export function endTurn(state: CombatState): CombatState['status'] {
 
   // Player turn start: leftover block expires (STS-style)
   state.block = 0;
+  advanceEnemyStatuses(state);
   state.turn += 1;
   state.energy = state.maxEnergy;
   state.phase = 'playerStart';

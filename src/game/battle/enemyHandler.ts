@@ -29,6 +29,8 @@ export function spawnEnemies(defIds: string[]): EnemyUnit[] {
       block: 0,
       intentIndex: 0,
       alive: true,
+      echoTurns: 0,
+      echoTriggeredThisTurn: false,
     };
   });
 }
@@ -196,5 +198,14 @@ export function runEnemyTurn(state: CombatState): void {
     if (!unit.alive || unit.hp <= 0) continue;
     applyEnemyIntent(state, unit);
     if (state.heroHp <= 0) break;
+  }
+}
+
+/** Advance monster statuses exactly once when a new player turn begins. */
+export function advanceEnemyStatuses(state: CombatState): void {
+  for (const unit of state.enemies) {
+    if (!unit.alive) continue;
+    if (unit.echoTurns > 0) unit.echoTurns -= 1;
+    unit.echoTriggeredThisTurn = false;
   }
 }

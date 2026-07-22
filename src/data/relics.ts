@@ -1,6 +1,4 @@
-/**
- * Modest starter relics — never permanent free energy.
- */
+/** Character-bound starter relics plus legacy definitions kept for v1 saves. */
 
 export interface RelicDef {
   id: string;
@@ -12,9 +10,18 @@ export interface RelicDef {
   maxEnergy?: number;
   firstTurnEnergy?: number;
   startDraw?: number;
+  /** Added once to the first damaging hit of each combat. */
+  firstAttackBonusDamage?: number;
 }
 
 export const RELICS: Record<string, RelicDef> = {
+  tuningFork: {
+    id: 'tuningFork',
+    emoji: '🎵',
+    name: '初心音叉',
+    blurb: '每場戰鬥的第一次攻擊，追加 2 點回音傷害',
+    firstAttackBonusDamage: 2,
+  },
   shieldCharm: {
     id: 'shieldCharm',
     emoji: '🛡️',
@@ -45,13 +52,6 @@ export const RELICS: Record<string, RelicDef> = {
     startDraw: 1,
   },
 };
-
-export const STARTER_RELIC_IDS = [
-  'shieldCharm',
-  'coinPouch',
-  'morningSpark',
-  'luckyDraw',
-] as const;
 
 export function getRelic(id: string): RelicDef {
   const r = RELICS[id];

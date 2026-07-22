@@ -3,6 +3,12 @@
 **Source of truth:** `src/data/balance.ts`  
 If this doc and the file disagree, **trust the file** and update the doc.
 
+The proposed card, relic/potion, event, and encounter numbers are intentionally
+kept in the four design bibles linked from [INDEX.md](./INDEX.md). They are
+playtest baselines, not live constants. Structural StS benchmarks and the
+reasons for adapting them to this shorter, cast-gated game are in
+[STS_DESIGN_REFERENCE.md](./STS_DESIGN_REFERENCE.md).
+
 ---
 
 ## Design intent (15-floor acts)

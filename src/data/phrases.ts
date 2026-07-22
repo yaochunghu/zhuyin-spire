@@ -24,6 +24,8 @@ export type PhrasePack =
 
 export interface Phrase extends Cue {
   packs: PhrasePack[];
+  /** Core is shown by default; broad requires an explicit parent opt-in. */
+  vocabulary?: 'core' | 'broad';
 }
 
 function p(
@@ -31,8 +33,15 @@ function p(
   emoji: string,
   spell: string,
   packs: PhrasePack[] = ['core'],
+  vocabulary?: 'core' | 'broad',
 ): Phrase {
-  return { word, emoji, spell, packs };
+  return {
+    word,
+    emoji,
+    spell,
+    packs,
+    vocabulary: vocabulary ?? (packs.includes('core') ? 'core' : 'broad'),
+  };
 }
 
 /** Phrases keyed by 聲母 / 單韻 (card.zhuyin). */
@@ -47,16 +56,16 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
     p('班', '🏫', 'ㄅㄢ', ['school']),
     p('半', '🌓', 'ㄅㄢˋ', ['numbers']),
     p('幫', '🤝', 'ㄅㄤ', ['core']),
-    p('包', '🥟', 'ㄅㄠ', ['food']),
+    p('包', '🥟', 'ㄅㄠ', ['food'], 'core'),
     p('寶', '💎', 'ㄅㄠˇ', ['core']),
     p('寶寶', '👶', 'ㄅㄠˇ', ['family', 'core']),
     p('抱', '🤗', 'ㄅㄠˋ', ['family']),
     p('杯', '☕', 'ㄅㄟ', ['home', 'food']),
-    p('杯子', '🥤', 'ㄅㄟ', ['home', 'food']),
+    p('杯子', '🥤', 'ㄅㄟ', ['home', 'food'], 'core'),
     p('北', '🧭', 'ㄅㄟˇ', ['core']),
     p('背', '🎒', 'ㄅㄟˋ', ['body', 'school']),
     p('本', '📕', 'ㄅㄣˇ', ['school']),
-    p('鼻子', '👃', 'ㄅㄧˊ', ['body']),
+    p('鼻子', '👃', 'ㄅㄧˊ', ['body'], 'core'),
     p('比', '⚖️', 'ㄅㄧˇ', ['core']),
     p('筆', '✏️', 'ㄅㄧˇ', ['school', 'core']),
     p('必', '❗', 'ㄅㄧˋ', ['core']),
@@ -64,14 +73,14 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
     p('變', '🔄', 'ㄅㄧㄢˋ', ['core']),
     p('表', '⌚', 'ㄅㄧㄠˇ', ['home']),
     p('別', '🚫', 'ㄅㄧㄝˊ', ['core']),
-    p('冰', '🧊', 'ㄅㄧㄥ', ['food', 'nature']),
+    p('冰', '🧊', 'ㄅㄧㄥ', ['food', 'nature'], 'core'),
     p('冰淇淋', '🍦', 'ㄅㄧㄥ', ['food']),
     p('病', '🤒', 'ㄅㄧㄥˋ', ['body']),
     p('波', '🌊', 'ㄅㄛ', ['nature']),
     p('玻', '🪟', 'ㄅㄛ', ['home']),
     p('伯', '👴', 'ㄅㄛˊ', ['family']),
     p('不', '🙅', 'ㄅㄨˋ', ['core']),
-    p('布', '🧵', 'ㄅㄨˋ', ['home']),
+    p('布', '🧵', 'ㄅㄨˋ', ['home'], 'core'),
     p('步', '👣', 'ㄅㄨˋ', ['body']),
     p('部', '🧩', 'ㄅㄨˋ', ['core']),
     p('補', '🩹', 'ㄅㄨˇ', ['body']),
@@ -99,19 +108,19 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
     p('拍', '👏', 'ㄆㄞ', ['core']),
     p('排', '📶', 'ㄆㄞˊ', ['core']),
     p('牌', '🃏', 'ㄆㄞˊ', ['core']),
-    p('盤', '🍽️', 'ㄆㄢˊ', ['home', 'food']),
+    p('盤', '🍽️', 'ㄆㄢˊ', ['home', 'food'], 'core'),
     p('旁', '👉', 'ㄆㄤˊ', ['core']),
-    p('胖', '🫧', 'ㄆㄤˋ', ['body']),
+    p('胖', '🫧', 'ㄆㄤˋ', ['body'], 'core'),
     p('跑', '🏃', 'ㄆㄠˇ', ['park', 'core']),
     p('跑步', '🏃', 'ㄆㄠˇ', ['park', 'core']),
-    p('泡', '🫧', 'ㄆㄠˋ', ['home']),
+    p('泡', '🫧', 'ㄆㄠˋ', ['home'], 'core'),
     p('泡泡', '💭', 'ㄆㄠˋ', ['core']),
-    p('陪', '👫', 'ㄆㄟˊ', ['family']),
+    p('陪', '👫', 'ㄆㄟˊ', ['family'], 'core'),
     p('配', '🔗', 'ㄆㄟˋ', ['core']),
     p('噴', '💦', 'ㄆㄣ', ['nature']),
     p('朋', '🧑‍🤝‍🧑', 'ㄆㄥˊ', ['core']),
     p('朋友', '👫', 'ㄆㄥˊ', ['park', 'core']),
-    p('皮', '🦵', 'ㄆㄧˊ', ['body']),
+    p('皮', '🦵', 'ㄆㄧˊ', ['body'], 'core'),
     p('疲', '😩', 'ㄆㄧˊ', ['body']),
     p('匹', '🐴', 'ㄆㄧˇ', ['animals']),
     p('偏', '↗️', 'ㄆㄧㄢ', ['core']),
@@ -152,7 +161,7 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
     p('門', '🚪', 'ㄇㄣˊ', ['home', 'core']),
     p('們', '👥', 'ㄇㄣ˙', ['core']),
     p('夢', '💭', 'ㄇㄥˋ', ['core']),
-    p('米', '🍚', 'ㄇㄧˇ', ['food']),
+    p('米', '🍚', 'ㄇㄧˇ', ['food'], 'core'),
     p('密', '🔐', 'ㄇㄧˋ', ['core']),
     p('棉', '☁️', 'ㄇㄧㄢˊ', ['home']),
     p('麵', '🍜', 'ㄇㄧㄢˋ', ['food']),
@@ -1043,7 +1052,7 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
     p('榮', '🏅', 'ㄖㄨㄥˊ', ['core']),
     p('融', '🤝', 'ㄖㄨㄥˊ', ['core']),
     p('柔', '🪶', 'ㄖㄡˊ', ['core']),
-    p('肉', '🥩', 'ㄖㄡˋ', ['food']),
+    p('肉', '🥩', 'ㄖㄡˋ', ['food'], 'core'),
     p('如', '🪞', 'ㄖㄨˊ', ['core']),
     p('儒', '📚', 'ㄖㄨˊ', ['school']),
     p('乳', '🥛', 'ㄖㄨˇ', ['food']),
@@ -1262,7 +1271,7 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
     p('養', '🍼', 'ㄧㄤˇ', ['family']),
     p('氧', '💨', 'ㄧㄤˇ', ['nature']),
     p('樣', '📋', 'ㄧㄤˋ', ['core']),
-    p('腰', '벨트', 'ㄧㄠ', ['body']),
+    p('腰', '🧍', 'ㄧㄠ', ['body']),
     p('妖', '👻', 'ㄧㄠ', ['core']),
     p('搖', '👶', 'ㄧㄠˊ', ['family']),
     p('遙', '📡', 'ㄧㄠˊ', ['core']),
@@ -1380,7 +1389,6 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
     p('泳', '🏊', 'ㄩㄥˇ', ['park']),
     p('勇', '🦸', 'ㄩㄥˇ', ['core']),
     p('用', '🛠️', 'ㄩㄥˋ', ['core']),
-    p('優', '⭐', 'ㄧㄡ', ['school']),
   ],
   ㄚ: [
     p('啊', '😮', 'ㄚ', ['core']),

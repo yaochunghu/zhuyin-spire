@@ -12,14 +12,26 @@ import {
   enterPractice,
   getAvailableMapNodes,
   playerEndTurn,
+  pickCharacter,
   selectMapNode,
   startRun,
   type RunState,
 } from '../game/state';
+import { resetTutorialCompletion, updateGameSettings } from '../game/settings';
+import type { CastMode } from '../game/casting/types';
+import {
+  getActiveProfile,
+  getCastingPreferences,
+  saveCastingPreferences,
+  updateActiveProfile,
+} from '../game/profiles';
 import { getDebugSkipCast } from './debugFlags';
 
 export function debugInspect(state: RunState): string {
+  const profile = getActiveProfile();
   const lines: string[] = [
+    `profile: ${profile.avatar} ${profile.name}`,
+    `cast lessons: ${Object.keys(profile.castingHistory.lessons).length}`,
     `screen: ${state.screen}`,
     `act: ${state.actIndex + 1}`,
     `hp: ${state.heroHp}/${state.heroMaxHp}`,
@@ -135,6 +147,58 @@ export function debugEnterAvailable(
 
 export function debugPractice(state: RunState): void {
   enterPractice(state);
+}
+
+export function debugResetTutorial(): void {
+  resetTutorialCompletion();
+  updateGameSettings({ tutorialEnabled: true });
+}
+
+export function debugStartTutorial(state: RunState): void {
+  debugResetTutorial();
+  startRun(state);
+  pickCharacter(state, 'echoMage');
+  const first = getAvailableMapNodes(state).find(
+    (node) => node.act === 1 && node.row === 0,
+  );
+  if (first) selectMapNode(state, first.id);
+}
+
+export function debugSetAnimationSpeed(speed: 1 | 2): void {
+  updateGameSettings({ animationSpeed: speed });
+}
+
+export function debugSetCastingMode(mode: CastMode): void {
+  const current = getCastingPreferences();
+  saveCastingPreferences({
+    ...current,
+    modeWeights: {
+      recognize: mode === 'recognize' ? 100 : 0,
+      listen: mode === 'listen' ? 100 : 0,
+      listenHard: mode === 'listenHard' ? 100 : 0,
+    },
+  });
+}
+
+/** Refill all shuffle bags without deleting accuracy or response-time history. */
+export function debugResetCastingBags(): void {
+  updateActiveProfile((profile) => ({
+    ...profile,
+    castingHistory: {
+      lessons: Object.fromEntries(
+        Object.entries(profile.castingHistory.lessons).map(([key, progress]) => [
+          key,
+          {
+            ...progress,
+            remainingAnswerKeys: [],
+            remainingPromptIdsByAnswer: {},
+            lastAnswerKey: null,
+            lastPromptId: null,
+          },
+        ]),
+      ),
+    },
+  }));
 }
 
 export function listEnemyOptions(): { id: string; label: string }[] {

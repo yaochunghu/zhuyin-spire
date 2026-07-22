@@ -12,7 +12,7 @@
 let ctx: AudioContext | null = null;
 let masterGain: GainNode | null = null;
 
-type VolLevel = 0 | 0.45 | 1;
+export type VolLevel = 0 | 0.45 | 1;
 
 function loadVol(): VolLevel {
   try {
@@ -46,6 +46,9 @@ export function setVolume(v: VolLevel): void {
     /* ignore */
   }
   applyMaster();
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('zhuyin-volume-change'));
+  }
 }
 
 /** Cycle 🔊 full → 🔉 half → 🔇 mute → full */
@@ -177,6 +180,8 @@ export const sfx = {
     tone({ freq: 523.25, dur: 0.09, type: 'sine', gain: 0.07 });
     tone({ freq: 659.25, dur: 0.1, type: 'sine', gain: 0.06, when: 0.07 });
     tone({ freq: 783.99, dur: 0.16, type: 'triangle', gain: 0.07, when: 0.14 });
+    tone({ freq: 1046.5, dur: 0.28, type: 'sine', gain: 0.055, when: 0.22 });
+    tone({ freq: 1318.5, dur: 0.34, type: 'triangle', gain: 0.035, when: 0.31 });
   },
 
   fizzle: () => {
@@ -239,6 +244,26 @@ export const sfx = {
     tone({ freq: 1100, dur: 0.1, type: 'triangle', gain: 0.045, when: 0.03, slideTo: 220 });
     tone({ freq: 280, dur: 0.16, type: 'sawtooth', gain: 0.035, when: 0.07, slideTo: 80 });
     tone({ freq: 900, dur: 0.05, type: 'sine', gain: 0.03, when: 0.1 });
+  },
+
+  /** Player weapon meets a monster shield: clang → crack → break are distinct. */
+  enemyShieldClang: () => {
+    noiseBurst(0.045, 0.035);
+    tone({ freq: 1180, dur: 0.09, type: 'triangle', gain: 0.075 });
+    tone({ freq: 760, dur: 0.14, type: 'sine', gain: 0.04, when: 0.025, slideTo: 520 });
+  },
+
+  enemyShieldCrack: () => {
+    noiseBurst(0.07, 0.055);
+    tone({ freq: 820, dur: 0.08, type: 'square', gain: 0.045, slideTo: 360 });
+    tone({ freq: 1260, dur: 0.07, type: 'triangle', gain: 0.04, when: 0.04, slideTo: 500 });
+  },
+
+  enemyShieldBreak: () => {
+    noiseBurst(0.14, 0.09);
+    tone({ freq: 940, dur: 0.08, type: 'square', gain: 0.06, slideTo: 180 });
+    tone({ freq: 1420, dur: 0.11, type: 'triangle', gain: 0.05, when: 0.035, slideTo: 240 });
+    tone({ freq: 260, dur: 0.2, type: 'sawtooth', gain: 0.04, when: 0.09, slideTo: 70 });
   },
 
   win: () => {

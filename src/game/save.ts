@@ -4,11 +4,23 @@
  */
 
 import type { RunMap } from '../data/map';
+import { FIRST_CHARACTER_ID, isCharacterId } from '../data/characters';
 import type { RewardTier } from '../data/map';
 import type { RunState, Screen, ShopOffer } from './state';
+import { getActiveProfileId, isLegacyOwnerProfile } from './profiles';
 
-const SAVE_KEY = 'zhuyin-spire-run-v1';
+const LEGACY_SAVE_KEY = 'zhuyin-spire-run-v1';
 const SAVE_VERSION = 1 as const;
+
+export function activeRunSaveKey(): string {
+  return `${LEGACY_SAVE_KEY}:${getActiveProfileId()}`;
+}
+
+function readActiveRaw(): string | null {
+  const profileRaw = localStorage.getItem(activeRunSaveKey());
+  if (profileRaw) return profileRaw;
+  return isLegacyOwnerProfile() ? localStorage.getItem(LEGACY_SAVE_KEY) : null;
+}
 
 /** Screens we are willing to resume into */
 const STABLE_SCREENS: Screen[] = [
@@ -29,6 +41,8 @@ export interface RunSnapshotV1 {
   heroMaxHp: number;
   deck: string[];
   gold: number;
+  /** Optional so v1 saves made before characters still load. */
+  characterId?: string | null;
   relicId: string | null;
   runMap: RunMap;
   actIndex: number;
@@ -44,6 +58,8 @@ export interface RunSnapshotV1 {
   shopRemoveUsed?: boolean;
   listenSuccesses: number;
   lastClearedAct: number;
+  /** Optional keeps pre-tutorial saves ineligible without a version migration. */
+  tutorialEligibleRun?: boolean;
 }
 
 function isStableScreen(screen: Screen): boolean {
@@ -52,7 +68,7 @@ function isStableScreen(screen: Screen): boolean {
 
 export function hasSavedRun(): boolean {
   try {
-    const raw = localStorage.getItem(SAVE_KEY);
+    const raw = readActiveRaw();
     if (!raw) return false;
     const data = JSON.parse(raw) as Partial<RunSnapshotV1>;
     return data?.v === SAVE_VERSION && typeof data.screen === 'string';
@@ -63,7 +79,8 @@ export function hasSavedRun(): boolean {
 
 export function clearSavedRun(): void {
   try {
-    localStorage.removeItem(SAVE_KEY);
+    localStorage.removeItem(activeRunSaveKey());
+    if (isLegacyOwnerProfile()) localStorage.removeItem(LEGACY_SAVE_KEY);
   } catch {
     /* ignore */
   }
@@ -79,6 +96,7 @@ export function snapshotRun(state: RunState): RunSnapshotV1 | null {
     heroMaxHp: state.heroMaxHp,
     deck: [...state.deck],
     gold: state.gold,
+    characterId: state.characterId,
     relicId: state.relicId,
     runMap: JSON.parse(JSON.stringify(state.runMap)) as RunMap,
     actIndex: state.actIndex,
@@ -94,6 +112,7 @@ export function snapshotRun(state: RunState): RunSnapshotV1 | null {
     shopRemoveUsed: state.shopRemoveUsed,
     listenSuccesses: state.listenSuccesses,
     lastClearedAct: state.lastClearedAct,
+    tutorialEligibleRun: state.tutorialEligibleRun,
   };
 }
 
@@ -101,7 +120,10 @@ export function saveRunCheckpoint(state: RunState): void {
   const snap = snapshotRun(state);
   if (!snap) return;
   try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify(snap));
+    const serialized = JSON.stringify(snap);
+    localStorage.setItem(activeRunSaveKey(), serialized);
+    // Keep the original key as a migration mirror for the first profile only.
+    if (isLegacyOwnerProfile()) localStorage.setItem(LEGACY_SAVE_KEY, serialized);
   } catch {
     /* quota / private mode */
   }
@@ -121,7 +143,7 @@ function validateSnapshot(data: unknown): data is RunSnapshotV1 {
 
 export function loadSnapshot(): RunSnapshotV1 | null {
   try {
-    const raw = localStorage.getItem(SAVE_KEY);
+    const raw = readActiveRaw();
     if (!raw) return null;
     const data = JSON.parse(raw) as unknown;
     if (!validateSnapshot(data)) {
@@ -142,6 +164,11 @@ export function applySnapshot(state: RunState, snap: RunSnapshotV1): void {
   state.heroMaxHp = snap.heroMaxHp;
   state.deck = [...snap.deck];
   state.gold = snap.gold;
+  state.characterId = isCharacterId(snap.characterId)
+    ? snap.characterId
+    : snap.screen === 'relicPick'
+      ? null
+      : FIRST_CHARACTER_ID;
   state.relicId = snap.relicId;
   state.runMap = JSON.parse(JSON.stringify(snap.runMap)) as RunMap;
   state.actIndex = snap.actIndex;
@@ -165,6 +192,8 @@ export function applySnapshot(state: RunState, snap: RunSnapshotV1): void {
   state.lastCombatFx = [];
   state.practiceStreak = 0;
   state.practiceSessionCorrect = 0;
+  state.tutorial = null;
+  state.tutorialEligibleRun = snap.tutorialEligibleRun ?? false;
 }
 
 export function resumeSavedRun(state: RunState): boolean {
