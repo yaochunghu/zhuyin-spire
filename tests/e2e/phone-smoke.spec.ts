@@ -33,17 +33,23 @@ async function openTutorial(page: Page): Promise<void> {
   await expect(page.getByRole('button', { name: '注音 ㄇ', exact: true })).toBeEnabled();
 }
 
-async function enterHintedSpellWithoutWaiting(page: Page): Promise<void> {
+async function enterHintedSpellAndOpenPauseMenu(page: Page): Promise<void> {
   await page.locator('.hint-btn').click();
   const spell = (await page.locator('.spell-answer').textContent())!.trim();
-  for (const symbol of [...spell]) {
-    const escaped = symbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    await page
-      .locator('.spell-key:not([disabled])')
-      .filter({ hasText: new RegExp(`^${escaped}$`) })
-      .first()
-      .click();
-  }
+  await page.evaluate((symbols) => {
+    for (const symbol of symbols) {
+      const key = [...document.querySelectorAll<HTMLButtonElement>('.spell-key:not([disabled])')]
+        .find((button) => button.textContent?.trim() === symbol);
+      if (!key) throw new Error(`Missing enabled spell key: ${symbol}`);
+      key.click();
+    }
+
+    // The final key schedules auto-submit for 380 ms later. Open the menu in
+    // this same browser task so a slow CI round trip cannot race that timer.
+    const menu = document.querySelector<HTMLButtonElement>('.phone-global-control');
+    if (!menu) throw new Error('Missing phone pause menu control');
+    menu.click();
+  }, [...spell]);
 }
 
 async function expectNoPageOverflow(page: Page): Promise<void> {
@@ -282,8 +288,7 @@ test('horizontal card movement does not cast and the pause menu freezes auto-sub
     clientY: heroBox.y + heroBox.height / 2,
   });
   await expect(page.locator('.cast-screen')).toBeVisible();
-  await enterHintedSpellWithoutWaiting(page);
-  await page.getByRole('button', { name: '開啟暫停選單' }).click();
+  await enterHintedSpellAndOpenPauseMenu(page);
   await expect(page.getByRole('dialog', { name: '注音暫停' })).toBeVisible();
   await page.waitForTimeout(700);
   await expect(page.locator('.spell-reveal-overlay')).toHaveCount(0);
