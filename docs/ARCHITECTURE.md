@@ -119,7 +119,17 @@ Other localStorage keys (non-run):
 | `zhuyin-spire-learner-profiles-v1` | Per-child curriculum, learning, tutorial, badges, and profile list |
 | `zhuyin-spire-game-settings-v1` | Device-global 1×/2× gameplay motion + migration field |
 | Legacy phrase/tutorial/practice keys | Read into the first learner on migration |
-| `zhuyin-debug` | Persist debug enable outside DEV |
+| `zhuyin-debug` | Enable debug only inside a debug-capable build; inert in the public build |
+
+Saved runs and learner stores are size-bounded and parsed through allowlists
+before use. Persisted display text is rendered as text, never interpreted as
+HTML. The Options privacy section can delete every `zhuyin-spire-*` key without
+touching unrelated site data.
+
+The public build has a restrictive Content Security Policy, no third-party
+runtime requests, and no production debug bundle. There is no application
+backend; speech uses the browser's built-in speech service for fixed authored
+words and never requests microphone permission.
 
 ---
 

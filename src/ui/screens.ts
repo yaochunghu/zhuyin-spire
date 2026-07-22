@@ -165,6 +165,16 @@ export function renderTitle(): HTMLElement {
     : '注音之塔 · ▶️ 爬塔 · 📚 無生命練習 · 每位小玩家各有自己的進度';
   el.appendChild(adultTitle);
 
+  const privacy = document.createElement('button');
+  privacy.type = 'button';
+  privacy.className = 'title-privacy-btn';
+  privacy.textContent = '🔒 隱私與資料';
+  privacy.addEventListener('click', () => {
+    sfx.click();
+    openOptions({ allowProfileSwitch: true, focusPrivacy: true });
+  });
+  el.appendChild(privacy);
+
   return el;
 }
 

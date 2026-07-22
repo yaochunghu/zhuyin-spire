@@ -14,13 +14,18 @@ Mounted from `main.ts` after UI bind.
 
 ## When is debug available?
 
-`isDebugEnabled()` is true if **any** of:
+Debug code is included only in local development or a deliberately opted-in QA
+build. Ordinary production builds do not contain or mount the debug panel.
+
+In a debug-capable build, `isDebugEnabled()` is true if **any** of:
 
 1. Vite **`import.meta.env.DEV`** (local `npm run dev`)  
 2. URL query **`?debug=1`** or `?debug=true`  
 3. `localStorage.setItem('zhuyin-debug', '1')`  
 
-Production builds stay off unless you force (2) or (3).
+`?debug=1` and the local-storage flag cannot enable debug in the normal public
+production build. For a private QA artifact only, build with
+`VITE_ENABLE_DEBUG_TOOLS=true`; never deploy that artifact to GitHub Pages.
 
 ---
 

@@ -1,7 +1,7 @@
 {
   "name": "zhuyin-spire",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,15 +9,14 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:security:e2e": "npm run build && playwright test --config=playwright.security.config.ts",
+    "verify:dist": "node scripts/verify-dist.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",
     "typescript": "~5.7.2",
     "vite": "^6.0.0",
     "vitest": "^4.1.10"
-  },
-  "allowScripts": {
-    "esbuild@0.25.12": true
   }
 }

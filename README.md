@@ -3,7 +3,7 @@
 A **preschool** browser deckbuilder inspired by *Slay the Spire*: climb a colorful tower with **注音符號** spell cards.  
 Recognize or **listen** for the correct 注音 to cast. **Wrong answer = fizzle** (energy spent). **HP → 0 ends the run.**
 
-**Version:** 0.2.0 · **Stack:** Vite + TypeScript (no backend)
+**Version:** 0.2.1 · **Stack:** Vite + TypeScript (no backend)
 
 **Play online:** [https://yaochunghu.github.io/zhuyin-spire/](https://yaochunghu.github.io/zhuyin-spire/)
 
@@ -18,6 +18,8 @@ npm run dev
 ```
 
 Open the local URL (usually `http://localhost:5173`). Best on a tablet or large window.
+The development server listens only on your own computer. To test from another
+device on your trusted LAN, opt in explicitly with `npm run dev -- --host 0.0.0.0`.
 
 ```bash
 npm run build    # typecheck + production bundle
@@ -29,6 +31,30 @@ npm run preview  # serve dist/
 
 The published GitHub Pages build uses `/zhuyin-spire/` as Vite's production
 asset base; local development remains at `/`.
+
+## Privacy and security
+
+The game has no account system, backend, ads, analytics, tracking cookies, or
+microphone access. Runs, learner nicknames, and learning progress stay in this
+browser's local storage. Use a short nickname only—never enter a child's real
+name. GitHub Pages may process standard connection logs such as IP addresses as
+part of hosting the site.
+
+Read the full [Privacy Notice](PRIVACY.md), [Security Policy](SECURITY.md), and
+[Third-Party Notices](THIRD_PARTY_NOTICES.md). Security problems should be
+reported privately through GitHub Security Advisories, never through a public
+Issue.
+
+## Copyright and project status
+
+Copyright © 2026 `yaochunghu`. All rights reserved. The source is public for
+inspection and learning, but **no open-source license is granted**. Copying,
+redistributing, publishing modified versions, or using project assets requires
+prior permission. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the
+separately licensed map-generation reference.
+
+This is an independent educational fan project inspired by *Slay the Spire*.
+It is not affiliated with, endorsed by, or sponsored by Mega Crit.
 
 ---
 
@@ -83,7 +109,7 @@ src/
   game/casting/     reusable gate contract + Zhuyin provider and shuffle bags
   game/battle/      combat implementation (modular)
   ui/               map, combat, cast, drag, card FX, screens
-  debug/            playtest panel (DEV / ?debug=1)
+  debug/            playtest panel (development/debug builds only)
   styles/main.css   kid UI + stages
 docs/               architecture, combat, map, content, balance, debug, roadmap
 AGENTS.md           resume guide for humans + AI
@@ -117,7 +143,7 @@ CHANGELOG.md        version history
 
 ## Debug (testing)
 
-On `npm run dev` (or `?debug=1`):
+On `npm run dev`:
 
 - Toggle panel: **`` ` ``** or **Ctrl+Shift+D**, or 🐛
 - **Skip cast** — balance combat without 注音
@@ -134,8 +160,8 @@ This folder is its **own git repository** (`zhuyin-spire/.git`).
 
 - Do **not** commit the game through a parent home-directory repo (e.g. unrelated remotes).
 - From this directory: `git status`, `git add`, `git commit` as usual.
-- Latest release: `v0.2.0`; baseline tag: `v0.1.0` (see [CHANGELOG.md](CHANGELOG.md)).
-- Optional: add a **dedicated** GitHub remote named for this game — never push into unrelated projects.
+- Latest release: `v0.2.1`; baseline tag: `v0.1.0` (see [CHANGELOG.md](CHANGELOG.md)).
+- Dedicated remote: `https://github.com/yaochunghu/zhuyin-spire.git`.
 
 ```bash
 cd /path/to/zhuyin-spire

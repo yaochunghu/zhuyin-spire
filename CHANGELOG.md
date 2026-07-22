@@ -10,6 +10,23 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ---
 
+## [0.2.1] — 2026-07-22
+
+### Privacy and public-release hardening
+
+- Added strict, size-bounded validation for saved runs, learner profiles, map
+  topology, identifiers, and persisted display strings
+- Removed third-party font requests, limited the development server to loopback,
+  and added a restrictive production Content Security Policy
+- Removed the debug panel from ordinary production bundles; query and storage
+  flags can no longer enable release cheats
+- Added local-only nickname guidance, a clear-all-data control, privacy notice,
+  security policy, third-party notices, and a source-visible/no-license notice
+- Added dependency automation, pinned GitHub Actions workflows, structured
+  privacy-safe Issues, and security regression tests for the public release
+
+---
+
 ## [0.2.0] — 2026-07-22
 
 ### Casting variety and learner profiles
@@ -99,5 +116,6 @@ Baseline snapshot of the preschool Spire + 注音 game, documented for long-term
 - Standalone git repository for the game folder (tag `v0.1.0`)
 
 [Unreleased]: #unreleased
+[0.2.1]: #021--2026-07-22
 [0.2.0]: #020--2026-07-22
 [0.1.0]: #010--2026-07-21

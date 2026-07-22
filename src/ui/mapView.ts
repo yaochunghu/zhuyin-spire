@@ -53,17 +53,32 @@ export function renderMap(): HTMLElement {
   top.className = 'map-stage-top';
   top.innerHTML = `
     <div class="kid-status map-status-bar">
-      <span class="kid-stat act-pill" title="只顯示目前這一幕">${act.emoji} 第${run().actIndex + 1}幕</span>
-      <span class="kid-stat${run().heroHp <= 8 ? ' danger-hp' : ''}">🧙❤️${run().heroHp}</span>
-      <span class="kid-stat">🪙${run().gold}</span>
-      ${relic ? `<span class="kid-stat relic-pill" title="${relic.name}">${relic.emoji}</span>` : ''}
+      <span class="kid-stat act-pill" data-map-act title="只顯示目前這一幕"></span>
+      <span class="kid-stat" data-map-hp></span>
+      <span class="kid-stat" data-map-gold></span>
     </div>
     <div class="map-stage-title">
-      <span class="kid-prompt map-act-title">${act.emoji} ${act.title}</span>
-      <span class="kid-stat map-floor-progress">目前第 ${Math.min(15, (available[0]?.row ?? act.maxRow) + 1)}/15 層</span>
+      <span class="kid-prompt map-act-title"></span>
+      <span class="kid-stat map-floor-progress"></span>
       <span class="adult-text map-stage-hint">亮圈＝可走 · 由下往上</span>
     </div>
   `;
+  top.querySelector<HTMLElement>('[data-map-act]')!.textContent =
+    `${act.emoji} 第${run().actIndex + 1}幕`;
+  const hp = top.querySelector<HTMLElement>('[data-map-hp]')!;
+  hp.textContent = `🧙❤️${run().heroHp}`;
+  if (run().heroHp <= 8) hp.classList.add('danger-hp');
+  top.querySelector<HTMLElement>('[data-map-gold]')!.textContent = `🪙${run().gold}`;
+  top.querySelector<HTMLElement>('.map-act-title')!.textContent = `${act.emoji} ${act.title}`;
+  top.querySelector<HTMLElement>('.map-floor-progress')!.textContent =
+    `目前第 ${Math.min(15, (available[0]?.row ?? act.maxRow) + 1)}/15 層`;
+  if (relic) {
+    const relicPill = document.createElement('span');
+    relicPill.className = 'kid-stat relic-pill';
+    relicPill.title = relic.name;
+    relicPill.textContent = relic.emoji;
+    top.querySelector('.map-status-bar')!.appendChild(relicPill);
+  }
   stage.appendChild(top);
 
   // —— Organic fitted graph (centered; side margins on stage) ——
@@ -137,7 +152,10 @@ export function renderMap(): HTMLElement {
     btn.style.fontSize = `${Math.max(0.95, size * 0.028)}rem`;
     btn.dataset.nodeId = n.id;
     btn.dataset.act = String(n.act);
-    btn.innerHTML = `<span class="map-dot-emoji">${n.emoji}</span>`;
+    const emoji = document.createElement('span');
+    emoji.className = 'map-dot-emoji';
+    emoji.textContent = n.emoji;
+    btn.appendChild(emoji);
     btn.setAttribute(
       'aria-label',
       `${n.label}${isAvail ? '（可前進）' : isDone ? '（已完成）' : '（未解鎖）'}`,
@@ -274,9 +292,11 @@ export function renderActClear(): HTMLElement {
     <div class="end-emoji bounce-in">🏆</div>
     <div class="kid-prompt">第 ${run().lastClearedAct} 幕過關！</div>
     <div class="kid-stat">❤️+${ACT_CLEAR_HEAL}</div>
-    <p class="adult-text center">下一幕：${next.emoji} ${next.title}</p>
+    <p class="adult-text center" data-next-act></p>
     <p class="kid-prompt" style="font-size:1.1rem">往上 · 第 ${nextAct} 幕</p>
   `;
+  el.querySelector<HTMLElement>('[data-next-act]')!.textContent =
+    `下一幕：${next.emoji} ${next.title}`;
   appendCoach(el);
 
   const go = document.createElement('button');

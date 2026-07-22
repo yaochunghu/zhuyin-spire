@@ -16,7 +16,8 @@
   --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
   --radius: 16px;
   --tap: 64px;
-  font-family: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'PingFang TC',
+    'Microsoft JhengHei', sans-serif;
 }
 
 * {
@@ -4004,6 +4005,37 @@ body {
 
 .profile-create select {
   font-size: 1.5rem;
+}
+
+.title-privacy-btn {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  min-height: 48px;
+  padding: 0.55rem 1rem;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.privacy-options-section:focus {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.privacy-summary {
+  line-height: 1.55;
+}
+
+.privacy-policy-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.privacy-erase-btn {
+  border-color: #bc5c64;
+  color: #ffd9dc;
 }
 
 .options-subheading {
