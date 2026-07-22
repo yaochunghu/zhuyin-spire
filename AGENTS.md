@@ -25,7 +25,7 @@ npm run build     # tsc && vite build
 |----------|-----------|
 | HP / gold / rest / hand size | `src/data/balance.ts` → [docs/BALANCE.md](docs/BALANCE.md) |
 | Cards / starter / rewards | `src/data/cards.ts` → [docs/CONTENT.md](docs/CONTENT.md); target roster in [docs/CARD_BIBLE.md](docs/CARD_BIBLE.md) |
-| Card instances / upgrades / Smith | [docs/UPGRADE_BIBLE.md](docs/UPGRADE_BIBLE.md) before changing the save shape |
+| Card instances / upgrades / Smith | `src/game/cardInstances.ts`, `game/save.ts` → [docs/UPGRADE_BIBLE.md](docs/UPGRADE_BIBLE.md) |
 | Relics / potions / keys | `src/data/relics.ts` → [docs/RELIC_POTION_BIBLE.md](docs/RELIC_POTION_BIBLE.md) |
 | Monsters / intents / roles | `src/data/enemies.ts` → [docs/EVENT_ENCOUNTER_BIBLE.md](docs/EVENT_ENCOUNTER_BIBLE.md) |
 | Multi-enemy packs | `src/data/encounters.ts` |

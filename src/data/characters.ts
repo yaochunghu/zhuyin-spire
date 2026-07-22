@@ -25,11 +25,11 @@ export interface CharacterDef {
 export const CHARACTERS: Record<string, CharacterDef> = {
   echoMage: {
     id: 'echoMage',
-    emoji: '🧙‍♂️',
-    name: '回音法師',
-    title: '用聲音守護大家',
-    theme: '先讓怪物附上「回音」，再用每回合第一下攻擊發出加強音波。',
-    teachingNote: '先防守、再標記、最後攻擊；每一步都有清楚用途。',
+    emoji: '🧒🥋',
+    name: '共鳴武者',
+    title: '聽見破綻，再出拳',
+    theme: '用聲音找出怪物的「易傷」，再強化基礎攻擊把握機會。',
+    teachingNote: '先防守、再標記弱點、最後攻擊；每一步都有清楚用途。',
     starterDeckIds: [
       'bo',
       'bo',

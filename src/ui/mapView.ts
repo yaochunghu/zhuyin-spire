@@ -66,7 +66,7 @@ export function renderMap(): HTMLElement {
   top.querySelector<HTMLElement>('[data-map-act]')!.textContent =
     `${act.emoji} 第${run().actIndex + 1}幕`;
   const hp = top.querySelector<HTMLElement>('[data-map-hp]')!;
-  hp.textContent = `🧙❤️${run().heroHp}`;
+  hp.textContent = `🧒❤️${run().heroHp}`;
   if (run().heroHp <= 8) hp.classList.add('danger-hp');
   top.querySelector<HTMLElement>('[data-map-gold]')!.textContent = `🪙${run().gold}`;
   top.querySelector<HTMLElement>('.map-act-title')!.textContent = `${act.emoji} ${act.title}`;

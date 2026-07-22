@@ -2,7 +2,7 @@
  * Player actions: play card (begin), cast resolve, canPlay.
  */
 
-import { getCard, type CardDef } from '../../data/cards';
+import { getCardAtUpgrade, type CardDef } from '../../data/cards';
 import {
   cardNeedsEnemyTarget,
   cardTargetType,
@@ -19,7 +19,7 @@ export function canPlay(state: CombatState, uid: string): boolean {
   if (state.phase !== 'playerAction' && state.phase !== 'playerStart') return false;
   const card = state.hand.find((c) => c.uid === uid);
   if (!card) return false;
-  const def = getCard(card.defId);
+  const def = getCardAtUpgrade(card.defId, card.upgradeLevel);
   return state.energy >= def.cost;
 }
 
@@ -35,7 +35,7 @@ export function beginPlay(
   if (!canPlay(state, uid)) throw new Error('Cannot play card');
   const idx = state.hand.findIndex((c) => c.uid === uid);
   const [card] = state.hand.splice(idx, 1);
-  const def = getCard(card.defId);
+  const def = getCardAtUpgrade(card.defId, card.upgradeLevel);
   state.energy -= def.cost;
   state.pending = card;
 
@@ -60,9 +60,13 @@ export function beginPlay(
 export function resolveCastSuccess(state: CombatState, def: CardDef): void {
   if (state.pending) {
     const card = state.pending;
-    state.discardPile.push(card);
+    if (def.type === 'power') {
+      state.powerPile.push(card);
+    } else {
+      state.discardPile.push(card);
+      pushFx(state, { type: 'discard', cards: [card], reason: 'play' });
+    }
     state.pending = null;
-    pushFx(state, { type: 'discard', cards: [card], reason: 'play' });
   }
 
   const targets = [...state.pendingTargetIds];

@@ -64,7 +64,7 @@ Owned by `main.ts` as a single mutable object; UI modules reach it via `ui/runti
 
 Important fields:
 
-- **Hero:** `heroHp`, `heroMaxHp`, `deck[]`, `gold`, `characterId`, `relicId`
+- **Hero:** `heroHp`, `heroMaxHp`, physical `DeckCardV2[]`, `gold`, `characterId`, `relicId`
 - **Map:** `runMap` (3 acts), `actIndex`, `currentNodeId`, `activeNodeId`, `visitedIds`, `pathIds`
 - **Combat:** `combat: CombatState | null`
 - **Cast:** `cast: { prompt, cardDef } | null`
@@ -82,7 +82,7 @@ Map navigation helpers: `getAvailableMapNodes`, `selectMapNode`, `getActiveNode`
 3. Combat has a special path: after paint, `playPendingCombatFx` runs the FX queue; **do not full-remount combat while FX plays** (breaks hand drag and pile anchors).
 
 **Debug panel** mounts on `document.body`, not `#app`, because `render()` wipes `#app`.
-The phone pause menu, Options, and deck viewer are also body-mounted modal layers;
+The global pause menu, Options, and deck/designer viewer are also body-mounted modal layers;
 `ui/modal.ts` gives them reference-counted page locking and focus containment.
 
 Orientation changes are CSS layout changes. They must not call `render()` or replace
@@ -99,7 +99,7 @@ Play pipeline (product):
 
 1. Player plays a card (tap or drag-drop) → `tryPlayCard` in `state.ts`.
 2. Unless **debug skip cast**, open `castCheck`.
-3. Correct spell → `resolveCastSuccess` (effects + discard); wrong → `resolveCastFizzle` (energy already spent).
+3. Correct spell → `resolveCastSuccess` (ordered effects; Powers enter `powerPile`); wrong → `resolveCastFizzle` (energy already spent and card discarded).
 4. End turn → enemy intents → draw next hand.
 
 The first-run tutorial is an ephemeral state machine in `state.ts`. Only the active
@@ -114,6 +114,9 @@ File: `src/game/save.ts`
 
 - Key: `zhuyin-spire-run-v1:<profile-id>`; the first profile mirrors the old
   `zhuyin-spire-run-v1` key for migration compatibility
+- Payload version is V2. `deck` is ordered `DeckCardV2[]` with stable physical
+  UIDs and upgrade levels. Valid V1 string-array decks migrate once without
+  dropping, reordering, or grouping duplicate definitions.
 - **Stable screens only** (map, rest, shop, reward, actClear, relicPick, …) — **not** mid-combat or mid-cast
 - Title offers continue vs new game; new game clears save
 
@@ -150,8 +153,8 @@ words and never requests microphone permission.
 | `game/coach.ts` | Adult tip strip |
 | `ui/castView.ts` | Big 注音 keyboard + practice room |
 | `ui/options.ts` | Body-mounted global, accessible Options dialog |
-| `ui/phoneMenu.ts` | Phone pause sheet and context actions |
-| `ui/deckViewer.ts` | Reusable body-mounted current-deck inspection |
+| `ui/phoneMenu.ts` | Global pause sheet and context actions (legacy filename) |
+| `ui/deckViewer.ts` | Exact-copy deck plus searchable designer catalog |
 | `ui/pauseTimers.ts` | Pause/resume teaching delays with remaining time intact |
 | `ui/responsive.ts` | Shared phone-layout media-query decision |
 

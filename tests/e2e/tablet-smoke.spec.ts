@@ -10,6 +10,11 @@ async function debugAction(page: Page, rowName: string, buttonName: string) {
     .click();
 }
 
+async function openOptionsFromMenu(page: Page) {
+  await page.getByRole('button', { name: '開啟暫停選單' }).click();
+  await page.getByRole('button', { name: '⚙️ 完整選項' }).click();
+}
+
 async function openTutorial(page: Page) {
   await page.goto('/?debug=1');
   await debugAction(page, 'Tutorial', 'Start');
@@ -125,11 +130,11 @@ test.afterEach(async ({ page }) => {
 test('character selection binds the simple starter deck and relic', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: '開始爬塔' }).click();
-  const character = page.getByRole('button', { name: /選擇回音法師/ });
+  const character = page.getByRole('button', { name: /選擇共鳴武者/ });
   await expect(character).toBeVisible();
   await expect(character).toContainText('⚔️ 1⚡ ×5');
   await expect(character).toContainText('🛡️ 1⚡ ×4');
-  await expect(character).toContainText('🔔 2⚡ ×1');
+  await expect(character).toContainText('🎯 2⚡ ×1');
   await expect(character).toContainText('初心音叉');
   await character.click();
   await expect(page.locator('.map-stage')).toBeVisible();
@@ -141,9 +146,11 @@ test('character selection binds the simple starter deck and relic', async ({ pag
   expect(saved.characterId).toBe('echoMage');
   expect(saved.relicId).toBe('tuningFork');
   expect(saved.deck).toHaveLength(10);
-  expect(saved.deck.filter((id: string) => id === 'bo')).toHaveLength(5);
-  expect(saved.deck.filter((id: string) => id === 'mo')).toHaveLength(4);
-  expect(saved.deck.filter((id: string) => id === 'po')).toHaveLength(1);
+  expect(saved.v).toBe(2);
+  expect(saved.deck.filter((card: { defId: string }) => card.defId === 'bo')).toHaveLength(5);
+  expect(saved.deck.filter((card: { defId: string }) => card.defId === 'mo')).toHaveLength(4);
+  expect(saved.deck.filter((card: { defId: string }) => card.defId === 'po')).toHaveLength(1);
+  expect(new Set(saved.deck.map((card: { uid: string }) => card.uid)).size).toBe(10);
 });
 
 test('map has usable touch targets, no page overflow, and scrolls when needed', async ({ page }) => {
@@ -205,12 +212,12 @@ test('Options persists speed and keeps primary controls large', async ({ page })
   );
   expect(controls.every((height) => height >= 64)).toBe(true);
 
-  await page.getByRole('button', { name: '開啟遊戲選項' }).click();
+  await openOptionsFromMenu(page);
   await page.getByRole('button', { name: '2× 快速' }).click();
   await page.getByRole('button', { name: '關閉選項' }).click();
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-game-speed', '2');
-  await page.getByRole('button', { name: '開啟遊戲選項' }).click();
+  await openOptionsFromMenu(page);
   await expect(page.getByRole('button', { name: '2× 快速' })).toHaveAttribute(
     'aria-pressed',
     'true',
@@ -264,7 +271,7 @@ test('Options rejects a vocabulary filter that would make cards uncastable', asy
 }, testInfo) => {
   test.skip(testInfo.project.name !== 'tablet-portrait');
   await page.goto('/');
-  await page.getByRole('button', { name: '開啟遊戲選項' }).click();
+  await openOptionsFromMenu(page);
   await page.getByText('進階：只出／不要出哪些詞').click();
   await page.getByLabel('只出這些詞').fill('爸爸');
   await page.getByRole('button', { name: '套用詞語清單' }).click();
@@ -319,7 +326,7 @@ test('combat stays full-width and a fitting hand is centered on screen', async (
   expect(layoutBefore.width).toBeCloseTo(page.viewportSize()!.width, 0);
   expect(Math.abs(layoutBefore.paddingLeft - layoutBefore.paddingRight)).toBeLessThanOrEqual(1);
 
-  await page.getByRole('button', { name: '開啟遊戲選項' }).click();
+  await openOptionsFromMenu(page);
   await expect(page.getByRole('dialog', { name: '遊戲選項' })).toBeVisible();
   const layoutWhileOpen = await page.locator('.combat-stage').evaluate((stage) => {
     const rect = stage.getBoundingClientRect();
@@ -328,6 +335,39 @@ test('combat stays full-width and a fitting hand is centered on screen', async (
   expect(layoutWhileOpen.left).toBeCloseTo(layoutBefore.left, 1);
   expect(layoutWhileOpen.width).toBeCloseTo(layoutBefore.width, 1);
   await page.getByRole('button', { name: '關閉選項' }).click();
+});
+
+test('Vulnerable is shown on its enemy and explains itself when tapped', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'tablet-portrait');
+  await page.goto('/?debug=1');
+  await page
+    .locator('.debug-row')
+    .filter({ hasText: 'Cast' })
+    .getByRole('button', { name: /^Skip cast/ })
+    .click();
+  await page
+    .locator('.debug-row')
+    .filter({ hasText: 'Start' })
+    .getByRole('button', { name: 'Go', exact: true })
+    .click();
+  await debugAction(page, 'Energy', 'Draw 5');
+  await page.locator('.debug-head .debug-btn-icon').click();
+  await expect(page.locator('.hand-card-hidden')).toHaveCount(0);
+
+  await page.getByRole('button', { name: /^注音 ㄆ/ }).click();
+  const vulnerable = page.getByRole('button', { name: '🎯 易傷 2' });
+  await expect(vulnerable).toBeVisible();
+  await expect(vulnerable).toHaveAttribute('aria-expanded', 'false');
+  await vulnerable.click();
+  await expect(
+    page.getByText('攻擊傷害 ×1.5，無條件捨去小數。怪物行動後少 1 回合。'),
+  ).toBeVisible();
+  await expect(page.getByRole('button', { name: '🎯 易傷 2' })).toHaveAttribute(
+    'aria-expanded',
+    'true',
+  );
 });
 
 test('portrait hand scrolls fully without hiding cards under End Turn', async ({
@@ -378,15 +418,15 @@ test('complete guided tutorial sequence', async ({ page }, testInfo) => {
   await solveCurrentCast(page);
 
   await expect(page.locator('.tutorial-step-endTurn')).toBeVisible();
-  await expect(page.locator('.hand .card[aria-label="注音 ㄅ"]:not([disabled])')).toHaveCount(3);
+  await expect(page.locator('.hand .card[aria-label^="注音 ㄅ"]:not([disabled])')).toHaveCount(3);
   await expect(page.locator('.energy-readout')).toContainText('2/3');
   await page.locator('.end-turn-btn').click();
   await expect(page.locator('.tutorial-step-attack')).toBeVisible();
 
-  await page.getByRole('button', { name: '注音 ㄅ', exact: true }).click();
+  await page.getByRole('button', { name: /^注音 ㄅ/ }).click();
   await solveCurrentCast(page);
   await expect(page.locator('.tutorial-step-free')).toBeVisible();
-  await page.getByRole('button', { name: '注音 ㄆ', exact: true }).click();
+  await page.getByRole('button', { name: /^注音 ㄆ/ }).click();
   await solveCurrentCast(page);
   await expect(page.locator('.reward-screen')).toBeVisible({ timeout: 8_000 });
   expect(await page.evaluate(() => localStorage.getItem('zhuyin-spire-tutorial-complete-v1'))).toBe(

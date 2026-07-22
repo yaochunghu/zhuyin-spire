@@ -8,6 +8,7 @@ import {
   STARTER_DECK_IDS,
   getCardCastBinding,
   getCard,
+  getCardAtUpgrade,
   type CardDef,
 } from '../data/cards';
 import {
@@ -67,6 +68,7 @@ import {
   markTutorialComplete,
 } from './settings';
 import { getActiveProfile, updateActiveProfile } from './profiles';
+import { createDeck, createDeckCard, type DeckCardV2 } from './cardInstances';
 
 export type Screen =
   | 'title'
@@ -102,7 +104,7 @@ export interface RunState {
   screen: Screen;
   heroHp: number;
   heroMaxHp: number;
-  deck: string[];
+  deck: DeckCardV2[];
   gold: number;
   characterId: string | null;
   relicId: string | null;
@@ -193,7 +195,7 @@ export function createNewRun(): RunState {
     screen: 'title',
     heroHp: HERO_MAX,
     heroMaxHp: HERO_MAX,
-    deck: [...STARTER_DECK_IDS],
+    deck: createDeck(STARTER_DECK_IDS),
     gold: 0,
     characterId: null,
     relicId: null,
@@ -242,7 +244,7 @@ export function startRun(state: RunState): void {
   clearSavedRun();
   state.heroHp = HERO_MAX;
   state.heroMaxHp = HERO_MAX;
-  state.deck = [...STARTER_DECK_IDS];
+  state.deck = createDeck(STARTER_DECK_IDS);
   state.gold = 0;
   state.characterId = null;
   state.relicId = null;
@@ -342,7 +344,7 @@ export function pickCharacter(state: RunState, characterId: string): void {
   const character = getCharacter(characterId);
   const relic = getRelic(character.startingRelicId);
   state.characterId = character.id;
-  state.deck = [...character.starterDeckIds];
+  state.deck = createDeck(character.starterDeckIds);
   state.relicId = relic.id;
   if (relic.startGold) state.gold += relic.startGold;
   state.screen = 'map';
@@ -526,7 +528,7 @@ export function buyShopCard(state: RunState, offerIndex: number): void {
     return;
   }
   state.gold -= offer.price;
-  state.deck.push(offer.cardId);
+  state.deck.push(createDeckCard(offer.cardId));
   offer.sold = true;
   state.flash = '🛒✨';
   saveRunCheckpoint(state);
@@ -670,7 +672,7 @@ function tutorialRequiredCardAvailable(state: RunState): boolean {
   const requiredId = requiredTutorialCardId(state.tutorial.step);
   if (!requiredId) return false;
   return state.combat.hand.some((card) => {
-    const def = getCard(card.defId);
+    const def = getCardAtUpgrade(card.defId, card.upgradeLevel);
     return card.defId === requiredId && def.cost <= state.combat!.energy;
   });
 }
@@ -920,7 +922,7 @@ function finishFight(state: RunState): void {
 }
 
 export function pickReward(state: RunState, cardId: string | null): void {
-  if (cardId) state.deck.push(cardId);
+  if (cardId) state.deck.push(createDeckCard(cardId));
   completeNode(state);
 }
 
@@ -938,8 +940,8 @@ export function hasEarBadge(): boolean {
 /** Deck counts for map viewer: id → { def, count } */
 export function deckCounts(state: RunState): { id: string; count: number; def: CardDef }[] {
   const map = new Map<string, number>();
-  for (const id of state.deck) {
-    map.set(id, (map.get(id) ?? 0) + 1);
+  for (const card of state.deck) {
+    map.set(card.defId, (map.get(card.defId) ?? 0) + 1);
   }
   return [...map.entries()]
     .map(([id, count]) => ({ id, count, def: getCard(id) }))

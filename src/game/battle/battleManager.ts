@@ -6,6 +6,7 @@ import { DRAW_PER_TURN } from '../../data/balance';
 import { resolveEnemyDefIds } from '../../data/encounters';
 import { ENEMIES } from '../../data/enemies';
 import type { RelicDef } from '../../data/relics';
+import type { DeckCardV2 } from '../cardInstances';
 import {
   advanceEnemyStatuses,
   runEnemyTurn,
@@ -17,7 +18,7 @@ import { drawCards, makeCard, shuffle } from './piles';
 import type { CombatState } from './types';
 
 export function createCombat(
-  deckDefIds: string[],
+  deckDefIds: Array<string | DeckCardV2>,
   enemyIdOrIds: string | string[],
   heroHp: number,
   heroMaxHp: number,
@@ -44,10 +45,11 @@ export function createCombat(
     maxEnergy,
     firstAttackBonusDamage: relic?.firstAttackBonusDamage ?? 0,
     firstAttackBonusReady: (relic?.firstAttackBonusDamage ?? 0) > 0,
-    echoGuardAmount: 0,
+    basicAttackBonusDamage: 0,
     drawPile,
     hand: [],
     discardPile: [],
+    powerPile: [],
     enemies,
     selectedEnemyId: enemies[0]?.id ?? null,
     pendingTargetIds: [],
@@ -70,7 +72,7 @@ export function createCombat(
     state.log.push(`晨光：第 1 回合 ⚡${relic.firstTurnEnergy}`);
   }
   if (relic?.firstAttackBonusDamage) {
-    state.log.push(`初心音叉：首次攻擊 +${relic.firstAttackBonusDamage}`);
+    state.log.push(`初心音叉：每回合首擊 +${relic.firstAttackBonusDamage}`);
   }
   drawCards(state, DRAW_PER_TURN);
   if (relic?.startDraw && relic.startDraw > 0) {
@@ -101,6 +103,7 @@ export function endTurn(state: CombatState): CombatState['status'] {
   advanceEnemyStatuses(state);
   state.turn += 1;
   state.energy = state.maxEnergy;
+  state.firstAttackBonusReady = state.firstAttackBonusDamage > 0;
   state.phase = 'playerStart';
   drawCards(state, DRAW_PER_TURN);
   state.phase = 'playerAction';

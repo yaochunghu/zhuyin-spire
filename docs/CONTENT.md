@@ -6,16 +6,14 @@ How to add playable content without reverse-engineering the whole repo.
 
 ## Cards — `src/data/cards.ts`
 
-The live file still contains the prototype schema and pool. Before expanding
-it, review [CARD_BIBLE.md](./CARD_BIBLE.md) for the exact proposed roster and
-[UPGRADE_BIBLE.md](./UPGRADE_BIBLE.md) for per-copy identity and save migration.
-The bibles are proposals, not generated runtime data.
+The live foundation uses authored Attack, Skill, Power, Status, and Curse types.
+Collectible character cards use Attack, Skill, or Power. A direct Attack remains
+an Attack when it also blocks, draws, or applies a status; Powers leave normal
+pile circulation after a successful cast. Failed Powers pay Energy and discard.
 
-The target type system is `Attack | Skill | Power`: any direct Attack card
-remains Attack even with secondary effects; one-use defense/draw/Energy/status
-actions are Skills; Powers remain active for the rest of combat. The live
-prototype's `block` type must migrate to Skill rather than becoming a fourth
-type. Status and Curse are separate pollution types.
+The old Echo-focused rows in [CARD_BIBLE.md](./CARD_BIBLE.md) are frozen design
+reference. New content must follow the live 共鳴武者 direction in
+[DECK_DESIGN.md](./DECK_DESIGN.md), not translate those rows mechanically.
 
 ### `CardDef` fields
 
@@ -24,19 +22,28 @@ type. Status and Curse are separate pollution types.
 | `id` | Stable string key |
 | `zhuyin` | Teaching initial (e.g. `ㄅ`) — keys phrase bank |
 | `name` | Display name |
-| `type` | `attack` \| `block` \| `skill` |
+| `type` | `attack` \| `skill` \| `power` \| `status` \| `curse` |
+| `rarity` / `pool` | Reward frame and acquisition pool |
 | `cost` | Energy |
 | `icon?` | Stable combat art emoji; unlike the changing spelling cue emoji |
 | `job?` | Primary deck job: frontload, area, defense, scaling, draw, or energy |
-| `value` | Primary damage or block amount |
-| `hits?` | Multi-hit attacks |
-| `bonusBlock?` / `draw?` | Extra effects |
-| `effects?` | Modular damage/block/draw/energy/Echo/Echo-guard definitions |
+| `effects` | Required ordered discriminated effects; shared by combat and previews |
+| `tags` / `keywords` | Mechanical tags such as `basicAttack`; lifecycle keywords |
+| `upgrade?` | Authored cost/effect/tag changes; never a second definition id |
 | `target?` | `self` \| `singleEnemy` \| `allEnemies` |
 | `cues` | Fallback teaching phrases on the card |
 | `description` | Kid/adult readable text |
+| `balanceNote` / `unlockTier` | Adult designer information |
 
-Also maintain **pools**: `STARTER_DECK_IDS`, `REWARD_POOL_IDS`, `ELITE_REWARD_POOL_IDS`, practice ids, etc. For the first character, keep the starter at 3 designs and Act I rewards at exactly 9 until playtesting justifies expansion.
+Run decks contain physical `DeckCardV2` copies with stable `uid`, `defId`, and
+`upgradeLevel`. Rewards and shops create a new copy. Removal and future Smithing
+operate on the copy, never every card sharing its definition. The in-game card
+viewer exposes exact copies plus a searchable designer catalog.
+
+Also maintain `STARTER_DECK_IDS`, reward pools, practice ids, and character
+ownership. For the first character, keep three starter designs and exactly nine
+Act I rewards until playtesting justifies expansion. Run
+`validateCardDefinitions()` and the unit suite after every content edit.
 
 ### Teaching rules for cues / phrases
 
@@ -48,7 +55,7 @@ Example: 爸爸 → `ㄅㄚˋ`.
 
 ### Minimal “new attack card” checklist
 
-1. Add `CardDef` to `CARDS`  
+1. Add a source definition with explicit type, rarity, effects, cues, and balance note
 2. Add `id` to appropriate reward / starter pools  
 3. Ensure its `getCardCastBinding` lesson family passes the coverage floor (do
    not rely on the emergency fallback as authored content)
@@ -122,8 +129,10 @@ cards ≥16/8. See [CASTING_GATES.md](./CASTING_GATES.md).
 
 Each `CharacterDef` owns its starter deck ids, starting relic id, casting-gate id,
 and one main theme. New runs select a character; they do not separately choose an unrelated
-starter relic. Keep starter relics always useful, small, and thematic. Existing
-v1 saves may retain a legacy relic so an in-progress run is not destroyed.
+starter relic. Keep every relic character-agnostic, useful, small, and thematic;
+it may amplify broad actions but must not require one character's signature
+mechanic. Existing V1 saves may retain a legacy relic so an in-progress run is
+not destroyed.
 
 The live first-character specification and future upgrade constraints are in
 [DECK_DESIGN.md](./DECK_DESIGN.md).

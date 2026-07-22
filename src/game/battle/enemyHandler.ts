@@ -29,8 +29,7 @@ export function spawnEnemies(defIds: string[]): EnemyUnit[] {
       block: 0,
       intentIndex: 0,
       alive: true,
-      echoTurns: 0,
-      echoTriggeredThisTurn: false,
+      vulnerableTurns: 0,
     };
   });
 }
@@ -205,7 +204,6 @@ export function runEnemyTurn(state: CombatState): void {
 export function advanceEnemyStatuses(state: CombatState): void {
   for (const unit of state.enemies) {
     if (!unit.alive) continue;
-    if (unit.echoTurns > 0) unit.echoTurns -= 1;
-    unit.echoTriggeredThisTurn = false;
+    if (unit.vulnerableTurns > 0) unit.vulnerableTurns -= 1;
   }
 }

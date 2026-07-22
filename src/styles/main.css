@@ -641,6 +641,11 @@ button:disabled {
   border-color: #70c090;
 }
 
+.card.power {
+  background: linear-gradient(180deg, #6b5421 0%, #463716 42%, #29203b 100%);
+  border-color: #f0c75e;
+}
+
 .card.unplayable {
   opacity: 0.45;
   filter: grayscale(0.3);
@@ -742,6 +747,28 @@ button:disabled {
   line-height: 1.35;
   color: #f0e8ff;
   text-align: center;
+}
+
+.card-damage-preview {
+  padding: 1px 7px;
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.28);
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1.3;
+}
+
+.card-damage-preview.modified {
+  color: #fff1a8;
+  background: rgba(120, 72, 8, 0.58);
+  box-shadow: 0 0 8px rgba(255, 205, 77, 0.35);
+}
+
+.card-upgrade-mark {
+  margin-left: 0.18em;
+  color: #8dff9f;
+  text-shadow: 0 1px 4px #102b15;
 }
 
 /* Legacy hooks (reward/deck may still reference) */
@@ -3279,6 +3306,24 @@ button.combat-pile-btn:disabled {
   font-weight: 950;
   line-height: 1.2;
   box-shadow: 0 0 14px rgba(244, 202, 90, 0.22);
+  cursor: pointer;
+  min-height: 40px;
+}
+
+button.enemy-status {
+  font-family: inherit;
+}
+
+.enemy-status-help {
+  width: min(260px, 100%);
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 224, 120, 0.55);
+  border-radius: 10px;
+  background: rgba(20, 13, 32, 0.96);
+  color: #fff7d0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  text-align: left;
 }
 
 .enemy-status.status-used {
@@ -3302,6 +3347,11 @@ button.combat-pile-btn:disabled {
 .combat-power.relic-ready {
   color: #fff0a8;
   border-color: rgba(255, 222, 120, 0.5);
+}
+
+.combat-power.status-used {
+  opacity: 0.62;
+  filter: grayscale(0.3);
 }
 
 .strike-float-echo {
@@ -3416,7 +3466,9 @@ button.combat-pile-btn:disabled {
 .combat-stage .hand .card {
   flex: 0 0 168px;
   width: 168px;
+  height: 236px;
   min-height: 236px;
+  max-height: 236px;
   padding: 10px 10px 12px;
   border-radius: 18px;
   border-width: 3px;
@@ -3443,8 +3495,11 @@ button.combat-pile-btn:disabled {
 }
 
 .combat-stage .hand .card .card-desc-box {
-  min-height: 3.4em;
+  height: 76px;
+  min-height: 76px;
+  max-height: 76px;
   padding: 8px 10px;
+  overflow: hidden;
 }
 
 .combat-stage .hand .card .card-desc {
@@ -4555,7 +4610,9 @@ body {
   .combat-stage .hand .card {
     flex-basis: 156px;
     width: 156px;
+    height: 218px;
     min-height: 218px;
+    max-height: 218px;
   }
 
   .combat-stage .end-turn-btn {
@@ -4583,7 +4640,9 @@ body {
   }
 
   .combat-stage .hand .card {
+    height: 174px;
     min-height: 174px;
+    max-height: 174px;
   }
 }
 
@@ -4712,10 +4771,280 @@ body.modal-open {
 #zhuyin-deck-viewer-root .map-deck-viewer {
   position: relative;
   inset: auto;
-  width: min(720px, 100%);
-  max-width: 720px;
+  width: min(1180px, 100%);
+  max-width: 1180px;
   max-height: 100%;
   margin: 0;
+}
+
+.designer-viewer {
+  align-items: stretch;
+  gap: 10px;
+  padding: 14px;
+  overflow: hidden;
+}
+
+.designer-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.designer-tabs button,
+.designer-filters input,
+.designer-filters select {
+  min-height: 48px;
+  border: 2px solid rgba(210, 190, 255, 0.4);
+  border-radius: 12px;
+  color: var(--text);
+  background: rgba(42, 29, 62, 0.96);
+  font: inherit;
+  font-weight: 800;
+}
+
+.designer-tabs button {
+  cursor: pointer;
+}
+
+.designer-tabs button.active {
+  color: #1f1730;
+  border-color: #fff0a8;
+  background: var(--accent);
+}
+
+.designer-filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) repeat(3, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.designer-filters input,
+.designer-filters select {
+  width: 100%;
+  padding: 7px 10px;
+}
+
+.designer-result-count {
+  margin: 0;
+  text-align: right;
+}
+
+.designer-viewer-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  overflow: hidden;
+}
+
+.designer-viewer > .deck-viewer-head,
+.designer-viewer > .designer-tabs,
+.designer-viewer > .designer-filters,
+.designer-viewer > .designer-result-count,
+.designer-viewer > .deck-viewer-close {
+  flex: 0 0 auto;
+}
+
+.designer-viewer-body.has-detail {
+  grid-template-columns: minmax(360px, 1.35fr) minmax(330px, 1fr);
+}
+
+.deck-viewer-grid.designer-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  align-content: start;
+  justify-items: center;
+  gap: 12px;
+  padding: 4px;
+  overflow-y: auto;
+}
+
+.designer-card-entry {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.designer-card-entry .deck-viewer-card {
+  width: 136px;
+  height: 196px;
+  min-height: 196px;
+  max-height: 196px;
+  padding: 7px;
+  pointer-events: auto;
+  transform: none;
+}
+
+.designer-card-entry .deck-viewer-card.selected {
+  outline: 4px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.designer-card-entry .card-art {
+  min-height: 54px;
+}
+
+.designer-card-entry .zhuyin {
+  font-size: 2.15rem;
+}
+
+.designer-card-entry .card-emoji {
+  font-size: 1.25rem;
+}
+
+.designer-card-entry .card-name {
+  font-size: 0.9rem;
+}
+
+.designer-card-entry .card-desc-box {
+  height: 62px;
+  min-height: 62px;
+  max-height: 62px;
+  padding: 4px;
+  overflow: hidden;
+}
+
+.designer-card-entry .card-desc {
+  font-size: 0.68rem;
+  line-height: 1.15;
+}
+
+.designer-card-entry .card-job {
+  font-size: 0.56rem;
+}
+
+.designer-card-identity {
+  width: 100%;
+  min-height: 2.5em;
+  font-size: 0.68rem;
+  line-height: 1.25;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.designer-detail {
+  min-height: 0;
+  padding: 12px;
+  border: 2px solid rgba(255, 215, 106, 0.5);
+  border-radius: 16px;
+  background: rgba(16, 10, 28, 0.96);
+  overflow-y: auto;
+}
+
+.designer-detail-title {
+  margin-bottom: 10px;
+  color: #fff0a8;
+  font-size: 1.25rem;
+  font-weight: 950;
+  text-align: center;
+}
+
+.designer-meta-grid {
+  display: grid;
+  grid-template-columns: minmax(88px, auto) minmax(0, 1fr);
+  gap: 5px 10px;
+  margin: 0 0 12px;
+  font-size: 0.82rem;
+}
+
+.designer-meta-grid dt {
+  color: #cfc1e9;
+  font-weight: 800;
+}
+
+.designer-meta-grid dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.designer-effects,
+.designer-cues,
+.designer-balance-note {
+  padding: 9px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.designer-effects ol {
+  margin: 6px 0 0;
+  padding-left: 1.4rem;
+  line-height: 1.45;
+}
+
+.designer-comparison {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.designer-preview.card {
+  width: 132px;
+  height: 204px;
+  min-height: 204px;
+  max-height: 204px;
+  padding: 6px;
+  cursor: default;
+}
+
+.designer-preview .card-art {
+  min-height: 42px;
+}
+
+.designer-preview .zhuyin {
+  font-size: 1.8rem;
+}
+
+.designer-preview .card-emoji {
+  display: none;
+}
+
+.designer-preview .card-name {
+  font-size: 0.78rem;
+}
+
+.designer-preview .card-desc-box {
+  height: 62px;
+  min-height: 62px;
+  max-height: 62px;
+  padding: 3px;
+  overflow: hidden;
+}
+
+.designer-preview .card-desc {
+  font-size: 0.64rem;
+  line-height: 1.15;
+}
+
+.designer-preview-label {
+  color: #fff0a8;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.designer-upgrade-pending {
+  max-width: 160px;
+  text-align: center;
+}
+
+.designer-cue-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.designer-cue-list span {
+  padding: 4px 7px;
+  border-radius: 999px;
+  color: #f7f0ff;
+  background: rgba(120, 91, 158, 0.42);
+  font-size: 0.76rem;
 }
 
 .deck-viewer-close {
@@ -5675,5 +6004,133 @@ body.modal-open {
   .combat-stage .hand .card {
     flex-basis: 122px;
     width: 122px;
+  }
+}
+
+/* Designer viewer is declared after the main phone rules; keep its compact
+   overrides last so the detail tool remains usable on narrow screens. */
+@media (max-width: 800px) {
+  .designer-viewer {
+    padding: 8px;
+  }
+
+  .designer-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .designer-filters input {
+    grid-column: 1 / -1;
+  }
+
+  .designer-viewer-body,
+  .designer-viewer-body.has-detail {
+    grid-template-columns: minmax(0, 1fr);
+    overflow-y: auto;
+  }
+
+  .deck-viewer-grid.designer-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+    overflow: visible;
+  }
+
+  .designer-card-entry .deck-viewer-card {
+    width: 110px;
+    height: 164px;
+    min-height: 164px;
+    max-height: 164px;
+    padding: 5px;
+  }
+
+  .designer-card-entry .card-top {
+    min-height: 26px;
+  }
+
+  .designer-card-entry .cost {
+    width: 27px;
+    height: 27px;
+    font-size: 0.85rem;
+  }
+
+  .designer-card-entry .card-art {
+    min-height: 38px;
+    padding: 0;
+  }
+
+  .designer-card-entry .zhuyin {
+    font-size: 1.7rem;
+  }
+
+  .designer-card-entry .card-emoji {
+    display: none;
+  }
+
+  .designer-card-entry .card-name {
+    padding: 2px;
+    font-size: 0.72rem;
+  }
+
+  .designer-card-entry .card-desc-box {
+    height: 52px;
+    min-height: 52px;
+    max-height: 52px;
+    padding: 2px;
+  }
+
+  .designer-card-entry .card-desc {
+    font-size: 0.56rem;
+  }
+
+  .designer-card-entry .card-job,
+  .designer-card-entry .card-damage-preview {
+    display: none;
+  }
+
+  .designer-detail {
+    order: -1;
+    overflow: visible;
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .designer-viewer {
+    gap: 4px;
+    padding: 4px 8px;
+  }
+
+  .designer-viewer .deck-viewer-head .kid-prompt {
+    font-size: 1rem;
+  }
+
+  .designer-viewer .deck-viewer-head .adult-text,
+  .designer-result-count {
+    display: none;
+  }
+
+  .designer-tabs button,
+  .designer-filters input,
+  .designer-filters select {
+    min-height: 38px;
+    padding: 3px 6px;
+    font-size: 0.72rem;
+  }
+
+  .designer-filters {
+    grid-template-columns: minmax(150px, 2fr) repeat(3, minmax(90px, 1fr));
+    gap: 4px;
+  }
+
+  .designer-filters input {
+    grid-column: auto;
+  }
+
+  .designer-viewer-body,
+  .designer-viewer-body.has-detail {
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .designer-viewer .deck-viewer-close {
+    min-height: 44px;
+    height: 44px;
   }
 }

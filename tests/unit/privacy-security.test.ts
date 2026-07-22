@@ -52,14 +52,30 @@ describe('privacy boundaries', () => {
 describe('untrusted save validation', () => {
   it('accepts a real stable checkpoint, including duplicate cards', () => {
     const snapshot = validSnapshot();
-    expect(new Set(snapshot.deck).size).toBeLessThan(snapshot.deck.length);
+    expect(new Set(snapshot.deck.map((card) => card.defId)).size).toBeLessThan(snapshot.deck.length);
+    expect(new Set(snapshot.deck.map((card) => card.uid)).size).toBe(snapshot.deck.length);
     expect(parseSnapshot(snapshot)).not.toBeNull();
   });
 
   it('rejects wrong primitive types and unknown content ids', () => {
     const snapshot = validSnapshot();
     expect(parseSnapshot({ ...snapshot, gold: '999' })).toBeNull();
-    expect(parseSnapshot({ ...snapshot, deck: [...snapshot.deck, 'unknown-card'] })).toBeNull();
+    expect(parseSnapshot({
+      ...snapshot,
+      deck: [...snapshot.deck, { uid: 'bad', defId: 'unknown-card', upgradeLevel: 0 }],
+    })).toBeNull();
+  });
+
+  it('rejects duplicate physical UIDs and unsupported permanent upgrades', () => {
+    const snapshot = validSnapshot();
+    const duplicateUid = structuredClone(snapshot);
+    duplicateUid.deck[1]!.uid = duplicateUid.deck[0]!.uid;
+    expect(parseSnapshot(duplicateUid)).toBeNull();
+
+    const invalidUpgrade = structuredClone(snapshot);
+    const unupgradedDefinition = invalidUpgrade.deck.find((card) => card.defId === 'po')!;
+    unupgradedDefinition.upgradeLevel = 2;
+    expect(parseSnapshot(invalidUpgrade)).toBeNull();
   });
 
   it('rejects markup in persisted map labels and invalid graph edges', () => {

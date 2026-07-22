@@ -1,5 +1,5 @@
 import './styles/main.css';
-import { cycleVolume, sfx, volumeIcon } from './game/audio';
+import { sfx } from './game/audio';
 import { coachForScreen, getCompletedRunCount, isEarlyLearningRuns } from './game/coach';
 import type { CastMode } from './game/castCheck';
 import {
@@ -65,46 +65,13 @@ function clearFloatSoon(): void {
   }, 700);
 }
 
-function muteButton(): HTMLButtonElement {
-  const b = document.createElement('button');
-  b.className = 'mute-btn';
-  b.type = 'button';
-  b.setAttribute('aria-label', '音量：點一下切換 大／小／靜音');
-  b.title = '音量：大 → 小 → 靜音';
-  b.textContent = volumeIcon();
-  b.addEventListener('click', (e) => {
-    e.stopPropagation();
-    cycleVolume();
-    b.textContent = volumeIcon();
-    sfx.click();
-  });
-  return b;
-}
-
 function globalControls(): HTMLElement {
   const controls = document.createElement('div');
   controls.className = 'global-controls';
-  const mute = muteButton();
-  mute.classList.remove('mute-btn');
-  mute.classList.add('global-control-btn', 'desktop-global-control');
-  mute.dataset.volumeControl = '';
-  controls.appendChild(mute);
-
-  const options = document.createElement('button');
-  options.type = 'button';
-  options.className = 'global-control-btn desktop-global-control';
-  options.textContent = '⚙️';
-  options.setAttribute('aria-label', '開啟遊戲選項');
-  options.addEventListener('click', (event) => {
-    event.stopPropagation();
-    sfx.click();
-    openOptions({ allowProfileSwitch: runState.screen === 'title' });
-  });
-  controls.appendChild(options);
 
   const menu = document.createElement('button');
   menu.type = 'button';
-  menu.className = 'global-control-btn phone-global-control';
+  menu.className = 'global-control-btn pause-global-control';
   menu.textContent = '☰';
   menu.setAttribute('aria-label', '開啟暫停選單');
   menu.addEventListener('click', (event) => {
@@ -288,16 +255,6 @@ bindUi({
 applyGameSettingsToDocument();
 window.addEventListener('zhuyin-settings-change', () => {
   applyGameSettingsToDocument();
-  const icon = appEl.querySelector<HTMLButtonElement>(
-    '.global-controls [data-volume-control]',
-  );
-  if (icon) icon.textContent = volumeIcon();
-});
-window.addEventListener('zhuyin-volume-change', () => {
-  const icon = appEl.querySelector<HTMLButtonElement>(
-    '.global-controls [data-volume-control]',
-  );
-  if (icon) icon.textContent = volumeIcon();
 });
 window.addEventListener('zhuyin-profile-change', () => {
   // Profile switching is title-only, so replacing this idle title state cannot

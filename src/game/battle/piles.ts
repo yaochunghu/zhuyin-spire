@@ -3,14 +3,12 @@
  */
 
 import { MAX_HAND_SIZE } from '../../data/balance';
+import { cloneDeckCard, createDeckCard, type DeckCardV2 } from '../cardInstances';
 import type { CombatCard, CombatState } from './types';
 import { pushFx } from './fx';
 
-let uidCounter = 0;
-
-export function makeCard(defId: string): CombatCard {
-  uidCounter += 1;
-  return { uid: `c${uidCounter}`, defId };
+export function makeCard(card: string | DeckCardV2): CombatCard {
+  return typeof card === 'string' ? createDeckCard(card) : cloneDeckCard(card);
 }
 
 export function shuffle<T>(arr: T[], rng: () => number = Math.random): T[] {

@@ -17,6 +17,8 @@ export const session = {
   mapSelectBusy: false,
   /** Combat pile inspect: draw or discard (null = closed) */
   pileViewer: null as null | 'draw' | 'discard',
+  /** Enemy whose tappable status explanation is open. */
+  enemyStatusHelpId: null as string | null,
   combatFxPlaying: false,
   outcomeAnimPlaying: false,
   hintSpell: null as string | null,

@@ -73,7 +73,7 @@ The test for the child is recognizing / listening for 注音 — not reading Chi
 ## How to play (short)
 
 1. Adult opens the game; child taps **▶️** to climb, or **📚** for **practice** (no HP).
-2. Pick a character, which sets the starting deck, deck theme, and starting relic. **回音法師** is the first playable character.
+2. Pick a character, which sets the starting deck, deck theme, and starting relic. **🧒🥋 共鳴武者** is the first playable character.
 3. **Map climbs upward** (StS-style web): lit rooms are branches. **3 acts**, each with boss. **🃏** shows the deck.
 4. In combat, play a card (tap or **drag** onto enemy / shield). Cast check — spell the **full first syllable**:
    - 聲母 + 韻母 + **聲調**（ˊˇˋ˙；一聲 usually unmarked）
@@ -82,18 +82,19 @@ The test for the child is recognizing / listening for 注音 — not reading Chi
 6. Rewards / shop / treasure use big icons; adult text stays secondary.
 
 The first character starts with exactly 10 cards: 5 one-energy attacks, 4
-one-energy shields, and 1 two-energy attack that applies 🔔 Echo for two turns.
+one-energy shields, and 1 two-energy attack that applies 🎯 易傷 for two turns.
 Act I adds a focused nine-card reward pool. See
 [docs/DECK_DESIGN.md](docs/DECK_DESIGN.md) for the card jobs and upgrade plan.
-The proposed full roster has **75 base Echo Mage card designs**; upgraded faces
-are states of those same cards, not 75 additional cards. Review the proposal in
+The older **75-card Echo Mage proposal is now frozen reference material** while
+the Resonance Warrior prototype is playtested. Upgraded faces remain states of
+the same physical card, not extra card designs. Review the historical proposal in
 [docs/CARD_BIBLE.md](docs/CARD_BIBLE.md) and
 [docs/UPGRADE_BIBLE.md](docs/UPGRADE_BIBLE.md). It is not live content yet.
 
 On a fresh installation, the first Act I battle is a one-monster guided lesson:
-shield → End Turn → attack → finish normally. Phones use one large ☰ pause button
-for resume, sound, Options, the current deck, and development-only debug tools; larger screens
-keep direct sound and ⚙️ controls. Options include 1×/2× gameplay animation,
+shield → End Turn → attack → finish normally. Every screen size uses one large ☰
+pause button for resume, sound, Options, the exact-copy deck/designer viewer, and
+development-only debug tools. Options include 1×/2× gameplay animation,
 tutorial replay, and detailed curriculum controls. Up to four children can keep separate runs, tutorials,
 badges, practice results, and casting history; switch learners from the title.
 
@@ -131,9 +132,9 @@ CHANGELOG.md        version history
 | [docs/MAP.md](docs/MAP.md) | 15×7 STS map generation |
 | [docs/CONTENT.md](docs/CONTENT.md) | Add cards / enemies / phrases |
 | [docs/CASTING_GATES.md](docs/CASTING_GATES.md) | Casting metaphor, anti-repeat pools, profiles, future subjects |
-| [docs/DECK_DESIGN.md](docs/DECK_DESIGN.md) | Live first character, 12 Act I cards, Echo, expansion boundary |
+| [docs/DECK_DESIGN.md](docs/DECK_DESIGN.md) | Live 共鳴武者, 易傷/basic attacks, expansion boundary |
 | [docs/STS_DESIGN_REFERENCE.md](docs/STS_DESIGN_REFERENCE.md) | StS systems reference and what to copy, adapt, or defer |
-| [docs/CARD_BIBLE.md](docs/CARD_BIBLE.md) | Proposed 75-card character roster and supplemental card pools |
+| [docs/CARD_BIBLE.md](docs/CARD_BIBLE.md) | Frozen Echo roster reference awaiting Resonance rewrite |
 | [docs/UPGRADE_BIBLE.md](docs/UPGRADE_BIBLE.md) | Proposed per-copy upgrades, Smithing, migration, and previews |
 | [docs/RELIC_POTION_BIBLE.md](docs/RELIC_POTION_BIBLE.md) | Proposed 40 relics, 20 potions, and timing rules |
 | [docs/EVENT_ENCOUNTER_BIBLE.md](docs/EVENT_ENCOUNTER_BIBLE.md) | Proposed events, encounters, difficulty variants, keys, and Act IV |

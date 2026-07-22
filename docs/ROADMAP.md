@@ -1,6 +1,6 @@
 # Roadmap
 
-## Shipped (through v0.3.0)
+## Implemented on the current v0.3 development line
 
 - Vite + TypeScript SPA; touch-first preschool UI; adult coach strip  
 - Full first-syllable 注音 cast (including 聲調); listen mode (Web Speech zh-TW)  
@@ -22,6 +22,27 @@
 - Dedicated portrait/landscape phone layouts with a scrollable combat hand,
   pause menu, keyboard-safe Options, accessible deck viewer, and phone map panning
 - Chromium and WebKit phone regression projects alongside tablet coverage
+- V2 physical card copies with safe V1 migration, typed ordered effects,
+  Attack/Skill/Power categories, rarity metadata, upgrades, and validation
+- Exact-copy deck viewer plus searchable adult designer catalog with effect,
+  cue, upgrade, pool, and balance information
+- 🧒🥋 共鳴武者 prototype: additive 易傷, tagged basic attacks, true Powers,
+  live damage previews, and universal per-turn 初心音叉
+- One global pause menu on phones, tablets, and desktop
+
+## StS-informed expansion status
+
+| Phase | Status | Next gate |
+|---|---|---|
+| Research and design references | Complete, with Echo rows frozen | Rewrite content around the tested Resonance identity |
+| Platform, onboarding, responsiveness, release safety | Complete | Keep regression gates green |
+| Card/save/effect foundation | Complete | Exercise migration and authoring during playtests |
+| Deck and designer viewer | Complete foundation | Add Smith selection states when Smithing begins |
+| Resonance Warrior prototype | Implemented | Playtest 易傷/basic-attack numbers before expanding |
+| 75 cards and complete upgrades | Design reference only | Re-author and release in small reviewed waves |
+| Smithing, relics, and potions | Not implemented beyond five relics | Smith is the next feature phase |
+| Events and expanded encounters | Base encounters only | Wait for a stable card pool |
+| Difficulty track, keys, and Act IV | Not implemented | Last systems phase |
 
 ---
 
@@ -29,15 +50,15 @@
 
 Ordered by “resume playtest” value — not a binding schedule:
 
-1. **Approve the design foundation** — review the four bibles linked from
-   [INDEX.md](./INDEX.md), especially identity, fun, clarity, and obvious risk;
-   individual numbers remain playtestable
-2. **Implement the content foundation** — Attack/Skill/Power and rarity types,
-   physical card UIDs, safe V1→V2 deck migration, typed effects, and validation
-3. **Add cards and upgrades in reviewed waves** — preserve the 12 anchors and
-   all 27 live IDs, then verify fixed-height cards and the designer viewer at
-   each phone and tablet viewport
-4. **Add Smith, expanded relics, and potions** — keep acquisition and temporary
+1. **Playtest the Resonance prototype** — test cast-on and debug-skip runs;
+   inspect first-hit previews, Vulnerable duration, and whether basic Attack
+   scaling is understandable without adult rules explanation
+2. **Add Smith and the approved live upgrades** — use exact-copy UIDs and the
+   existing base/upgrade viewer; do not broaden the card pool in the same change
+3. **Re-author cards in reviewed waves** — preserve all 27 stable live IDs,
+   replace frozen Echo packages deliberately, and review each wave in the
+   designer catalog at every phone/tablet viewport
+4. **Expand universal relics and add potions** — keep acquisition and temporary
    upgrades instance-safe; test timing hooks before increasing content volume
 5. **Add events and encounters one act at a time** — seeded simulation and
    cast-off/cast-on playtests before enabling the next act

@@ -46,7 +46,7 @@ async function enterHintedSpellAndOpenPauseMenu(page: Page): Promise<void> {
 
     // The final key schedules auto-submit for 380 ms later. Open the menu in
     // this same browser task so a slow CI round trip cannot race that timer.
-    const menu = document.querySelector<HTMLButtonElement>('.phone-global-control');
+    const menu = document.querySelector<HTMLButtonElement>('.pause-global-control');
     if (!menu) throw new Error('Missing phone pause menu control');
     menu.click();
   }, [...spell]);
@@ -161,7 +161,7 @@ test('phone map keeps routes attached, nodes large, and scrolling internal', asy
   expect(topBox).not.toBeNull();
   const overlapsHeaderContent = await page.evaluate(() => {
     const menuRect = document
-      .querySelector<HTMLElement>('.phone-global-control')!
+      .querySelector<HTMLElement>('.pause-global-control')!
       .getBoundingClientRect();
     return [...document.querySelectorAll<HTMLElement>('.map-stage-top .kid-stat')]
       .filter((element) => getComputedStyle(element).display !== 'none')
@@ -310,9 +310,17 @@ test('phone menu opens the current deck without changing the run', async ({ page
   const before = await page.locator('.map-dot').count();
   await page.getByRole('button', { name: '開啟暫停選單' }).click();
   await page.getByRole('button', { name: '🃏 查看牌組' }).click();
-  await expect(page.getByRole('dialog', { name: '目前牌組' })).toBeVisible();
-  await expect(page.locator('#zhuyin-deck-viewer-root .deck-viewer-card')).toHaveCount(3);
-  await page.getByRole('button', { name: '關閉牌組' }).click();
+  await expect(page.getByRole('dialog', { name: '牌組與卡牌設計檢視器' })).toBeVisible();
+  await expect(page.locator('#zhuyin-deck-viewer-root .deck-viewer-card')).toHaveCount(10);
+  await expect(page.getByRole('dialog', { name: '牌組與卡牌設計檢視器' })).toContainText(
+    '每一張實體牌都分開顯示；重複牌不合併。',
+  );
+  await page.getByRole('button', { name: '🧰 設計檢視' }).click();
+  await expect(page.locator('#zhuyin-deck-viewer-root .deck-viewer-card')).toHaveCount(27);
+  await page.getByRole('button', { name: /音波擊，攻擊，基礎，查看完整資料/ }).click();
+  await expect(page.getByText('結算順序')).toBeVisible();
+  await expect(page.getByText(/平衡備註：一能量基礎攻擊下限/)).toBeVisible();
+  await page.getByRole('button', { name: '關閉卡牌檢視器' }).click();
   await expect(page.locator('.map-dot')).toHaveCount(before);
 });
 

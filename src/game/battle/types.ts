@@ -3,10 +3,9 @@
  * Handlers, effects, and UI import from here (not from combat facade).
  */
 
-export interface CombatCard {
-  uid: string;
-  defId: string;
-}
+import type { DeckCardV2 } from '../cardInstances';
+
+export type CombatCard = DeckCardV2;
 
 export interface EnemyUnit {
   id: string;
@@ -16,9 +15,8 @@ export interface EnemyUnit {
   block: number;
   intentIndex: number;
   alive: boolean;
-  /** Echo: first incoming attack each player turn gains +2 damage. */
-  echoTurns: number;
-  echoTriggeredThisTurn: boolean;
+  /** Attack damage received is multiplied by 1.5 while active. */
+  vulnerableTurns: number;
 }
 
 /** One ordered hit, including the monster shield state before and after it. */
@@ -30,9 +28,12 @@ export interface PlayerImpact {
   blockAfter: number;
   hpDamage: number;
   killed: boolean;
-  /** Optional damage additions, kept separate so feedback can explain them. */
-  echoBonus?: number;
+  /** Damage additions are separate so previews and feedback can explain them. */
+  baseDamage: number;
+  basicAttackBonus?: number;
   relicBonus?: number;
+  vulnerableApplied?: boolean;
+  finalDamage: number;
 }
 
 /** Visual / motion events for UI */
@@ -46,8 +47,8 @@ export type CombatFx =
     }
   | { type: 'playerBlock'; amount: number }
   | { type: 'playerEnergy'; amount: number }
-  | { type: 'playerPower'; power: 'echoGuard'; amount: number }
-  | { type: 'enemyStatus'; enemyId: string; status: 'echo'; turns: number }
+  | { type: 'playerPower'; power: 'basicAttackDamage'; amount: number }
+  | { type: 'enemyStatus'; enemyId: string; status: 'vulnerable'; turns: number }
   | {
       type: 'enemyStrike';
       blockBefore: number;
@@ -77,14 +78,16 @@ export interface CombatState {
   block: number;
   energy: number;
   maxEnergy: number;
-  /** Character relic: spent by the first damaging hit of this combat. */
+  /** Universal relic: readied again at the start of every player turn. */
   firstAttackBonusDamage: number;
   firstAttackBonusReady: boolean;
-  /** Battle-long scaling from 共鳴護唱. */
-  echoGuardAmount: number;
+  /** Battle-long scaling installed by 聲波架式. */
+  basicAttackBonusDamage: number;
   drawPile: CombatCard[];
   hand: CombatCard[];
   discardPile: CombatCard[];
+  /** Successfully cast Power cards leave ordinary pile circulation. */
+  powerPile: CombatCard[];
   enemies: EnemyUnit[];
   /** Highlighted single-target enemy */
   selectedEnemyId: string | null;
