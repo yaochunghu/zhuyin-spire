@@ -1,6 +1,6 @@
 # Roadmap
 
-## Shipped (v0.1.0 baseline)
+## Shipped (v0.2.0)
 
 - Vite + TypeScript SPA; touch-first preschool UI; adult coach strip  
 - Full first-syllable 注音 cast (including 聲調); listen mode (Web Speech zh-TW)  
@@ -18,6 +18,7 @@
 - localStorage mid-run save (stable screens)  
 - Debug overlay (skip cast, jump screens, force combat outcomes)  
 - Project docs + standalone git (this documentation package)
+- Playable GitHub Pages release build
 
 ---
 

@@ -8,6 +8,10 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+---
+
+## [0.2.0] — 2026-07-22
+
 ### Casting variety and learner profiles
 
 - Replaced run-local recent-word avoidance with per-learner, persistent
@@ -65,6 +69,11 @@ Format: human-readable summary per version. For code archaeology use `git log` a
   potions, 30 events, complete encounter rosters, three optional-ending keys,
   and Act IV; these are documented targets and are not activated runtime content
 
+### Distribution
+
+- Added an official GitHub Pages release build, publishing the playable game
+  under `/zhuyin-spire/`
+
 ---
 
 ## [0.1.0] — 2026-07-21
@@ -90,4 +99,5 @@ Baseline snapshot of the preschool Spire + 注音 game, documented for long-term
 - Standalone git repository for the game folder (tag `v0.1.0`)
 
 [Unreleased]: #unreleased
+[0.2.0]: #020--2026-07-22
 [0.1.0]: #010--2026-07-21

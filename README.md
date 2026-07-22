@@ -3,7 +3,9 @@
 A **preschool** browser deckbuilder inspired by *Slay the Spire*: climb a colorful tower with **注音符號** spell cards.  
 Recognize or **listen** for the correct 注音 to cast. **Wrong answer = fizzle** (energy spent). **HP → 0 ends the run.**
 
-**Version:** 0.1.0 · **Stack:** Vite + TypeScript (no backend)
+**Version:** 0.2.0 · **Stack:** Vite + TypeScript (no backend)
+
+**Play online:** [https://yaochunghu.github.io/zhuyin-spire/](https://yaochunghu.github.io/zhuyin-spire/)
 
 ---
 
@@ -24,6 +26,9 @@ npx playwright install chromium # once per machine
 npm run test:e2e # Playwright tablet smoke suite
 npm run preview  # serve dist/
 ```
+
+The published GitHub Pages build uses `/zhuyin-spire/` as Vite's production
+asset base; local development remains at `/`.
 
 ---
 
@@ -129,7 +134,7 @@ This folder is its **own git repository** (`zhuyin-spire/.git`).
 
 - Do **not** commit the game through a parent home-directory repo (e.g. unrelated remotes).
 - From this directory: `git status`, `git add`, `git commit` as usual.
-- Tag baseline: `v0.1.0` (see [CHANGELOG.md](CHANGELOG.md)).
+- Latest release: `v0.2.0`; baseline tag: `v0.1.0` (see [CHANGELOG.md](CHANGELOG.md)).
 - Optional: add a **dedicated** GitHub remote named for this game — never push into unrelated projects.
 
 ```bash

@@ -43,7 +43,7 @@ Root companions:
 
 ---
 
-## Snapshot (v0.1.0)
+## Snapshot (v0.2.0)
 
 - **Stack:** Vite + TypeScript SPA, no backend; localStorage save
 - **Acts:** 3 × (15 floors × 7 lanes), STS-style path generation
