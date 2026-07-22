@@ -24,6 +24,7 @@ import {
   updateGameSettings,
 } from '../game/settings';
 import { clearAllAppData } from '../game/privacy';
+import { lockPageScroll, trapModalFocus } from './modal';
 
 const PACK_LABELS: Record<PhrasePack, string> = {
   core: '基礎本',
@@ -42,6 +43,7 @@ interface OptionsContext {
   allowProfileSwitch?: boolean;
   focusProfiles?: boolean;
   focusPrivacy?: boolean;
+  onClose?: () => void;
 }
 
 let root: HTMLElement | null = null;
@@ -49,6 +51,7 @@ let previousFocus: HTMLElement | null = null;
 let context: OptionsContext = {};
 let curriculumWarning = '';
 let initialFocusPending = false;
+let releaseScroll: (() => void) | null = null;
 
 function optionButton(
   label: string,
@@ -419,10 +422,15 @@ function renderPrivacy(): HTMLElement {
 }
 
 function closeOptions(): void {
+  const onClose = context.onClose;
   root?.remove();
   root = null;
+  releaseScroll?.();
+  releaseScroll = null;
   previousFocus?.focus();
   previousFocus = null;
+  context = {};
+  onClose?.();
 }
 
 function paint(): void {
@@ -546,28 +554,14 @@ export function openOptions(nextContext: OptionsContext = {}): void {
   if (root) return;
   context = nextContext;
   previousFocus = document.activeElement as HTMLElement | null;
+  releaseScroll = lockPageScroll();
   root = document.createElement('div');
   root.id = 'zhuyin-options-root';
   document.body.appendChild(root);
   initialFocusPending = true;
   root.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') closeOptions();
-    if (event.key !== 'Tab' || !root) return;
-    const focusable = [
-      ...root.querySelectorAll<HTMLElement>(
-        'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), summary',
-      ),
-    ];
-    if (!focusable.length) return;
-    const first = focusable[0]!;
-    const last = focusable[focusable.length - 1]!;
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
+    if (root) trapModalFocus(root, event);
   });
   paint();
 }

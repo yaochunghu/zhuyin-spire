@@ -23,7 +23,7 @@ src/
   game/battle/     Combat implementation (modular)
   ui/              DOM views + drag/FX (no balance constants of record)
   debug/           Playtest overlay (DEV / ?debug=1)
-  styles/main.css  Kid-friendly responsive stages, options, debug panel
+  styles/main.css  Kid-friendly phone/tablet stages, options, debug panel
 ```
 
 **Rule of thumb:** numbers live in `data/balance.ts` (and content files). Views call `game/state` / combat APIs; they should not invent economy.
@@ -82,6 +82,11 @@ Map navigation helpers: `getAvailableMapNodes`, `selectMapNode`, `getActiveNode`
 3. Combat has a special path: after paint, `playPendingCombatFx` runs the FX queue; **do not full-remount combat while FX plays** (breaks hand drag and pile anchors).
 
 **Debug panel** mounts on `document.body`, not `#app`, because `render()` wipes `#app`.
+The phone pause menu, Options, and deck viewer are also body-mounted modal layers;
+`ui/modal.ts` gives them reference-counted page locking and focus containment.
+
+Orientation changes are CSS layout changes. They must not call `render()` or replace
+the combat root, so the hand, current cast, drag state, and pending FX survive rotation.
 
 ---
 
@@ -145,6 +150,10 @@ words and never requests microphone permission.
 | `game/coach.ts` | Adult tip strip |
 | `ui/castView.ts` | Big 注音 keyboard + practice room |
 | `ui/options.ts` | Body-mounted global, accessible Options dialog |
+| `ui/phoneMenu.ts` | Phone pause sheet and context actions |
+| `ui/deckViewer.ts` | Reusable body-mounted current-deck inspection |
+| `ui/pauseTimers.ts` | Pause/resume teaching delays with remaining time intact |
+| `ui/responsive.ts` | Shared phone-layout media-query decision |
 
 Full contract and future-provider checklist: [CASTING_GATES.md](./CASTING_GATES.md).
 

@@ -30,6 +30,8 @@ import { sfx } from '../game/audio';
 import { playCombatFxBatch, queryCombatAnchors } from './cardFx';
 import { cardFaceHtml } from './cards';
 import { bindCardDrag, cleanupDragUi, collectDropTargets } from './dragPlay';
+import { teachingTimers } from './pauseTimers';
+import { isPhoneLayout } from './responsive';
 import {
   appendCoach,
   app,
@@ -145,7 +147,7 @@ function playCardFromUi(uid: string, targetIds: string[] = []): void {
     session.spellUsedBankIdx = [];
     session.castLocked = false;
     session.castSpeechPlayedForOpen = false;
-    window.clearTimeout(session.autoSubmitTimer);
+    teachingTimers.clear(session.autoSubmitTimer);
     cleanupDragUi();
     render();
   } else if (run().flash) {
@@ -390,7 +392,7 @@ export function renderCombat(): HTMLElement {
       <div class="hero-vital-row">
         <div class="stat-pill hero-stat${heroLow ? ' danger-hp' : ''}${heroDamaged ? ' hero-hit' : ''}" data-hero-hp>❤️ ${c.heroHp}/${c.heroMaxHp}</div>
         <div class="stat-pill block-pill${blockGained ? ' block-pulse' : ''}${c.block <= 0 ? ' shield-empty' : ''}" data-hero-block>🛡️ <span data-block-val>${c.block}</span></div>
-        <div class="stat-pill energy" title="能量 ${c.energy}/${c.maxEnergy}" aria-label="能量 ${c.energy} / ${c.maxEnergy}">
+        <div class="stat-pill energy hero-energy" title="能量 ${c.energy}/${c.maxEnergy}" aria-label="能量 ${c.energy} / ${c.maxEnergy}">
           <span class="energy-readout">⚡ ${c.energy}/${c.maxEnergy}</span>
           <span class="energy-orbs" data-energy-orbs></span>
         </div>
@@ -439,7 +441,7 @@ export function renderCombat(): HTMLElement {
   // Floating coach (collapsed by default — does not take layout space)
   appendCoach(stage);
 
-  // —— Bottom row: hand (left/center) + end-turn pass (right) ——
+  // —— Bottom dock: full hand plus a phone-friendly action bar ——
   const bottom = document.createElement('div');
   bottom.className = 'combat-bottom-row';
 
@@ -472,7 +474,8 @@ export function renderCombat(): HTMLElement {
     btn.disabled = !energyPlayable || !tutorialPlayable || locked;
     btn.dataset.uid = card.uid;
     btn.setAttribute('aria-label', `注音 ${def.zhuyin}`);
-    btn.style.touchAction = 'none';
+    const scrollableHand = isPhoneLayout();
+    btn.style.touchAction = scrollableHand ? 'pan-x' : 'none';
 
     const defaultTargets = (): string[] => {
       const t = cardTargetType(def);
@@ -490,6 +493,7 @@ export function renderCombat(): HTMLElement {
       cardEl: btn,
       def,
       enabled: energyPlayable && tutorialPlayable,
+      allowHorizontalScroll: scrollableHand,
       getTargets: () => collectDropTargets(stage, def, livingIds),
       onPlay: (targetIds) => playCardFromUi(card.uid, targetIds),
       onTap: () => playCardFromUi(card.uid, defaultTargets()),
@@ -499,9 +503,17 @@ export function renderCombat(): HTMLElement {
   }
   bottom.appendChild(hand);
 
+  const actionBar = document.createElement('div');
+  actionBar.className = 'combat-action-bar';
+  const actionEnergy = document.createElement('div');
+  actionEnergy.className = 'combat-action-energy';
+  actionEnergy.setAttribute('aria-label', `能量 ${c.energy} / ${c.maxEnergy}`);
+  actionEnergy.innerHTML = `<span aria-hidden="true">⚡</span><strong>${c.energy}/${c.maxEnergy}</strong>`;
+  actionBar.appendChild(actionEnergy);
+
   const end = document.createElement('button');
   end.className = 'btn-secondary btn-kid-main end-turn-btn';
-  end.innerHTML = `<span class="btn-emoji">✋</span>`;
+  end.innerHTML = `<span class="btn-emoji">✋</span><span class="end-turn-label">結束回合</span>`;
   end.setAttribute('aria-label', '結束回合（過牌）');
   end.title = '結束回合';
   const tutorialEndAllowed = canTutorialEndTurn(run());
@@ -524,7 +536,8 @@ export function renderCombat(): HTMLElement {
     }
     render();
   });
-  bottom.appendChild(end);
+  actionBar.appendChild(end);
+  bottom.appendChild(actionBar);
   stage.appendChild(bottom);
 
   if (session.pileViewer === 'draw') {

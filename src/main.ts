@@ -13,8 +13,13 @@ import { renderCastCheck, renderPractice, submitSpell } from './ui/castView';
 import { renderActClear, renderMap } from './ui/mapView';
 import { playOutcomeOverlay } from './ui/outcome';
 import { openOptions } from './ui/options';
+import { cancelSpeech, speakCue } from './game/speech';
 import { applyGameSettingsToDocument } from './game/settings';
 import { bindUi, session } from './ui/runtime';
+import { openDeckViewer } from './ui/deckViewer';
+import { teachingTimers } from './ui/pauseTimers';
+import { openPhoneMenu } from './ui/phoneMenu';
+import { isPhoneLayout } from './ui/responsive';
 import {
   renderEnd,
   renderCharacterPick,
@@ -81,12 +86,13 @@ function globalControls(): HTMLElement {
   controls.className = 'global-controls';
   const mute = muteButton();
   mute.classList.remove('mute-btn');
-  mute.classList.add('global-control-btn');
+  mute.classList.add('global-control-btn', 'desktop-global-control');
+  mute.dataset.volumeControl = '';
   controls.appendChild(mute);
 
   const options = document.createElement('button');
   options.type = 'button';
-  options.className = 'global-control-btn';
+  options.className = 'global-control-btn desktop-global-control';
   options.textContent = '⚙️';
   options.setAttribute('aria-label', '開啟遊戲選項');
   options.addEventListener('click', (event) => {
@@ -95,6 +101,52 @@ function globalControls(): HTMLElement {
     openOptions({ allowProfileSwitch: runState.screen === 'title' });
   });
   controls.appendChild(options);
+
+  const menu = document.createElement('button');
+  menu.type = 'button';
+  menu.className = 'global-control-btn phone-global-control';
+  menu.textContent = '☰';
+  menu.setAttribute('aria-label', '開啟暫停選單');
+  menu.addEventListener('click', (event) => {
+    event.stopPropagation();
+    sfx.click();
+    const noDeckScreens: RunState['screen'][] = [
+      'title',
+      'relicPick',
+      'castCheck',
+      'practice',
+      'defeat',
+      'victory',
+    ];
+    openPhoneMenu({
+      screen: runState.screen,
+      canViewDeck:
+        runState.deck.length > 0 &&
+        !noDeckScreens.includes(runState.screen),
+      onPause: () => {
+        session.phoneMenuOpen = true;
+        teachingTimers.pause();
+        cancelSpeech();
+      },
+      onResume: () => {
+        session.phoneMenuOpen = false;
+        teachingTimers.resume();
+        if (
+          (runState.screen === 'castCheck' || runState.screen === 'practice') &&
+          runState.cast
+        ) {
+          speakCue(runState.cast.prompt.cue.speechText);
+        }
+      },
+      onOpenOptions: (onClose) =>
+        openOptions({
+          allowProfileSwitch: runState.screen === 'title',
+          onClose,
+        }),
+      onOpenDeck: openDeckViewer,
+    });
+  });
+  controls.appendChild(menu);
   return controls;
 }
 
@@ -111,6 +163,14 @@ function appendCoach(parent: HTMLElement, castMode?: CastMode): void {
   const isCombat = runState.screen === 'combat';
   // Screen entry decides the initial state. Once rendered, the player's toggle
   // must stay authoritative; otherwise early-run tips can never be collapsed.
+  if (isPhoneLayout() && session.coachPhoneScreen !== runState.screen) {
+    // Combat has its own always-visible scripted guide. The cast screen does
+    // not, so keep its tutorial co-play explanation open automatically.
+    session.coachCollapsed = !(
+      runState.tutorial && runState.screen === 'castCheck'
+    );
+    session.coachPhoneScreen = runState.screen;
+  }
   const collapsed = session.coachCollapsed;
 
   const box = document.createElement('aside');
@@ -151,6 +211,7 @@ function appendCoach(parent: HTMLElement, castMode?: CastMode): void {
 }
 
 function render(): void {
+  document.documentElement.dataset.screen = runState.screen;
   // Pile inspect only valid on combat screen
   if (runState.screen !== 'combat') {
     session.pileViewer = null;
@@ -228,13 +289,13 @@ applyGameSettingsToDocument();
 window.addEventListener('zhuyin-settings-change', () => {
   applyGameSettingsToDocument();
   const icon = appEl.querySelector<HTMLButtonElement>(
-    '.global-controls .global-control-btn',
+    '.global-controls [data-volume-control]',
   );
   if (icon) icon.textContent = volumeIcon();
 });
 window.addEventListener('zhuyin-volume-change', () => {
   const icon = appEl.querySelector<HTMLButtonElement>(
-    '.global-controls .global-control-btn',
+    '.global-controls [data-volume-control]',
   );
   if (icon) icon.textContent = volumeIcon();
 });

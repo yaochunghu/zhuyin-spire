@@ -16,6 +16,7 @@ import {
   useParentHint,
 } from '../game/state';
 import { playPendingCombatFx } from './combatView';
+import { teachingTimers } from './pauseTimers';
 import {
   appendCoach,
   playOutcomeOverlay,
@@ -54,12 +55,15 @@ export function playSpellReveal(
   const continueButton = overlay.querySelector<HTMLButtonElement>('.spell-reveal-continue')!;
   let finished = false;
   let removeTimer = 0;
+  let revealContinueTimer = 0;
+  let autoTimer = 0;
   const finish = (): void => {
     if (finished) return;
     finished = true;
-    window.clearTimeout(autoTimer);
+    teachingTimers.clear(autoTimer);
+    teachingTimers.clear(revealContinueTimer);
     overlay.classList.add('spell-reveal-out');
-    removeTimer = window.setTimeout(() => {
+    removeTimer = teachingTimers.set(() => {
       overlay.remove();
       onDone();
     }, 180);
@@ -68,26 +72,23 @@ export function playSpellReveal(
     sfx.click();
     finish();
   });
-  const revealContinueTimer = window.setTimeout(() => {
+  revealContinueTimer = teachingTimers.set(() => {
     if (finished) return;
     overlay.classList.add('can-continue');
     continueButton.focus();
   }, kind === 'success' ? LEARNING_REVEAL_CONTINUE_MS : 800);
-  const autoTimer = window.setTimeout(
+  autoTimer = teachingTimers.set(
     finish,
     kind === 'success' ? LEARNING_REVEAL_TOTAL_MS - 180 : 1320,
   );
-  overlay.addEventListener('remove', () => {
-    window.clearTimeout(revealContinueTimer);
-    window.clearTimeout(removeTimer);
-  });
+  overlay.addEventListener('remove', () => teachingTimers.clear(removeTimer));
 }
 
 export function submitSpell(): void {
   const cast = run().cast;
   if (session.castLocked || !cast || session.outcomeAnimPlaying) return;
   session.castLocked = true;
-  window.clearTimeout(session.autoSubmitTimer);
+  teachingTimers.clear(session.autoSubmitTimer);
   cancelSpeech();
   const attempt = [...session.spellAttempt];
   const correct = isCastAnswerCorrect(cast.prompt, attempt);
@@ -121,7 +122,7 @@ export function submitSpell(): void {
     if (correct) {
       playSpellReveal({ word: cue.text, emoji: cue.emoji, spell }, afterPractice);
     } else {
-      window.setTimeout(afterPractice, 320);
+      teachingTimers.set(afterPractice, 320);
     }
     return;
   }
@@ -237,7 +238,9 @@ export function renderCastCheck(isPractice = false): HTMLElement {
       </div>`
     : '';
 
-  el.innerHTML = `
+  const header = document.createElement('div');
+  header.className = 'cast-header';
+  header.innerHTML = `
     ${practiceHud}
     ${cast.prompt.speechFallback ? '<div class="warn-banner adult-text">此裝置沒有語音，請大人念出圖的意思</div>' : ''}
     <div class="mana-condition mana-${cast.prompt.ambientMana.id}" aria-label="空氣中的魔力狀態：${cast.prompt.ambientMana.label}">
@@ -245,13 +248,23 @@ export function renderCastCheck(isPractice = false): HTMLElement {
       <span>${cast.prompt.ambientMana.label}</span>
       <span class="mana-focus">魔法音 ${cast.prompt.focusGlyph}</span>
     </div>
-    <div class="cue-box">${cueInner}</div>
   `;
+  el.appendChild(header);
+
+  const layout = document.createElement('div');
+  layout.className = 'cast-layout';
+  const cuePane = document.createElement('div');
+  cuePane.className = 'cast-cue-pane';
+  cuePane.innerHTML = `<div class="cue-box">${cueInner}</div>`;
+  const answerPane = document.createElement('div');
+  answerPane.className = 'cast-answer-pane';
+  layout.append(cuePane, answerPane);
+  el.appendChild(layout);
 
   if (mode === 'listen' || mode === 'listenHard') {
     if (!session.castSpeechPlayedForOpen) {
       sfx.listenOpen();
-      window.setTimeout(() => speakCueWithAutoReplay(cast.prompt.cue.speechText), 220);
+      teachingTimers.set(() => speakCueWithAutoReplay(cast.prompt.cue.speechText), 220);
       session.castSpeechPlayedForOpen = true;
     }
     const replay = document.createElement('button');
@@ -263,20 +276,20 @@ export function renderCastCheck(isPractice = false): HTMLElement {
       cancelSpeech();
       speakCue(cast.prompt.cue.speechText);
     });
-    el.appendChild(replay);
+    cuePane.appendChild(replay);
   } else if (!session.castSpeechPlayedForOpen) {
     // Recognize: soft read-aloud once (helps adult + kid pairing)
-    window.setTimeout(() => speakCue(cast.prompt.cue.speechText), 150);
+    teachingTimers.set(() => speakCue(cast.prompt.cue.speechText), 150);
     session.castSpeechPlayedForOpen = true;
   }
 
-  appendCoach(el, mode);
+  appendCoach(cuePane, mode);
 
   if (session.hintSpell) {
     const reveal = document.createElement('div');
     reveal.className = 'spell-hint-reveal';
     reveal.innerHTML = `<span class="adult-text">答案：</span><span class="spell-answer">${session.hintSpell}</span>`;
-    el.appendChild(reveal);
+    answerPane.appendChild(reveal);
   }
 
   if (cast.prompt.inputMode === 'singleChoice') {
@@ -295,7 +308,7 @@ export function renderCastCheck(isPractice = false): HTMLElement {
       });
       choices.appendChild(button);
     }
-    el.appendChild(choices);
+    answerPane.appendChild(choices);
   } else {
     // Answer slots (how many symbols needed)
     const slots = document.createElement('div');
@@ -310,7 +323,7 @@ export function renderCastCheck(isPractice = false): HTMLElement {
       slot.textContent = ch || '·';
       slots.appendChild(slot);
     }
-    el.appendChild(slots);
+    answerPane.appendChild(slots);
 
     const bankWrap = document.createElement('div');
     bankWrap.className = 'spell-bank-wrap';
@@ -337,8 +350,8 @@ export function renderCastCheck(isPractice = false): HTMLElement {
       session.spellUsedBankIdx.push(idx);
       if (session.spellAttempt.length >= maxLen) {
         render();
-        window.clearTimeout(session.autoSubmitTimer);
-        session.autoSubmitTimer = window.setTimeout(() => {
+        teachingTimers.clear(session.autoSubmitTimer);
+        session.autoSubmitTimer = teachingTimers.set(() => {
           if (!session.castLocked && session.spellAttempt.length === maxLen) submitSpell();
         }, 380);
       } else {
@@ -356,7 +369,7 @@ export function renderCastCheck(isPractice = false): HTMLElement {
     bankWrap.appendChild(toneLabel);
     bankWrap.appendChild(bankTones);
   }
-  el.appendChild(bankWrap);
+    answerPane.appendChild(bankWrap);
 
   // Controls: backspace + submit
   const controls = document.createElement('div');
@@ -369,7 +382,7 @@ export function renderCastCheck(isPractice = false): HTMLElement {
   back.disabled = session.spellAttempt.length === 0 || session.castLocked;
   back.addEventListener('click', () => {
     if (session.castLocked) return;
-    window.clearTimeout(session.autoSubmitTimer);
+    teachingTimers.clear(session.autoSubmitTimer);
     sfx.click();
     session.spellAttempt.pop();
     session.spellUsedBankIdx.pop();
@@ -383,7 +396,7 @@ export function renderCastCheck(isPractice = false): HTMLElement {
   clear.disabled = session.spellAttempt.length === 0 || session.castLocked;
   clear.addEventListener('click', () => {
     if (session.castLocked) return;
-    window.clearTimeout(session.autoSubmitTimer);
+    teachingTimers.clear(session.autoSubmitTimer);
     sfx.click();
     session.spellAttempt = [];
     session.spellUsedBankIdx = [];
@@ -398,7 +411,7 @@ export function renderCastCheck(isPractice = false): HTMLElement {
   ok.setAttribute('aria-label', '送出');
   ok.disabled = session.spellAttempt.length !== maxLen || session.castLocked;
   ok.addEventListener('click', () => {
-    window.clearTimeout(session.autoSubmitTimer);
+    teachingTimers.clear(session.autoSubmitTimer);
     sfx.click();
     submitSpell();
   });
@@ -406,7 +419,7 @@ export function renderCastCheck(isPractice = false): HTMLElement {
   controls.appendChild(back);
   controls.appendChild(clear);
   controls.appendChild(ok);
-    el.appendChild(controls);
+    answerPane.appendChild(controls);
   }
 
   const hint = document.createElement('button');
@@ -430,7 +443,7 @@ export function renderCastCheck(isPractice = false): HTMLElement {
       render();
     }
   });
-  el.appendChild(hint);
+  answerPane.appendChild(hint);
 
   if (isPractice) {
     const leave = document.createElement('button');
@@ -440,7 +453,7 @@ export function renderCastCheck(isPractice = false): HTMLElement {
     leave.addEventListener('click', () => {
       sfx.click();
       cancelSpeech();
-      window.clearTimeout(session.autoSubmitTimer);
+      teachingTimers.clear(session.autoSubmitTimer);
       session.spellAttempt = [];
       session.spellUsedBankIdx = [];
       session.hintSpell = null;
@@ -449,7 +462,7 @@ export function renderCastCheck(isPractice = false): HTMLElement {
       leavePractice(run());
       render();
     });
-    el.appendChild(leave);
+    answerPane.appendChild(leave);
   }
 
   return el;

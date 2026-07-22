@@ -9,6 +9,9 @@ import type { RunState } from '../game/state';
 export const session = {
   /** Adult coach starts collapsed so it never covers kid UI (expand on demand). */
   coachCollapsed: true,
+  /** Screen where phone coach initial visibility was last decided. */
+  coachPhoneScreen: null as RunState['screen'] | null,
+  phoneMenuOpen: false,
   deckViewerOpen: false,
   /** Map node select flash in progress */
   mapSelectBusy: false,

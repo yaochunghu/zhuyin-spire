@@ -1,6 +1,6 @@
 # Roadmap
 
-## Shipped (v0.2.0)
+## Shipped (through v0.3.0)
 
 - Vite + TypeScript SPA; touch-first preschool UI; adult coach strip  
 - Full first-syllable 注音 cast (including 聲調); listen mode (Web Speech zh-TW)  
@@ -19,6 +19,9 @@
 - Debug overlay (skip cast, jump screens, force combat outcomes)  
 - Project docs + standalone git (this documentation package)
 - Playable GitHub Pages release build
+- Dedicated portrait/landscape phone layouts with a scrollable combat hand,
+  pause menu, keyboard-safe Options, accessible deck viewer, and phone map panning
+- Chromium and WebKit phone regression projects alongside tablet coverage
 
 ---
 
@@ -33,15 +36,15 @@ Ordered by “resume playtest” value — not a binding schedule:
    physical card UIDs, safe V1→V2 deck migration, typed effects, and validation
 3. **Add cards and upgrades in reviewed waves** — preserve the 12 anchors and
    all 27 live IDs, then verify fixed-height cards and the designer viewer at
-   each tablet viewport
+   each phone and tablet viewport
 4. **Add Smith, expanded relics, and potions** — keep acquisition and temporary
    upgrades instance-safe; test timing hooks before increasing content volume
 5. **Add events and encounters one act at a time** — seeded simulation and
    cast-off/cast-on playtests before enabling the next act
 6. **Add the 20-level difficulty track, keys, and Act IV last** — only after the
-   base three-act game passes save/load, tablet, and accessibility gates
-7. **Remote git / CI** — dedicated GitHub repository and build/test checks if not
-   already configured
+   base three-act game passes save/load, phone/tablet, and accessibility gates
+7. **Maintain release gates** — keep unit, responsive browser, production-security,
+   and Pages checks green as content volume grows
 8. Optional later: second character/theme using a reviewed English or math
    provider contract, plus recorded audio assets
 

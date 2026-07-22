@@ -3,7 +3,7 @@
 A **preschool** browser deckbuilder inspired by *Slay the Spire*: climb a colorful tower with **注音符號** spell cards.  
 Recognize or **listen** for the correct 注音 to cast. **Wrong answer = fizzle** (energy spent). **HP → 0 ends the run.**
 
-**Version:** 0.2.1 · **Stack:** Vite + TypeScript (no backend)
+**Version:** 0.3.0 · **Stack:** Vite + TypeScript (no backend)
 
 **Play online:** [https://yaochunghu.github.io/zhuyin-spire/](https://yaochunghu.github.io/zhuyin-spire/)
 
@@ -17,15 +17,16 @@ npm install
 npm run dev
 ```
 
-Open the local URL (usually `http://localhost:5173`). Best on a tablet or large window.
+Open the local URL (usually `http://localhost:5173`). Phone, tablet, and desktop
+layouts are supported in both portrait and landscape.
 The development server listens only on your own computer. To test from another
 device on your trusted LAN, opt in explicitly with `npm run dev -- --host 0.0.0.0`.
 
 ```bash
 npm run build    # typecheck + production bundle
 npm test         # Vitest unit suite
-npx playwright install chromium # once per machine
-npm run test:e2e # Playwright tablet smoke suite
+npx playwright install chromium webkit # once per machine
+npm run test:e2e # Playwright phone + tablet smoke suite
 npm run preview  # serve dist/
 ```
 
@@ -90,9 +91,10 @@ are states of those same cards, not 75 additional cards. Review the proposal in
 [docs/UPGRADE_BIBLE.md](docs/UPGRADE_BIBLE.md). It is not live content yet.
 
 On a fresh installation, the first Act I battle is a one-monster guided lesson:
-shield → End Turn → attack → finish normally. The ⚙️ button is available on every
-screen for volume, 1×/2× gameplay animation, tutorial replay, and detailed
-curriculum controls. Up to four children can keep separate runs, tutorials,
+shield → End Turn → attack → finish normally. Phones use one large ☰ pause button
+for resume, sound, Options, the current deck, and development-only debug tools; larger screens
+keep direct sound and ⚙️ controls. Options include 1×/2× gameplay animation,
+tutorial replay, and detailed curriculum controls. Up to four children can keep separate runs, tutorials,
 badges, practice results, and casting history; switch learners from the title.
 
 Autosave on stable screens (map, rest, shop, reward, …). Title: continue or new game.
@@ -160,7 +162,8 @@ This folder is its **own git repository** (`zhuyin-spire/.git`).
 
 - Do **not** commit the game through a parent home-directory repo (e.g. unrelated remotes).
 - From this directory: `git status`, `git add`, `git commit` as usual.
-- Latest release: `v0.2.1`; baseline tag: `v0.1.0` (see [CHANGELOG.md](CHANGELOG.md)).
+- Current source version: `0.3.0`; baseline tag: `v0.1.0` (see
+  [CHANGELOG.md](CHANGELOG.md)).
 - Dedicated remote: `https://github.com/yaochunghu/zhuyin-spire.git`.
 
 ```bash

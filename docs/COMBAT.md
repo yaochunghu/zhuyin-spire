@@ -108,6 +108,11 @@ Completion is written only in `finishFight` after victory.
 
 `cardNeedsEnemyTarget` / `collectDropTargets` drive UI highlights.
 
+On phones, the hand is a full-width horizontal snap carousel and every card keeps
+the same fixed height regardless of copy length. A horizontal touch gesture scrolls
+the hand, a tap uses the existing tap-to-play path, and only a clear upward gesture
+commits to drag targeting. Mouse and larger-screen drag behavior is unchanged.
+
 ---
 
 ## FX pipeline
@@ -125,6 +130,11 @@ the printed base number.
 
 Gameplay waits and Web Animations use `gameplayMs()`. End-turn discards and redraws
 are staggered concurrently; 2× halves gameplay movement without changing teaching pauses.
+
+The phone pause menu freezes pause-aware teaching timers and cancels current speech.
+Resume continues each timer from its remaining duration and replays the current cue
+when appropriate. Combat state, turn timing, energy, and effects are not advanced by
+opening or closing this transient menu.
 
 ### Known footgun
 

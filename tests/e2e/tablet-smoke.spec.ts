@@ -200,7 +200,7 @@ test('parent tooltip can be minimized on map and combat', async ({ page }) => {
 
 test('Options persists speed and keeps primary controls large', async ({ page }) => {
   await page.goto('/');
-  const controls = await page.locator('.global-control-btn').evaluateAll((buttons) =>
+  const controls = await page.locator('.global-control-btn:visible').evaluateAll((buttons) =>
     buttons.map((button) => button.getBoundingClientRect().height),
   );
   expect(controls.every((height) => height >= 64)).toBe(true);
