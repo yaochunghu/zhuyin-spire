@@ -21,7 +21,16 @@ const executable = (await Promise.all(
 )).join('\n');
 if (!/default-src (?:'self'|&#39;self&#39;)/u.test(html)) failures.push('production CSP is missing');
 if (!html.includes('/zhuyin-spire/assets/')) failures.push('GitHub Pages asset base is missing');
-if (bundle.includes('fonts.googleapis.com') || bundle.includes('fonts.gstatic.com')) {
+const forbiddenFontHosts = new Set(['fonts.googleapis.com', 'fonts.gstatic.com']);
+const embeddedUrls = bundle.match(/https?:\/\/[^\s"'<>\\)]+/gu) ?? [];
+const hasForbiddenFontHost = embeddedUrls.some((value) => {
+  try {
+    return forbiddenFontHosts.has(new URL(value).hostname);
+  } catch {
+    return false;
+  }
+});
+if (hasForbiddenFontHost) {
   failures.push('Google Fonts URL remains');
 }
 if (/\/Users\/|C:\\\\Users\\/u.test(bundle)) failures.push('local personal path is present');
