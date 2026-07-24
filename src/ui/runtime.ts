@@ -9,11 +9,16 @@ import type { RunState } from '../game/state';
 export const session = {
   /** Adult coach starts collapsed so it never covers kid UI (expand on demand). */
   coachCollapsed: true,
+  /** Screen where phone coach initial visibility was last decided. */
+  coachPhoneScreen: null as RunState['screen'] | null,
+  phoneMenuOpen: false,
   deckViewerOpen: false,
   /** Map node select flash in progress */
   mapSelectBusy: false,
   /** Combat pile inspect: draw or discard (null = closed) */
   pileViewer: null as null | 'draw' | 'discard',
+  /** Enemy whose tappable status explanation is open. */
+  enemyStatusHelpId: null as string | null,
   combatFxPlaying: false,
   outcomeAnimPlaying: false,
   hintSpell: null as string | null,

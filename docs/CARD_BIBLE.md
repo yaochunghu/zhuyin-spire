@@ -1,8 +1,10 @@
 # Card Bible: 回音法師完整牌池提案
 
-> **Status:** design approval artifact; none of the new definitions in this file
-> are runtime content yet. Upgraded faces are states of the same card and do
-> **not** count as additional designs.
+> **Status:** frozen historical design reference. The live character is now
+> 共鳴武者 with 易傷 and tagged basic attacks. Do not implement these Echo rows
+> or mechanically rename their mechanics. The 75-card pool requires a reviewed
+> rewrite in future content waves. Upgraded faces still do not count as separate
+> card designs.
 
 This bible specifies the complete first-character pool before implementation.
 It follows the structural lessons in [STS_DESIGN_REFERENCE.md](./STS_DESIGN_REFERENCE.md)

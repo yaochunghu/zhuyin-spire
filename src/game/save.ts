@@ -20,9 +20,15 @@ import {
 import { RELICS } from '../data/relics';
 import type { RunState, Screen, ShopOffer } from './state';
 import { getActiveProfileId, isLegacyOwnerProfile } from './profiles';
+import {
+  cloneDeckCard,
+  createDeck,
+  isDeckCardV2,
+  type DeckCardV2,
+} from './cardInstances';
 
 const LEGACY_SAVE_KEY = 'zhuyin-spire-run-v1';
-const SAVE_VERSION = 1 as const;
+const SAVE_VERSION = 2 as const;
 const MAX_SAVE_BYTES = 1_000_000;
 
 export function activeRunSaveKey(): string {
@@ -48,7 +54,7 @@ const STABLE_SCREENS: Screen[] = [
 ];
 
 export interface RunSnapshotV1 {
-  v: typeof SAVE_VERSION;
+  v: 1;
   screen: Screen;
   heroHp: number;
   heroMaxHp: number;
@@ -75,6 +81,13 @@ export interface RunSnapshotV1 {
   tutorialEligibleRun?: boolean;
 }
 
+export interface RunSnapshotV2 extends Omit<RunSnapshotV1, 'v' | 'deck'> {
+  v: typeof SAVE_VERSION;
+  deck: DeckCardV2[];
+}
+
+export type RunSnapshot = RunSnapshotV2;
+
 function isStableScreen(screen: Screen): boolean {
   return STABLE_SCREENS.includes(screen);
 }
@@ -100,14 +113,14 @@ export function clearSavedRun(): void {
 }
 
 /** Build a checkpoint from current run (ephemeral combat/cast stripped). */
-export function snapshotRun(state: RunState): RunSnapshotV1 | null {
+export function snapshotRun(state: RunState): RunSnapshotV2 | null {
   if (!isStableScreen(state.screen)) return null;
   return {
     v: SAVE_VERSION,
     screen: state.screen,
     heroHp: state.heroHp,
     heroMaxHp: state.heroMaxHp,
-    deck: [...state.deck],
+    deck: state.deck.map(cloneDeckCard),
     gold: state.gold,
     characterId: state.characterId,
     relicId: state.relicId,
@@ -243,11 +256,9 @@ function isValidShopOffer(value: unknown): value is ShopOffer {
   );
 }
 
-function isValidSnapshot(data: unknown): data is RunSnapshotV1 {
-  if (!isPlainObject(data)) return false;
-  if (data.v !== SAVE_VERSION || typeof data.screen !== 'string' || !isStableScreen(data.screen as Screen)) return false;
+function hasValidSnapshotBody(data: Record<string, unknown>): boolean {
+  if (typeof data.screen !== 'string' || !isStableScreen(data.screen as Screen)) return false;
   if (!isIntIn(data.heroMaxHp, 1, 999) || !isIntIn(data.heroHp, 0, data.heroMaxHp)) return false;
-  if (!isBoundedStringArray(data.deck, 200, (id) => id in CARDS, false)) return false;
   if (!isIntIn(data.gold, 0, 999_999)) return false;
   if (data.characterId !== undefined && data.characterId !== null && !isCharacterId(data.characterId)) return false;
   if (data.relicId !== null && (typeof data.relicId !== 'string' || !(data.relicId in RELICS))) return false;
@@ -270,11 +281,44 @@ function isValidSnapshot(data: unknown): data is RunSnapshotV1 {
   return true;
 }
 
-export function parseSnapshot(data: unknown): RunSnapshotV1 | null {
-  return isValidSnapshot(data) ? data : null;
+function isValidSnapshotV1(data: unknown): data is RunSnapshotV1 {
+  if (!isPlainObject(data)) return false;
+  if (data.v !== 1 || !hasValidSnapshotBody(data)) return false;
+  if (!isBoundedStringArray(data.deck, 200, (id) => id in CARDS, false)) return false;
+  return true;
 }
 
-export function loadSnapshot(): RunSnapshotV1 | null {
+function isValidSnapshotV2(data: unknown): data is RunSnapshotV2 {
+  if (!isPlainObject(data)) return false;
+  if (data.v !== SAVE_VERSION || !hasValidSnapshotBody(data)) return false;
+  if (!Array.isArray(data.deck) || data.deck.length > 200 || !data.deck.every(isDeckCardV2)) {
+    return false;
+  }
+  const deck = data.deck as DeckCardV2[];
+  if (new Set(deck.map((card) => card.uid)).size !== deck.length) return false;
+  return deck.every((card) => {
+    const def = CARDS[card.defId];
+    if (!def) return false;
+    return card.upgradeLevel === 0 || (card.upgradeLevel === 1 && !!def.upgrade);
+  });
+}
+
+function migrateSnapshotV1(snapshot: RunSnapshotV1): RunSnapshotV2 {
+  return {
+    ...snapshot,
+    v: SAVE_VERSION,
+    deck: createDeck(snapshot.deck),
+  };
+}
+
+export function parseSnapshot(data: unknown): RunSnapshotV2 | null {
+  if (isValidSnapshotV2(data)) {
+    return { ...data, deck: data.deck.map(cloneDeckCard) };
+  }
+  return isValidSnapshotV1(data) ? migrateSnapshotV1(data) : null;
+}
+
+export function loadSnapshot(): RunSnapshotV2 | null {
   try {
     const raw = readActiveRaw();
     if (!raw) return null;
@@ -282,10 +326,16 @@ export function loadSnapshot(): RunSnapshotV1 | null {
       clearSavedRun();
       return null;
     }
-    const data = parseSnapshot(JSON.parse(raw) as unknown);
+    const source = JSON.parse(raw) as unknown;
+    const data = parseSnapshot(source);
     if (!data) {
       clearSavedRun();
       return null;
+    }
+    if (isPlainObject(source) && source.v === 1) {
+      const serialized = JSON.stringify(data);
+      localStorage.setItem(activeRunSaveKey(), serialized);
+      if (isLegacyOwnerProfile()) localStorage.setItem(LEGACY_SAVE_KEY, serialized);
     }
     return data;
   } catch {
@@ -295,11 +345,11 @@ export function loadSnapshot(): RunSnapshotV1 | null {
 }
 
 /** Apply a validated snapshot onto an existing RunState (mutates). */
-export function applySnapshot(state: RunState, snap: RunSnapshotV1): void {
+export function applySnapshot(state: RunState, snap: RunSnapshotV2): void {
   state.screen = snap.screen;
   state.heroHp = snap.heroHp;
   state.heroMaxHp = snap.heroMaxHp;
-  state.deck = [...snap.deck];
+  state.deck = snap.deck.map(cloneDeckCard);
   state.gold = snap.gold;
   state.characterId = isCharacterId(snap.characterId)
     ? snap.characterId

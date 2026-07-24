@@ -38,4 +38,6 @@ export {
   cardTargetType,
   executeEffects,
   livingEnemies,
+  previewCardDamage,
 } from './effects';
+export type { DamagePreview } from './effects';

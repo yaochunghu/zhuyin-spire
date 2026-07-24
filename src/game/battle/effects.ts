@@ -1,6 +1,6 @@
 /**
  * Modular card effects — composed like Lego bricks.
- * Legacy cards without effects[] are derived from type/value.
+ * Every live card supplies an ordered effects[] list.
  */
 
 import type { CardDef, CardType, EffectDef, TargetType } from '../../data/cards';
@@ -23,19 +23,53 @@ export function cardTargetType(def: CardDef): TargetType {
   return def.target ?? defaultTargetType(def.type);
 }
 
-/** Build effect list from explicit effects[] or legacy card fields. */
+/** Ordered card effects are authored once and shared by rules and previews. */
 export function effectsForCard(def: CardDef): EffectDef[] {
-  if (def.effects && def.effects.length > 0) return def.effects;
-  const out: EffectDef[] = [];
-  if (def.type === 'attack') {
-    out.push({ kind: 'damage', amount: def.value, hits: def.hits ?? 1 });
-    if (def.bonusBlock) out.push({ kind: 'block', amount: def.bonusBlock });
-  } else if (def.type === 'block') {
-    out.push({ kind: 'block', amount: def.value });
-  } else if (def.type === 'skill') {
-    if (def.draw) out.push({ kind: 'draw', amount: def.draw });
-  }
-  return out;
+  return def.effects;
+}
+
+export interface DamagePreview {
+  base: number;
+  basicAttackBonus: number;
+  relicBonus: number;
+  beforeVulnerable: number;
+  effective: number;
+  /** Subsequent hits/targets after a once-per-turn relic has been consumed. */
+  laterEffective: number;
+  vulnerable: boolean;
+  hits: number;
+}
+
+/** Preview one Attack hit using the same modifier ordering as resolution. */
+export function previewCardDamage(
+  state: CombatState,
+  def: CardDef,
+  enemy?: EnemyUnit | null,
+): DamagePreview | null {
+  const effect = def.effects.find((candidate) => candidate.kind === 'damage');
+  if (!effect || effect.kind !== 'damage') return null;
+  const isAttackHit = def.type === 'attack' && effect.damageType !== 'direct';
+  const basicAttackBonus = isAttackHit && def.tags.includes('basicAttack')
+    ? state.basicAttackBonusDamage
+    : 0;
+  const relicBonus = isAttackHit && state.firstAttackBonusReady
+    ? state.firstAttackBonusDamage
+    : 0;
+  const beforeVulnerable = effect.amount + basicAttackBonus + relicBonus;
+  const laterBeforeVulnerable = effect.amount + basicAttackBonus;
+  const vulnerable = isAttackHit && (enemy?.vulnerableTurns ?? 0) > 0;
+  return {
+    base: effect.amount,
+    basicAttackBonus,
+    relicBonus,
+    beforeVulnerable,
+    effective: vulnerable ? Math.floor(beforeVulnerable * 1.5) : beforeVulnerable,
+    laterEffective: vulnerable
+      ? Math.floor(laterBeforeVulnerable * 1.5)
+      : laterBeforeVulnerable,
+    vulnerable,
+    hits: effect.hits ?? 1,
+  };
 }
 
 export function livingEnemies(state: CombatState): EnemyUnit[] {
@@ -85,20 +119,21 @@ export function executeEffects(
         let dealt = 0;
         for (let i = 0; i < hits; i += 1) {
           if (!enemy.alive) break;
-          const echoBonus =
-            enemy.echoTurns > 0 && !enemy.echoTriggeredThisTurn ? 2 : 0;
-          if (echoBonus > 0) {
-            enemy.echoTriggeredThisTurn = true;
-            if (state.echoGuardAmount > 0) {
-              state.block += state.echoGuardAmount;
-              totalBlock += state.echoGuardAmount;
-            }
-          }
-          const relicBonus = state.firstAttackBonusReady
+          const isAttackHit = def.type === 'attack' && eff.damageType !== 'direct';
+          const basicAttackBonus = isAttackHit && def.tags.includes('basicAttack')
+            ? state.basicAttackBonusDamage
+            : 0;
+          const relicBonus = isAttackHit && state.firstAttackBonusReady
             ? state.firstAttackBonusDamage
             : 0;
-          if (state.firstAttackBonusReady) state.firstAttackBonusReady = false;
-          const hitAmount = eff.amount + echoBonus + relicBonus;
+          if (isAttackHit && state.firstAttackBonusReady) {
+            state.firstAttackBonusReady = false;
+          }
+          const beforeVulnerable = eff.amount + basicAttackBonus + relicBonus;
+          const vulnerableApplied = isAttackHit && enemy.vulnerableTurns > 0;
+          const hitAmount = vulnerableApplied
+            ? Math.floor(beforeVulnerable * 1.5)
+            : beforeVulnerable;
           const blockBefore = enemy.block;
           const blocked = Math.min(blockBefore, hitAmount);
           enemy.block = Math.max(0, blockBefore - blocked);
@@ -117,8 +152,11 @@ export function executeEffects(
             blockAfter: enemy.block,
             hpDamage,
             killed,
-            ...(echoBonus > 0 ? { echoBonus } : {}),
+            baseDamage: eff.amount,
+            ...(basicAttackBonus > 0 ? { basicAttackBonus } : {}),
             ...(relicBonus > 0 ? { relicBonus } : {}),
+            ...(vulnerableApplied ? { vulnerableApplied: true } : {}),
+            finalDamage: hitAmount,
           });
         }
         totalDamage += dealt;
@@ -132,20 +170,20 @@ export function executeEffects(
     } else if (eff.kind === 'energy') {
       state.energy += eff.amount;
       totalEnergy += eff.amount;
-    } else if (eff.kind === 'echo' && targets !== 'self') {
+    } else if (eff.kind === 'applyVulnerable' && targets !== 'self') {
       for (const enemy of targets) {
         if (!enemy.alive) continue;
-        enemy.echoTurns = Math.max(enemy.echoTurns, eff.amount);
+        enemy.vulnerableTurns = Math.min(9, enemy.vulnerableTurns + eff.amount);
         statusFx.push({
           type: 'enemyStatus',
           enemyId: enemy.id,
-          status: 'echo',
-          turns: enemy.echoTurns,
+          status: 'vulnerable',
+          turns: enemy.vulnerableTurns,
         });
       }
-    } else if (eff.kind === 'echoGuard') {
-      state.echoGuardAmount += eff.amount;
-      pushFx({ type: 'playerPower', power: 'echoGuard', amount: eff.amount });
+    } else if (eff.kind === 'addBasicAttackDamage') {
+      state.basicAttackBonusDamage += eff.amount;
+      pushFx({ type: 'playerPower', power: 'basicAttackDamage', amount: eff.amount });
     }
   }
 
@@ -165,8 +203,8 @@ export function executeEffects(
   if (totalEnergy > 0) {
     state.log.push(`${def.zhuyin} 成功！能量 +${totalEnergy}`);
   }
-  if (effects.some((effect) => effect.kind === 'echoGuard')) {
-    state.log.push(`共鳴護唱：回音時護盾 +${state.echoGuardAmount}`);
+  if (effects.some((effect) => effect.kind === 'addBasicAttackDamage')) {
+    state.log.push(`聲波架式：基礎攻擊 +${state.basicAttackBonusDamage}`);
   }
 
   if (livingEnemies(state).length === 0) {

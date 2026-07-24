@@ -1,11 +1,13 @@
 # Upgrade Bible: card-instance and Smith design
 
-> **Status:** design approval artifact; this file defines the intended upgrade
-> contract but does not activate Smithing or change runtime saves.
+> **Status:** partially implemented foundation. `DeckCardV2`, V1 migration,
+> exact-copy inspection, authored upgrade resolution, and previews are live.
+> Smithing and the complete upgrade catalog are not. Echo-specific upgrade rows
+> below are frozen reference and must be rewritten for 共鳴武者 before use.
 
 The complete base-to-upgrade catalog lives in
-[CARD_BIBLE.md](./CARD_BIBLE.md). Its **75 Echo Mage rows are 75 unique card
-designs**; the upgraded faces do not add another 75 to the card count. The 12
+[CARD_BIBLE.md](./CARD_BIBLE.md). Its frozen **75 Echo Mage rows are 75 unique
+historical designs**; the upgraded faces do not add another 75 to the card count. The 12
 Colorless cards also have one authored upgrade. Five Statuses and eight Curses
 cannot be upgraded.
 
@@ -20,7 +22,7 @@ cannot be upgraded.
 5. Follow StS's one-authored-step pattern, with one deliberately named
    repeat-upgrade exception.
 
-## Data contract for later implementation
+## Live foundation contract
 
 ```ts
 interface DeckCardV2 {
@@ -30,35 +32,34 @@ interface DeckCardV2 {
 }
 
 interface CardUpgradeDef {
-  cost?: number | 'X';
+  cost?: number;
   effects?: EffectDef[];
-  addKeywords?: CardKeyword[];
-  removeKeywords?: CardKeyword[];
+  addTags?: CardTag[];
+  removeTags?: CardTag[];
   description: string;
-  repeatable?: {
-    effectPath: string;
-    amountPerLevel: number;
-  };
 }
 ```
+
+Repeat upgrades, X-costs, and upgrade keyword changes remain deferred until a
+card wave actually needs them; extend and validate the schema at that point.
 
 - `uid` identifies the owned physical copy. All reward, shop, Smith, removal,
   deck-viewer, and combat-pile actions operate on this value.
 - `defId` remains stable across base and upgraded states. Never create a second
   definition such as `bo_plus`.
-- `upgradeLevel` is a non-negative integer. For ordinary collectible cards its
-  legal permanent values are 0 or 1. For `em_r_a01` 層層共鳴, every integer is
-  legal.
+- `upgradeLevel` is a non-negative integer. The live validator accepts 0 or 1,
+  and accepts 1 only when that definition has an authored upgrade. Repeat
+  upgrades remain deferred.
 - Runtime values are obtained by applying the authored upgrade to the base
-  definition. Description text is rendered from the same resolved effect data,
-  so preview and combat cannot disagree.
+  definition, and both preview and combat read those resolved effects. The
+  authored display description must be reviewed alongside them.
 - A future combat instance may additionally hold `temporaryUpgradeLevels`.
   Temporary levels are never written into `DeckCardV2`.
 
 ### Save migration contract
 
-When this layer is implemented, migrate the current ordered `string[]` deck to
-ordered `DeckCardV2[]`:
+The implemented migration converts the old ordered `string[]` deck to ordered
+`DeckCardV2[]`:
 
 1. Preserve every entry and its order, including duplicate IDs.
 2. Generate a unique stable `uid` for each entry.
@@ -92,22 +93,23 @@ ordered `DeckCardV2[]`:
   the child-facing card. Color is supplemental: changed values also receive a
   textual before/after comparison.
 
-## Locked anchor upgrades (current 12 designs)
+## Anchor upgrade table
 
-These twelve base effects and upgrades were approved before the rest of the
-catalog. Implementation must treat them as regression anchors.
+Only `bo`, `mo`, `po`, `he`, and `shi` currently have live authored upgrades.
+The other rows remain future proposals. The Resonance replacements below
+supersede their old Echo versions.
 
 | ID | Card | Type | Base | Upgraded |
 |---|---|---|---|---|
 | `bo` | 音波擊 | Attack | 1 Energy: deal 3. | 1 Energy: deal 5. |
 | `mo` | 音波盾 | Skill | 1 Energy: gain 4 Block. | 1 Energy: gain 6 Block. |
-| `po` | 共鳴震 | Attack | 2 Energy: deal 5; apply Echo 2. | 2 Energy: deal 7; apply Echo 2. |
+| `po` | 破綻震 | Attack | 2 Energy: deal 5; apply 易傷 2. | 2 Energy: deal 7; apply 易傷 2. |
 | `ge` | 響亮一擊 | Attack | 1 Energy: deal 6. | 1 Energy: deal 8. |
 | `ri` | 日光音波 | Attack | 1 Energy: deal 3 to all enemies. | 1 Energy: deal 4 to all enemies. |
 | `ke` | 厚實音牆 | Skill | 1 Energy: gain 7 Block. | 1 Energy: gain 9 Block. |
 | `te` | 雙拍連擊 | Attack | 1 Energy: deal 2 twice. | 1 Energy: deal 3 twice. |
-| `he` | 回音針 | Attack | 1 Energy: deal 2; apply Echo 2. | 1 Energy: deal 3; apply Echo 3. |
-| `shi` | 共鳴護唱 | Power | 1 Energy: Echo triggers grant 2 Block this combat. | Trigger Block becomes 3. |
+| `he` | 弱點標記 | Attack | 1 Energy: deal 2; apply 易傷 2. | 1 Energy: deal 3; apply 易傷 3. |
+| `shi` | 聲波架式 | Power | 1 Energy: tagged basic Attacks gain +2 per hit this combat. | Bonus becomes +3. |
 | `le` | 翻譜 | Skill | 1 Energy: draw 2. | 1 Energy: draw 3. |
 | `yi` | 深呼吸 | Skill | 0 Energy: gain 1 Energy; Exhaust. | Gain 1 Energy; draw 1; Exhaust. |
 | `fo` | 邊擋邊唱 | Skill | 1 Energy: gain 3 Block; draw 1. | Gain 5 Block; draw 1. |

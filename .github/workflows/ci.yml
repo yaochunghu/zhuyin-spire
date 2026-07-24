@@ -38,6 +38,7 @@ jobs:
         run: npm run verify:dist
 
   browser:
+    # Keep the published check name stable for existing branch-protection rules.
     name: Tablet browser tests
     runs-on: ubuntu-latest
     steps:
@@ -50,9 +51,9 @@ jobs:
           cache: npm
       - name: Install locked dependencies without lifecycle scripts
         run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-      - name: Run tablet smoke tests
+      - name: Install Chromium and WebKit
+        run: npx playwright install --with-deps chromium webkit
+      - name: Run responsive browser smoke tests
         run: npm run test:e2e
       - name: Run production security smoke tests
         run: npm run test:security:e2e

@@ -42,6 +42,7 @@ export interface DebugMountOpts {
 
 let mounted = false;
 let panelOpen = true;
+let phoneDebugOpen = false;
 let root: HTMLElement | null = null;
 let inspectEl: HTMLPreElement | null = null;
 let enemySelect: HTMLSelectElement | null = null;
@@ -106,6 +107,8 @@ function buildPanel(opts: DebugMountOpts): HTMLElement {
   head.innerHTML = `<strong>DEBUG</strong> <span class="debug-sub">測試用</span>`;
   const close = btn('×', () => {
     panelOpen = false;
+    phoneDebugOpen = false;
+    root?.classList.remove('debug-phone-open');
     paint(opts);
   }, 'debug-btn-icon');
   head.appendChild(close);
@@ -298,10 +301,23 @@ export function mountDebugLayer(opts: DebugMountOpts): void {
   document.body.appendChild(root);
   paint(opts);
 
+  window.addEventListener('zhuyin-debug-open-phone', () => {
+    phoneDebugOpen = true;
+    panelOpen = true;
+    root?.classList.add('debug-phone-open');
+    paint(opts);
+  });
+
   window.addEventListener('keydown', (e) => {
     if (e.key === '`' || (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'd')) {
       e.preventDefault();
       panelOpen = !panelOpen;
+      if (!panelOpen) {
+        phoneDebugOpen = false;
+        root?.classList.remove('debug-phone-open');
+      } else if (phoneDebugOpen) {
+        root?.classList.add('debug-phone-open');
+      }
       paint(opts);
     }
   });

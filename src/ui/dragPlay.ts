@@ -25,9 +25,27 @@ export interface DragPlayOptions {
   onPlay: (targetIds: string[]) => void;
   /** Tap without drag — optional fallback. */
   onTap?: () => void;
+  /** Let touch users swipe the phone hand without accidentally playing a card. */
+  allowHorizontalScroll?: boolean;
 }
 
 const DRAG_THRESHOLD_PX = 12;
+
+export type CardGestureIntent = 'pending' | 'scroll' | 'drag' | 'cancel';
+
+/** Pure classifier kept separate so phone gesture arbitration is testable. */
+export function classifyCardGesture(
+  dx: number,
+  dy: number,
+  thresholdPx = DRAG_THRESHOLD_PX,
+): CardGestureIntent {
+  if (Math.hypot(dx, dy) < thresholdPx) return 'pending';
+  const ax = Math.abs(dx);
+  const ay = Math.abs(dy);
+  if (ax >= ay * 1.05) return 'scroll';
+  if (dy < 0) return 'drag';
+  return 'cancel';
+}
 
 /** Remove every drag ghost / highlight left on the page (safe to call often). */
 export function cleanupDragUi(root: ParentNode = document): void {
@@ -95,7 +113,15 @@ function findDropUnderPoint(
  * Uses pointer events + setPointerCapture for touch tablets.
  */
 export function bindCardDrag(opts: DragPlayOptions): void {
-  const { cardEl, def, enabled, getTargets, onPlay, onTap } = opts;
+  const {
+    cardEl,
+    def,
+    enabled,
+    getTargets,
+    onPlay,
+    onTap,
+    allowHorizontalScroll = false,
+  } = opts;
   if (!enabled) return;
 
   let pointerId: number | null = null;
@@ -105,6 +131,7 @@ export function bindCardDrag(opts: DragPlayOptions): void {
   let ghost: HTMLElement | null = null;
   let activeHot: DropTarget | null = null;
   let finished = false;
+  let gesture: CardGestureIntent = 'pending';
 
   const targetType = cardTargetType(def);
 
@@ -124,6 +151,7 @@ export function bindCardDrag(opts: DragPlayOptions): void {
     removeGhost();
     pointerId = null;
     dragging = false;
+    gesture = 'pending';
     activeHot = null;
   };
 
@@ -145,6 +173,35 @@ export function bindCardDrag(opts: DragPlayOptions): void {
     }
   };
 
+  const startDrag = (e: PointerEvent): void => {
+    dragging = true;
+    gesture = 'drag';
+    if (allowHorizontalScroll) {
+      try {
+        cardEl.setPointerCapture(e.pointerId);
+      } catch {
+        /* ignore */
+      }
+    }
+    cardEl.classList.add('card-ghost-source');
+    document.querySelectorAll('.card-drag-ghost').forEach((el) => el.remove());
+    ghost = document.createElement('div');
+    ghost.className = `card-drag-ghost card ${def.type}`;
+    ghost.innerHTML = cardEl.innerHTML;
+    ghost.style.left = '0';
+    ghost.style.top = '0';
+    ghost.style.pointerEvents = 'none';
+    document.body.appendChild(ghost);
+
+    const stage = cardEl.closest('.combat-stage') ?? document;
+    for (const target of getTargets()) target.el.classList.add('drop-valid');
+    if (targetType === 'singleEnemy' || targetType === 'allEnemies') {
+      stage.querySelectorAll<HTMLElement>('[data-drop="enemy"]').forEach((el) => {
+        if (!el.classList.contains('drop-valid')) el.classList.add('drop-dim');
+      });
+    }
+  };
+
   const onPointerDown = (e: PointerEvent): void => {
     if (!enabled || e.button !== 0) return;
     if (cardEl.hasAttribute('disabled') || cardEl.classList.contains('unplayable')) {
@@ -155,10 +212,16 @@ export function bindCardDrag(opts: DragPlayOptions): void {
     startX = e.clientX;
     startY = e.clientY;
     dragging = false;
-    try {
-      cardEl.setPointerCapture(e.pointerId);
-    } catch {
-      /* ignore */
+    gesture = 'pending';
+    // Phone touch must stay uncaptured until its intent is clear so the hand
+    // can pan. A mouse has no competing native pan gesture, so retain the
+    // immediate capture used by the larger-screen drag interaction.
+    if (!allowHorizontalScroll || e.pointerType === 'mouse') {
+      try {
+        cardEl.setPointerCapture(e.pointerId);
+      } catch {
+        /* ignore */
+      }
     }
   };
 
@@ -167,27 +230,15 @@ export function bindCardDrag(opts: DragPlayOptions): void {
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
     if (!dragging) {
-      if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
-      dragging = true;
-      cardEl.classList.add('card-ghost-source');
-      // Clear any previous orphan first
-      document.querySelectorAll('.card-drag-ghost').forEach((el) => el.remove());
-      ghost = document.createElement('div');
-      ghost.className = `card-drag-ghost card ${def.type}`;
-      ghost.innerHTML = cardEl.innerHTML;
-      ghost.style.left = '0';
-      ghost.style.top = '0';
-      ghost.style.pointerEvents = 'none';
-      document.body.appendChild(ghost);
-
-      const stage = cardEl.closest('.combat-stage') ?? document;
-      for (const t of getTargets()) {
-        t.el.classList.add('drop-valid');
-      }
-      if (targetType === 'singleEnemy' || targetType === 'allEnemies') {
-        stage.querySelectorAll<HTMLElement>('[data-drop="enemy"]').forEach((el) => {
-          if (!el.classList.contains('drop-valid')) el.classList.add('drop-dim');
-        });
+      if (allowHorizontalScroll && e.pointerType !== 'mouse') {
+        gesture = classifyCardGesture(dx, dy);
+        if (gesture === 'pending') return;
+        if (gesture === 'scroll' || gesture === 'cancel') return;
+        e.preventDefault();
+        startDrag(e);
+      } else {
+        if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
+        startDrag(e);
       }
     }
 
@@ -208,6 +259,11 @@ export function bindCardDrag(opts: DragPlayOptions): void {
     }
 
     finishOnce(() => {
+      if (gesture === 'scroll' || gesture === 'cancel') {
+        endDrag();
+        cleanupDragUi();
+        return;
+      }
       if (dragging) {
         if (ghost) ghost.style.pointerEvents = 'none';
         const targets = getTargets();
