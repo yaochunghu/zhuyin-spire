@@ -47,6 +47,9 @@ jobs:
 
   deploy:
     name: Deploy
+    # github-pages environment is restricted to main; skip on other refs so
+    # workflow_dispatch from feature branches cannot create failed Deployments.
+    if: github.ref == 'refs/heads/main'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
