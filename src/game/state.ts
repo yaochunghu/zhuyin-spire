@@ -628,7 +628,7 @@ function openShop(state: RunState): void {
 /** Treasure chest: gold + pick 1 of 3 cards (reuse reward screen). */
 function openTreasure(state: RunState): void {
   const gold =
-    GOLD_TREASURE_BASE + Math.floor(Math.random() * GOLD_TREASURE_JITTER);
+    GOLD_TREASURE_BASE + secureRandomInt(GOLD_TREASURE_JITTER);
   state.gold += gold;
   state.pendingGold = gold;
   state.pendingHeal = 0;
@@ -987,11 +987,24 @@ export function playerEndTurn(state: RunState): void {
   }
 }
 
+function secureRandomInt(maxExclusive: number): number {
+  if (!Number.isFinite(maxExclusive) || maxExclusive <= 0) return 0;
+  const max = Math.floor(maxExclusive);
+  const limit = Math.floor(0x1_0000_0000 / max) * max;
+  const buf = new Uint32Array(1);
+  let value = 0;
+  do {
+    crypto.getRandomValues(buf);
+    value = buf[0] ?? 0;
+  } while (value >= limit);
+  return value % max;
+}
+
 function fightGold(state: RunState): number {
   const node = getActiveNode(state);
   let base = GOLD_FIGHT_BASE;
   if (node?.kind === 'elite' || node?.kind === 'boss') base = GOLD_ELITE_BASE;
-  const jitter = Math.floor(Math.random() * GOLD_JITTER);
+  const jitter = secureRandomInt(GOLD_JITTER);
   let bonus = node?.goldBonus ?? 0;
   if (node?.kind === 'elite') bonus += GOLD_ELITE_FLAT_BONUS;
   return base + jitter + bonus;
