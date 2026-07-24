@@ -6,7 +6,7 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ---
 
-## [Unreleased]
+## [0.2.2] — 2026-07-24
 
 ### 共鳴武者 first playable wave
 
@@ -19,6 +19,15 @@ Format: human-readable summary per version. For code archaeology use `git log` a
   compatibility
 - Kept the remaining generated 75-card catalog, upgrades, Smith, and upgraded
   offers behind human review gates
+
+### Map progression and recovery
+
+- Added a guaranteed Rest floor before each act boss, expanding every act to
+  fifteen climb floors plus the boss floor
+- Restored the hero to full HP after each cleared boss and updated map progress
+  and act-clear feedback to match
+- Migrated valid existing saves to the extended map layout without breaking
+  in-progress routes
 
 ---
 
@@ -128,6 +137,7 @@ Baseline snapshot of the preschool Spire + 注音 game, documented for long-term
 - Standalone git repository for the game folder (tag `v0.1.0`)
 
 [Unreleased]: #unreleased
+[0.2.2]: #022--2026-07-24
 [0.2.1]: #021--2026-07-22
 [0.2.0]: #020--2026-07-22
 [0.1.0]: #010--2026-07-21
