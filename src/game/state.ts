@@ -455,7 +455,7 @@ function createTutorialCombat(state: RunState): CombatState {
 
   // This ordering is local to the tutorial combat. The player's saved deck is
   // never changed. drawPile.pop() draws from the end on later turns.
-  const tutorialCard = (id: string) => makeCard({ uid: `tutorial-${id}-${Math.random()}`, defId: id, upgradeLevel: 0 });
+  const tutorialCard = (id: string) => makeCard({ uid: `tutorial-${id}-${crypto.randomUUID()}`, defId: id, upgradeLevel: 0 });
   combat.hand = ['mo', 'bo', 'bo', 'po', 'bo'].map(tutorialCard);
   combat.drawPile = ['mo', 'mo', 'mo', 'po', 'bo'].map(tutorialCard);
   combat.discardPile = [];
