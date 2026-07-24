@@ -1,83 +1,67 @@
 # Character and deck design
 
-> **Live-versus-target note:** this document describes the small playable
-> prototype. The proposed expansion is specified in
-> [CARD_BIBLE.md](./CARD_BIBLE.md) and [UPGRADE_BIBLE.md](./UPGRADE_BIBLE.md).
-> Those bibles preserve all 27 current card IDs and propose 75 base character
-> designs; upgraded faces do not increase that count. Do not activate their
-> content until the design-review gate is approved.
+## Live character: 共鳴武者
 
-## Design rule
+The player-facing character is a young sound-trained martial artist. The
+internal `echoMage` key remains only as a save/profile compatibility lineage.
 
-Cards are designed by the **combat job they solve**, not as isolated combo
-packages. A themed card may reward Echo, but it must still attack, defend, draw,
-create energy, or provide battle-long scaling on its own. This keeps reward
-choices understandable and prevents a child from receiving a card that does
-nothing without two other rare cards.
+### Signature mechanics
 
-## First character: 回音法師
+1. **易傷** — Attack damage ×1.5, rounded down.
+2. **基礎攻擊 / 練功** — tagged Attacks add combat-long 練功 to every hit.
+3. **轉拍** — successful Attack↔Skill alternation within the current turn.
+4. **勁** — fully block an enemy attack action to gain 1, cap 9; authored cards
+   spend it in fixed or bounded amounts.
 
-- **Theme:** mark a monster with 🔔 Echo, then make the first attack against it
-  each player turn hit for +2.
-- **Learning rhythm:** defend → mark → attack. The sequence is visible and can
-  be explained without reading a paragraph.
-- **Starting relic:** 🎵 **初心音叉** adds 2 damage to the first damaging
-  hit of every combat. It is useful in every opening hand, demonstrates the
-  character's sound theme immediately, and does not require drawing a combo.
-- **Scaling card:** 共鳴護唱 grants 2 block whenever Echo triggers for the
-  rest of that combat. It turns repeated Echo setup into defense without making
-  non-Echo attacks unusable.
+The three overlapping draft directions are:
 
-### Starter deck: 10 cards / 3 designs
+- **聽隙爆發:** apply and exploit 易傷 windows.
+- **百鍊連環:** build basic-Attack density and 練功 scaling.
+- **聽勁反擊:** solve intents precisely, bank 勁, and convert it later.
 
-| Copies | Card | Cost | Job | Effect |
-|---:|---|---:|---|---|
-| 5 | 音波擊 | 1 | Immediate single-target damage | Deal 3 |
-| 4 | 音波盾 | 1 | Defense | Gain 4 block |
-| 1 | 共鳴震 | 2 | Setup + damage | Deal 5; apply Echo for 2 turns |
+轉拍 is the principal bridge between directions, so hybrid decks can chain
+setup, defense, and payoff instead of collecting isolated package pieces.
 
-This is intentionally repetitive. A first-time player can recognize the two
-basic actions before learning the one special card.
+## Starter
 
-### Act I reward pool: 9 designs
+The ten-card starter deliberately teaches one concept at a time:
 
-| Card | Cost | Primary job | Effect |
-|---|---:|---|---|
-| 響亮一擊 | 1 | Immediate single damage | Deal 6 |
-| 日光音波 | 1 | Area damage | Deal 3 to all monsters |
-| 厚實音牆 | 1 | Defense | Gain 7 block |
-| 雙拍連擊 | 1 | Multi-hit damage | Deal 2 twice |
-| 回音針 | 1 | Echo setup | Deal 2; apply Echo for 2 turns |
-| 共鳴護唱 | 1 | Battle-long scaling | Echo triggers grant 2 block this combat |
-| 翻譜 | 1 | Draw / consistency | Draw 2 |
-| 深呼吸 | 0 | Energy / consistency | Gain 1 energy |
-| 邊擋邊唱 | 1 | Defense + draw | Gain 3 block; draw 1 |
+| Copies | Card | Effect |
+|---:|---|---|
+| 5 | 音波擊 | 1 Energy: deal 3; 基礎攻擊 |
+| 4 | 音波盾 | 1 Energy: gain 4 Block |
+| 1 | 破綻震 | 2 Energy: deal 5; apply 2 易傷 |
 
-Normal fights, elites, shops, and Act I treasure rewards draw from these same
-nine designs for now. Elite rarity is deliberately postponed until the small
-pool has been playtested.
+🎵 **初心音叉** adds +1 to the first resolved Attack hit each player turn
+before 易傷.
 
-## Upgrade layer (later, not active)
+## Catalog and progression
 
-Do not add upgrades until the base twelve designs are readable and balanced.
-When upgrades are added:
+The generated data draft contains all 75 post-cull definitions, but the live
+character, rewards, shops, and later acts expose only the 12-card teaching wave.
+Character score is banked for future reviewed waves; it does not currently
+publish the remaining draft definitions. Existing decks and saved offers are
+still instance-safe.
 
-1. Store an `upgraded` flag on a **deck card instance**, not by changing the
-   stable card id. The current run deck is still an id list, so this requires a
-   deliberate save migration rather than a quick field addition.
-2. Add one authored upgrade definition beside each base card's effects.
-3. Improve the card's primary job first: more damage/block, one cheaper cost,
-   longer Echo, or stronger draw. Do not turn every upgrade into new rules text.
-4. Display a clear `+` name, changed numbers, and preview before confirmation.
-5. Decide whether campfires become a three-way choice (heal / remove / upgrade)
-   only after testing how much choice load is comfortable for preschool play.
+The exact base catalog, cull ledger, roles, directions, and release gates live
+in [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md).
 
-The explicit `effects[]` data used by the twelve cards is already a clean base
-for swapping in an upgraded effect list later; no upgrade behavior is silently
-active today.
+## Upgrade layer
 
-The full target now has a concrete per-copy save migration, Smith flow, reward
-upgrade rates, temporary upgrades, preview rules, and one repeat-upgrade
-exception in [UPGRADE_BIBLE.md](./UPGRADE_BIBLE.md). That newer proposal
-supersedes this section once approved; this section remains the live-runtime
-warning until implementation lands.
+The physical card contract `{ uid, defId, upgradeLevel }` and V1→V2 migration
+are implemented. Generated `+` faces exist as an engineering draft, not as
+approved content; 共鳴武者 sets `upgradesEnabled: false`.
+
+Campfires therefore remain Rest or Remove, all live offers remain level zero,
+and the dormant Smith UI is unreachable. Smith and later-act upgraded offers
+may activate only after an authored upgrade review and human test gate.
+
+The generated 75-row draft and reusable migration rules live in
+[UPGRADE_BIBLE.md](./UPGRADE_BIBLE.md).
+
+## Evidence gate
+
+The catalog generator can audit 75 unique draft definitions. Only the live
+12-card wave is a playable claim. Later card and upgrade waves still require
+the cast-on/debug-skip human draft matrix specified in the design-process memo;
+implementation is not automatic balance approval.

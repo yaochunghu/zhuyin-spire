@@ -10,7 +10,7 @@ export interface RelicDef {
   maxEnergy?: number;
   firstTurnEnergy?: number;
   startDraw?: number;
-  /** Added once to the first damaging hit of each combat. */
+  /** Added once to the first damaging Attack hit of each player turn. */
   firstAttackBonusDamage?: number;
 }
 
@@ -19,8 +19,8 @@ export const RELICS: Record<string, RelicDef> = {
     id: 'tuningFork',
     emoji: '🎵',
     name: '初心音叉',
-    blurb: '每場戰鬥的第一次攻擊，追加 2 點回音傷害',
-    firstAttackBonusDamage: 2,
+    blurb: '每回合第一次攻擊命中時，追加 1 點傷害',
+    firstAttackBonusDamage: 1,
   },
   shieldCharm: {
     id: 'shieldCharm',

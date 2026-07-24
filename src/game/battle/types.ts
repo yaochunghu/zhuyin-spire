@@ -5,7 +5,11 @@
 
 export interface CombatCard {
   uid: string;
+  sourceUid: string;
   defId: string;
+  upgradeLevel: 0 | 1;
+  temporaryCostReduction: number;
+  basicOverride: boolean;
 }
 
 export interface EnemyUnit {
@@ -18,6 +22,8 @@ export interface EnemyUnit {
   alive: boolean;
   /** Echo: first incoming attack each player turn gains +2 damage. */
   echoTurns: number;
+  vulnerableTurns: number;
+  weakTurns: number;
   echoTriggeredThisTurn: boolean;
 }
 
@@ -46,8 +52,15 @@ export type CombatFx =
     }
   | { type: 'playerBlock'; amount: number }
   | { type: 'playerEnergy'; amount: number }
-  | { type: 'playerPower'; power: 'echoGuard'; amount: number }
-  | { type: 'enemyStatus'; enemyId: string; status: 'echo'; turns: number }
+  | { type: 'playerPower'; power: 'echoGuard' | 'training'; amount: number }
+  | { type: 'playerResource'; resource: 'jin'; delta: number; value: number }
+  | { type: 'playerTempo'; count: number }
+  | {
+      type: 'enemyStatus';
+      enemyId: string;
+      status: 'echo' | 'vulnerable' | 'weak';
+      turns: number;
+    }
   | {
       type: 'enemyStrike';
       blockBefore: number;
@@ -82,6 +95,23 @@ export interface CombatState {
   firstAttackBonusReady: boolean;
   /** Battle-long scaling from 共鳴護唱. */
   echoGuardAmount: number;
+  training: number;
+  jin: number;
+  gainedJinLastEnemyPhase: boolean;
+  gainedJinThisEnemyPhase: boolean;
+  lastPlayedType: 'attack' | 'skill' | 'power' | null;
+  tempoCount: number;
+  basicPlayedThisTurn: number;
+  basicTrainingCounter: number;
+  nextAttackBonus: number;
+  freeBasicsRemaining: number;
+  bonusDrawNextTurn: number;
+  drawIfJinPending: boolean;
+  bonusJinNextEnemyPhase: number;
+  flawlessTrainingPending: boolean;
+  activePowerIds: string[];
+  powerTriggersThisTurn: Record<string, number>;
+  exhaustPile: CombatCard[];
   drawPile: CombatCard[];
   hand: CombatCard[];
   discardPile: CombatCard[];

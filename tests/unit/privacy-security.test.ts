@@ -52,7 +52,7 @@ describe('privacy boundaries', () => {
 describe('untrusted save validation', () => {
   it('accepts a real stable checkpoint, including duplicate cards', () => {
     const snapshot = validSnapshot();
-    expect(new Set(snapshot.deck).size).toBeLessThan(snapshot.deck.length);
+    expect(new Set(snapshot.deck.map((card) => card.defId)).size).toBeLessThan(snapshot.deck.length);
     expect(parseSnapshot(snapshot)).not.toBeNull();
   });
 

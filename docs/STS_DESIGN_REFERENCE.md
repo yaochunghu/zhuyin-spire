@@ -4,7 +4,9 @@ This is a systems reference for designing **注音之塔**, not a specification 
 clone *Slay the Spire* (StS) exactly. It records how StS1 joins combat,
 deck-building, map risk, rewards, progression, and information design into one
 coherent loop. Project decisions and live values remain in
-[DECK_DESIGN.md](./DECK_DESIGN.md) and [BALANCE.md](./BALANCE.md).
+[DECK_DESIGN.md](./DECK_DESIGN.md) and [BALANCE.md](./BALANCE.md). The workflow
+for applying these lessons, including evidence confidence and interaction debt,
+lives in [DESIGN_PLAYBOOK.md](./DESIGN_PLAYBOOK.md).
 
 ## How to use this reference
 
@@ -691,6 +693,9 @@ Project-owner research inputs:
 
 - “Designing a new character and their deck…” supplied with this task.
 - “Card costing benchmarks…” supplied with this task.
+- “Procedural Architecture and Systems Design in Roguelike Deckbuilders”
+  supplied later as a systems memo.
 
-Those two notes helped route the research. Where they made precise claims, this
-document prefers the official GDC material and linked mechanics references.
+Those notes helped route the research. Where they make precise claims, this
+document prefers official material and linked mechanics references. Unsourced
+sequel-specific values remain hypotheses rather than project requirements.

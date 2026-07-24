@@ -108,6 +108,7 @@ Each profile owns:
 - its run save;
 - tutorial enablement and completion;
 - practice total, badges, clear status, and completed-run count;
+- cumulative score and published-card progress for each character;
 - curriculum preferences;
 - attempts, accuracy, response time, recent results, and shuffle bags.
 
@@ -121,6 +122,15 @@ badges, practice totals, and the old run save migrate into the first learner.
 | `zhuyin-spire-run-v1` | First-profile migration mirror |
 | `zhuyin-spire-game-settings-v1` | Global animation speed; legacy tutorial field retained for migration |
 | `zhuyin-spire-vol` | Global volume |
+
+Character progression is gameplay-only and remains separate from casting
+accuracy. A terminal run banks score once from completed rooms, combat classes,
+flawless elite/boss victories, and a full-victory bonus. Stable run checkpoints
+carry the pending score counters; overwriting an unfinished run awards nothing.
+The profile stores only cumulative per-character score. Card counts and unlock
+stages are derived from each character's published pool, so future reviewed
+waves can join score tiers without another profile migration. The current
+共鳴武者 release exposes all 12 published designs and no score-gated draft cards.
 
 ## Adding a future English or math character
 

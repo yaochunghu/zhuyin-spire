@@ -4,7 +4,11 @@
  */
 
 import { CARDS } from '../data/cards';
-import { FIRST_CHARACTER_ID, isCharacterId } from '../data/characters';
+import {
+  FIRST_CHARACTER_ID,
+  getPlayableCharacter,
+  isPlayableCharacterId,
+} from '../data/characters';
 import { ENCOUNTERS } from '../data/encounters';
 import { ENEMIES } from '../data/enemies';
 import {
@@ -19,10 +23,17 @@ import {
 } from '../data/map';
 import { RELICS } from '../data/relics';
 import type { RunState, Screen, ShopOffer } from './state';
+import {
+  isDeckCard,
+  nextCardUid,
+  type CardOffer,
+  type DeckCard,
+} from './cardInstances';
+import { createRunScoreStats, type RunScoreStats } from './progression';
 import { getActiveProfileId, isLegacyOwnerProfile } from './profiles';
 
 const LEGACY_SAVE_KEY = 'zhuyin-spire-run-v1';
-const SAVE_VERSION = 1 as const;
+const SAVE_VERSION = 2 as const;
 const MAX_SAVE_BYTES = 1_000_000;
 
 export function activeRunSaveKey(): string {
@@ -40,6 +51,7 @@ const STABLE_SCREENS: Screen[] = [
   'relicPick',
   'map',
   'rest',
+  'smith',
   'removeCard',
   'shop',
   'shopRemove',
@@ -52,7 +64,8 @@ export interface RunSnapshotV1 {
   screen: Screen;
   heroHp: number;
   heroMaxHp: number;
-  deck: string[];
+  deck: DeckCard[];
+  nextCardUid: number;
   gold: number;
   /** Optional so v1 saves made before characters still load. */
   characterId?: string | null;
@@ -63,7 +76,7 @@ export interface RunSnapshotV1 {
   activeNodeId: string | null;
   visitedIds: string[];
   pathIds: string[];
-  rewardOptions: string[];
+  rewardOptions: CardOffer[];
   rewardTier: RewardTier;
   pendingGold: number;
   pendingHeal?: number;
@@ -73,6 +86,8 @@ export interface RunSnapshotV1 {
   lastClearedAct: number;
   /** Optional keeps pre-tutorial saves ineligible without a version migration. */
   tutorialEligibleRun?: boolean;
+  scoreStats?: RunScoreStats;
+  scoreCommitted?: boolean;
 }
 
 function isStableScreen(screen: Screen): boolean {
@@ -107,7 +122,8 @@ export function snapshotRun(state: RunState): RunSnapshotV1 | null {
     screen: state.screen,
     heroHp: state.heroHp,
     heroMaxHp: state.heroMaxHp,
-    deck: [...state.deck],
+    deck: state.deck.map((card) => ({ ...card })),
+    nextCardUid: state.nextCardUid,
     gold: state.gold,
     characterId: state.characterId,
     relicId: state.relicId,
@@ -117,7 +133,7 @@ export function snapshotRun(state: RunState): RunSnapshotV1 | null {
     activeNodeId: state.activeNodeId,
     visitedIds: [...state.visitedIds],
     pathIds: [...state.pathIds],
-    rewardOptions: [...state.rewardOptions],
+    rewardOptions: state.rewardOptions.map((card) => ({ ...card })),
     rewardTier: state.rewardTier,
     pendingGold: state.pendingGold,
     pendingHeal: state.pendingHeal,
@@ -126,6 +142,8 @@ export function snapshotRun(state: RunState): RunSnapshotV1 | null {
     listenSuccesses: state.listenSuccesses,
     lastClearedAct: state.lastClearedAct,
     tutorialEligibleRun: state.tutorialEligibleRun,
+    scoreStats: { ...state.scoreStats },
+    scoreCommitted: state.scoreCommitted,
   };
 }
 
@@ -236,10 +254,31 @@ function isValidRunMap(value: unknown): value is RunMap {
 function isValidShopOffer(value: unknown): value is ShopOffer {
   if (!isPlainObject(value)) return false;
   return (
-    typeof value.cardId === 'string' &&
-    value.cardId in CARDS &&
+    isDeckCard(value) &&
+    value.defId in CARDS &&
     isIntIn(value.price, 0, 100_000) &&
     typeof value.sold === 'boolean'
+  );
+}
+
+function isValidCardInstance(value: unknown): value is DeckCard {
+  return isDeckCard(value) && value.defId in CARDS;
+}
+
+function isValidCardOffer(value: unknown): value is CardOffer {
+  return isValidCardInstance(value);
+}
+
+function isValidRunScoreStats(value: unknown): value is RunScoreStats {
+  if (!isPlainObject(value)) return false;
+  return (
+    isIntIn(value.roomsCompleted, 0, 1_000) &&
+    isIntIn(value.normalWins, 0, 1_000) &&
+    isIntIn(value.eliteWins, 0, 1_000) &&
+    isIntIn(value.bossWins, 0, 100) &&
+    isIntIn(value.flawlessElites, 0, 1_000) &&
+    isIntIn(value.flawlessBosses, 0, 100) &&
+    isIntIn(value.currentCombatHpLost, 0, 1_000_000)
   );
 }
 
@@ -247,9 +286,11 @@ function isValidSnapshot(data: unknown): data is RunSnapshotV1 {
   if (!isPlainObject(data)) return false;
   if (data.v !== SAVE_VERSION || typeof data.screen !== 'string' || !isStableScreen(data.screen as Screen)) return false;
   if (!isIntIn(data.heroMaxHp, 1, 999) || !isIntIn(data.heroHp, 0, data.heroMaxHp)) return false;
-  if (!isBoundedStringArray(data.deck, 200, (id) => id in CARDS, false)) return false;
+  if (!Array.isArray(data.deck) || data.deck.length > 200 || !data.deck.every(isValidCardInstance)) return false;
+  if (new Set((data.deck as DeckCard[]).map((card) => card.uid)).size !== data.deck.length) return false;
+  if (!isIntIn(data.nextCardUid, 1, 1_000_000)) return false;
   if (!isIntIn(data.gold, 0, 999_999)) return false;
-  if (data.characterId !== undefined && data.characterId !== null && !isCharacterId(data.characterId)) return false;
+  if (data.characterId !== undefined && data.characterId !== null && !isPlayableCharacterId(data.characterId)) return false;
   if (data.relicId !== null && (typeof data.relicId !== 'string' || !(data.relicId in RELICS))) return false;
   if (!isValidRunMap(data.runMap)) return false;
   if (!isIntIn(data.actIndex, 0, 2)) return false;
@@ -258,7 +299,7 @@ function isValidSnapshot(data: unknown): data is RunSnapshotV1 {
   if (!nullableMapId(data.currentNodeId) || !nullableMapId(data.activeNodeId)) return false;
   if (!isBoundedStringArray(data.visitedIds, 100, (id) => mapIds.has(id))) return false;
   if (!isBoundedStringArray(data.pathIds, 100, (id) => mapIds.has(id))) return false;
-  if (!isBoundedStringArray(data.rewardOptions, 3, (id) => id in CARDS)) return false;
+  if (!Array.isArray(data.rewardOptions) || data.rewardOptions.length > 3 || !data.rewardOptions.every(isValidCardOffer)) return false;
   if (data.rewardTier !== 'normal' && data.rewardTier !== 'elite') return false;
   if (!isIntIn(data.pendingGold, 0, 999_999)) return false;
   if (data.pendingHeal !== undefined && !isIntIn(data.pendingHeal, 0, data.heroMaxHp)) return false;
@@ -267,11 +308,51 @@ function isValidSnapshot(data: unknown): data is RunSnapshotV1 {
   if (!isIntIn(data.listenSuccesses, 0, 1_000_000)) return false;
   if (!isIntIn(data.lastClearedAct, 0, 3)) return false;
   if (data.tutorialEligibleRun !== undefined && typeof data.tutorialEligibleRun !== 'boolean') return false;
+  if (data.scoreStats !== undefined && !isValidRunScoreStats(data.scoreStats)) return false;
+  if (data.scoreCommitted !== undefined && typeof data.scoreCommitted !== 'boolean') return false;
   return true;
 }
 
+function migrateLegacySnapshot(data: unknown): unknown {
+  if (!isPlainObject(data) || data.v !== 1) return data;
+  if (!Array.isArray(data.deck) || !data.deck.every((id) => typeof id === 'string' && id in CARDS)) {
+    return null;
+  }
+  let counter = 1;
+  const make = (defId: string): DeckCard => ({
+    uid: nextCardUid(counter++),
+    defId,
+    upgradeLevel: 0,
+  });
+  const deck = (data.deck as string[]).map(make);
+  const rewards = Array.isArray(data.rewardOptions) &&
+    data.rewardOptions.every((id) => typeof id === 'string' && id in CARDS)
+    ? (data.rewardOptions as string[]).map(make)
+    : data.rewardOptions;
+  const shops = Array.isArray(data.shopOffers)
+    ? data.shopOffers.map((offer) => {
+        if (!isPlainObject(offer) || typeof offer.cardId !== 'string') return offer;
+        return {
+          ...make(offer.cardId),
+          price: offer.price,
+          sold: offer.sold,
+        };
+      })
+    : data.shopOffers;
+  return {
+    ...data,
+    v: SAVE_VERSION,
+    screen: data.screen === 'removeCard' ? 'rest' : data.screen,
+    deck,
+    nextCardUid: counter,
+    rewardOptions: rewards,
+    shopOffers: shops,
+  };
+}
+
 export function parseSnapshot(data: unknown): RunSnapshotV1 | null {
-  return isValidSnapshot(data) ? data : null;
+  const migrated = migrateLegacySnapshot(data);
+  return isValidSnapshot(migrated) ? migrated : null;
 }
 
 export function loadSnapshot(): RunSnapshotV1 | null {
@@ -299,13 +380,20 @@ export function applySnapshot(state: RunState, snap: RunSnapshotV1): void {
   state.screen = snap.screen;
   state.heroHp = snap.heroHp;
   state.heroMaxHp = snap.heroMaxHp;
-  state.deck = [...snap.deck];
+  state.deck = snap.deck.map((card) => ({ ...card }));
+  state.nextCardUid = snap.nextCardUid;
   state.gold = snap.gold;
-  state.characterId = isCharacterId(snap.characterId)
+  state.characterId = isPlayableCharacterId(snap.characterId)
     ? snap.characterId
     : snap.screen === 'relicPick'
       ? null
       : FIRST_CHARACTER_ID;
+  if (
+    state.screen === 'smith' &&
+    (!state.characterId || !getPlayableCharacter(state.characterId).upgradesEnabled)
+  ) {
+    state.screen = 'rest';
+  }
   state.relicId = snap.relicId;
   state.runMap = JSON.parse(JSON.stringify(snap.runMap)) as RunMap;
   state.actIndex = snap.actIndex;
@@ -313,7 +401,7 @@ export function applySnapshot(state: RunState, snap: RunSnapshotV1): void {
   state.activeNodeId = snap.activeNodeId;
   state.visitedIds = [...snap.visitedIds];
   state.pathIds = [...snap.pathIds];
-  state.rewardOptions = [...snap.rewardOptions];
+  state.rewardOptions = snap.rewardOptions.map((card) => ({ ...card }));
   state.rewardTier = snap.rewardTier;
   state.pendingGold = snap.pendingGold;
   state.pendingHeal = snap.pendingHeal ?? 0;
@@ -331,6 +419,9 @@ export function applySnapshot(state: RunState, snap: RunSnapshotV1): void {
   state.practiceSessionCorrect = 0;
   state.tutorial = null;
   state.tutorialEligibleRun = snap.tutorialEligibleRun ?? false;
+  state.scoreStats = snap.scoreStats ? { ...snap.scoreStats } : createRunScoreStats();
+  state.scoreCommitted = snap.scoreCommitted ?? false;
+  state.scoreResult = null;
 }
 
 export function resumeSavedRun(state: RunState): boolean {

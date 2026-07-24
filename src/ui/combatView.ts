@@ -1,4 +1,4 @@
-import { getCard, type CardDef } from '../data/cards';
+import { getCard, resolveCard, type CardDef } from '../data/cards';
 import {
   ENEMIES,
   intentIsUrgent,
@@ -45,10 +45,14 @@ import {
 function pileCounts(cards: CombatCard[]): { def: CardDef; count: number }[] {
   const map = new Map<string, number>();
   for (const c of cards) {
-    map.set(c.defId, (map.get(c.defId) ?? 0) + 1);
+    const key = `${c.defId}:${c.upgradeLevel}`;
+    map.set(key, (map.get(key) ?? 0) + 1);
   }
   return [...map.entries()]
-    .map(([id, count]) => ({ def: getCard(id), count }))
+    .map(([key, count]) => {
+      const [id, level] = key.split(':');
+      return { def: resolveCard(id, level === '1' ? 1 : 0), count };
+    })
     .sort((a, b) => a.def.zhuyin.localeCompare(b.def.zhuyin, 'zh-Hant'));
 }
 
@@ -188,7 +192,7 @@ function renderEnemySlot(
     slot.tabIndex = 0;
     slot.setAttribute(
       'aria-label',
-      `${def.name} ❤️${unit.hp}${unit.block > 0 ? ` 盾${unit.block}` : ''}${unit.echoTurns > 0 ? ` 回音${unit.echoTurns}回合` : ''} ${intentTitle}${urgent ? '（危險）' : ''}${selected ? '（已選）' : ''}`,
+      `${def.name} ❤️${unit.hp}${unit.block > 0 ? ` 盾${unit.block}` : ''}${unit.vulnerableTurns > 0 ? ` 易傷${unit.vulnerableTurns}回合` : ''} ${intentTitle}${urgent ? '（危險）' : ''}${selected ? '（已選）' : ''}`,
     );
   }
 
@@ -210,11 +214,13 @@ function renderEnemySlot(
     </div>
     <div class="enemy-emoji${opts.damaged && !dead ? ' enemy-flinch enemy-impact' : ''}${opts.castOk && !opts.damaged && !dead ? ' enemy-cast-ok' : ''}${dead ? ' enemy-poof' : ''}" data-enemy>${dead ? '💨' : def.emoji}</div>
     <div class="adult-text enemy-name-adult">${def.name}${def.isElite ? ' · 菁英' : ''}${def.isBoss ? ' · BOSS' : ''}</div>
-    ${
-      !dead && unit.echoTurns > 0
+      ${
+        !dead && unit.echoTurns > 0
         ? `<div class="enemy-status echo-status${unit.echoTriggeredThisTurn ? ' status-used' : ''}" data-enemy-status="${unit.id}" title="回音：本回合第一次攻擊 +2 傷害">🔔 回音 ${unit.echoTurns}</div>`
-        : ''
-    }
+          : ''
+      }
+      ${!dead && unit.vulnerableTurns > 0 ? `<div class="enemy-status vulnerable-status">💥 易傷 ${unit.vulnerableTurns}</div>` : ''}
+      ${!dead && unit.weakTurns > 0 ? `<div class="enemy-status weak-status">🥀 虛弱 ${unit.weakTurns}</div>` : ''}
     <div class="enemy-bars">
       <div class="bar" data-enemy-bar data-enemy-bar-id="${unit.id}"><span style="width:${dead ? 0 : hpPct}%"></span></div>
       <div class="bar shield-bar enemy-shield-bar${!unit.block || dead ? ' shield-bar-empty' : ''}" data-enemy-shield="${unit.id}">
@@ -385,7 +391,7 @@ export function renderCombat(): HTMLElement {
     (blockGained ? ' shield-bar-pulse' : '');
 
   heroZone.innerHTML = `
-    <div class="hero-actor" aria-hidden="true">${run().characterId === 'echoMage' ? '🧙‍♂️' : '🧙'}</div>
+    <div class="hero-actor" aria-hidden="true">🥋</div>
     <div class="hero-vitals">
       <div class="hero-vital-row">
         <div class="stat-pill hero-stat${heroLow ? ' danger-hp' : ''}${heroDamaged ? ' hero-hit' : ''}" data-hero-hp>❤️ ${c.heroHp}/${c.heroMaxHp}</div>
@@ -400,8 +406,15 @@ export function renderCombat(): HTMLElement {
         <div class="${shieldBarCls}" data-hero-shield-bar><span style="width:${c.block <= 0 ? 0 : shieldPct}%"></span></div>
       </div>
       <div class="hero-combat-powers">
-        ${c.firstAttackBonusReady ? '<span class="combat-power relic-ready" title="初心音叉尚未使用">🎵 首擊 +2</span>' : ''}
+        ${c.firstAttackBonusReady ? '<span class="combat-power relic-ready" title="初心音叉本回合尚未使用">🎵 首擊 +1</span>' : ''}
         ${c.echoGuardAmount > 0 ? `<span class="combat-power" title="每次回音觸發時獲得護盾">🌱 回音盾 +${c.echoGuardAmount}</span>` : ''}
+        <span class="combat-power" title="完整擋住一次敵方攻擊可獲得勁">🥋 勁 ${c.jin}/9</span>
+        ${c.training > 0 ? `<span class="combat-power" title="每次基礎攻擊命中都增加傷害">👊 練功 +${c.training}</span>` : ''}
+        ${
+          c.lastPlayedType === 'attack' || c.lastPlayedType === 'skill'
+            ? `<span class="combat-power" title="攻擊與技能交替成功就會轉拍">🥁 上張 ${c.lastPlayedType === 'attack' ? '⚔️' : '✨'}${c.tempoCount > 0 ? ` · 轉拍 ${c.tempoCount}` : ''}</span>`
+            : ''
+        }
       </div>
     </div>
   `;
@@ -451,7 +464,7 @@ export function renderCombat(): HTMLElement {
   const livingIds = living.map((e) => e.id);
 
   for (const card of c.hand) {
-    const def = getCard(card.defId);
+    const def = resolveCard(card.defId, card.upgradeLevel);
     const btn = document.createElement('button');
     btn.className = `card ${def.type}`;
     // Energy/phase only — bind drag even during FX so post-FX enable works;
@@ -517,7 +530,7 @@ export function renderCombat(): HTMLElement {
     playerEndTurn(run());
     if (run().screen === 'defeat') {
       render();
-      playOutcomeOverlay('faint', { emoji: '🧙' }, () => {
+      playOutcomeOverlay('faint', { emoji: '🥋' }, () => {
         render();
       });
       return;

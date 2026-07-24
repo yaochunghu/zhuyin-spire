@@ -6,10 +6,13 @@ How to add playable content without reverse-engineering the whole repo.
 
 ## Cards — `src/data/cards.ts`
 
-The live file still contains the prototype schema and pool. Before expanding
-it, review [CARD_BIBLE.md](./CARD_BIBLE.md) for the exact proposed roster and
-[UPGRADE_BIBLE.md](./UPGRADE_BIBLE.md) for per-copy identity and save migration.
-The bibles are proposals, not generated runtime data.
+The live 共鳴武者 release is the ten-card starter plus nine reward designs
+(12 unique designs total). `resonanceCards.ts` also contains a generated
+75-card implementation draft for static review, but cards outside the first
+wave are not in character, reward, shop, or later-act pools. Review
+[DESIGN_PLAYBOOK.md](./DESIGN_PLAYBOOK.md) and
+[RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md)
+before promoting another wave.
 
 The target type system is `Attack | Skill | Power`: any direct Attack card
 remains Attack even with secondary effects; one-use defense/draw/Energy/status
@@ -24,17 +27,19 @@ type. Status and Curse are separate pollution types.
 | `id` | Stable string key |
 | `zhuyin` | Teaching initial (e.g. `ㄅ`) — keys phrase bank |
 | `name` | Display name |
-| `type` | `attack` \| `block` \| `skill` |
+| `type` | `attack` \| `skill` \| `power` |
 | `cost` | Energy |
 | `icon?` | Stable combat art emoji; unlike the changing spelling cue emoji |
 | `job?` | Primary deck job: frontload, area, defense, scaling, draw, or energy |
 | `value` | Primary damage or block amount |
 | `hits?` | Multi-hit attacks |
 | `bonusBlock?` / `draw?` | Extra effects |
-| `effects?` | Modular damage/block/draw/energy/Echo/Echo-guard definitions |
+| `effects?` | Modular damage/block/draw/energy/status/training/勁 definitions |
 | `target?` | `self` \| `singleEnemy` \| `allEnemies` |
 | `cues` | Fallback teaching phrases on the card |
-| `description` | Kid/adult readable text |
+| `description` | Exact readable effect text |
+| `upgrade` | Draft `+` face; the physical-copy schema exists but live upgrades remain gated off |
+| `designId` / `mechanics` / `direction` | Design-audit metadata |
 
 Also maintain **pools**: `STARTER_DECK_IDS`, `REWARD_POOL_IDS`, `ELITE_REWARD_POOL_IDS`, practice ids, etc. For the first character, keep the starter at 3 designs and Act I rewards at exactly 9 until playtesting justifies expansion.
 
@@ -120,10 +125,26 @@ cards ≥16/8. See [CASTING_GATES.md](./CASTING_GATES.md).
 
 ## Characters and relics — `src/data/characters.ts`, `src/data/relics.ts`
 
-Each `CharacterDef` owns its starter deck ids, starting relic id, casting-gate id,
-and one main theme. New runs select a character; they do not separately choose an unrelated
-starter relic. Keep starter relics always useful, small, and thematic. Existing
-v1 saves may retain a legacy relic so an in-progress run is not destroyed.
+Characters use a discriminated runtime status. A `playable` definition owns its
+starter deck ids, starter summary, starting relic, casting-gate id, reward pool,
+implemented card catalog, and one main theme. An `inDesign` definition contains
+presentation copy only and must never be accepted by run state or save
+validation. New runs select a character; they do not separately choose an
+unrelated starter relic. Keep starter relics always useful, small, and thematic.
+Existing v1 saves may retain a legacy relic so an in-progress run is not
+destroyed.
+
+Draft character cards may declare a cumulative `unlockScore`, but progress
+counts derive only from the character's published `cardPoolIds`. Promoting a
+reviewed wave requires adding those ids to the published pool; upgrades never
+increase the count. Practice remains unfiltered because progression must not
+hide phonetic material. Never remove an existing card from a saved deck or
+offer.
+
+The live 共鳴武者 catalog has 12 designs. Character score is already stored so
+future reviewed waves can use it, but no score currently publishes cards from
+the generated 75-card draft. Profiles saved before character progression may
+migrate to score 300 without changing the current 12/12 live pool.
 
 The live first-character specification and future upgrade constraints are in
 [DECK_DESIGN.md](./DECK_DESIGN.md).

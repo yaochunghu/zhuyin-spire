@@ -1,4 +1,5 @@
 import { ALL_PHRASE_PACKS, type PhrasePack } from '../data/phrases';
+import { CHARACTER_IDS, getCharacter } from '../data/characters';
 import { getVolume, setVolume, sfx, type VolLevel } from '../game/audio';
 import {
   countEligibleZhuyinPhrases,
@@ -10,6 +11,7 @@ import {
   deleteProfile,
   getActiveProfile,
   getCastingPreferences,
+  getCharacterCardProgress,
   getProfiles,
   learnerAvatars,
   MAX_NICKNAME_LENGTH,
@@ -24,6 +26,7 @@ import {
   updateGameSettings,
 } from '../game/settings';
 import { clearAllAppData } from '../game/privacy';
+import { exportPlaytestTelemetry } from '../game/playtestTelemetry';
 
 const PACK_LABELS: Record<PhrasePack, string> = {
   core: '基礎本',
@@ -168,6 +171,34 @@ function renderProfiles(): HTMLElement {
     creator.append(name, avatar, add);
     box.appendChild(creator);
   }
+
+  const progressBox = document.createElement('div');
+  progressBox.className = 'profile-character-progress';
+  const progressTitle = document.createElement('h3');
+  progressTitle.textContent = '角色卡牌進度';
+  progressBox.appendChild(progressTitle);
+  for (const characterId of CHARACTER_IDS) {
+    const character = getCharacter(characterId);
+    const progress = getCharacterCardProgress(active, characterId);
+    const item = document.createElement('div');
+    item.className = 'profile-character-progress-item';
+    if (character.status === 'inDesign') {
+      item.innerHTML = `
+        <span class="profile-character-icon">${character.emoji}</span>
+        <span><strong>${character.name}</strong><small>🚧 設計中 · 牌池尚未發布</small></span>
+      `;
+    } else {
+      const next = progress.nextUnlockScore
+        ? `下一批 ${progress.score}/${progress.nextUnlockScore}`
+        : '目前可玩卡牌全數解鎖';
+      item.innerHTML = `
+        <span class="profile-character-icon">${character.emoji}</span>
+        <span><strong>${character.name} · 🃏 ${progress.unlockedCards}/${progress.totalCards}</strong><small>角色分數 ${progress.score} · ${next}</small></span>
+      `;
+    }
+    progressBox.appendChild(item);
+  }
+  box.appendChild(progressBox);
   return box;
 }
 
@@ -401,6 +432,21 @@ function renderPrivacy(): HTMLElement {
   policy.rel = 'noopener noreferrer';
   policy.textContent = '閱讀完整隱私說明';
   box.appendChild(policy);
+
+  const exportData = document.createElement('button');
+  exportData.type = 'button';
+  exportData.className = 'btn-secondary options-wide-btn';
+  exportData.textContent = '匯出本機平衡測試資料（JSON）';
+  exportData.addEventListener('click', () => {
+    const blob = new Blob([exportPlaytestTelemetry()], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'zhuyin-spire-playtest.json';
+    link.click();
+    URL.revokeObjectURL(url);
+  });
+  box.appendChild(exportData);
 
   const erase = document.createElement('button');
   erase.type = 'button';

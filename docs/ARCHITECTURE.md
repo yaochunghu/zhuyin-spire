@@ -39,7 +39,8 @@ src/
 | `title` | New run / continue / practice |
 | `relicPick` | Character selection (legacy internal name kept for v1 saves) |
 | `map` | Climb current act web |
-| `rest` / `removeCard` | Campfire heal or deck remove |
+| `rest` | Campfire Rest-or-Remove choice |
+| `smith` | Dormant exact-copy upgrade screen; schema is present but the live character gates it off |
 | `shop` / `shopRemove` | Buy cards / paid remove |
 | `combat` | Fight |
 | `castCheck` | 注音 cast gate for a played card |
@@ -64,11 +65,11 @@ Owned by `main.ts` as a single mutable object; UI modules reach it via `ui/runti
 
 Important fields:
 
-- **Hero:** `heroHp`, `heroMaxHp`, `deck[]`, `gold`, `characterId`, `relicId`
+- **Hero:** `heroHp`, `heroMaxHp`, physical `deck[]`, `nextCardUid`, `gold`, `characterId`, `relicId`
 - **Map:** `runMap` (3 acts), `actIndex`, `currentNodeId`, `activeNodeId`, `visitedIds`, `pathIds`
 - **Combat:** `combat: CombatState | null`
 - **Cast:** `cast: { prompt, cardDef } | null`
-- **Meta UI:** `flash`, `floatText`, shop/reward pending fields
+- **Meta UI:** `flash`, `floatText`, physical shop/reward card-instance fields
 - **Tutorial (ephemeral):** `tutorial`, plus optional saved `tutorialEligibleRun` so old saves are not retrofitted
 
 Map navigation helpers: `getAvailableMapNodes`, `selectMapNode`, `getActiveNode`.

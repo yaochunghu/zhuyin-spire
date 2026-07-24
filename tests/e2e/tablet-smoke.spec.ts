@@ -123,13 +123,23 @@ test.afterEach(async ({ page }) => {
 });
 
 test('character selection binds the simple starter deck and relic', async ({ page }) => {
+  test.slow();
   await page.goto('/');
   await page.getByRole('button', { name: '開始爬塔' }).click();
-  const character = page.getByRole('button', { name: /選擇回音法師/ });
+  const character = page.getByRole('button', { name: /選擇共鳴武者/ });
   await expect(character).toBeVisible();
+  await expect(character).toContainText('🃏 12/12');
+  await expect(character).toContainText('目前發布的卡牌全數可用');
+  const characterBoxes = await page.locator('.character-card').evaluateAll((cards) =>
+    cards.map((card) => {
+      const rect = card.getBoundingClientRect();
+      return { width: rect.width, height: rect.height };
+    }),
+  );
+  expect(characterBoxes.every((box) => box.width >= 300 && box.height >= 400)).toBe(true);
   await expect(character).toContainText('⚔️ 1⚡ ×5');
   await expect(character).toContainText('🛡️ 1⚡ ×4');
-  await expect(character).toContainText('🔔 2⚡ ×1');
+  await expect(character).toContainText('🎯 2⚡ ×1');
   await expect(character).toContainText('初心音叉');
   await character.click();
   await expect(page.locator('.map-stage')).toBeVisible();
@@ -141,9 +151,33 @@ test('character selection binds the simple starter deck and relic', async ({ pag
   expect(saved.characterId).toBe('echoMage');
   expect(saved.relicId).toBe('tuningFork');
   expect(saved.deck).toHaveLength(10);
-  expect(saved.deck.filter((id: string) => id === 'bo')).toHaveLength(5);
-  expect(saved.deck.filter((id: string) => id === 'mo')).toHaveLength(4);
-  expect(saved.deck.filter((id: string) => id === 'po')).toHaveLength(1);
+  expect(new Set(saved.deck.map((card: { uid: string }) => card.uid)).size).toBe(10);
+  expect(saved.deck.every((card: { upgradeLevel: number }) => card.upgradeLevel === 0)).toBe(true);
+  expect(saved.deck.filter((card: { defId: string }) => card.defId === 'bo')).toHaveLength(5);
+  expect(saved.deck.filter((card: { defId: string }) => card.defId === 'mo')).toHaveLength(4);
+  expect(saved.deck.filter((card: { defId: string }) => card.defId === 'po')).toHaveLength(1);
+});
+
+test('character selection cards remain full-size when stacked on a phone', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'tablet-portrait');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  const debugClose = page.locator('.debug-head .debug-btn-icon');
+  if (await debugClose.count()) await debugClose.click();
+  const start = page.getByRole('button', { name: '開始爬塔' });
+  await start.click();
+  const layout = await page.locator('.character-choices').evaluate((choices) => ({
+    direction: getComputedStyle(choices).flexDirection,
+    width: choices.getBoundingClientRect().width,
+    cardHeights: [...choices.querySelectorAll('.character-card')].map(
+      (card) => card.getBoundingClientRect().height,
+    ),
+  }));
+  expect(layout.direction).toBe('column');
+  expect(layout.width).toBeLessThanOrEqual(390);
+  expect(layout.cardHeights.every((height) => height >= 400)).toBe(true);
 });
 
 test('map has usable touch targets, no page overflow, and scrolls when needed', async ({ page }) => {
@@ -229,6 +263,12 @@ test('learner profiles keep their own curriculum and survive reload', async ({
   await profileButton.click();
   await expect(page.getByRole('dialog', { name: '遊戲選項' })).toContainText(
     '每位孩子有自己的存檔、教學、徽章和練習紀錄',
+  );
+  await expect(page.getByRole('dialog', { name: '遊戲選項' })).toContainText(
+    '角色卡牌進度',
+  );
+  await expect(page.getByRole('dialog', { name: '遊戲選項' })).toContainText(
+    '共鳴武者',
   );
 
   await page.getByLabel('新小玩家暱稱，不要填真名').fill('米米');

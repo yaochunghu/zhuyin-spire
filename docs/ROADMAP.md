@@ -19,6 +19,9 @@
 - Debug overlay (skip cast, jump screens, force combat outcomes)  
 - Project docs + standalone git (this documentation package)
 - Playable GitHub Pages release build
+- 共鳴武者 first playable wave: 12 reviewed designs, four signature mechanics,
+  physical-copy V2 saves, local playtest telemetry, and a generated 75-card
+  implementation draft kept outside live pools
 
 ---
 
@@ -26,15 +29,14 @@
 
 Ordered by “resume playtest” value — not a binding schedule:
 
-1. **Approve the design foundation** — review the four bibles linked from
-   [INDEX.md](./INDEX.md), especially identity, fun, clarity, and obvious risk;
-   individual numbers remain playtestable
-2. **Implement the content foundation** — Attack/Skill/Power and rarity types,
-   physical card UIDs, safe V1→V2 deck migration, typed effects, and validation
-3. **Add cards and upgrades in reviewed waves** — preserve the 12 anchors and
-   all 27 live IDs, then verify fixed-height cards and the designer viewer at
-   each tablet viewport
-4. **Add Smith, expanded relics, and potions** — keep acquisition and temporary
+1. **Playtest the 共鳴武者 first wave** — run the cast-on/debug-skip matrix in
+   [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md)
+   and review 易傷、練功、轉拍、勁 feedback at tablet sizes
+2. **Promote cards through human-reviewed waves** — keep the generated
+   75-card draft unobtainable until each batch passes the documented matrix
+3. **Author upgrades, then enable Smith** — the UID/save layer exists, but
+   generated `+` faces and upgraded offers remain gated
+4. **Add expanded relics and potions** — keep acquisition and temporary
    upgrades instance-safe; test timing hooks before increasing content volume
 5. **Add events and encounters one act at a time** — seeded simulation and
    cast-off/cast-on playtests before enabling the next act

@@ -94,7 +94,7 @@ export function playOutcomeOverlay(
 
     const hero = document.createElement('div');
     hero.className = 'outcome-actor faint-actor';
-    hero.textContent = '🧙';
+    hero.textContent = '🥋';
 
     const zzz = document.createElement('div');
     zzz.className = 'outcome-zzz';

@@ -393,7 +393,12 @@ async function playEnemyStatus(
 ): Promise<void> {
   const target = impactTarget(fx.enemyId, anchors);
   sfx.fork();
-  spawnFloat(target.emoji, `🔔 回音 ${fx.turns}`, 'strike-float-echo');
+  const label = fx.status === 'vulnerable'
+    ? `💥 易傷 ${fx.turns}`
+    : fx.status === 'weak'
+      ? `🥀 虛弱 ${fx.turns}`
+      : `🔔 回音 ${fx.turns}`;
+  spawnFloat(target.emoji, label, 'strike-float-echo');
   const slot = document.querySelector<HTMLElement>(
     `[data-enemy-id="${fx.enemyId}"]`,
   );
@@ -416,7 +421,29 @@ async function playPlayerPower(
 ): Promise<void> {
   const hero = document.querySelector<HTMLElement>('.hero-actor');
   sfx.relic();
-  spawnFloat(hero, `🌱 回音盾 +${fx.amount}`, 'strike-float-energy');
+  const label = fx.power === 'training'
+    ? `👊 練功 +${fx.amount}`
+    : `🌱 回音盾 +${fx.amount}`;
+  spawnFloat(hero, label, 'strike-float-energy');
+  await sleep(220);
+}
+
+async function playPlayerResource(
+  fx: Extract<CombatFx, { type: 'playerResource' }>,
+): Promise<void> {
+  const hero = document.querySelector<HTMLElement>('.hero-actor');
+  sfx.fork();
+  const sign = fx.delta > 0 ? '+' : '';
+  spawnFloat(hero, `🥋 勁 ${sign}${fx.delta}`, 'strike-float-energy');
+  await sleep(220);
+}
+
+async function playPlayerTempo(
+  fx: Extract<CombatFx, { type: 'playerTempo' }>,
+): Promise<void> {
+  const hero = document.querySelector<HTMLElement>('.hero-actor');
+  sfx.fork();
+  spawnFloat(hero, `🥁 轉拍 ${fx.count}`, 'strike-float-energy');
   await sleep(220);
 }
 
@@ -623,6 +650,10 @@ export async function playCombatFxBatch(
         await playPlayerEnergy(fx);
       } else if (fx.type === 'playerPower') {
         await playPlayerPower(fx);
+      } else if (fx.type === 'playerResource') {
+        await playPlayerResource(fx);
+      } else if (fx.type === 'playerTempo') {
+        await playPlayerTempo(fx);
       } else if (fx.type === 'enemyStatus') {
         await playEnemyStatus(fx, anchors);
       } else if (fx.type === 'enemyBlock') {

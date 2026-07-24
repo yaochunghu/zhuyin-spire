@@ -1,8 +1,11 @@
-# Card Bible: 回音法師完整牌池提案
+# Card Bible: 回音法師歷史牌池提案
 
-> **Status:** design approval artifact; none of the new definitions in this file
-> are runtime content yet. Upgraded faces are states of the same card and do
-> **not** count as additional designs.
+> **Status:** frozen historical reference. It is not the current implementation
+> target. The active replacement roster is 共鳴武者 in
+> [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md),
+> and new review work follows [DESIGN_PLAYBOOK.md](./DESIGN_PLAYBOOK.md).
+> Preserve these rows for comparison, stable-ID migration, and reusable
+> Colorless/Status/Curse ideas; do not mechanically rename Echo mechanics.
 
 This bible specifies the complete first-character pool before implementation.
 It follows the structural lessons in [STS_DESIGN_REFERENCE.md](./STS_DESIGN_REFERENCE.md)

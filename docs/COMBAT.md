@@ -9,7 +9,7 @@ Public imports should use **`src/game/combat.ts`**, which re-exports `src/game/b
 | `battle/types.ts` | `CombatState`, `EnemyUnit`, `CombatCard`, `CombatFx`, phases |
 | `battle/fx.ts` | `pushFx` / `takePendingFx` queue |
 | `battle/piles.ts` | Shuffle, draw (respect max hand), reward id picks |
-| `battle/effects.ts` | Target types, `executeEffects` (damage/block/draw/energy/Echo/scaling) |
+| `battle/effects.ts` | Target types, primitives, 共鳴 mechanics, and Power triggers |
 | `battle/playerHandler.ts` | `canPlay`, `beginPlay`, cast success/fizzle, end-turn discard |
 | `battle/enemyHandler.ts` | Spawn, select, intents, enemy turn |
 | `battle/battleManager.ts` | `createCombat`, `endTurn` |
@@ -37,18 +37,19 @@ From `data/balance.ts`:
 
 Energy is per-combat; end turn discards remaining hand then enemy acts then redraw.
 
-## First-character combat rules
+## 共鳴武者 combat rules
 
-- 🔔 **Echo 2:** the first damaging hit against that monster each player turn
-  gains +2 damage. The setup card deals its damage first and then applies Echo,
-  so it cannot trigger its own newly applied status.
-- Duration advances once at the start of the next player turn. Applying Echo and
-  following with another attack can trigger it now; it can trigger once more on
-  the following player turn.
-- 🎵 **初心音叉:** the first damaging hit of each combat gains +2. It is
-  stored separately in `PlayerImpact.relicBonus` so the FX can explain it.
-- 🌱 **共鳴護唱:** battle-long `echoGuardAmount`; every Echo trigger adds
-  that much player block.
+- 💥 **易傷:** Attack damage is multiplied by 1.5, rounded down; duration
+  decreases at the next player-turn boundary.
+- 👊 **基礎攻擊 / 練功:** each hit of a tagged basic Attack adds the current
+  combat-long 練功 amount.
+- 🥁 **轉拍:** a successful Attack after a Skill, or Skill after an Attack, is
+  one 轉拍. Failed casts do not advance it.
+- 🥋 **勁:** fully blocking one enemy attack action grants 1 勁, capped at 9.
+  Authored spenders consume fixed or bounded amounts.
+- 🎵 **初心音叉:** the first resolved Attack hit each player turn gains +1
+  before 易傷. `PlayerImpact.relicBonus` keeps the feedback explainable.
+- Powers leave draw/discard circulation and remain active for the combat.
 
 ---
 
@@ -103,7 +104,7 @@ Completion is written only in `finishFight` after victory.
 | Type | Default target | Drag drop |
 |------|----------------|-----------|
 | Attack | `singleEnemy` (or `allEnemies` if set) | Enemy unit(s) |
-| Block / self skill | `self` | Shield / hero drop zone |
+| Self Skill / Power | `self` | Shield / hero drop zone |
 | Explicit `target` on `CardDef` | overrides default | matching zones |
 
 `cardNeedsEnemyTarget` / `collectDropTargets` drive UI highlights.

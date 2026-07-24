@@ -173,7 +173,7 @@ export function submitSpell(): void {
       }
 
       if (run().screen === 'defeat') {
-        playOutcomeOverlay('faint', { emoji: '🧙' }, () => {
+        playOutcomeOverlay('faint', { emoji: '🥋' }, () => {
           session.castLocked = false;
           render();
         });

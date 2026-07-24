@@ -20,6 +20,7 @@ import {
   renderCharacterPick,
   renderRemoveCard,
   renderRest,
+  renderSmith,
   renderReward,
   renderShop,
   renderShopRemove,
@@ -181,6 +182,9 @@ function render(): void {
       break;
     case 'rest':
       appEl.appendChild(renderRest());
+      break;
+    case 'smith':
+      appEl.appendChild(renderSmith());
       break;
     case 'removeCard':
       appEl.appendChild(renderRemoveCard());

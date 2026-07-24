@@ -1,6 +1,13 @@
 import type { CastBinding, CastingGateId } from '../game/casting/types';
+import {
+  RESONANCE_CARDS,
+  RESONANCE_INITIAL_REWARD_IDS,
+} from './resonanceCards';
 
-export type CardType = 'attack' | 'block' | 'skill';
+export type CardType = 'attack' | 'block' | 'skill' | 'power';
+export type CardRarity = 'basic' | 'common' | 'uncommon' | 'rare' | 'special';
+export type SignatureMechanic = 'vulnerable' | 'basic' | 'tempo' | 'jin';
+export type CardDirection = 'tingxi' | 'bailian' | 'tingjin' | 'hybrid' | 'general';
 
 /** Who the card may target in multi-enemy combat */
 export type TargetType = 'self' | 'singleEnemy' | 'allEnemies';
@@ -15,9 +22,29 @@ export type CardJob =
   | 'energy';
 
 export interface EffectDef {
-  kind: 'damage' | 'block' | 'draw' | 'energy' | 'echo' | 'echoGuard';
+  kind:
+    | 'damage'
+    | 'block'
+    | 'draw'
+    | 'energy'
+    | 'vulnerable'
+    | 'weak'
+    | 'training'
+    | 'jin'
+    | 'echo'
+    | 'echoGuard';
   amount: number;
   hits?: number;
+}
+
+export interface CardUpgradeDef {
+  cost?: number;
+  value?: number;
+  hits?: number;
+  bonusBlock?: number;
+  draw?: number;
+  effects?: EffectDef[];
+  description: string;
 }
 
 /**
@@ -52,6 +79,23 @@ export interface CardDef {
   target?: TargetType;
   cues: Cue[];
   description: string;
+  rarity?: CardRarity;
+  mechanics?: readonly SignatureMechanic[];
+  direction?: CardDirection;
+  /** Stable design-catalog key, separate from the runtime/casting ID. */
+  designId?: string;
+  /** 基礎攻擊 receives 練功 on every damage hit. */
+  basicAttack?: boolean;
+  exhaust?: boolean;
+  retain?: boolean;
+  upgrade?: CardUpgradeDef;
+  /** Cumulative per-character score needed before this card enters run pools. */
+  unlockScore?: 300 | 1000 | 2000;
+}
+
+export interface ResolvedCardDef extends CardDef {
+  upgraded: boolean;
+  upgradeLevel: 0 | 1;
 }
 
 /**
@@ -60,7 +104,7 @@ export interface CardDef {
  * - emoji matches word
  * - spell is complete first-syllable 注音 **including tone mark (聲調符號)** when not 一聲
  */
-export const CARDS: Record<string, CardDef> = {
+export const LEGACY_CARDS: Record<string, CardDef> = {
   bo: {
     id: 'bo',
     zhuyin: 'ㄅ',
@@ -278,6 +322,7 @@ export const CARDS: Record<string, CardDef> = {
       { word: '橘子', emoji: '🍊', spell: 'ㄐㄩˊ' },
     ],
     description: '造成 4 點傷害',
+    unlockScore: 300,
   },
   qi: {
     id: 'qi',
@@ -402,6 +447,7 @@ export const CARDS: Record<string, CardDef> = {
       { word: '磁鐵', emoji: '🧲', spell: 'ㄘˊ' },
     ],
     description: '獲得 4 點護盾',
+    unlockScore: 300,
   },
   si: {
     id: 'si',
@@ -504,6 +550,80 @@ export const CARDS: Record<string, CardDef> = {
   },
 };
 
+/**
+ * The generated mature catalog stays available for static review, but only the
+ * authored wave-one ids below are obtainable in live runs. Reused stable ids
+ * keep their full pronunciation cue families so the character migration does
+ * not shrink a learner's casting curriculum.
+ */
+const RESONANCE_WAVE_ONE_PRESENTATION: Record<string, Partial<CardDef>> = {
+  bo: {
+    icon: '💫',
+    description: '造成 3 點傷害。這是基礎攻擊。',
+  },
+  mo: {
+    icon: '🛡️',
+    description: '獲得 4 點護盾。',
+  },
+  po: {
+    icon: '🎯',
+    description: '造成 5 點傷害。附上 2 層易傷。',
+  },
+  he: {
+    icon: '📍',
+    description: '造成 2 點傷害。附上 2 層易傷。',
+  },
+  ge: {
+    icon: '💥',
+    description: '造成 6 點傷害。',
+  },
+  ri: {
+    icon: '☀️',
+    description: '對所有怪物造成 3 點傷害。',
+  },
+  ke: {
+    icon: '🧱',
+    description: '獲得 7 點護盾。',
+  },
+  te: {
+    icon: '🥁',
+    description: '造成 2 點傷害，兩次。這是基礎攻擊。',
+  },
+  le: {
+    icon: '📖',
+    description: '抽 2 張牌。',
+  },
+  shi: {
+    icon: '🥋',
+    description: '這場戰鬥：練功 2。',
+  },
+  yi: {
+    icon: '🔄',
+    description: '造成 4 點傷害。轉拍：獲得 3 點護盾。',
+  },
+  fo: {
+    icon: '👊',
+    description: '消耗 1 勁，造成 8 點傷害。沒有勁時不能使用。',
+  },
+};
+
+export const CARDS: Record<string, CardDef> = Object.fromEntries(
+  Object.entries(RESONANCE_CARDS).map(([id, def]) => {
+    const legacy = LEGACY_CARDS[id];
+    const presentation = RESONANCE_WAVE_ONE_PRESENTATION[id];
+    return [
+      id,
+      {
+        ...def,
+        ...(legacy
+          ? { cues: legacy.cues.map((cue) => ({ ...cue })) }
+          : {}),
+        ...presentation,
+      },
+    ];
+  }),
+);
+
 /** Echo Mage starter: three designs, deliberately repetitive for onboarding. */
 export const STARTER_DECK_IDS: string[] = [
   'bo', 'bo', 'bo', 'bo', 'bo',
@@ -540,30 +660,15 @@ export const PRACTICE_BADGE_THRESHOLD = 10;
 
 /** The first character's complete Act I reward pool: exactly nine designs. */
 export const REWARD_POOL_IDS: string[] = [
-  'ge', // loud single-target hit
-  'ri', // all-enemy answer
-  'ke', // efficient defense
-  'te', // multi-hit
-  'he', // cheaper Echo setup
-  'shi', // combat-long Echo scaling
-  'le', // draw
-  'yi', // energy smoothing
-  'fo', // defend + draw hybrid
+  ...RESONANCE_INITIAL_REWARD_IDS,
 ];
 
 export const ELITE_REWARD_POOL_IDS: string[] = [...REWARD_POOL_IDS];
 
-/** Existing placeholder content remains available after Act I. */
-export const LATER_ACT_REWARD_POOL_IDS: string[] = [
-  'de', 'shi', 'ri', 'he', 'po', 'te', 'ne', 'le', 'ge', 'ke', 'yu',
-  'bo', 'mo', 'ji', 'qi', 'xi', 'zhi', 'chi', 'zi', 'ci', 'si', 'a',
-  'o', 'e', 'fo', 'yi', 'wu',
-];
+/** Only reviewed wave-one designs are obtainable in every act for now. */
+export const LATER_ACT_REWARD_POOL_IDS: string[] = [...REWARD_POOL_IDS];
 
-export const LATER_ACT_ELITE_REWARD_POOL_IDS: string[] = [
-  'de', 'shi', 'he', 'ri', 'ge', 'ke', 'te', 'ne', 'le', 'xi', 'e',
-  'ji', 'chi', 'yu', 'zhi', 'si',
-];
+export const LATER_ACT_ELITE_REWARD_POOL_IDS: string[] = [...REWARD_POOL_IDS];
 
 /** Common symbols for spell-bank distractors */
 export const ZHUYIN_SYMBOL_POOL = [
@@ -614,6 +719,27 @@ export function getCard(id: string): CardDef {
   const card = CARDS[id];
   if (!card) throw new Error(`Unknown card: ${id}`);
   return card;
+}
+
+export function resolveCard(id: string, upgradeLevel: 0 | 1 = 0): ResolvedCardDef {
+  const base = getCard(id);
+  const upgrade = upgradeLevel === 1 ? base.upgrade : undefined;
+  return {
+    ...base,
+    ...(upgrade?.cost !== undefined ? { cost: upgrade.cost } : {}),
+    ...(upgrade?.value !== undefined ? { value: upgrade.value } : {}),
+    ...(upgrade?.hits !== undefined ? { hits: upgrade.hits } : {}),
+    ...(upgrade?.bonusBlock !== undefined ? { bonusBlock: upgrade.bonusBlock } : {}),
+    ...(upgrade?.draw !== undefined ? { draw: upgrade.draw } : {}),
+    ...(upgrade?.effects ? { effects: upgrade.effects.map((effect) => ({ ...effect })) } : {}),
+    ...(upgrade ? { description: upgrade.description } : {}),
+    upgraded: upgradeLevel === 1,
+    upgradeLevel,
+  };
+}
+
+export function canUpgradeCard(id: string, level: 0 | 1): boolean {
+  return level === 0 && !!getCard(id).upgrade;
 }
 
 /**

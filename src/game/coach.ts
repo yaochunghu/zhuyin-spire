@@ -45,7 +45,7 @@ export function coachForScreen(
     case 'relicPick':
       return {
         title: '選角色',
-        body: '角色會綁定自己的起始牌組和遺物。回音法師先附上🔔回音，再用攻擊觸發額外傷害；🎵初心音叉讓每場的第一次攻擊 +2。',
+        body: '共鳴武者第一波有 12 種牌。先用易傷找空隙，完整防守累積勁，再練習攻守換拍；初心音叉每回合幫第一次攻擊 +1。',
       };
     case 'map':
       return {
@@ -60,7 +60,12 @@ export function coachForScreen(
     case 'rest':
       return {
         title: '營火二選一',
-        body: '❤️ 回復約四成最大生命（戰鬥後不再自動回血），或 🗑️ 刪一張弱牌。長塔要規劃營火。',
+        body: '❤️ 回復約四成最大生命（戰鬥後不自動回血），或 🗑️ 刪一張弱牌。牌的升級層已準備好，但要等共鳴武者的升級設計通過後才開放。',
+      };
+    case 'smith':
+      return {
+        title: '鍛鍊牌技',
+        body: '先點一張牌看升級前後，再按確認。取消不會消耗營火；已升級的牌會保留但不能再選。',
       };
     case 'removeCard':
       return {
@@ -80,7 +85,7 @@ export function coachForScreen(
     case 'combat':
       return {
         title: '戰鬥',
-        body: '先看意圖（⚠ 危險要擋）。小怪／石怪／蝙蝠／火苗／尖牙行為不同。攻擊拖到怪，盾拖到角色。多怪先清軟的。✋ 結束。',
+        body: '先看意圖。完整擋住一次敵方攻擊會得到 1 勁；易傷讓攻擊變成 1.5 倍；技能與攻擊交替成功會轉拍。攻擊拖到怪，技能拖到角色，✋ 結束回合。',
       };
     case 'castCheck': {
       if (opts?.castMode === 'listen' || opts?.castMode === 'listenHard') {

@@ -18,13 +18,15 @@ export function jobLabel(job?: CardJob): string {
 export function typeIcon(type: string): string {
   if (type === 'attack') return '⚔️';
   if (type === 'block') return '🛡️';
+  if (type === 'power') return '🌟';
   return '✨';
 }
 
 export function typeLabel(type: string): string {
   if (type === 'attack') return '攻擊';
   if (type === 'block') return '防守';
-  return '能力';
+  if (type === 'power') return '能力';
+  return '技能';
 }
 
 export function effectLabel(def: CardDef): string {
@@ -69,6 +71,7 @@ export function cardFaceHtml(def: CardDef | ReturnType<typeof getCard>): string 
   const desc = formatCardDescription(def);
   const job = jobLabel(def.job);
   return `
+    ${'upgraded' in def && def.upgraded ? '<div class="card-upgrade-badge" aria-label="已升級">+</div>' : ''}
     <div class="card-top">
       <div class="cost" aria-hidden="true">${def.cost}</div>
       <div class="card-type-badge" aria-hidden="true" title="${typeLabel(def.type)}">${typeIcon(def.type)}</div>

@@ -10,6 +10,7 @@ export const session = {
   /** Adult coach starts collapsed so it never covers kid UI (expand on demand). */
   coachCollapsed: true,
   deckViewerOpen: false,
+  smithSelectedUid: null as string | null,
   /** Map node select flash in progress */
   mapSelectBusy: false,
   /** Combat pile inspect: draw or discard (null = closed) */

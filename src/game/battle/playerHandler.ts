@@ -2,7 +2,7 @@
  * Player actions: play card (begin), cast resolve, canPlay.
  */
 
-import { getCard, type CardDef } from '../../data/cards';
+import { resolveCard, type CardDef } from '../../data/cards';
 import {
   cardNeedsEnemyTarget,
   cardTargetType,
@@ -19,8 +19,12 @@ export function canPlay(state: CombatState, uid: string): boolean {
   if (state.phase !== 'playerAction' && state.phase !== 'playerStart') return false;
   const card = state.hand.find((c) => c.uid === uid);
   if (!card) return false;
-  const def = getCard(card.defId);
-  return state.energy >= def.cost;
+  const def = resolveCard(card.defId, card.upgradeLevel);
+  const cost = effectiveCost(state, card, def);
+  const requiredJin = def.designId === 'B077' || def.designId === 'B084' || def.designId === 'B087'
+    ? 1
+    : 0;
+  return state.energy >= cost && state.jin >= requiredJin;
 }
 
 /**
@@ -35,9 +39,12 @@ export function beginPlay(
   if (!canPlay(state, uid)) throw new Error('Cannot play card');
   const idx = state.hand.findIndex((c) => c.uid === uid);
   const [card] = state.hand.splice(idx, 1);
-  const def = getCard(card.defId);
-  state.energy -= def.cost;
+  const def = resolveCard(card.defId, card.upgradeLevel);
+  state.energy -= effectiveCost(state, card, def);
   state.pending = card;
+  if ((def.basicAttack || card.basicOverride) && state.freeBasicsRemaining > 0) {
+    state.freeBasicsRemaining -= 1;
+  }
 
   let ids = [...targetIds];
   const need = cardNeedsEnemyTarget(def);
@@ -57,24 +64,54 @@ export function beginPlay(
   return def;
 }
 
+function effectiveCost(
+  state: CombatState,
+  card: CombatState['hand'][number],
+  def: CardDef,
+): number {
+  if ((def.basicAttack || card.basicOverride) && state.freeBasicsRemaining > 0) return 0;
+  if (def.designId === 'B065' && state.lastPlayedType === 'skill') return Math.min(1, def.cost);
+  if (def.designId === 'B132') return Math.max(0, def.cost - state.tempoCount);
+  return Math.max(0, def.cost - card.temporaryCostReduction);
+}
+
 export function resolveCastSuccess(state: CombatState, def: CardDef): void {
+  const card = state.pending;
+  const isTempo =
+    (def.type === 'attack' && state.lastPlayedType === 'skill') ||
+    (def.type === 'skill' && state.lastPlayedType === 'attack');
+  if (isTempo) {
+    state.tempoCount += 1;
+    pushFx(state, { type: 'playerTempo', count: state.tempoCount });
+  }
+  if (def.type === 'attack' || def.type === 'skill') state.lastPlayedType = def.type;
+
   if (state.pending) {
-    const card = state.pending;
-    state.discardPile.push(card);
     state.pending = null;
-    pushFx(state, { type: 'discard', cards: [card], reason: 'play' });
   }
 
   const targets = [...state.pendingTargetIds];
   state.pendingTargetIds = [];
 
-  executeEffects(state, def, targets, (fx) => pushFx(state, fx), drawCards);
+  executeEffects(state, def, targets, (fx) => pushFx(state, fx), drawCards, card, isTempo);
+  if (card) {
+    if (def.type === 'power') {
+      state.activePowerIds.push(def.designId ?? def.id);
+    } else if (def.exhaust) {
+      state.exhaustPile.push(card);
+    } else {
+      card.temporaryCostReduction = 0;
+      state.discardPile.push(card);
+      pushFx(state, { type: 'discard', cards: [card], reason: 'play' });
+    }
+  }
   syncPrimaryEnemy(state);
 }
 
 export function resolveCastFizzle(state: CombatState, def: CardDef): void {
   if (state.pending) {
     const card = state.pending;
+    card.temporaryCostReduction = 0;
     state.discardPile.push(card);
     state.pending = null;
     pushFx(state, { type: 'discard', cards: [card], reason: 'fizzle' });
@@ -85,12 +122,13 @@ export function resolveCastFizzle(state: CombatState, def: CardDef): void {
 
 /** Discard remaining hand at end of player turn. */
 export function discardHandEndTurn(state: CombatState): void {
-  const discarded = [...state.hand];
+  const retained = state.hand.filter((card) => resolveCard(card.defId, card.upgradeLevel).retain);
+  const discarded = state.hand.filter((card) => !resolveCard(card.defId, card.upgradeLevel).retain);
   if (discarded.length > 0) {
     state.discardPile.push(...discarded);
-    state.hand = [];
+    state.hand = retained;
     pushFx(state, { type: 'discard', cards: discarded, reason: 'endTurn' });
   } else {
-    state.hand = [];
+    state.hand = retained;
   }
 }
