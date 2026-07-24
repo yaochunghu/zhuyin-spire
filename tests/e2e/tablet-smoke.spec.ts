@@ -204,7 +204,7 @@ test('map has usable touch targets, no page overflow, and scrolls when needed', 
   }));
   expect(panel.scrollHeight).toBeGreaterThanOrEqual(panel.clientHeight);
   if (viewport.height <= 1024) expect(panel.scrollHeight).toBeGreaterThan(panel.clientHeight);
-  await expect(page.locator('.map-floor-progress')).toContainText('/15 層');
+  await expect(page.locator('.map-floor-progress')).toContainText('/16 層');
   await expectMapEdgesAttached(page);
 });
 

@@ -50,12 +50,12 @@ export function coachForScreen(
     case 'map':
       return {
         title: '地圖（由下往上）',
-        body: `第 ${opts?.act ?? 1} 幕共 15 層×7 路。底下亮圈可走。🔥 營火回約四成血（戰鬥後不自動回血）、💎 寶箱給金幣＋選牌、🏪 商店、💀 菁英。到頂 Boss。`,
+        body: `第 ${opts?.act ?? 1} 幕有 15 層×7 路，再到第 16 層 Boss；第 15 層一定是營火。底下亮圈可走。🔥 營火回約四成血、💎 寶箱給金幣＋選牌、🏪 商店、💀 菁英。打倒 Boss 會回滿生命。`,
       };
     case 'actClear':
       return {
         title: '幕間休息',
-        body: '這一幕的 Boss 打倒了！生命會補一些，然後進入下一幕新地圖（仍由下往上）。',
+        body: '這一幕的 Boss 打倒了！生命已經回滿，接著進入下一幕新地圖（仍由下往上）。',
       };
     case 'rest':
       return {

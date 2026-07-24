@@ -326,4 +326,4 @@ the owner reviews these balance-sensitive groups together:
 3. Echo-specific relic and potion density for the final 75-card pool;
 4. automatic defeat prevention from `lifelineThermosPotion`;
 5. whether potion drop clamping at 10%–80% produces enough inventory decisions
-   over the project's shorter 15-floor acts.
+   over the project's 15-climb-floor-plus-boss acts.

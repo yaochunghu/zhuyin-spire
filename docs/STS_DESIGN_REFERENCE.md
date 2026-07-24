@@ -643,7 +643,7 @@ players. It is not a self-executing balance verdict.
 | Reward Skip | **Copy with positive wording** | Avoids forced deck dilution |
 | Character-specific score unlocks | **Adapt** | Unlock breadth without permanent stats |
 | Rarity rolls and pity counters | **Stage, then activate** | Keep uniform rewards now; activate authored odds with the approved 75-card pool |
-| Guaranteed act landmarks | **Adapt to 15 floors** | Preserve rhythm without copying run length |
+| Guaranteed act landmarks | **Adapt to 15 climb floors + boss** | Preserve rhythm without copying run length |
 | Easy/hard encounter quotas | **Copy and soften** | Protects onboarding independently of path |
 | Rest versus Smith | **Implement after migration** | Requires card-instance saves and a complete approved upgrade roster |
 | Potions, curses, Status cards, Exhaust | **Implement in later checkpoints** | Full-system scope, introduced only after the core lifecycle is stable |

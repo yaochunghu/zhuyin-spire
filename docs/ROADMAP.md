@@ -12,7 +12,7 @@
 - Modular combat (`game/battle/*`); multi-enemy encounters + roles/intents  
 - Drag-and-drop card play (enemy / shield zones); draw/discard FX  
 - StS hand rules (draw 5, max hand 10)  
-- STS path-first map: 15 floors × 7 lanes × 3 acts; treasure; rest/shop/elite/boss  
+- STS path-first map: 15 climb floors × 7 lanes + boss × 3 acts; floor 15 Rest; treasure/shop/elite
 - Rebalance: HP 40, rest 40% max HP, no post-combat heal, gold/shop retuned  
 - Enlarged cast UI; enlarged StS-style hand cards  
 - localStorage mid-run save (stable screens)  

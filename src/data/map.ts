@@ -6,7 +6,8 @@
  * Pipeline: full grid → paths (start→pre-boss→boss) → connections →
  * remove crosses → prune isolates → room kinds / encounters.
  *
- * Product layout: 15 floors × 7 lanes per act (row 0 bottom … 14 boss).
+ * Product layout: 15 climb floors × 7 lanes, then a boss floor
+ * (rows 0..14 climb, row 15 boss).
  */
 
 import {
@@ -77,8 +78,8 @@ const KIND_EMOJI: Record<NodeKind, string> = {
   boss: '🐉',
 };
 
-/** Climb rows 0..13 + boss row 14 = 15 floors */
-export const CLIMB_ROWS = 14;
+/** Climb rows 0..14, followed by the boss on row 15. */
+export const CLIMB_ROWS = 15;
 export const MAP_COLS = 7;
 export const TREASURE_FLOOR = 8;
 
@@ -429,12 +430,11 @@ function weightedKind(
 
   const parentKinds = new Set(parents.map((p) => p.kind));
   const noEarlyRest = row < 3;
-  const noRestBeforePreBoss = row === last - 1;
 
   type Opt = { kind: NodeKind; w: number };
   const opts: Opt[] = [{ kind: 'fight', w: WEIGHT_FIGHT }];
 
-  if (!noEarlyRest && !noRestBeforePreBoss && !parentKinds.has('rest')) {
+  if (!noEarlyRest && !parentKinds.has('rest')) {
     opts.push({ kind: 'rest', w: WEIGHT_REST });
   }
   if (!parentKinds.has('shop')) {
@@ -482,9 +482,8 @@ function assignKinds(
 
   for (const n of byRow.get(TREASURE_FLOOR) ?? []) n.kind = 'treasure';
 
-  for (const n of byRow.get(last) ?? []) {
-    n.kind = n.col <= 2 ? 'rest' : 'shop';
-  }
+  // Floor 15 is the guaranteed recovery beat immediately before the boss.
+  for (const n of byRow.get(last) ?? []) n.kind = 'rest';
 
   for (const n of mapNodes) {
     if (n.kind === 'boss') continue;

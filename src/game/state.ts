@@ -749,10 +749,9 @@ function finishBoss(state: RunState, act: number): void {
     return;
   }
 
-  // Between acts: heal, show only the *next* act map (fresh path state)
-  const before = state.heroHp;
-  state.heroHp = Math.min(state.heroMaxHp, state.heroHp + ACT_CLEAR_HEAL);
-  state.flash = `❤️+${state.heroHp - before}`;
+  // Between acts: show only the *next* act map (fresh path state).
+  // HP was already restored when the boss fight was cleared.
+  state.flash = '❤️ 回滿';
   state.lastClearedAct = act;
   state.actIndex = act; // act 1 clear → index 1 (Act II)
   state.currentNodeId = null;
@@ -1027,10 +1026,13 @@ function finishFight(state: RunState): void {
     state.tutorial = null;
   }
   syncHeroHpFromCombat(state);
-  // No post-combat heal — campfires restore 40% max HP
+  // No ordinary post-combat heal — campfires restore 40% max HP.
   state.pendingHeal = 0;
   const node = getActiveNode(state);
   if (node?.kind === 'boss') {
+    const before = state.heroHp;
+    state.heroHp = state.heroMaxHp;
+    state.pendingHeal = state.heroHp - before;
     state.scoreStats.bossWins += 1;
     if (state.scoreStats.currentCombatHpLost === 0) state.scoreStats.flawlessBosses += 1;
   } else if (node?.kind === 'elite') {

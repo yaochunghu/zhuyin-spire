@@ -1,5 +1,4 @@
 import {
-  ACT_CLEAR_HEAL,
   continueAfterActClear,
   deckCounts,
   getActiveRelic,
@@ -70,8 +69,9 @@ export function renderMap(): HTMLElement {
   if (run().heroHp <= 8) hp.classList.add('danger-hp');
   top.querySelector<HTMLElement>('[data-map-gold]')!.textContent = `🪙${run().gold}`;
   top.querySelector<HTMLElement>('.map-act-title')!.textContent = `${act.emoji} ${act.title}`;
+  const totalFloors = act.maxRow + 1;
   top.querySelector<HTMLElement>('.map-floor-progress')!.textContent =
-    `目前第 ${Math.min(15, (available[0]?.row ?? act.maxRow) + 1)}/15 層`;
+    `目前第 ${Math.min(totalFloors, (available[0]?.row ?? act.maxRow) + 1)}/${totalFloors} 層`;
   if (relic) {
     const relicPill = document.createElement('span');
     relicPill.className = 'kid-stat relic-pill';
@@ -291,7 +291,7 @@ export function renderActClear(): HTMLElement {
   el.innerHTML = `
     <div class="end-emoji bounce-in">🏆</div>
     <div class="kid-prompt">第 ${run().lastClearedAct} 幕過關！</div>
-    <div class="kid-stat">❤️+${ACT_CLEAR_HEAL}</div>
+    <div class="kid-stat">❤️ 回滿</div>
     <p class="adult-text center" data-next-act></p>
     <p class="kid-prompt" style="font-size:1.1rem">往上 · 第 ${nextAct} 幕</p>
   `;

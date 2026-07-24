@@ -65,7 +65,7 @@ function guard(value: number): IntentStep {
 }
 
 /**
- * Preschool damage budgets for 15-floor acts (unblocked peak):
+ * Preschool damage budgets for 15-climb-floor-plus-boss acts (unblocked peak):
  * Act I ~3–7 · Act II ~6–9 · Act III ~8–11
  * Elites/bosses tankier; campfires (40% max HP) are the recovery beat
  */

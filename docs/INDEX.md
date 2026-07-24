@@ -49,7 +49,7 @@ Root companions:
 ## Snapshot (v0.2.0)
 
 - **Stack:** Vite + TypeScript SPA, no backend; localStorage save
-- **Acts:** 3 × (15 floors × 7 lanes), STS-style path generation
+- **Acts:** 3 × (15 climb floors × 7 lanes + boss), STS-style path generation
 - **Combat:** modular `src/game/battle/*`, multi-enemy intents, drag-and-drop cards
 - **Teaching:** full first-syllable 注音 cast, per-learner persistent shuffle bags,
   detailed curriculum controls, and a provider boundary for future subjects
