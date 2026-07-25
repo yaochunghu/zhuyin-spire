@@ -34,7 +34,7 @@ export interface CardFxAnchors {
   >;
 }
 
-export type CardFaceFn = (defId: string) => string;
+export type CardFaceFn = (card: CombatCard) => string;
 
 let activeBatchSpeed: AnimationSpeed | null = null;
 
@@ -191,7 +191,7 @@ async function playDraw(
     setPileCount(live.drawPile, pileDisplay);
     sfx.cardPlay();
 
-    await flyOne(faceHtml(card.defId), from, to, 330, 'card-fly-draw');
+    await flyOne(faceHtml(card), from, to, 330, 'card-fly-draw');
 
     if (slot && slot.isConnected) {
       slot.classList.remove('hand-card-hidden');
@@ -245,7 +245,7 @@ async function playDiscard(
     };
     sfx.mapStep();
     await flyOne(
-      faceHtml(card.defId),
+      faceHtml(card),
       start,
       discardCenter,
       dur,
@@ -319,11 +319,16 @@ async function playPlayerStrike(
   for (const impact of fx.impacts) {
     const target = impactTarget(impact.enemyId, anchors);
 
-    if ((impact.echoBonus ?? 0) > 0 || (impact.relicBonus ?? 0) > 0) {
+    if (
+      (impact.basicAttackBonus ?? 0) > 0 ||
+      (impact.relicBonus ?? 0) > 0 ||
+      impact.vulnerableApplied
+    ) {
       sfx.fork();
       const bonuses = [
-        (impact.echoBonus ?? 0) > 0 ? `🔔+${impact.echoBonus}` : '',
+        (impact.basicAttackBonus ?? 0) > 0 ? `🥋+${impact.basicAttackBonus}` : '',
         (impact.relicBonus ?? 0) > 0 ? `🎵+${impact.relicBonus}` : '',
+        impact.vulnerableApplied ? '🎯×1.5' : '',
       ].filter(Boolean);
       spawnFloat(target.emoji, bonuses.join(' '), 'strike-float-echo');
       target.emoji?.classList.add('echo-trigger-pop');
@@ -393,7 +398,7 @@ async function playEnemyStatus(
 ): Promise<void> {
   const target = impactTarget(fx.enemyId, anchors);
   sfx.fork();
-  spawnFloat(target.emoji, `🔔 回音 ${fx.turns}`, 'strike-float-echo');
+  spawnFloat(target.emoji, `🎯 易傷 ${fx.turns}`, 'strike-float-echo');
   const slot = document.querySelector<HTMLElement>(
     `[data-enemy-id="${fx.enemyId}"]`,
   );
@@ -416,7 +421,7 @@ async function playPlayerPower(
 ): Promise<void> {
   const hero = document.querySelector<HTMLElement>('.hero-actor');
   sfx.relic();
-  spawnFloat(hero, `🌱 回音盾 +${fx.amount}`, 'strike-float-energy');
+  spawnFloat(hero, `🥋 基礎攻擊 +${fx.amount}`, 'strike-float-energy');
   await sleep(220);
 }
 

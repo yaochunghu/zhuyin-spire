@@ -45,7 +45,7 @@ export function coachForScreen(
     case 'relicPick':
       return {
         title: '選角色',
-        body: '角色會綁定自己的起始牌組和遺物。回音法師先附上🔔回音，再用攻擊觸發額外傷害；🎵初心音叉讓每場的第一次攻擊 +2。',
+        body: '角色會綁定自己的起始牌組和遺物。共鳴武者先用🎯易傷找出破綻，再用攻擊把握機會；🎵初心音叉讓每回合第一次攻擊 +1。',
       };
     case 'map':
       return {

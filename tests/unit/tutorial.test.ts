@@ -88,7 +88,7 @@ describe('first battle tutorial', () => {
     const state = beginTutorial();
     while (true) {
       const shield = state.combat!.hand.find(
-        (card) => getCard(card.defId).type === 'block',
+        (card) => card.defId === 'mo',
       );
       if (!shield) break;
       playAndAnswer(state, shield.uid, false);

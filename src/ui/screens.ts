@@ -1,4 +1,4 @@
-import { getCard } from '../data/cards';
+import { getCard, getCardAtUpgrade } from '../data/cards';
 import { PLAYABLE_CHARACTER_IDS, getCharacter } from '../data/characters';
 import { getRelic } from '../data/relics';
 import { sfx, startMusic, warmAudio } from '../game/audio';
@@ -44,7 +44,7 @@ export function renderTitle(): HTMLElement {
   if (hasPracticeBadge()) badges.push('<div class="badge practice" title="練習">📚</div>');
   const practiceN = getPracticeLifetimeCorrect();
   el.innerHTML = `
-    <div class="hero-preview">🧙‍♂️🗼</div>
+    <div class="hero-preview">🧒🥋🗼</div>
     <div class="title-zhuyin-row" aria-hidden="true">
       <span>ㄓ</span><span>ㄨ</span><span>ˋ</span>
       <span>ㄧ</span><span>ㄣ</span>
@@ -182,7 +182,7 @@ export function renderCharacterPick(): HTMLElement {
   const el = document.createElement('div');
   el.className = 'screen relic-screen character-screen';
   el.innerHTML = `
-    <div class="kid-prompt">🧙 選角色</div>
+    <div class="kid-prompt">🧒 選角色</div>
     <div class="adult-text center">角色決定起始牌組、打法主題和起始遺物</div>
   `;
   appendCoach(el);
@@ -199,10 +199,10 @@ export function renderCharacterPick(): HTMLElement {
       <div class="character-name">${character.name}</div>
       <div class="adult-text character-title">${character.title}</div>
       <div class="character-theme">🎶 ${character.theme}</div>
-      <div class="starter-deck-summary" aria-label="起始牌組：五張攻擊、四張防守、一張回音攻擊">
+      <div class="starter-deck-summary" aria-label="起始牌組：五張基礎攻擊、四張防守、一張易傷攻擊">
         <span>⚔️ 1⚡ ×5</span>
         <span>🛡️ 1⚡ ×4</span>
-        <span>🔔 2⚡ ×1</span>
+        <span>🎯 2⚡ ×1</span>
       </div>
       <div class="starting-relic">
         <span class="starting-relic-emoji">${relic.emoji}</span>
@@ -228,7 +228,7 @@ export function renderRest(): HTMLElement {
   el.innerHTML = `
     <div class="rest-fire">🔥</div>
     <div class="kid-prompt">選一個</div>
-    <div class="kid-status"><span class="kid-stat">🧙❤️${run().heroHp}/${run().heroMaxHp}</span></div>
+    <div class="kid-status"><span class="kid-stat">🧒❤️${run().heroHp}/${run().heroMaxHp}</span></div>
   `;
   appendCoach(el);
 
@@ -295,7 +295,7 @@ function renderRemovePicker(mode: 'rest' | 'shop'): HTMLElement {
     <div class="kid-prompt">🗑️ 丟一張</div>
     <div class="kid-status">
       ${isShop ? `<span class="kid-stat">🪙${run().gold}</span><span class="kid-stat adult-text">−${SHOP_REMOVE_PRICE}</span>` : ''}
-      <span class="kid-stat">🧙❤️${run().heroHp}/${run().heroMaxHp}</span>
+      <span class="kid-stat">🧒❤️${run().heroHp}/${run().heroMaxHp}</span>
     </div>
     ${isShop ? `<p class="adult-text center">花 🪙${SHOP_REMOVE_PRICE} 刪掉一張弱牌（本店一次）</p>` : ''}
   `;
@@ -303,11 +303,12 @@ function renderRemovePicker(mode: 'rest' | 'shop'): HTMLElement {
 
   const row = document.createElement('div');
   row.className = 'reward-cards';
-  run().deck.forEach((id, index) => {
-    const def = getCard(id);
+  run().deck.forEach((card, index) => {
+    const def = getCardAtUpgrade(card.defId, card.upgradeLevel);
     const btn = document.createElement('button');
     btn.className = `card ${def.type}`;
-    btn.innerHTML = cardFaceHtml(def);
+    btn.innerHTML = cardFaceHtml(def, { upgradeLevel: card.upgradeLevel });
+    btn.setAttribute('aria-label', `${def.name}，牌組第 ${index + 1} 張`);
     btn.addEventListener('click', () => {
       if (isShop && run().screen !== 'shopRemove') return;
       if (!isShop && run().screen !== 'removeCard') return;
@@ -451,7 +452,7 @@ export function renderReward(): HTMLElement {
   el.innerHTML = `
     <div class="kid-prompt">${title}</div>
     <div class="reward-gains">${healBit}${goldBit}</div>
-    <div class="kid-status"><span class="kid-stat">🧙❤️${run().heroHp}/${run().heroMaxHp}</span><span class="kid-stat">🪙${run().gold}</span></div>
+    <div class="kid-status"><span class="kid-stat">🧒❤️${run().heroHp}/${run().heroMaxHp}</span><span class="kid-stat">🪙${run().gold}</span></div>
   `;
   appendCoach(el);
 
@@ -499,7 +500,7 @@ export function renderEnd(won: boolean): HTMLElement {
       ${run().listenSuccesses > 0 ? `<div class="kid-prompt">👂×${run().listenSuccesses}</div>` : ''}
     `
     : `
-      <div class="end-emoji soft-sway">💫🧙</div>
+      <div class="end-emoji soft-sway">💫🧒🥋</div>
       <div class="kid-prompt">再試一次！</div>
       <p class="adult-text center">法師只是累了，沒有受傷喔</p>
     `;

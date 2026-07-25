@@ -1,7 +1,9 @@
 # Relic and potion design bible
 
-**Status:** design proposal for review; none of the new entries are live unless
-they already exist in `src/data/relics.ts`.
+**Status:** frozen design proposal; none of the new entries are live unless they
+already exist in `src/data/relics.ts`. Character-restricted Echo relics and
+potions are superseded: all future relic mechanics must be character-agnostic
+and must be redesigned before implementation.
 
 This bible defines the complete first-character target of **40 original relics**
 and **20 original potions**. It follows the decision structure documented in

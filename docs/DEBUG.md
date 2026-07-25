@@ -35,6 +35,7 @@ production build. For a private QA artifact only, build with
 |--------|-----|
 | Toggle panel | **`` ` ``** (backtick) or **Ctrl+Shift+D** |
 | Floating button | 🐛 when layer is mounted |
+| Phone | ☰ → Debug (development / QA builds only) |
 | Close | × on panel |
 
 Label in UI: **DEBUG · 測試用**.
@@ -77,5 +78,8 @@ Exact buttons live in `debugPanel.ts`; helpers in `debugActions.ts`.
 - Do not ship “always on” cheats for preschool builds.  
 - Skip cast must remain **debug-gated** (product non-negotiable: real cast for real play).
 
-For tablet QA, the Playwright projects cover 1280×720, 1024×768, and 768×1024:
-`npm run test:e2e`. Unit coverage is `npm test`.
+Responsive QA covers 1280×720, 1024×768, and 768×1024 tablet layouts plus phone
+portrait/landscape in Chromium and WebKit: `npm run test:e2e`. Phone tests include
+rotation without a combat remount, card gesture arbitration, menu/timer pausing,
+keyboard-safe Options, deck access, map panning, and three-enemy targeting. Unit
+coverage is `npm test`.
