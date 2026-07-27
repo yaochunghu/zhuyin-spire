@@ -13,7 +13,7 @@ import {
   pickReward,
   startRun,
 } from '../../src/game/state';
-import { parseSnapshot, snapshotRun } from '../../src/game/save';
+import { parseSnapshot, snapshotRun, type RunSnapshotV1 } from '../../src/game/save';
 
 class MemoryStorage implements Storage {
   private values = new Map<string, string>();
@@ -38,6 +38,25 @@ function seededRng(seed: number): () => number {
     value = (value * 1_664_525 + 1_013_904_223) >>> 0;
     return value / 0x1_0000_0000;
   };
+}
+
+function downgradeToLegacyBossFloor(snapshot: RunSnapshotV1) {
+  for (const act of snapshot.runMap.acts) {
+    const rests = act.nodes.filter((node) => node.row === 14);
+    const restIds = new Set(rests.map((node) => node.id));
+    for (const node of act.nodes) {
+      if (node.row === 13) {
+        node.nextIds = [
+          ...new Set(node.nextIds.map((id) =>
+            restIds.has(id) ? act.bossId : id
+          )),
+        ];
+      }
+    }
+    act.nodes = act.nodes.filter((node) => node.row !== 14);
+    act.nodes.find((node) => node.id === act.bossId)!.row = 14;
+    act.maxRow = 14;
+  }
 }
 
 describe('act floor contract', () => {
@@ -70,25 +89,43 @@ describe('act floor contract', () => {
     pickCharacter(state, 'echoMage');
     const snapshot = snapshotRun(state)!;
 
-    for (const act of snapshot.runMap.acts) {
-      const rests = act.nodes.filter((node) => node.row === 14);
-      const restIds = new Set(rests.map((node) => node.id));
-      for (const node of act.nodes) {
-        if (node.row === 13) {
-          node.nextIds = [
-            ...new Set(node.nextIds.map((id) =>
-              restIds.has(id) ? act.bossId : id
-            )),
-          ];
-        }
-      }
-      act.nodes = act.nodes.filter((node) => node.row !== 14);
-      act.nodes.find((node) => node.id === act.bossId)!.row = 14;
-      act.maxRow = 14;
-    }
+    downgradeToLegacyBossFloor(snapshot);
 
     const migrated = parseSnapshot(snapshot);
     expect(migrated).not.toBeNull();
+    for (const act of migrated!.runMap.acts) {
+      expect(act.maxRow).toBe(15);
+      expect(act.nodes.find((node) => node.id === act.bossId)?.row).toBe(15);
+      expect(act.nodes.filter((node) => node.row === 14).every((node) => node.kind === 'rest'))
+        .toBe(true);
+      expect(allStartsReachBoss(act as ActMap)).toBe(true);
+    }
+  });
+
+  it('migrates a v1 string-card save and its legacy boss floor in one pass', () => {
+    const state = createNewRun();
+    startRun(state);
+    pickCharacter(state, 'echoMage');
+    const modern = snapshotRun(state)!;
+    downgradeToLegacyBossFloor(modern);
+
+    const legacy = {
+      ...modern,
+      v: 1,
+      deck: modern.deck.map((card) => card.defId),
+      rewardOptions: modern.rewardOptions.map((card) => card.defId),
+      shopOffers: modern.shopOffers.map((offer) => ({
+        cardId: offer.defId,
+        price: offer.price,
+        sold: offer.sold,
+      })),
+    };
+    delete (legacy as { nextCardUid?: number }).nextCardUid;
+
+    const migrated = parseSnapshot(legacy);
+    expect(migrated).not.toBeNull();
+    expect(migrated!.v).toBe(2);
+    expect(migrated!.deck.every((card) => card.upgradeLevel === 0)).toBe(true);
     for (const act of migrated!.runMap.acts) {
       expect(act.maxRow).toBe(15);
       expect(act.nodes.find((node) => node.id === act.bossId)?.row).toBe(15);
