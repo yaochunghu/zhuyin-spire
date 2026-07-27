@@ -1,49 +1,43 @@
-import { getCard, type CardDef } from '../data/cards';
+import { getCard, resolveCard, type ResolvedCardDef } from '../data/cards';
 
-/** One owned physical card. Duplicate definitions remain separate objects. */
-export interface DeckCardV2 {
+export type UpgradeLevel = 0 | 1;
+
+/** One physical collectible card. Duplicate definitions still have unique UIDs. */
+export interface DeckCard {
   uid: string;
   defId: string;
-  upgradeLevel: number;
+  upgradeLevel: UpgradeLevel;
 }
 
-let fallbackUid = 0;
-
-function randomUid(): string {
-  const uuid = globalThis.crypto?.randomUUID?.();
-  if (uuid) return `card-${uuid}`;
-  fallbackUid += 1;
-  return `card-${Date.now().toString(36)}-${fallbackUid.toString(36)}`;
+export interface CardOffer extends DeckCard {
+  price?: number;
+  sold?: boolean;
 }
 
-export function createDeckCard(defId: string, upgradeLevel = 0): DeckCardV2 {
+export function makeDeckCard(
+  defId: string,
+  uid: string,
+  upgradeLevel: UpgradeLevel = 0,
+): DeckCard {
   getCard(defId);
-  return { uid: randomUid(), defId, upgradeLevel };
+  return { uid, defId, upgradeLevel };
 }
 
-export function createDeck(defIds: readonly string[]): DeckCardV2[] {
-  return defIds.map((defId) => createDeckCard(defId));
+export function resolveDeckCard(card: DeckCard): ResolvedCardDef {
+  return resolveCard(card.defId, card.upgradeLevel);
 }
 
-export function cloneDeckCard(card: DeckCardV2): DeckCardV2 {
-  return { ...card };
-}
-
-export function isDeckCardV2(value: unknown): value is DeckCardV2 {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
-  const card = value as Partial<DeckCardV2>;
+export function isDeckCard(value: unknown): value is DeckCard {
+  if (!value || typeof value !== 'object') return false;
+  const card = value as Partial<DeckCard>;
   return (
     typeof card.uid === 'string' &&
-    card.uid.length >= 1 &&
-    card.uid.length <= 100 &&
+    /^[A-Za-z0-9_-]{1,80}$/.test(card.uid) &&
     typeof card.defId === 'string' &&
-    Number.isInteger(card.upgradeLevel) &&
-    Number(card.upgradeLevel) >= 0 &&
-    Number(card.upgradeLevel) <= 99
+    (card.upgradeLevel === 0 || card.upgradeLevel === 1)
   );
 }
 
-export function cardDefinition(card: DeckCardV2): CardDef {
-  return getCard(card.defId);
+export function nextCardUid(counter: number): string {
+  return `d${Math.max(1, Math.floor(counter))}`;
 }
-

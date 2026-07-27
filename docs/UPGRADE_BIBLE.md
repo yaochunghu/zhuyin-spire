@@ -1,279 +1,118 @@
-# Upgrade Bible: card-instance and Smith design
+# Upgrade Bible: 共鳴武者
 
-> **Status:** partially implemented foundation. `DeckCardV2`, V1 migration,
-> exact-copy inspection, authored upgrade resolution, and previews are live.
-> Smithing and the complete upgrade catalog are not. Echo-specific upgrade rows
-> below are frozen reference and must be rewritten for 共鳴武者 before use.
+> **Status:** physical-copy foundation implemented; card upgrades not released.
+> The V1→V2 save model and dormant Smith/offer plumbing use this contract.
+> Generated `+` faces are an engineering draft and must not be treated as
+> authored or balanced content.
 
-The complete base-to-upgrade catalog lives in
-[CARD_BIBLE.md](./CARD_BIBLE.md). Its frozen **75 Echo Mage rows are 75 unique
-historical designs**; the upgraded faces do not add another 75 to the card count. The 12
-Colorless cards also have one authored upgrade. Five Statuses and eight Curses
-cannot be upgraded.
+## Locked rules
 
-## Design goals
+- A future collectible card upgrade will be permanent and non-repeatable.
+- Status and Curse cards cannot be upgraded.
+- Upgrades preserve the card's 注音 family, role, direction, and physical-copy UID.
+- The live campfire remains Rest or Remove; Smith is gated off.
+- Live reward and shop offers always use upgrade level 0.
+- Proposed later-act upgrade rates require a separate approval and playtest.
+- Temporary, relic-driven, and event-driven upgrade sources are deferred.
 
-1. Make Smith versus Rest a meaningful, previewable choice.
-2. Improve the card's main job without requiring the upgrade to make a bad base
-   card functional.
-3. Keep the full 注音 symbol and phrase difficulty unchanged when a card
-   upgrades; the learner is upgrading combat value, not changing the lesson.
-4. Preserve physical copies: upgrading one duplicate never upgrades its twins.
-5. Follow StS's one-authored-step pattern, with one deliberately named
-   repeat-upgrade exception.
-
-## Live foundation contract
+## Runtime contract
 
 ```ts
-interface DeckCardV2 {
+interface DeckCard {
   uid: string;
   defId: string;
-  upgradeLevel: number;
-}
-
-interface CardUpgradeDef {
-  cost?: number;
-  effects?: EffectDef[];
-  addTags?: CardTag[];
-  removeTags?: CardTag[];
-  description: string;
+  upgradeLevel: 0 | 1;
 }
 ```
 
-Repeat upgrades, X-costs, and upgrade keyword changes remain deferred until a
-card wave actually needs them; extend and validate the schema at that point.
+Deck order and duplicate copies survive V1→V2 migration. Reward and shop
+instances serialize an upgrade level for forward compatibility, but the current
+character only creates level-zero offers.
 
-- `uid` identifies the owned physical copy. All reward, shop, Smith, removal,
-  deck-viewer, and combat-pile actions operate on this value.
-- `defId` remains stable across base and upgraded states. Never create a second
-  definition such as `bo_plus`.
-- `upgradeLevel` is a non-negative integer. The live validator accepts 0 or 1,
-  and accepts 1 only when that definition has an authored upgrade. Repeat
-  upgrades remain deferred.
-- Runtime values are obtained by applying the authored upgrade to the base
-  definition, and both preview and combat read those resolved effects. The
-  authored display description must be reviewed alongside them.
-- A future combat instance may additionally hold `temporaryUpgradeLevels`.
-  Temporary levels are never written into `DeckCardV2`.
+## Generated draft catalog (not live)
 
-### Save migration contract
+| Runtime ID | Card | Base | Upgraded |
+|---|---|---|---|
+| `bo` | B001 音波擊 | Deal 3 damage. This is a 基礎攻擊. | Deal 5 damage. This is a 基礎攻擊. |
+| `mo` | B002 音波盾 | Gain 4 Block. | Gain 6 Block. |
+| `po` | B003 破綻震 | Deal 5 damage. Apply 2 易傷. | Deal 7 damage. Apply 2 易傷. |
+| `he` | B004 弱點標記 | Deal 2 damage. Apply 2 易傷. | Deal 4 damage. Apply 2 易傷. |
+| `ge` | B005 響亮一擊 | Deal 6 damage. | Deal 8 damage. |
+| `ri` | B006 日光音波 | Deal 3 damage to all enemies. | Deal 5 damage to all enemies. |
+| `ke` | B007 厚實音牆 | Gain 7 Block. | Gain 9 Block. |
+| `te` | B008 雙拍連擊 | Deal 2 damage twice. This is a 基礎攻擊. | Deal 3 damage twice. This is a 基礎攻擊. |
+| `le` | B009 翻譜 | Draw 2 cards. | Draw 3 cards. |
+| `de` | B010 深呼吸 | Gain 1 Energy. Exhaust. | Gain 1 Energy. Draw 1 card. Exhaust. |
+| `ne` | B011 邊擋邊唱 | Gain 3 Block. Draw 1 card. | Gain 5 Block. Draw 1 card. |
+| `ji` | B013 試探拳 | Deal 2 damage. If the target has 易傷, draw 1 card. Exhaust. | Deal 4 damage. If the target has 易傷, draw 1 card. Exhaust. |
+| `qi` | B014 開窗掌 | Deal 4 damage. If the target has no 易傷, apply 1 易傷. | Deal 6 damage. If the target has no 易傷, apply 1 易傷. |
+| `xi` | B016 趁隙直拳 | Deal 4 damage. If the target has 易傷, deal 3 more damage. | Deal 6 damage. If the target has 易傷, deal 3 more damage. |
+| `zhi` | B017 掃堂尋隙 | Deal 5 damage to all enemies. Apply 1 易傷 to each enemy that had none. | Deal 7 damage to all enemies. Apply 1 易傷 to each enemy that had none. |
+| `chi` | B031 練拳 | 練功 1. Exhaust. | 練功 2. Exhaust. |
+| `zi` | B032 基本步 | Put a random 基礎攻擊 from your draw pile into your hand. Exhaust. | Put a random 基礎攻擊 from your draw pile into your hand. Exhaust. Draw 1 card. |
+| `ci` | B034 低樁拳 | Deal 4 damage. Gain 2 Block. This is a 基礎攻擊. | Deal 6 damage. Gain 2 Block. This is a 基礎攻擊. |
+| `si` | B038 基本防線 | Gain 5 Block. If you played a 基礎攻擊 this turn, gain 2 more Block. | Gain 7 Block. If you played a 基礎攻擊 this turn, gain 2 more Block. |
+| `wu` | B036 掃堂基本式 | Deal 5 damage to all enemies. This is a 基礎攻擊. | Deal 7 damage to all enemies. This is a 基礎攻擊. |
+| `yu` | B037 溫習 | Return a 基礎攻擊 from your discard pile to your hand. It costs 0 this turn. | Costs 0. Return a 基礎攻擊 from your discard pile to your hand. It costs 0 this turn. |
+| `yi` | B051 攻守換拍 | Deal 4 damage. 轉拍：gain 3 Block. | Deal 6 damage. 轉拍：gain 3 Block. |
+| `a` | B052 守攻換拍 | Gain 5 Block. 轉拍：deal 3 direct damage to the selected enemy. | Gain 7 Block. 轉拍：deal 3 direct damage to the selected enemy. |
+| `o` | B020 破口追擊 | Deal 7 damage. If the target has 易傷, deal 7 damage again. | Deal 9 damage. If the target has 易傷, deal 7 damage again. |
+| `e` | B021 收束震 | Deal 3 damage. Remove all 易傷 from the target, then deal 2 direct damage per duration removed. | Deal 5 damage. Remove all 易傷 from the target, then deal 2 direct damage per duration removed. |
+| `rw_b019` | B019 回身標記 | Gain 4 Block. Apply 1 易傷 to the selected enemy. | Gain 6 Block. Apply 1 易傷 to the selected enemy. |
+| `rw_b024` | B024 破綻回聲 | The first time each turn you apply 易傷, draw 1 card. | The first time each turn you apply 易傷, Draw 2 cards. |
+| `rw_b028` | B028 破綻護身 | Gain 4 Block plus 2 for each living enemy with 易傷. | Gain 6 Block plus 2 for each living enemy with 易傷. |
+| `rw_b030` | B030 一瞬勝機 | The first time each turn you successfully play an Attack against an enemy with 易傷, gain 1 Energy. | Costs 0. The first time each turn you successfully play an Attack against an enemy with 易傷, gain 1 Energy. |
+| `shi` | B012 聲波架式 | 練功 2. | 練功 3. |
+| `rw_b040` | B040 熟能生巧 | After you play 3 基礎攻擊s, 練功 1 and reset this count. | After you play 3 基礎攻擊s, 練功 2 and reset this count. |
+| `rw_b041` | B041 拆招重練 | Choose an Attack in your hand. It becomes a 基礎攻擊 for this combat. Draw 1 card. | Choose an Attack in your hand. It becomes a 基礎攻擊 for this combat. Draw 2 cards. |
+| `rw_b042` | B042 基礎連環 | Deal 2 damage once for each 基礎攻擊 in your draw, hand, and discard piles, up to 6 times. | Deal 4 damage once for each 基礎攻擊 in your draw, hand, and discard piles, up to 6 times. |
+| `rw_b049` | B049 基本功夫 | The next 2 基礎攻擊s you play this turn cost 0. Exhaust. | Costs 0. The next 2 基礎攻擊s you play this turn cost 0. Exhaust. |
+| `rw_b053` | B053 換拍抽氣 | Draw 1 card. 轉拍：gain 1 Energy. | Draw 2 cards. 轉拍：gain 1 Energy. |
+| `rw_b055` | B055 左右開弓 | Deal 2 damage twice. 轉拍：apply 1 易傷. | Deal 3 damage twice. 轉拍：apply 1 易傷. |
+| `rw_b059` | B059 不斷換步 | The first time each turn you perform 轉拍, draw 1 card. | The first time each turn you perform 轉拍, Draw 2 cards. |
+| `rw_b060` | B060 一攻一守 | The first time each turn you perform your second 轉拍, gain 1 Energy and 3 Block. | Costs 0. The first time each turn you perform your second 轉拍, gain 1 Energy and 3 Block. |
+| `rw_b061` | B061 變拍連環 | Deal 2 damage three times. Add 1 damage to every hit for each 轉拍 performed this turn, including this card's. | Deal 3 damage three times. Add 1 damage to every hit for each 轉拍 performed this turn, including this card's. |
+| `rw_b064` | B064 接續姿勢 | Gain 5 Block. 轉拍：the leftmost Attack in your hand costs 1 less this turn, minimum 0. | Gain 7 Block. 轉拍：the leftmost Attack in your hand costs 1 less this turn, minimum 0. |
+| `rw_b063` | B063 偷半拍 | Draw 2 cards. If this card does not trigger 轉拍, discard 1 card. | Draw 3 cards. If this card does not trigger 轉拍, discard 1 card. |
+| `rw_b065` | B065 迴旋換拍 | Costs 1 if the previously successfully played card this turn was a Skill. Deal 7 damage to all enemies. | Costs 1 if the previously successfully played card this turn was a Skill. Deal 9 damage to all enemies. |
+| `rw_b070` | B070 完美換拍 | Whenever you perform 轉拍, deal 2 direct damage to all enemies and gain 2 Block, up to 3 times per turn. | Costs 2. Whenever you perform 轉拍, deal 2 direct damage to all enemies and gain 2 Block, up to 3 times per turn. |
+| `rw_b071` | B071 交錯終章 | Deal 8 damage. Repeat once for each 轉拍 performed before this card this turn, up to 3 total hits. | Deal 10 damage. Repeat once for each 轉拍 performed before this card this turn, up to 3 total hits. |
+| `rw_b076` | B076 接住力道 | Gain 6 Block. If you gain 勁 during the next enemy phase, draw 1 additional card next turn. | Gain 8 Block. If you gain 勁 during the next enemy phase, draw 1 additional card next turn. |
+| `fo` | B077 化勁掌 | Spend 1 勁. Deal 8 damage. Cannot be played without enough 勁. | Spend 1 勁. Deal 10 damage. Cannot be played without enough 勁. |
+| `rw_b078` | B078 借力盾 | Gain 5 Block. If you have 勁, spend 1 勁 and gain 4 more Block. | Gain 7 Block. If you have 勁, spend 1 勁 and gain 4 more Block. |
+| `rw_b080` | B080 推手 | Deal 4 damage. If you have 勁, spend 1 勁 and apply 1 易傷. | Deal 6 damage. If you have 勁, spend 1 勁 and apply 1 易傷. |
+| `rw_b082` | B082 借力打力 | Spend up to 3 勁 automatically. Deal 5 damage plus 3 for each 勁 spent. | Spend up to 3 勁 automatically. Deal 7 damage plus 3 for each 勁 spent. |
+| `rw_b084` | B084 四兩撥千斤 | Spend 1 勁. Gain 9 Block. Cannot be played without enough 勁. | Spend 1 勁. Gain 11 Block. Cannot be played without enough 勁. |
+| `rw_b085` | B085 震腳回力 | Deal 5 damage. If you gained 勁 during the previous enemy phase, deal 5 more damage. | Deal 7 damage. If you gained 勁 during the previous enemy phase, deal 5 more damage. |
+| `rw_b087` | B087 引勁入拳 | Spend 1 勁. Your next Attack this turn deals 8 more damage. Cannot be played without enough 勁. | Costs 0. Spend 1 勁. Your next Attack this turn deals 8 more damage. Cannot be played without enough 勁. |
+| `rw_b089` | B089 震波反擊 | Deal 6 damage to all enemies. If you have 勁, spend 1 勁 and deal 3 more damage to all enemies. | Deal 8 damage to all enemies. If you have 勁, spend 1 勁 and deal 3 more damage to all enemies. |
+| `rw_b090` | B090 不動如山 | Once each enemy phase, before an attack would break your Block, automatically spend 1 勁 to gain 5 Block if possible. | Costs 1. Once each enemy phase, before an attack would break your Block, automatically spend 1 勁 to gain 5 Block if possible. |
+| `rw_b093` | B093 勁走全身 | Whenever a card spends 勁, gain 2 Block and draw 1 card, once for that card. | Whenever a card spends 勁, gain 2 Block and Draw 2 cards, once for that card. |
+| `rw_b097` | B097 空手接招 | Gain 5 Block. During the next enemy phase, the first attack action you fully block grants 1 additional 勁. Exhaust. | Gain 7 Block. During the next enemy phase, the first attack action you fully block grants 1 additional 勁. Exhaust. |
+| `rw_b102` | B102 破綻基本拳 | Deal 3 damage. This is a 基礎攻擊. If the target has 易傷, deal 2 more damage. | Deal 5 damage. This is a 基礎攻擊. If the target has 易傷, deal 2 more damage. |
+| `rw_b107` | B107 破綻換手 | Apply 1 易傷. Your next 基礎攻擊 this turn costs 0. | Apply 2 易傷. Your next 基礎攻擊 this turn costs 0. |
+| `rw_b108` | B108 基本轉拍 | Deal 3 damage. This is a 基礎攻擊. 轉拍：draw 1 card. | Deal 5 damage. This is a 基礎攻擊. 轉拍：draw 1 card. |
+| `rw_b113` | B113 以剛護柔 | Gain 3 Block. 轉拍：練功 1. Exhaust. | Gain 5 Block. 轉拍：練功 1. Exhaust. |
+| `rw_b114` | B114 反覆破綻 | When a 基礎攻擊 hits an enemy with 易傷, extend that 易傷 by 1, once per card played and up to 9. | Costs 0. When a 基礎攻擊 hits an enemy with 易傷, extend that 易傷 by 1, once per card played and up to 9. |
+| `rw_b115` | B115 聲波循環 | The first time each turn you perform 轉拍 with a 基礎攻擊, put the most recently discarded Skill on top of your draw pile. | Costs 1. The first time each turn you perform 轉拍 with a 基礎攻擊, put the most recently discarded Skill on top of your draw pile. |
+| `rw_b119` | B119 圓轉基本式 | Gain 5 Block. If you gained 勁 during the previous enemy phase, return a 基礎攻擊 from discard to your hand; it costs 0 this turn. | Gain 7 Block. If you gained 勁 during the previous enemy phase, return a 基礎攻擊 from discard to your hand; it costs 0 this turn. |
+| `rw_b120` | B120 勁貫破綻 | Deal 6 damage. If you have 勁, spend 1 勁 and apply 2 易傷. | Deal 8 damage. If you have 勁, spend 1 勁 and apply 2 易傷. |
+| `rw_b122` | B122 聽拍尋隙 | Draw 2 cards. If exactly one drawn card is an Attack, apply 1 易傷. | Draw 3 cards. If exactly one drawn card is an Attack, apply 1 易傷. |
+| `rw_b123` | B123 短橋連拳 | Deal 2 damage twice. If this card triggers 轉拍, add your 練功 bonus a second time to each hit. | Deal 3 damage twice. If this card triggers 轉拍, add your 練功 bonus a second time to each hit. |
+| `rw_b124` | B124 破綻借力 | Remove up to 2 易傷 from one enemy. Gain 1 勁 for each duration removed. | Remove up to 3 易傷 from one enemy. Gain 1 勁 for each duration removed. |
+| `rw_b127` | B127 基本三才 | The first time each turn you play your second 基礎攻擊, repeat that Attack's damage and draw 1 card. | The first time each turn you play your second 基礎攻擊, repeat that Attack's damage and Draw 2 cards. |
+| `rw_b128` | B128 無懈可擊 | Gain 10 Block. If you take no HP damage during the next enemy phase, 練功 1. Exhaust. | Gain 12 Block. If you take no HP damage during the next enemy phase, 練功 1. Exhaust. |
+| `rw_b129` | B129 聞聲即動 | At the start of each turn, draw 1 Skill if any enemy intends to attack; otherwise draw 1 Attack. | Costs 1. At the start of each turn, draw 1 Skill if any enemy intends to attack; otherwise draw 1 Attack. |
+| `rw_b131` | B131 剛柔並濟 | The first 轉拍 each turn grants 練功 1; the second grants 1 勁. | The first 轉拍 each turn grants 練功 2; the second grants 1 勁. |
+| `rw_b132` | B132 一氣呵成 | Costs 1 less for each 轉拍 performed before this card this turn, minimum 0. Deal 4 damage four times. | Costs 1 less for each 轉拍 performed before this card this turn, minimum 0. Deal 5 damage four times. |
+| `rw_b100` | B100 化勁留隙 | The first time each enemy phase you gain 勁, apply 1 易傷 to the enemy whose attack granted it. | The first time each enemy phase you gain 勁, apply 2 易傷 to the enemy whose attack granted it. |
+| `rw_b144` | B144 震聲喝止 | Apply 2 Weak. If the target has 易傷, gain 5 Block. | Costs 0. Apply 2 Weak. If the target has 易傷, gain 5 Block. |
+| `rw_b149` | B149 後發先至 | Retain. Deal 7 damage. If you gained 勁 during the previous enemy phase, deal 8 more damage. | Retain. Deal 9 damage. If you gained 勁 during the previous enemy phase, deal 8 more damage. |
 
-The implemented migration converts the old ordered `string[]` deck to ordered
-`DeckCardV2[]`:
+## Validation gates
 
-1. Preserve every entry and its order, including duplicate IDs.
-2. Generate a unique stable `uid` for each entry.
-3. Set every migrated `upgradeLevel` to 0.
-4. Make migration idempotent; an already-versioned deck is not regenerated.
-5. If a definition is unknown, reject the save through the existing safe-load
-   path instead of silently deleting the card.
-
-## Authored upgrade rules
-
-- Every Basic, Common, Uncommon, Rare, and collectible Special card has exactly
-  one authored upgrade, except the named repeat-upgrade card.
-- Status and Curse definitions have no upgrade object and can never be selected
-  by Smith, reward-upgrade, temporary-upgrade, or relic-upgrade effects.
-- A normal upgrade should change one main axis:
-  - increase the primary number;
-  - reduce Energy cost;
-  - improve a keyword or remove Exhaust;
-  - improve a selection limit, cap, or destination;
-  - make one coherent functional change.
-- Numerical upgrades generally add about 25–50% effective value. Smaller
-  percentages are acceptable on multi-target, multi-hit, Energy, draw, or
-  multiplicative effects.
-- Basic upgrades remain numerical and easy to read. Commons usually improve
-  immediate output or reliability. Uncommons may strengthen package glue.
-  Rares may change cost, recurrence, limits, or another rule.
-- Do not increase cost as part of an upgrade. Do not add an unrelated drawback.
-- An upgrade may remove Exhaust only when repeated use is the intended reward;
-  it must not accidentally create a zero-cost draw/Energy loop.
-- Upgrade changes render in green in adult/detail views and with a clear `+` on
-  the child-facing card. Color is supplemental: changed values also receive a
-  textual before/after comparison.
-
-## Anchor upgrade table
-
-Only `bo`, `mo`, `po`, `he`, and `shi` currently have live authored upgrades.
-The other rows remain future proposals. The Resonance replacements below
-supersede their old Echo versions.
-
-| ID | Card | Type | Base | Upgraded |
-|---|---|---|---|---|
-| `bo` | 音波擊 | Attack | 1 Energy: deal 3. | 1 Energy: deal 5. |
-| `mo` | 音波盾 | Skill | 1 Energy: gain 4 Block. | 1 Energy: gain 6 Block. |
-| `po` | 破綻震 | Attack | 2 Energy: deal 5; apply 易傷 2. | 2 Energy: deal 7; apply 易傷 2. |
-| `ge` | 響亮一擊 | Attack | 1 Energy: deal 6. | 1 Energy: deal 8. |
-| `ri` | 日光音波 | Attack | 1 Energy: deal 3 to all enemies. | 1 Energy: deal 4 to all enemies. |
-| `ke` | 厚實音牆 | Skill | 1 Energy: gain 7 Block. | 1 Energy: gain 9 Block. |
-| `te` | 雙拍連擊 | Attack | 1 Energy: deal 2 twice. | 1 Energy: deal 3 twice. |
-| `he` | 弱點標記 | Attack | 1 Energy: deal 2; apply 易傷 2. | 1 Energy: deal 3; apply 易傷 3. |
-| `shi` | 聲波架式 | Power | 1 Energy: tagged basic Attacks gain +2 per hit this combat. | Bonus becomes +3. |
-| `le` | 翻譜 | Skill | 1 Energy: draw 2. | 1 Energy: draw 3. |
-| `yi` | 深呼吸 | Skill | 0 Energy: gain 1 Energy; Exhaust. | Gain 1 Energy; draw 1; Exhaust. |
-| `fo` | 邊擋邊唱 | Skill | 1 Energy: gain 3 Block; draw 1. | Gain 5 Block; draw 1. |
-
-The conversion of `mo` and `ke` from the obsolete Block type to Skill does not
-change their effects. `shi` becomes a true Power: a successful cast enters the
-active-Power area and leaves ordinary draw/discard circulation.
-
-## Upgrade sources and precedence
-
-### 1. Smithing — permanent selected-copy upgrade
-
-- A rest site offers **Rest** or **Smith**. Free campfire removal leaves the
-  standard flow; card removal remains a shop or authored-event service.
-- Smith opens the exact-copy deck viewer. Every duplicate is shown separately
-  with its own `uid`; no `×N` grouping is allowed.
-- Cards that cannot gain another permanent level are visible but disabled.
-  If the deck has no eligible card, the Smith action itself is disabled.
-- Selecting a card opens a base/current → result preview. The player confirms
-  before the room is consumed.
-- Confirmation increments only the selected card's permanent level, saves the
-  run, and returns to the completed rest-site state. Closing or cancelling the
-  preview changes nothing and does not consume the room.
-- Rest remains 40% maximum HP. Smith never also heals.
-
-### 2. Already-upgraded rewards and shop cards
-
-- The upgraded roll belongs to each generated card instance, not its
-  definition. A successful roll creates that offered copy at level 1.
-- Initial authored chance by act is:
-
-  | Act | Chance that an eligible offered card is upgraded |
-  |---|---:|
-  | I | 0% |
-  | II | 25% |
-  | III | 50% |
-
-- Difficulty level 12 halves those chances to 0%, 12.5%, and 25%.
-- Roll once when the offer is generated and serialize the result; reopening a
-  reward or shop must not reroll it.
-- Basic, Status, Curse, and cards without a legal first upgrade are ineligible.
-  An authored event, relic, or boss rule may explicitly override act chance.
-- Buying or choosing the card preserves the offered upgrade level. Skipping or
-  leaving does not affect another copy of the same definition.
-
-### 3. Temporary combat upgrades
-
-- A temporary-upgrade effect targets one eligible combat card instance and adds
-  one temporary level for the current combat only.
-- An ordinary card already at its authored maximum is not eligible. A level-0
-  ordinary card may temporarily resolve as level 1.
-- A permanently upgraded ordinary card never resolves above level 1.
-- 層層共鳴 may receive temporary levels beyond its permanent level; those levels
-  add to its damage only until combat ends.
-- Temporary state follows the combat card through hand, draw, discard, Exhaust,
-  or active-Power areas and is visible in every pile viewer.
-- Victory, defeat, restart, abandonment, and returning to map discard all
-  temporary levels. No combat effect mutates the saved deck copy.
-
-### 4. Relic-granted permanent upgrades
-
-- A relic may permanently upgrade a newly acquired card only when its authored
-  trigger explicitly matches that card's type or source.
-- Resolution order is: generate the offered instance and its reward-upgrade
-  roll → player acquires it → apply eligible acquisition relics in relic-list
-  order → save the final instance.
-- For ordinary cards, multiple sources stop at level 1; unused extra triggers do
-  not transfer to another card. 層層共鳴 may receive every valid level.
-- A relic that upgrades a random existing card chooses uniformly from eligible
-  `uid`s using the saved gameplay RNG. It never treats duplicate definitions as
-  one entry.
-- Relic previews must state whether the upgrade applies to current cards, newly
-  acquired cards, or a specific card type. Hidden exceptions are not allowed.
-
-## The repeat-upgrade exception
-
-`em_r_a01` **層層共鳴** is the only repeat-upgrade card in this approved pool:
-
-- Base: 2 Energy, deal 6.
-- Every permanent or temporary level adds exactly 2 damage.
-- Resolved damage is `6 + (2 × totalUpgradeLevels)`.
-- Display is unadorned at level 0, `+` at level 1, and `+N` at level 2 or above.
-- Smith always considers it eligible. Reward generation can only offer it at
-  level 0 or 1; higher permanent levels require Smith, relic, or authored-event
-  effects after acquisition.
-- Designer telemetry records permanent level, temporary level, cast success,
-  actual damage, and encounter separately so its uncapped ceiling is reviewable.
-
-No future repeat-upgrade card should be added without revising this bible and
-the uniqueness validator.
-
-## Preview and viewer behavior
-
-- Current Deck displays the resolved current face of every physical copy.
-- Selecting an unupgraded card shows base and `+` side by side. Selecting an
-  upgraded ordinary card shows its base and current face. 層層共鳴 shows current
-  and next level.
-- The Designer Library always exposes base and authored upgrade, including
-  locked cards, plus derived change summaries such as `damage 6 → 8 (+33%)`.
-- Combat pile and hand inspection includes both permanent and temporary level;
-  a temporary contribution receives a distinct “本場戰鬥” label.
-- Upgrading never changes name, stable illustration, owner, rarity, type,
-  target, symbol, phrase pool, or unlock tier unless the exact row in
-  [CARD_BIBLE.md](./CARD_BIBLE.md) explicitly says otherwise. The approved table
-  currently changes none of those identity fields.
-- Speech and the successful spelling reveal use the same phrase and normal
-  learning speed for base and upgraded cards.
-
-## Balance review rules
-
-For each base/upgrade pair, record during playtests:
-
-- offer-relative pick and Smith rates;
-- damage dealt or Block actually consumed per draw, Energy, and successful cast;
-- times held, exhausted, or left unplayed;
-- cast accuracy and response time by phrase difficulty;
-- Power trigger count and turns until setup cost is repaid;
-- encounter length and HP loss with the base versus upgraded copy;
-- repeat-upgrade level and marginal damage for 層層共鳴.
-
-Raw percentage improvement is a warning signal, not an automatic verdict.
-Multi-hit scaling, all-enemy output, draw, Energy, cost reductions, Exhaust
-removal, and multiplicative Echo effects need contextual review. Because a
-failed full-注音 cast pays Energy without resolving the effect, evaluate pure
-combat values both with debug cast-skip and with authentic learner accuracy.
-
-## Validation contract
-
-Automated content validation must fail when any of these conditions is false:
-
-1. The Echo Mage catalog has exactly 75 unique IDs and audits to 3 Basic,
-   20 Common, 35 Uncommon, 17 Rare; and 28 Attacks, 35 Skills, 12 Powers.
-2. Colorless has exactly 12 unique IDs: 6 Uncommon and 6 Rare.
-3. Every one of those 87 collectible definitions has a legal authored upgrade.
-4. The five Status and eight Curse definitions have no upgrade.
-5. Every ordinary collectible resolves at only level 0 or 1; only
-   `em_r_a01` is tagged repeatable.
-6. All upgrade effect references, keyword changes, targets, caps, and selection
-   limits resolve to supported typed operations.
-7. Every card instance has a unique `uid`; duplicate `defId`s remain distinct.
-8. Upgrade preview data deep-equals the values used by combat resolution.
-9. Smith changes only the selected instance, consumes the room only after
-   confirmation, and remains disabled with no eligible card.
-10. Reward/shop upgrade rolls are deterministic from saved RNG and do not
-    reroll when a screen is reopened.
-11. Temporary upgrades never alter the saved run deck and are removed at every
-    combat exit.
-12. Acquisition relics respect eligibility, ordering, ordinary-card caps, and
-    the repeatable exception.
-13. An upgraded Power activates at its upgraded value, leaves ordinary piles on
-    success, and discards at base Energy cost on a failed cast.
-14. At all supported tablet viewports, base/upgrade text fits the fixed card
-    frame and the before/after preview keeps 64px primary targets.
-
-Required regression scenarios include two duplicate 音波擊 cards where only one
-is Smithed, an already-upgraded reward reopened from save, a temporary upgrade
-that crosses pile boundaries, stacked permanent/temporary levels on 層層共鳴,
-and a 1-Energy upgraded defensive Skill that leaves the correct Energy and does
-not lock otherwise affordable cards.
-
-## Approval boundary
-
-This document and [CARD_BIBLE.md](./CARD_BIBLE.md) approve the proposed design
-contract and exact initial numbers for implementation in reviewed waves. They do
-not claim those numbers are finally balanced. Any post-playtest number change
-must update the card table, generated rules text, relevant deterministic test,
-and changelog together.
+The build may assert that generated draft faces are structurally resolvable and
+that no upgrade level exceeds 1. It must also assert that 共鳴武者 keeps Smith
+disabled and live offers at level zero. No draft `+` face becomes canonical
+until its wording, number, casting cost, touch presentation, and human evidence
+pass [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md).

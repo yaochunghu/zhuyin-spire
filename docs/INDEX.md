@@ -23,11 +23,14 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [MAP.md](./MAP.md) | Spire map gen (15×7), layout constraints |
 | [CONTENT.md](./CONTENT.md) | How to add cards, enemies, encounters, phrases |
 | [CASTING_GATES.md](./CASTING_GATES.md) | Reusable education gate, phrase bags, learner profiles, future subjects |
-| [DECK_DESIGN.md](./DECK_DESIGN.md) | Live 共鳴武者 deck, 易傷/basic attacks, expansion boundary |
+| [DESIGN_PLAYBOOK.md](./DESIGN_PLAYBOOK.md) | Governing design funnel, evidence ladder, complexity budget, and release gates |
+| [DECK_DESIGN.md](./DECK_DESIGN.md) | Live 共鳴武者 foundation, directions, starter, and upgrades |
+| [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md) | 共鳴武者 brainstorm, culls, roles, simulations, and refined 75-card target |
 | [STS_DESIGN_REFERENCE.md](./STS_DESIGN_REFERENCE.md) | StS combat, cards, runs, economy, progression, UX, and lessons to adapt |
-| [CARD_BIBLE.md](./CARD_BIBLE.md) | Frozen 75-card Echo reference awaiting a Resonance rewrite |
-| [UPGRADE_BIBLE.md](./UPGRADE_BIBLE.md) | Proposed per-copy upgrade, Smith, reward, migration, and preview contract |
-| [RELIC_POTION_BIBLE.md](./RELIC_POTION_BIBLE.md) | Proposed 40 relics, 20 potions, timing rules, and optional-ending keys |
+| [ENCOUNTER_RELIC_DESIGN_RESEARCH.md](./ENCOUNTER_RELIC_DESIGN_RESEARCH.md) | Review memo on StS/StS2 encounters, bosses, relic co-design, and a full-run design method |
+| [CARD_BIBLE.md](./CARD_BIBLE.md) | Frozen historical Echo Mage roster; retained for comparison and stable-ID work |
+| [UPGRADE_BIBLE.md](./UPGRADE_BIBLE.md) | Live physical-copy foundation and the gated 75-card upgrade draft |
+| [RELIC_POTION_BIBLE.md](./RELIC_POTION_BIBLE.md) | Historical Echo-coupled roster requiring a 共鳴武者 compatibility pass |
 | [EVENT_ENCOUNTER_BIBLE.md](./EVENT_ENCOUNTER_BIBLE.md) | Proposed 30 events, per-act encounters, difficulty variants, and Act IV |
 | [BALANCE.md](./BALANCE.md) | Live economy / HP / hand numbers + design intent |
 | [DEBUG.md](./DEBUG.md) | Debug panel, flags, skip-cast testing |
@@ -43,17 +46,14 @@ Root companions:
 
 ---
 
-## Snapshot (Unreleased after v0.3.0)
+## Snapshot (v0.2.0)
 
 - **Stack:** Vite + TypeScript SPA, no backend; localStorage save
 - **Acts:** 3 × (15 floors × 7 lanes), STS-style path generation
 - **Combat:** modular `src/game/battle/*`, multi-enemy intents, drag-and-drop cards
-- **Cards:** V2 physical copies, typed effects, true Powers, exact-copy/designer viewer
-- **Character:** 🧒🥋 共鳴武者 with 易傷, basic-Attack scaling, universal relic
 - **Teaching:** full first-syllable 注音 cast, per-learner persistent shuffle bags,
   detailed curriculum controls, and a provider boundary for future subjects
 - **Debug:** body-mounted panel for testing (not for kids in normal play)
 
-The four `*_BIBLE.md` files are design-review artifacts. Echo-specific card,
-relic, and potion rows are frozen historical reference after the character
-direction changed; they are not runtime content or an approved translation list.
+The 共鳴武者 catalog and upgrade bible are live. `CARD_BIBLE.md` and portions of
+the relic/event bibles remain historical Echo-era design references.

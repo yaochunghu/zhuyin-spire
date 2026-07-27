@@ -132,6 +132,8 @@ test('character selection binds the simple starter deck and relic', async ({ pag
   await page.getByRole('button', { name: '開始爬塔' }).click();
   const character = page.getByRole('button', { name: /選擇共鳴武者/ });
   await expect(character).toBeVisible();
+  await expect(character).toContainText('🃏 12/75');
+  await expect(character).toContainText('下一批：0/300');
   await expect(character).toContainText('⚔️ 1⚡ ×5');
   await expect(character).toContainText('🛡️ 1⚡ ×4');
   await expect(character).toContainText('🎯 2⚡ ×1');
@@ -147,6 +149,7 @@ test('character selection binds the simple starter deck and relic', async ({ pag
   expect(saved.relicId).toBe('tuningFork');
   expect(saved.deck).toHaveLength(10);
   expect(saved.v).toBe(2);
+  expect(saved.deck.every((card: { upgradeLevel: number }) => card.upgradeLevel === 0)).toBe(true);
   expect(saved.deck.filter((card: { defId: string }) => card.defId === 'bo')).toHaveLength(5);
   expect(saved.deck.filter((card: { defId: string }) => card.defId === 'mo')).toHaveLength(4);
   expect(saved.deck.filter((card: { defId: string }) => card.defId === 'po')).toHaveLength(1);

@@ -6134,3 +6134,83 @@ body.modal-open {
     height: 44px;
   }
 }
+/* 共鳴武者 progression and physical-card upgrades */
+.character-progress,
+.character-progress-unreleased {
+  width: min(100%, 520px);
+  padding: 10px 14px;
+  border: 1px solid rgba(154, 212, 255, 0.45);
+  border-radius: 14px;
+  background: rgba(10, 8, 25, 0.35);
+}
+
+.character-progress > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.character-progress progress {
+  width: 100%;
+  height: 14px;
+  accent-color: var(--accent2);
+}
+
+.character-progress small,
+.profile-character-progress-item small {
+  display: block;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.card-upgrade-badge {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.35rem;
+  z-index: 4;
+  min-width: 1.6rem;
+  min-height: 1.6rem;
+  border: 2px solid #b9ff83;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: #ecffd9;
+  background: #267a36;
+  font-weight: 900;
+}
+
+.card.power {
+  border-color: #d8a7ff;
+  background: linear-gradient(160deg, #43245f, #241a45);
+}
+
+.smith-screen {
+  overflow: auto;
+}
+
+.smith-cards {
+  align-items: flex-start;
+}
+
+.smith-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 1rem auto;
+  padding: 1rem;
+  max-width: 52rem;
+  border: 2px solid #76d585;
+  border-radius: 1rem;
+  background: #10231ee8;
+}
+
+.smith-preview .card-desc,
+.smith-preview .card-upgrade-badge {
+  color: #b9ff83;
+}
+
+.smith-arrow {
+  font-size: 2rem;
+}

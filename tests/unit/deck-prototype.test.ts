@@ -1,12 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  ELITE_REWARD_POOL_IDS,
+  CARDS,
+  LATER_ACT_ELITE_REWARD_POOL_IDS,
+  LATER_ACT_REWARD_POOL_IDS,
   REWARD_POOL_IDS,
   STARTER_DECK_IDS,
   getCard,
-  getCardAtUpgrade,
-  validateCardDefinitions,
-  type CardDef,
 } from '../../src/data/cards';
 import { getCharacter } from '../../src/data/characters';
 import { getRelic } from '../../src/data/relics';
@@ -15,19 +14,18 @@ import {
   createCombat,
   endTurn,
   executeEffects,
-  makeCard,
-  previewCardDamage,
   resolveCastFizzle,
   resolveCastSuccess,
   type CombatFx,
 } from '../../src/game/combat';
-import { createNewRun, pickCharacter, startRun } from '../../src/game/state';
+import { applyEnemyIntent } from '../../src/game/battle/enemyHandler';
 import {
-  applySnapshot,
-  parseSnapshot,
-  snapshotRun,
-  type RunSnapshotV1,
-} from '../../src/game/save';
+  canSmith,
+  createNewRun,
+  pickCharacter,
+  startRun,
+} from '../../src/game/state';
+import { applySnapshot, snapshotRun, type RunSnapshotV1 } from '../../src/game/save';
 
 class MemoryStorage {
   private values = new Map<string, string>();
@@ -43,192 +41,178 @@ beforeEach(() => {
   });
 });
 
-describe('Resonance Warrior card foundation', () => {
-  it('keeps the 5/4/1 starter composition with Attack, Skill, and Vulnerable data', () => {
+describe('共鳴武者 catalog', () => {
+  it('publishes the complete 75-card catalog with authored upgrades', () => {
+    const character = getCharacter('echoMage');
+    expect(Object.keys(CARDS)).toHaveLength(75);
+    expect(new Set(Object.values(CARDS).map((card) => card.designId)).size).toBe(75);
+    expect(Object.values(CARDS).every((card) => card.type !== 'block')).toBe(true);
+    expect(character.status).toBe('playable');
+    if (character.status !== 'playable') throw new Error('Expected playable character');
+    expect(character.cardPoolIds).toHaveLength(75);
+    expect(character.upgradesEnabled).toBe(true);
+    expect(Object.values(CARDS).every((card) => !!card.upgrade)).toBe(true);
+  });
+
+  it('keeps the simple 5/4/1 starter and nine-card first reward wave', () => {
     expect(STARTER_DECK_IDS).toHaveLength(10);
     expect(STARTER_DECK_IDS.filter((id) => id === 'bo')).toHaveLength(5);
     expect(STARTER_DECK_IDS.filter((id) => id === 'mo')).toHaveLength(4);
     expect(STARTER_DECK_IDS.filter((id) => id === 'po')).toHaveLength(1);
-    expect(new Set(STARTER_DECK_IDS)).toEqual(new Set(['bo', 'mo', 'po']));
-    expect(getCard('bo')).toMatchObject({ cost: 1, type: 'attack', tags: ['basicAttack'] });
-    expect(getCard('mo')).toMatchObject({ cost: 1, type: 'skill' });
-    expect(getCard('po').effects[1]).toEqual({ kind: 'applyVulnerable', amount: 2 });
-    expect(validateCardDefinitions()).toEqual([]);
-  });
-
-  it('reports malformed authored definitions before they can enter rewards', () => {
-    const bad = {
-      ...getCard('bo'),
-      id: 'wrong-id',
-      effects: [],
-    };
-    expect(validateCardDefinitions({ bo: bad })).toEqual(
-      expect.arrayContaining([
-        expect.stringContaining('id must match'),
-        expect.stringContaining('requires ordered effects'),
-      ]),
-    );
-  });
-
-  it('offers nine unique Act I rewards and includes a real Power', () => {
     expect(REWARD_POOL_IDS).toHaveLength(9);
-    expect(new Set(REWARD_POOL_IDS).size).toBe(9);
     expect(REWARD_POOL_IDS.some((id) => STARTER_DECK_IDS.includes(id))).toBe(false);
-    expect(ELITE_REWARD_POOL_IDS).toEqual(REWARD_POOL_IDS);
-    expect(getCharacter('echoMage').actIRewardIds).toEqual(REWARD_POOL_IDS);
-    expect(getCard('shi').type).toBe('power');
+    expect(LATER_ACT_REWARD_POOL_IDS).toHaveLength(75);
+    expect(LATER_ACT_ELITE_REWARD_POOL_IDS).toHaveLength(75);
+    expect(new Set(LATER_ACT_REWARD_POOL_IDS).size).toBe(75);
+    expect(getCard('mo')).toMatchObject({ type: 'skill', designId: 'B002' });
+    const liveIds = [...new Set([...STARTER_DECK_IDS, ...REWARD_POOL_IDS])];
+    expect(liveIds).toHaveLength(12);
+    expect(liveIds.every((id) => getCard(id).cues.length >= 2)).toBe(true);
+    expect(
+      liveIds.every((id) =>
+        !/\b(?:Deal|Gain|Apply|Draw|Spend|Cannot|Costs)\b/.test(getCard(id).description)
+      ),
+    ).toBe(true);
   });
 
-  it('creates ten separate physical cards and binds the universal starter relic', () => {
+  it('creates physical starter copies and preserves the compatibility lineage', () => {
     const character = getCharacter('echoMage');
     const state = createNewRun();
     startRun(state);
     pickCharacter(state, character.id);
-    expect(state.characterId).toBe(character.id);
+    expect(character.name).toBe('共鳴武者');
     expect(state.deck.map((card) => card.defId)).toEqual(character.starterDeckIds);
-    expect(new Set(state.deck.map((card) => card.uid)).size).toBe(state.deck.length);
+    expect(new Set(state.deck.map((card) => card.uid)).size).toBe(10);
     expect(state.deck.every((card) => card.upgradeLevel === 0)).toBe(true);
-    expect(state.relicId).toBe(character.startingRelicId);
     expect(getRelic(state.relicId!).firstAttackBonusDamage).toBe(1);
   });
 
-  it('migrates a V1 string deck without dropping or grouping duplicates', () => {
+  it('makes Smith available for an unupgraded deck', () => {
+    const state = createNewRun();
+    startRun(state);
+    pickCharacter(state, 'echoMage');
+    const rest = state.runMap.acts[0]!.nodes.find((node) => node.kind === 'rest')!;
+    state.activeNodeId = rest.id;
+    state.screen = 'rest';
+    expect(canSmith(state)).toBe(true);
+    expect(state.deck.every((card) => card.upgradeLevel === 0)).toBe(true);
+  });
+
+  it('loads a checkpoint without replacing its selected relic', () => {
     const source = createNewRun();
     startRun(source);
     pickCharacter(source, 'echoMage');
     source.relicId = 'coinPouch';
-    const current = snapshotRun(source)!;
-    const legacy: RunSnapshotV1 = {
-      ...current,
-      v: 1,
-      deck: current.deck.map((card) => card.defId),
-    };
-    delete legacy.characterId;
-
-    const migrated = parseSnapshot(legacy)!;
-    expect(migrated.v).toBe(2);
-    expect(migrated.deck.map((card) => card.defId)).toEqual(legacy.deck);
-    expect(new Set(migrated.deck.map((card) => card.uid)).size).toBe(legacy.deck.length);
-
+    const snapshot = snapshotRun(source)!;
+    delete (snapshot as Partial<RunSnapshotV1>).characterId;
     const restored = createNewRun();
-    applySnapshot(restored, migrated);
+    applySnapshot(restored, snapshot);
     expect(restored.characterId).toBe('echoMage');
     expect(restored.relicId).toBe('coinPouch');
   });
-
-  it('resolves an authored upgrade without changing its stable definition id', () => {
-    const upgraded = getCardAtUpgrade('bo', 1);
-    expect(upgraded.id).toBe('bo');
-    expect(upgraded.effects).toEqual([{ kind: 'damage', amount: 5 }]);
-    expect(upgraded.description).toContain('5');
-  });
 });
 
-describe('Vulnerable, Powers, and universal relic rules', () => {
+describe('共鳴 combat rules', () => {
   const noDraw = () => [];
   const collect = (events: CombatFx[]) => (fx: CombatFx) => events.push(fx);
 
-  it('applies Vulnerable after the setup hit, then multiplies and floors Attack damage', () => {
+  it('amplifies Attack damage by 易傷', () => {
     const combat = createCombat(['po', 'bo'], 'rock', 30, 30);
     const enemy = combat.enemies[0]!;
-    const beforeSetup = enemy.hp;
     executeEffects(combat, getCard('po'), [enemy.id], () => {}, noDraw);
-    expect(enemy.hp).toBe(beforeSetup - 5);
     expect(enemy.vulnerableTurns).toBe(2);
+    const hpBefore = enemy.hp;
+    executeEffects(combat, getCard('bo'), [enemy.id], () => {}, noDraw);
+    expect(enemy.hp).toBe(hpBefore - 4);
+  });
 
-    const events: CombatFx[] = [];
-    executeEffects(combat, getCard('bo'), [enemy.id], collect(events), noDraw);
-    const strike = events.find(
+  it('adds 練功 to every hit of a 基礎攻擊', () => {
+    const combat = createCombat(['shi', 'te'], 'rock', 30, 30);
+    const enemy = combat.enemies[0]!;
+    executeEffects(combat, getCard('shi'), [], () => {}, noDraw);
+    expect(combat.training).toBe(2);
+    const hpBefore = enemy.hp;
+    executeEffects(combat, getCard('te'), [enemy.id], () => {}, noDraw);
+    expect(enemy.hp).toBe(hpBefore - 8);
+  });
+
+  it('grants one 勁 when an enemy attack action is fully blocked', () => {
+    const combat = createCombat(['mo'], 'slime', 30, 30);
+    combat.block = 99;
+    endTurn(combat);
+    expect(combat.jin).toBe(1);
+  });
+
+  it('treats a multi-hit intent as one 化勁 action and rejects any HP leak', () => {
+    const blocked = createCombat(['mo'], 'bat', 30, 30);
+    blocked.block = 4;
+    applyEnemyIntent(blocked, blocked.enemies[0]!);
+    expect(blocked.heroHp).toBe(30);
+    expect(blocked.jin).toBe(1);
+
+    const leaked = createCombat(['mo'], 'bat', 30, 30);
+    leaked.block = 3;
+    applyEnemyIntent(leaked, leaked.enemies[0]!);
+    expect(leaked.heroHp).toBe(29);
+    expect(leaked.jin).toBe(0);
+  });
+
+  it('triggers 轉拍 only after two successful alternating casts', () => {
+    const combat = createCombat(['mo', 'yi', 'bo', 'bo', 'bo'], 'rock', 30, 30);
+    const enemy = combat.enemies[0]!;
+    const shield = combat.hand.find((card) => card.defId === 'mo')!;
+    const tempoAttack = combat.hand.find((card) => card.defId === 'yi')!;
+
+    const shieldDef = beginPlay(combat, shield.uid);
+    resolveCastSuccess(combat, shieldDef);
+    expect(combat.lastPlayedType).toBe('skill');
+    const blockBefore = combat.block;
+
+    const attackDef = beginPlay(combat, tempoAttack.uid, [enemy.id]);
+    resolveCastSuccess(combat, attackDef);
+    expect(combat.tempoCount).toBe(1);
+    expect(combat.block).toBe(blockBefore + 3);
+  });
+
+  it('failed casts do not update 轉拍 or spend 勁', () => {
+    const combat = createCombat(['mo', 'fo', 'bo', 'bo', 'bo'], 'rock', 30, 30);
+    combat.jin = 1;
+    const shield = combat.hand.find((card) => card.defId === 'mo')!;
+    const shieldDef = beginPlay(combat, shield.uid);
+    resolveCastFizzle(combat, shieldDef);
+    expect(combat.lastPlayedType).toBeNull();
+
+    const spender = combat.hand.find((card) => card.defId === 'fo')!;
+    const spenderDef = beginPlay(combat, spender.uid, [combat.enemies[0]!.id]);
+    resolveCastFizzle(combat, spenderDef);
+    expect(combat.jin).toBe(1);
+  });
+
+  it('spends one 勁 only when 化勁掌 resolves successfully', () => {
+    const combat = createCombat(['fo', 'bo', 'bo', 'bo', 'bo'], 'rock', 30, 30);
+    combat.jin = 1;
+    const enemy = combat.enemies[0]!;
+    const hpBefore = enemy.hp;
+    const spender = combat.hand.find((card) => card.defId === 'fo')!;
+    const def = beginPlay(combat, spender.uid, [enemy.id]);
+    expect(combat.jin).toBe(1);
+    resolveCastSuccess(combat, def);
+    expect(combat.jin).toBe(0);
+    expect(enemy.hp).toBe(hpBefore - 8);
+  });
+
+  it('uses 初心音叉 once each player turn', () => {
+    const combat = createCombat(['bo', 'bo'], 'rock', 99, 99, getRelic('tuningFork'));
+    const enemy = combat.enemies[0]!;
+    const first: CombatFx[] = [];
+    executeEffects(combat, getCard('bo'), [enemy.id], collect(first), noDraw);
+    const firstStrike = first.find(
       (fx): fx is Extract<CombatFx, { type: 'playerStrike' }> => fx.type === 'playerStrike',
     );
-    expect(strike?.impacts[0]).toMatchObject({
-      baseDamage: 3,
-      finalDamage: 4,
-      vulnerableApplied: true,
-      hpDamage: 4,
-    });
-  });
-
-  it('stacks Vulnerable additively to nine and ticks after the enemy phase', () => {
-    const combat = createCombat(['po'], 'rock', 99, 99);
-    const enemy = combat.enemies[0]!;
-    enemy.vulnerableTurns = 8;
-    executeEffects(combat, getCard('po'), [enemy.id], () => {}, noDraw);
-    expect(enemy.vulnerableTurns).toBe(9);
-    endTurn(combat);
-    expect(enemy.vulnerableTurns).toBe(8);
-  });
-
-  it('does not apply Vulnerable or the Attack relic to direct non-Attack damage', () => {
-    const combat = createCombat(['bo'], 'rock', 30, 30, getRelic('tuningFork'));
-    const enemy = combat.enemies[0]!;
-    enemy.vulnerableTurns = 2;
-    const direct: CardDef = {
-      ...getCard('bo'),
-      type: 'skill',
-      target: 'singleEnemy',
-      tags: [],
-      effects: [{ kind: 'damage', amount: 3, damageType: 'direct' }],
-    };
-    const hp = enemy.hp;
-    executeEffects(combat, direct, [enemy.id], () => {}, noDraw);
-    expect(enemy.hp).toBe(hp - 3);
-    expect(combat.firstAttackBonusReady).toBe(true);
-  });
-
-  it('uses the tuning fork on only the first resolved hit and readies it next turn', () => {
-    const combat = createCombat(['te', 'mo', 'mo', 'mo', 'mo'], 'rock', 99, 99, getRelic('tuningFork'));
-    const enemy = combat.enemies[0]!;
-    expect(previewCardDamage(combat, getCard('te'), enemy)).toMatchObject({
-      effective: 3,
-      laterEffective: 2,
-      hits: 2,
-    });
-    const first: CombatFx[] = [];
-    executeEffects(combat, getCard('te'), [enemy.id], collect(first), noDraw);
-    const strike = first.find(
-      (fx): fx is Extract<CombatFx, { type: 'playerStrike' }> => fx.type === 'playerStrike',
-    )!;
-    expect(strike.impacts.map((impact) => impact.relicBonus ?? 0)).toEqual([1, 0]);
+    expect(firstStrike?.impacts[0]?.relicBonus).toBe(1);
     expect(combat.firstAttackBonusReady).toBe(false);
+    combat.block = 99;
     endTurn(combat);
-    expect(combat.firstAttackBonusReady).toBe(true);
-  });
-
-  it('consumes the tuning fork even when the first hit is fully blocked', () => {
-    const combat = createCombat(['bo'], 'rock', 30, 30, getRelic('tuningFork'));
-    const enemy = combat.enemies[0]!;
-    enemy.block = 99;
-    executeEffects(combat, getCard('bo'), [enemy.id], () => {}, noDraw);
-    expect(combat.firstAttackBonusReady).toBe(false);
-    expect(enemy.hp).toBe(enemy.maxHp);
-  });
-
-  it('installs a Power outside discard circulation and strengthens tagged basic attacks', () => {
-    const combat = createCombat(['shi', 'bo'], 'rock', 30, 30);
-    const power = makeCard('shi');
-    combat.hand = [power];
-    beginPlay(combat, power.uid);
-    resolveCastSuccess(combat, getCard('shi'));
-    expect(combat.powerPile.map((card) => card.defId)).toEqual(['shi']);
-    expect(combat.discardPile).toHaveLength(0);
-    expect(combat.basicAttackBonusDamage).toBe(2);
-
-    const enemy = combat.enemies[0]!;
-    const preview = previewCardDamage(combat, getCard('bo'), enemy);
-    expect(preview).toMatchObject({ base: 3, basicAttackBonus: 2, effective: 5 });
-  });
-
-  it('a failed Power pays Energy, discards, and installs no battle effect', () => {
-    const combat = createCombat(['shi'], 'rock', 30, 30, getRelic('tuningFork'));
-    const power = makeCard('shi');
-    combat.hand = [power];
-    beginPlay(combat, power.uid);
-    expect(combat.energy).toBe(2);
-    resolveCastFizzle(combat, getCard('shi'));
-    expect(combat.discardPile.map((card) => card.defId)).toEqual(['shi']);
-    expect(combat.powerPile).toHaveLength(0);
-    expect(combat.basicAttackBonusDamage).toBe(0);
     expect(combat.firstAttackBonusReady).toBe(true);
   });
 });

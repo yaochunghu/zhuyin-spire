@@ -316,10 +316,11 @@ test('phone menu opens the current deck without changing the run', async ({ page
     '每一張實體牌都分開顯示；重複牌不合併。',
   );
   await page.getByRole('button', { name: '🧰 設計檢視' }).click();
-  await expect(page.locator('#zhuyin-deck-viewer-root .deck-viewer-card')).toHaveCount(27);
+  await expect(page.locator('#zhuyin-deck-viewer-root .deck-viewer-card')).toHaveCount(75);
   await page.getByRole('button', { name: /音波擊，攻擊，基礎，查看完整資料/ }).click();
   await expect(page.getByText('結算順序')).toBeVisible();
-  await expect(page.getByText(/平衡備註：一能量基礎攻擊下限/)).toBeVisible();
+  await expect(page.getByText('設計 ID')).toBeVisible();
+  await expect(page.getByText('B001', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: '關閉卡牌檢視器' }).click();
   await expect(page.locator('.map-dot')).toHaveCount(before);
 });

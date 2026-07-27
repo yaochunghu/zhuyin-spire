@@ -13,6 +13,7 @@ export const session = {
   coachPhoneScreen: null as RunState['screen'] | null,
   phoneMenuOpen: false,
   deckViewerOpen: false,
+  smithSelectedUid: null as string | null,
   /** Map node select flash in progress */
   mapSelectBusy: false,
   /** Combat pile inspect: draw or discard (null = closed) */

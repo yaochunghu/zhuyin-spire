@@ -1,57 +1,67 @@
 # Character and deck design
-## Live first character: 共鳴武者
 
-The internal id remains `echoMage` so existing saves continue to load. The
-player-facing identity is **🧒🥋 共鳴武者**: a young sound martial artist who
-listens for an opening, marks it with 易傷, and improves disciplined basic
-attacks.
+## Live character: 共鳴武者
 
-The character's learning rhythm is intentionally simple:
+The player-facing character is a young sound-trained martial artist. The
+internal `echoMage` key remains only as a save/profile compatibility lineage.
 
-1. defend against the shown intent;
-2. mark a monster's weakness;
-3. attack during the 易傷 window.
+### Signature mechanics
 
-### Live rules
+1. **易傷** — Attack damage ×1.5, rounded down.
+2. **基礎攻擊 / 練功** — tagged Attacks add combat-long 練功 to every hit.
+3. **轉拍** — successful Attack↔Skill alternation within the current turn.
+4. **勁** — fully block an enemy attack action to gain 1, cap 9; authored cards
+   spend it in fixed or bounded amounts.
 
-- **易傷 N:** Attack damage is multiplied by 1.5 and rounded down. Flat
-  bonuses are added first; enemy Block is removed afterward. Duration adds to a
-  cap of nine and decreases after the enemy phase. Non-Attack damage ignores it.
-- **基礎攻擊:** an explicit card tag. `聲波架式` adds damage to every hit of
-  tagged cards for the rest of combat.
-- **初心音叉:** universal starter relic. The first resolved Attack hit each
-  player turn gains +1. A failed cast does not consume it; a fully blocked hit
-  does; a multi-hit or area sequence receives it only once.
+The three overlapping draft directions are:
 
-### Starter deck: 10 physical cards / 3 designs
+- **聽隙爆發:** apply and exploit 易傷 windows.
+- **百鍊連環:** build basic-Attack density and 練功 scaling.
+- **聽勁反擊:** solve intents precisely, bank 勁, and convert it later.
 
-| Copies | Card | Type | Cost | Base | Upgrade |
-|---:|---|---|---:|---|---|
-| 5 | 音波擊 | Attack · 基礎攻擊 | 1 | Deal 3 | Deal 5 |
-| 4 | 音波盾 | Skill | 1 | Gain 4 Block | Gain 6 |
-| 1 | 破綻震 | Attack | 2 | Deal 5; apply 易傷 2 | Deal 7; 易傷 2 |
+轉拍 is the principal bridge between directions, so hybrid decks can chain
+setup, defense, and payoff instead of collecting isolated package pieces.
 
-Each owned copy is a `DeckCardV2 { uid, defId, upgradeLevel }`; duplicates are
-never grouped for removal, upgrades, or designer inspection.
+## Starter
 
-### Live Act I reward pool: 9 designs
+The ten-card starter deliberately teaches one concept at a time:
 
-The existing pool stays intentionally small during the prototype. The identity
-anchors are:
+| Copies | Card | Effect |
+|---:|---|---|
+| 5 | 音波擊 | 1 Energy: deal 3; 基礎攻擊 |
+| 4 | 音波盾 | 1 Energy: gain 4 Block |
+| 1 | 破綻震 | 2 Energy: deal 5; apply 2 易傷 |
 
-- `弱點標記`: low damage plus inexpensive 易傷 setup.
-- `聲波架式`: true Power; leaves draw/discard circulation and gives tagged
-  basic attacks +2 per hit this combat (+3 upgraded).
-- `響亮一擊`, `日光音波`, `厚實音牆`, `雙拍連擊`, `翻譜`, `深呼吸`, and
-  `邊擋邊唱` retain their current effects until playtesting supports changes.
+🎵 **初心音叉** adds +1 to the first resolved Attack hit each player turn
+before 易傷.
 
-## Expansion boundary
+## Catalog and progression
 
-The old 75-card Echo Mage roster is frozen reference material, not an active
-implementation target. Rebuild it in reviewed waves around 易傷, basic-attack
-training, martial rhythm, defense, and sound utility. Do not mechanically
-replace the word “Echo” in all old rows.
+The generated data draft contains all 75 post-cull definitions, but the live
+character, rewards, shops, and later acts expose only the 12-card teaching wave.
+Character score publishes the reviewed 21-card waves at 300, 1000, and 2000
+points. Existing decks and saved offers remain instance-safe when progression
+changes.
 
-Smithing, broader authored upgrades, potions, events, difficulty levels, keys,
-and Act IV remain later roadmap phases. Relic mechanics must stay useful to any
-character and must not require this character's signature status or tags.
+The exact base catalog, cull ledger, roles, directions, and release gates live
+in [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md).
+
+## Upgrade layer
+
+The physical card contract `{ uid, defId, upgradeLevel }`, V1→V2 migration,
+and all 75 authored `+` faces are live; 共鳴武者 sets
+`upgradesEnabled: true`.
+
+Campfires offer Rest or Smith. Smith upgrades one exact physical copy, while
+later-act rewards and shop offers may arrive upgraded according to their
+act-specific roll.
+
+The canonical 75-row catalog and reusable migration rules live in
+[UPGRADE_BIBLE.md](./UPGRADE_BIBLE.md).
+
+## Evidence gate
+
+The catalog generator can audit 75 unique draft definitions. Only the live
+12-card wave is a playable claim. Later card and upgrade waves still require
+the cast-on/debug-skip human draft matrix specified in the design-process memo;
+implementation is not automatic balance approval.

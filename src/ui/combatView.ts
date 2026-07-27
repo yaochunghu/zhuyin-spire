@@ -1,4 +1,4 @@
-import { getCardAtUpgrade } from '../data/cards';
+import { getCard, resolveCard } from '../data/cards';
 import {
   ENEMIES,
   intentIsUrgent,
@@ -13,7 +13,6 @@ import {
   intentForUnit,
   livingEnemies,
   nextIntentForUnit,
-  previewCardDamage,
   type CombatCard,
   type CombatState,
   type EnemyUnit,
@@ -74,10 +73,10 @@ function renderPileViewer(kind: 'draw' | 'discard', cards: CombatCard[]): HTMLEl
     grid.appendChild(empty);
   } else {
     for (const card of cards) {
-      const def = getCardAtUpgrade(card.defId, card.upgradeLevel);
+      const def = resolveCard(card.defId, card.upgradeLevel);
       const cell = document.createElement('div');
       cell.className = `deck-viewer-card card ${def.type}`;
-      cell.innerHTML = cardFaceHtml(def, { upgradeLevel: card.upgradeLevel });
+      cell.innerHTML = cardFaceHtml(def);
       grid.appendChild(cell);
     }
   }
@@ -113,10 +112,7 @@ export async function playPendingCombatFx(): Promise<void> {
   app().querySelector('.combat-screen')?.classList.add('fx-playing');
 
   try {
-    await playCombatFxBatch(batch, anchors, (card) => cardFaceHtml(
-      getCardAtUpgrade(card.defId, card.upgradeLevel),
-      { upgradeLevel: card.upgradeLevel },
-    ));
+    await playCombatFxBatch(batch, anchors, (defId) => cardFaceHtml(getCard(defId)));
   } finally {
     session.combatFxPlaying = false;
     app().querySelector('.combat-screen')?.classList.remove('fx-playing');
@@ -403,7 +399,7 @@ export function renderCombat(): HTMLElement {
       </div>
       <div class="hero-combat-powers">
         ${c.firstAttackBonusDamage > 0 ? `<span class="combat-power relic-ready${c.firstAttackBonusReady ? '' : ' status-used'}" title="初心音叉：每回合第一次攻擊 +${c.firstAttackBonusDamage}">🎵 首擊 +${c.firstAttackBonusDamage}${c.firstAttackBonusReady ? '' : ' ✓'}</span>` : ''}
-        ${c.basicAttackBonusDamage > 0 ? `<span class="combat-power" title="聲波架式：基礎攻擊每一下追加傷害">🥋 基礎攻擊 +${c.basicAttackBonusDamage}</span>` : ''}
+        ${c.training > 0 ? `<span class="combat-power" title="練功：基礎攻擊每一下追加傷害">🥋 基礎攻擊 +${c.training}</span>` : ''}
       </div>
     </div>
   `;
@@ -453,7 +449,7 @@ export function renderCombat(): HTMLElement {
   const livingIds = living.map((e) => e.id);
 
   for (const card of c.hand) {
-    const def = getCardAtUpgrade(card.defId, card.upgradeLevel);
+    const def = resolveCard(card.defId, card.upgradeLevel);
     const btn = document.createElement('button');
     btn.className = `card ${def.type}`;
     // Energy/phase only — bind drag even during FX so post-FX enable works;
@@ -470,24 +466,10 @@ export function renderCombat(): HTMLElement {
     ) {
       btn.classList.add('tutorial-focus');
     }
-    const previewEnemy = living.find((enemy) => enemy.id === c.selectedEnemyId) ?? living[0] ?? null;
-    const damagePreview = previewCardDamage(c, def, previewEnemy);
-    btn.innerHTML = cardFaceHtml(def, {
-      upgradeLevel: card.upgradeLevel,
-      damagePreview,
-    });
+    btn.innerHTML = cardFaceHtml(def);
     btn.disabled = !energyPlayable || !tutorialPlayable || locked;
     btn.dataset.uid = card.uid;
-    btn.setAttribute(
-      'aria-label',
-      `注音 ${def.zhuyin}${
-        damagePreview
-          ? damagePreview.hits > 1 && damagePreview.effective !== damagePreview.laterEffective
-            ? `，第一下傷害 ${damagePreview.effective}，後續每下 ${damagePreview.laterEffective}`
-            : `，目前每下傷害 ${damagePreview.effective}`
-          : ''
-      }`,
-    );
+    btn.setAttribute('aria-label', `注音 ${def.zhuyin}`);
     const scrollableHand = isPhoneLayout();
     btn.style.touchAction = scrollableHand ? 'pan-x' : 'none';
 
