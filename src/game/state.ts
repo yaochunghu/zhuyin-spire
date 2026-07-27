@@ -8,15 +8,23 @@ import {
   STARTER_DECK_IDS,
   getCardCastBinding,
   getCard,
-  getCardAtUpgrade,
+  resolveCard,
+  canUpgradeCard,
   type CardDef,
 } from '../data/cards';
 import {
-  getCharacter,
-  type CharacterDef,
+  type CardOffer,
+  type DeckCard,
+  type UpgradeLevel,
+  nextCardUid,
+} from './cardInstances';
+import {
+  getPlayableCharacter,
+  isPlayableCharacterId,
+  type PlayableCharacterDef,
+  type PlayableCharacterId,
 } from '../data/characters';
 import {
-  ACT_CLEAR_HEAL,
   GOLD_ELITE_BASE,
   GOLD_ELITE_FLAT_BONUS,
   GOLD_FIGHT_BASE,
@@ -67,14 +75,26 @@ import {
   loadGameSettings,
   markTutorialComplete,
 } from './settings';
-import { getActiveProfile, updateActiveProfile } from './profiles';
-import { createDeck, createDeckCard, type DeckCardV2 } from './cardInstances';
+import {
+  awardActiveCharacterScore,
+  filterUnlockedCardsForProfile,
+  getActiveProfile,
+  updateActiveProfile,
+} from './profiles';
+import {
+  calculateRunScore,
+  createRunScoreStats,
+  type RunScoreResult,
+  type RunScoreStats,
+} from './progression';
+import { recordPlaytestEvent } from './playtestTelemetry';
 
 export type Screen =
   | 'title'
   | 'relicPick'
   | 'map'
   | 'rest'
+  | 'smith'
   | 'removeCard'
   | 'shop'
   | 'shopRemove'
@@ -86,8 +106,7 @@ export type Screen =
   | 'defeat'
   | 'victory';
 
-export interface ShopOffer {
-  cardId: string;
+export interface ShopOffer extends CardOffer {
   price: number;
   sold: boolean;
 }
@@ -104,9 +123,10 @@ export interface RunState {
   screen: Screen;
   heroHp: number;
   heroMaxHp: number;
-  deck: DeckCardV2[];
+  deck: DeckCard[];
+  nextCardUid: number;
   gold: number;
-  characterId: string | null;
+  characterId: PlayableCharacterId | null;
   relicId: string | null;
   /** Full 3-act branching map for this run */
   runMap: RunMap;
@@ -123,7 +143,7 @@ export interface RunState {
     prompt: CastPrompt;
     cardDef: CardDef;
   } | null;
-  rewardOptions: string[];
+  rewardOptions: CardOffer[];
   rewardTier: RewardTier;
   pendingGold: number;
   /** HP restored after last fight win (shown on reward) — unused if HEAL_AFTER_COMBAT is 0 */
@@ -145,9 +165,70 @@ export interface RunState {
   tutorial: TutorialState | null;
   /** Saved as an optional flag so pre-feature saves never gain a tutorial. */
   tutorialEligibleRun: boolean;
+  scoreStats: RunScoreStats;
+  scoreCommitted: boolean;
+  /** Terminal-only result; intentionally not written into resumable saves. */
+  scoreResult: RunScoreResult | null;
 }
 
 const HERO_MAX = HERO_MAX_HP;
+
+function addCardInstance(
+  state: RunState,
+  defId: string,
+  upgradeLevel: UpgradeLevel = 0,
+): DeckCard {
+  const card: DeckCard = {
+    uid: nextCardUid(state.nextCardUid),
+    defId,
+    upgradeLevel,
+  };
+  state.nextCardUid += 1;
+  return card;
+}
+
+function upgradedOfferChance(state: RunState): number {
+  if (state.actIndex <= 0) return 0;
+  if (state.actIndex === 1) return 0.25;
+  return 0.5;
+}
+
+function secureRandomUint32(): number {
+  const values = new Uint32Array(1);
+  globalThis.crypto.getRandomValues(values);
+  return values[0] ?? 0;
+}
+
+function secureRandomFloat(): number {
+  return secureRandomUint32() / 0x1_0000_0000;
+}
+
+function secureRandomInt(maxExclusive: number): number {
+  const max = Math.floor(maxExclusive);
+  if (!Number.isFinite(max) || max <= 0) return 0;
+  const limit = Math.floor(0x1_0000_0000 / max) * max;
+  let value = secureRandomUint32();
+  while (value >= limit) value = secureRandomUint32();
+  return value % max;
+}
+
+function makeOffer(state: RunState, defId: string, source: 'reward' | 'shop'): CardOffer {
+  const eligible =
+    getActiveCharacter(state)?.upgradesEnabled === true &&
+    getCard(defId).rarity !== 'basic' &&
+    !!getCard(defId).upgrade;
+  const upgradeLevel: UpgradeLevel =
+    eligible && secureRandomFloat() < upgradedOfferChance(state) ? 1 : 0;
+  const offer = addCardInstance(state, defId, upgradeLevel);
+  recordPlaytestEvent({
+    kind: 'offer',
+    at: Date.now(),
+    ...offer,
+    act: state.actIndex + 1,
+    source,
+  });
+  return offer;
+}
 
 function emptyRunMap(): RunMap {
   return generateRunMap(() => 0.5);
@@ -157,8 +238,8 @@ export function getActiveRelic(state: RunState): RelicDef | null {
   return state.relicId ? getRelic(state.relicId) : null;
 }
 
-export function getActiveCharacter(state: RunState): CharacterDef | null {
-  return state.characterId ? getCharacter(state.characterId) : null;
+export function getActiveCharacter(state: RunState): PlayableCharacterDef | null {
+  return state.characterId ? getPlayableCharacter(state.characterId) : null;
 }
 
 export function getCurrentAct(state: RunState) {
@@ -191,11 +272,17 @@ export function getAvailableMapNodes(state: RunState): MapNode[] {
 }
 
 export function createNewRun(): RunState {
+  let initialUid = 1;
   return {
     screen: 'title',
     heroHp: HERO_MAX,
     heroMaxHp: HERO_MAX,
-    deck: createDeck(STARTER_DECK_IDS),
+    deck: STARTER_DECK_IDS.map((defId) => ({
+      uid: nextCardUid(initialUid++),
+      defId,
+      upgradeLevel: 0,
+    })),
+    nextCardUid: initialUid,
     gold: 0,
     characterId: null,
     relicId: null,
@@ -223,6 +310,9 @@ export function createNewRun(): RunState {
     lastCombatFx: [],
     tutorial: null,
     tutorialEligibleRun: false,
+    scoreStats: createRunScoreStats(),
+    scoreCommitted: false,
+    scoreResult: null,
   };
 }
 
@@ -244,7 +334,8 @@ export function startRun(state: RunState): void {
   clearSavedRun();
   state.heroHp = HERO_MAX;
   state.heroMaxHp = HERO_MAX;
-  state.deck = createDeck(STARTER_DECK_IDS);
+  state.nextCardUid = 1;
+  state.deck = STARTER_DECK_IDS.map((id) => addCardInstance(state, id));
   state.gold = 0;
   state.characterId = null;
   state.relicId = null;
@@ -272,6 +363,9 @@ export function startRun(state: RunState): void {
   state.lastCombatFx = [];
   state.tutorial = null;
   state.tutorialEligibleRun = true;
+  state.scoreStats = createRunScoreStats();
+  state.scoreCommitted = false;
+  state.scoreResult = null;
   state.screen = 'relicPick';
   saveRunCheckpoint(state);
 }
@@ -340,15 +434,18 @@ export function hasPracticeBadge(): boolean {
   return getPracticeLifetimeCorrect() >= PRACTICE_BADGE_THRESHOLD;
 }
 
-export function pickCharacter(state: RunState, characterId: string): void {
-  const character = getCharacter(characterId);
+export function pickCharacter(state: RunState, characterId: string): boolean {
+  if (!isPlayableCharacterId(characterId)) return false;
+  const character = getPlayableCharacter(characterId);
   const relic = getRelic(character.startingRelicId);
-  state.characterId = character.id;
-  state.deck = createDeck(character.starterDeckIds);
+  state.characterId = characterId;
+  state.nextCardUid = 1;
+  state.deck = character.starterDeckIds.map((id) => addCardInstance(state, id));
   state.relicId = relic.id;
   if (relic.startGold) state.gold += relic.startGold;
   state.screen = 'map';
   saveRunCheckpoint(state);
+  return true;
 }
 
 export function isTutorialEligible(state: RunState, node: MapNode): boolean {
@@ -376,8 +473,14 @@ function createTutorialCombat(state: RunState): CombatState {
 
   // This ordering is local to the tutorial combat. The player's saved deck is
   // never changed. drawPile.pop() draws from the end on later turns.
-  combat.hand = ['mo', 'bo', 'bo', 'po', 'bo'].map(makeCard);
-  combat.drawPile = ['mo', 'mo', 'mo', 'po', 'bo'].map(makeCard);
+  let tutorialCopy = 0;
+  const tutorialCard = (id: string) => makeCard({
+    uid: `tutorial-${id}-${tutorialCopy++}`,
+    defId: id,
+    upgradeLevel: 0,
+  });
+  combat.hand = ['mo', 'bo', 'bo', 'po', 'bo'].map(tutorialCard);
+  combat.drawPile = ['mo', 'mo', 'mo', 'po', 'bo'].map(tutorialCard);
   combat.discardPile = [];
   combat.pending = null;
   combat.pendingTargetIds = [];
@@ -433,6 +536,7 @@ export function selectMapNode(state: RunState, nodeId: string): void {
         node.encounterId,
       );
   state.tutorial = tutorial ? { step: 'shield', wrongAttempts: 0 } : null;
+  state.scoreStats.currentCombatHpLost = 0;
   drainCombatFx(state);
   state.screen = 'combat';
 }
@@ -459,6 +563,43 @@ export function applyRestHeal(state: RunState): boolean {
   return true;
 }
 
+export function canSmith(state: RunState): boolean {
+  if (getActiveCharacter(state)?.upgradesEnabled !== true) return false;
+  return state.deck.some((card) => canUpgradeCard(card.defId, card.upgradeLevel));
+}
+
+export function beginSmith(state: RunState): boolean {
+  if (state.screen !== 'rest' || !activeRestNode(state) || !canSmith(state)) {
+    state.flash = '🔨×';
+    return false;
+  }
+  state.screen = 'smith';
+  saveRunCheckpoint(state);
+  return true;
+}
+
+export function smithCard(state: RunState, uid: string): boolean {
+  if (
+    state.screen !== 'smith' ||
+    !activeRestNode(state) ||
+    getActiveCharacter(state)?.upgradesEnabled !== true
+  ) return false;
+  const card = state.deck.find((candidate) => candidate.uid === uid);
+  if (!card || !canUpgradeCard(card.defId, card.upgradeLevel)) return false;
+  card.upgradeLevel = 1;
+  recordPlaytestEvent({ kind: 'smith', at: Date.now(), ...card });
+  state.flash = '🔨✨';
+  completeNode(state);
+  return true;
+}
+
+export function cancelSmith(state: RunState): void {
+  if (state.screen !== 'smith' || !activeRestNode(state)) return;
+  state.screen = 'rest';
+  state.flash = null;
+  saveRunCheckpoint(state);
+}
+
 /** Open remove-card picker (still on this rest; not completed yet). */
 export function beginRestRemove(state: RunState): boolean {
   if (state.screen !== 'rest') return false;
@@ -479,7 +620,8 @@ export function removeCardFromDeck(state: RunState, index: number): boolean {
   if (index < 0 || index >= state.deck.length) return false;
   if (state.deck.length <= 1) return false;
 
-  state.deck.splice(index, 1);
+  const [removed] = state.deck.splice(index, 1);
+  if (removed) recordPlaytestEvent({ kind: 'remove', at: Date.now(), ...removed });
   state.flash = '🗑️✨';
   completeNode(state);
   return true;
@@ -496,8 +638,8 @@ export function skipRemoveCard(state: RunState): void {
 
 function openShop(state: RunState): void {
   const ids = pickRewardIds(rewardPoolFor(state, 'normal'), 3);
-  state.shopOffers = ids.map((cardId, i) => ({
-    cardId,
+  state.shopOffers = ids.map((defId, i) => ({
+    ...makeOffer(state, defId, 'shop'),
     price: SHOP_CARD_PRICES[i] ?? 45,
     sold: false,
   }));
@@ -508,14 +650,14 @@ function openShop(state: RunState): void {
 
 /** Treasure chest: gold + pick 1 of 3 cards (reuse reward screen). */
 function openTreasure(state: RunState): void {
-  const gold =
-    GOLD_TREASURE_BASE + Math.floor(Math.random() * GOLD_TREASURE_JITTER);
+  const gold = GOLD_TREASURE_BASE + secureRandomInt(GOLD_TREASURE_JITTER);
   state.gold += gold;
   state.pendingGold = gold;
   state.pendingHeal = 0;
   state.rewardSource = 'treasure';
   state.rewardTier = 'normal';
-  state.rewardOptions = pickRewardIds(rewardPoolFor(state, 'normal'), 3);
+  state.rewardOptions = pickRewardIds(rewardPoolFor(state, 'normal'), 3)
+    .map((id) => makeOffer(state, id, 'reward'));
   state.screen = 'reward';
   saveRunCheckpoint(state);
 }
@@ -528,7 +670,8 @@ export function buyShopCard(state: RunState, offerIndex: number): void {
     return;
   }
   state.gold -= offer.price;
-  state.deck.push(createDeckCard(offer.cardId));
+  state.deck.push({ uid: offer.uid, defId: offer.defId, upgradeLevel: offer.upgradeLevel });
+  recordPlaytestEvent({ kind: 'pick', at: Date.now(), uid: offer.uid, defId: offer.defId, upgradeLevel: offer.upgradeLevel });
   offer.sold = true;
   state.flash = '🛒✨';
   saveRunCheckpoint(state);
@@ -566,7 +709,8 @@ export function confirmShopRemove(state: RunState, index: number): boolean {
     return false;
   }
   state.gold -= SHOP_REMOVE_PRICE;
-  state.deck.splice(index, 1);
+  const [removed] = state.deck.splice(index, 1);
+  if (removed) recordPlaytestEvent({ kind: 'remove', at: Date.now(), ...removed });
   state.shopRemoveUsed = true;
   state.flash = '🗑️✨';
   state.screen = 'shop';
@@ -599,6 +743,7 @@ function completeNode(state: RunState): void {
     if (!state.visitedIds.includes(nodeId)) state.visitedIds.push(nodeId);
     state.pathIds.push(nodeId);
     state.currentNodeId = nodeId;
+    state.scoreStats.roomsCompleted += 1;
   }
   state.activeNodeId = null;
 
@@ -614,6 +759,7 @@ function completeNode(state: RunState): void {
 function finishBoss(state: RunState, act: number): void {
   // act is 1|2|3
   if (act >= 3) {
+    commitRunScore(state, true);
     state.screen = 'victory';
     clearSavedRun();
     updateActiveProfile((profile) => ({
@@ -625,10 +771,8 @@ function finishBoss(state: RunState, act: number): void {
     return;
   }
 
-  // Between acts: heal, show only the *next* act map (fresh path state)
-  const before = state.heroHp;
-  state.heroHp = Math.min(state.heroMaxHp, state.heroHp + ACT_CLEAR_HEAL);
-  state.flash = `❤️+${state.heroHp - before}`;
+  // HP is restored as soon as the boss is cleared, before its reward screen.
+  state.flash = '❤️ 回滿';
   state.lastClearedAct = act;
   state.actIndex = act; // act 1 clear → index 1 (Act II)
   state.currentNodeId = null;
@@ -672,7 +816,7 @@ function tutorialRequiredCardAvailable(state: RunState): boolean {
   const requiredId = requiredTutorialCardId(state.tutorial.step);
   if (!requiredId) return false;
   return state.combat.hand.some((card) => {
-    const def = getCardAtUpgrade(card.defId, card.upgradeLevel);
+    const def = getCard(card.defId);
     return card.defId === requiredId && def.cost <= state.combat!.energy;
   });
 }
@@ -725,7 +869,7 @@ export function tryPlayCard(
       state.flash = '✨';
       state.floatText = null;
       state.cast = null;
-      state.heroHp = combat.heroHp;
+      syncHeroHpFromCombat(state);
       drainCombatFx(state);
       // status may change inside resolveCastSuccess (TS doesn't re-narrow)
       if ((combat.status as CombatState['status']) === 'won') {
@@ -761,7 +905,7 @@ export function debugFinishFight(state: RunState): void {
     e.alive = false;
   }
   state.combat.status = 'won';
-  state.heroHp = state.combat.heroHp;
+  syncHeroHpFromCombat(state);
   drainCombatFx(state);
   finishFight(state);
 }
@@ -782,6 +926,7 @@ export function debugStartEncounter(
     getActiveRelic(state),
     encounterId,
   );
+  state.scoreStats.currentCombatHpLost = 0;
   drainCombatFx(state);
   state.screen = 'combat';
 }
@@ -809,7 +954,7 @@ export function answerCast(state: RunState, attempt: string[]): void {
   }
 
   state.cast = null;
-  state.heroHp = state.combat.heroHp;
+  syncHeroHpFromCombat(state);
   drainCombatFx(state);
 
   if (state.combat.status === 'won') {
@@ -818,6 +963,8 @@ export function answerCast(state: RunState, attempt: string[]): void {
     return;
   }
   if (state.combat.status === 'lost') {
+    recordCombatTelemetry(state, false);
+    commitRunScore(state, false);
     state.screen = 'defeat';
     clearSavedRun();
     return;
@@ -846,10 +993,12 @@ export function playerEndTurn(state: RunState): void {
   }
   const tutorialStep = state.tutorial?.step ?? null;
   const status = endTurn(state.combat);
-  state.heroHp = state.combat.heroHp;
+  syncHeroHpFromCombat(state);
   drainCombatFx(state);
   state.floatText = null;
   if (status === 'lost') {
+    recordCombatTelemetry(state, false);
+    commitRunScore(state, false);
     state.screen = 'defeat';
     clearSavedRun();
     return;
@@ -863,7 +1012,7 @@ function fightGold(state: RunState): number {
   const node = getActiveNode(state);
   let base = GOLD_FIGHT_BASE;
   if (node?.kind === 'elite' || node?.kind === 'boss') base = GOLD_ELITE_BASE;
-  const jitter = Math.floor(Math.random() * GOLD_JITTER);
+  const jitter = secureRandomInt(GOLD_JITTER);
   let bonus = node?.goldBonus ?? 0;
   if (node?.kind === 'elite') bonus += GOLD_ELITE_FLAT_BONUS;
   return base + jitter + bonus;
@@ -873,34 +1022,55 @@ function rewardPoolFor(
   state: RunState,
   tier: RewardTier,
 ): string[] {
-  if (state.actIndex === 0) {
-    const characterPool = getActiveCharacter(state)?.actIRewardIds;
-    if (characterPool && characterPool.length > 0) return characterPool;
-    return tier === 'elite' ? ELITE_REWARD_POOL_IDS : REWARD_POOL_IDS;
-  }
-  return tier === 'elite'
-    ? LATER_ACT_ELITE_REWARD_POOL_IDS
-    : LATER_ACT_REWARD_POOL_IDS;
+  const character = getActiveCharacter(state);
+  const characterPool = state.actIndex === 0
+    ? character?.actIRewardIds
+    : character?.cardPoolIds;
+  const pool = characterPool && characterPool.length > 0
+    ? [...characterPool]
+    : state.actIndex === 0
+      ? tier === 'elite' ? ELITE_REWARD_POOL_IDS : REWARD_POOL_IDS
+      : tier === 'elite'
+        ? LATER_ACT_ELITE_REWARD_POOL_IDS
+        : LATER_ACT_REWARD_POOL_IDS;
+  const characterId = state.characterId;
+  if (!characterId) return [...pool];
+  const profile = getActiveProfile();
+  return filterUnlockedCardsForProfile(profile, characterId, pool);
 }
 
 function finishFight(state: RunState): void {
+  recordCombatTelemetry(state, true);
   if (!state.combat) return;
   if (state.tutorial) {
     markTutorialComplete();
     state.tutorial = null;
   }
-  state.heroHp = state.combat.heroHp;
-  // No post-combat heal — campfires restore 40% max HP
+  syncHeroHpFromCombat(state);
+  // No ordinary post-combat heal — campfires restore 40% max HP.
   state.pendingHeal = 0;
   const node = getActiveNode(state);
+  if (node?.kind === 'boss') {
+    state.scoreStats.bossWins += 1;
+    if (state.scoreStats.currentCombatHpLost === 0) state.scoreStats.flawlessBosses += 1;
+  } else if (node?.kind === 'elite') {
+    state.scoreStats.eliteWins += 1;
+    if (state.scoreStats.currentCombatHpLost === 0) state.scoreStats.flawlessElites += 1;
+  } else if (node?.kind === 'fight') {
+    state.scoreStats.normalWins += 1;
+  }
 
   if (node?.kind === 'boss') {
+    const before = state.heroHp;
+    state.heroHp = state.heroMaxHp;
+    state.pendingHeal = state.heroHp - before;
     const gold = fightGold(state);
     state.gold += gold;
     state.pendingGold = gold;
     state.rewardSource = 'fight';
     state.rewardTier = 'elite';
-    state.rewardOptions = pickRewardIds(rewardPoolFor(state, 'elite'), 3);
+    state.rewardOptions = pickRewardIds(rewardPoolFor(state, 'elite'), 3)
+      .map((id) => makeOffer(state, id, 'reward'));
     state.screen = 'reward';
     saveRunCheckpoint(state);
     return;
@@ -916,13 +1086,57 @@ function finishFight(state: RunState): void {
 
   const pool = rewardPoolFor(state, tier);
   state.rewardTier = tier;
-  state.rewardOptions = pickRewardIds(pool, 3);
+  state.rewardOptions = pickRewardIds(pool, 3).map((id) => makeOffer(state, id, 'reward'));
   state.screen = 'reward';
   saveRunCheckpoint(state);
 }
 
+function recordCombatTelemetry(state: RunState, won: boolean): void {
+  recordPlaytestEvent({
+    kind: 'combatEnd',
+    at: Date.now(),
+    won,
+    hpLost: state.scoreStats.currentCombatHpLost,
+    act: state.actIndex + 1,
+    deck: state.deck.map(({ defId, upgradeLevel }) => ({ defId, upgradeLevel })),
+  });
+}
+
+function syncHeroHpFromCombat(state: RunState): void {
+  if (!state.combat) return;
+  const nextHp = state.combat.heroHp;
+  if (nextHp < state.heroHp) {
+    state.scoreStats.currentCombatHpLost += state.heroHp - nextHp;
+  }
+  state.heroHp = nextHp;
+}
+
+export function commitRunScore(state: RunState, victory: boolean): void {
+  if (state.scoreCommitted || !state.characterId) return;
+  const calculated = calculateRunScore(state.scoreStats, victory);
+  const award = awardActiveCharacterScore(state.characterId, calculated.total);
+  state.scoreResult = {
+    breakdown: calculated.breakdown,
+    gained: calculated.total,
+    cumulativeScore: award.score,
+    newlyUnlockedCardIds: award.newlyUnlockedCardIds,
+  };
+  state.scoreCommitted = true;
+}
+
 export function pickReward(state: RunState, cardId: string | null): void {
-  if (cardId) state.deck.push(createDeckCard(cardId));
+  const offer = cardId ? state.rewardOptions.find((candidate) => candidate.uid === cardId) : null;
+  if (offer) {
+    state.deck.push({ uid: offer.uid, defId: offer.defId, upgradeLevel: offer.upgradeLevel });
+    recordPlaytestEvent({ kind: 'pick', at: Date.now(), uid: offer.uid, defId: offer.defId, upgradeLevel: offer.upgradeLevel });
+  } else {
+    recordPlaytestEvent({
+      kind: 'skip',
+      at: Date.now(),
+      offeredUids: state.rewardOptions.map((candidate) => candidate.uid),
+      act: state.actIndex + 1,
+    });
+  }
   completeNode(state);
 }
 
@@ -941,10 +1155,14 @@ export function hasEarBadge(): boolean {
 export function deckCounts(state: RunState): { id: string; count: number; def: CardDef }[] {
   const map = new Map<string, number>();
   for (const card of state.deck) {
-    map.set(card.defId, (map.get(card.defId) ?? 0) + 1);
+    const key = `${card.defId}:${card.upgradeLevel}`;
+    map.set(key, (map.get(key) ?? 0) + 1);
   }
   return [...map.entries()]
-    .map(([id, count]) => ({ id, count, def: getCard(id) }))
+    .map(([key, count]) => {
+      const [id, rawLevel] = key.split(':');
+      return { id, count, def: resolveCard(id, rawLevel === '1' ? 1 : 0) };
+    })
     .sort((a, b) => a.def.zhuyin.localeCompare(b.def.zhuyin, 'zh-Hant'));
 }
 
@@ -952,6 +1170,5 @@ export {
   REST_HEAL,
   restHealAmount,
   PRACTICE_BADGE_THRESHOLD,
-  ACT_CLEAR_HEAL,
   SHOP_REMOVE_PRICE,
 };

@@ -1,9 +1,13 @@
 # Relic and potion design bible
 
-**Status:** frozen design proposal; none of the new entries are live unless they
-already exist in `src/data/relics.ts`. Character-restricted Echo relics and
-potions are superseded: all future relic mechanics must be character-agnostic
-and must be redesigned before implementation.
+> **Compatibility status:** this roster was authored for 回音法師. Universal
+> timing, inventory, pool, feedback, and validation rules remain useful, but
+> every Echo-specific relic or potion is frozen until it passes the
+> [design playbook](./DESIGN_PLAYBOOK.md) against 共鳴武者. Do not mechanically
+> replace “Echo” with 易傷, 練功, 轉拍, or 勁.
+
+**Status:** design proposal for review; none of the new entries are live unless
+they already exist in `src/data/relics.ts`.
 
 This bible defines the complete first-character target of **40 original relics**
 and **20 original potions**. It follows the decision structure documented in

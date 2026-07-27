@@ -11,7 +11,7 @@ reasons for adapting them to this shorter, cast-gated game are in
 
 ---
 
-## Design intent (15-floor acts)
+## Design intent (15 climb floors + boss)
 
 - Longer climb than early prototypes → slightly higher **max HP**, lower **gold per fight**
 - **Campfires matter:** rest heals a fraction of max HP; fights do **not** free-heal
@@ -29,7 +29,7 @@ reasons for adapting them to this shorter, cast-gated game are in
 | `MAX_HAND_SIZE` | **10** | Cap further draws |
 | `REST_HEAL_FRACTION` | **0.4** | Campfire = 40% max HP (floor, min 1) → e.g. +16 at 40 max |
 | `HEAL_AFTER_COMBAT` | **0** | No post-fight heal |
-| `ACT_CLEAR_HEAL` | **16** | After Act I/II boss before next act |
+| Boss clear heal | **Full HP** | Every boss restores the hero to maximum HP when cleared |
 | `GOLD_FIGHT_BASE` | **16** | + `0..GOLD_JITTER-1` |
 | `GOLD_ELITE_BASE` | **28** | Elite/boss fight gold base |
 | `GOLD_JITTER` | **5** | |

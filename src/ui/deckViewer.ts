@@ -1,15 +1,14 @@
 import {
   CARDS,
-  getCardAtUpgrade,
   resolveCard,
   type CardDef,
   type CardRarity,
   type CardType,
   type EffectDef,
 } from '../data/cards';
-import type { DeckCardV2 } from '../game/cardInstances';
+import type { DeckCard } from '../game/cardInstances';
 import { sfx } from '../game/audio';
-import { cardFaceHtml, jobLabel, rarityLabel, typeLabel } from './cards';
+import { cardFaceHtml, jobLabel, typeLabel } from './cards';
 import { lockPageScroll, trapModalFocus } from './modal';
 import { run } from './runtime';
 
@@ -30,7 +29,7 @@ interface ViewerState {
 interface ViewerEntry {
   key: string;
   def: CardDef;
-  card?: DeckCardV2;
+  card?: DeckCard;
   deckIndex?: number;
 }
 
@@ -40,28 +39,40 @@ const TARGET_LABELS: Record<string, string> = {
   allEnemies: '所有敵人',
 };
 
-const POOL_LABELS: Record<string, string> = {
-  starter: '起始牌',
-  resonanceWarrior: '共鳴武者',
-  shared: '共用',
-  status: '狀態牌',
-  curse: '詛咒牌',
+const RARITY_LABELS: Record<CardRarity, string> = {
+  basic: '基礎',
+  common: '普通',
+  uncommon: '罕見',
+  rare: '稀有',
+  special: '特殊',
 };
+
+function rarityLabel(rarity?: CardRarity): string {
+  return rarity ? RARITY_LABELS[rarity] : '普通';
+}
 
 function effectText(effect: EffectDef): string {
   switch (effect.kind) {
     case 'damage':
-      return `${effect.damageType === 'direct' ? '非攻擊傷害' : '攻擊傷害'} ${effect.amount}${(effect.hits ?? 1) > 1 ? ` × ${effect.hits}` : ''}`;
+      return `造成 ${effect.amount} 傷害${(effect.hits ?? 1) > 1 ? ` × ${effect.hits}` : ''}`;
     case 'block':
       return `獲得 ${effect.amount} 護盾`;
     case 'draw':
       return `抽 ${effect.amount} 張牌`;
     case 'energy':
       return `獲得 ${effect.amount} 能量`;
-    case 'applyVulnerable':
+    case 'vulnerable':
       return `施加 ${effect.amount} 回合易傷`;
-    case 'addBasicAttackDamage':
-      return `本場戰鬥的基礎攻擊每下 +${effect.amount}`;
+    case 'weak':
+      return `施加 ${effect.amount} 回合虛弱`;
+    case 'training':
+      return `獲得 ${effect.amount} 練功`;
+    case 'jin':
+      return `獲得 ${effect.amount} 勁`;
+    case 'echo':
+      return `施加 ${effect.amount} 回音`;
+    case 'echoGuard':
+      return `獲得 ${effect.amount} 回音護盾`;
   }
 }
 
@@ -78,7 +89,7 @@ function entriesFor(state: ViewerState): ViewerEntry[] {
         key: card.uid,
         card,
         deckIndex,
-        def: getCardAtUpgrade(card.defId, card.upgradeLevel),
+        def: resolveCard(card.defId, card.upgradeLevel),
       }))
     : Object.values(CARDS).map((def) => ({ key: `catalog:${def.id}`, def }));
 
@@ -109,9 +120,7 @@ function makeCardEntry(entry: ViewerEntry, state: ViewerState, rebuild: () => vo
   const button = document.createElement('button');
   button.type = 'button';
   button.className = `deck-viewer-card card ${entry.def.type}${selected ? ' selected' : ''}`;
-  button.innerHTML = cardFaceHtml(entry.def, {
-    upgradeLevel: entry.card?.upgradeLevel ?? 0,
-  });
+  button.innerHTML = cardFaceHtml(entry.def);
   button.setAttribute(
     'aria-label',
     `${entry.def.name}，${typeLabel(entry.def.type)}，${rarityLabel(entry.def.rarity)}，查看完整資料`,
@@ -128,14 +137,14 @@ function makeCardEntry(entry: ViewerEntry, state: ViewerState, rebuild: () => vo
   identity.className = 'designer-card-identity adult-text';
   identity.textContent = entry.card
     ? `牌組第 ${(entry.deckIndex ?? 0) + 1} 張 · ${entry.card.upgradeLevel > 0 ? `升級 +${entry.card.upgradeLevel}` : '未升級'}`
-    : `${entry.def.id} · ${POOL_LABELS[entry.def.pool] ?? entry.def.pool}`;
+    : `${entry.def.designId ?? entry.def.id} · ${entry.def.direction ?? 'general'}`;
   wrapper.appendChild(identity);
   return wrapper;
 }
 
 function detailPanel(entry: ViewerEntry): HTMLElement {
   const base = CARDS[entry.def.id]!;
-  const upgraded = base.upgrade ? resolveCard(base, 1) : null;
+  const upgraded = base.upgrade ? resolveCard(base.id, 1) : null;
   const panel = document.createElement('section');
   panel.className = 'designer-detail';
   panel.setAttribute('aria-label', `${base.name}完整資料`);
@@ -154,11 +163,11 @@ function detailPanel(entry: ViewerEntry): HTMLElement {
     ['稀有度', rarityLabel(base.rarity)],
     ['能量', String(base.cost)],
     ['目標', TARGET_LABELS[base.target ?? (base.type === 'attack' ? 'singleEnemy' : 'self')] ?? '自己'],
-    ['牌池', POOL_LABELS[base.pool] ?? base.pool],
+    ['方向', base.direction ?? 'general'],
     ['用途', jobLabel(base.job) || '尚未分類'],
-    ['標籤', base.tags.length > 0 ? base.tags.join('、') : '無'],
-    ['關鍵字', base.keywords.length > 0 ? base.keywords.join('、') : '無'],
-    ['解鎖層級', base.unlockTier === 0 ? '立即開放' : String(base.unlockTier)],
+    ['機制', base.mechanics?.join('、') || '通用'],
+    ['設計 ID', base.designId ?? base.id],
+    ['解鎖分數', String(base.unlockScore ?? 0)],
     ['注音題數', String(base.cues.length)],
   ];
   for (const [label, value] of rows) {
@@ -176,7 +185,7 @@ function detailPanel(entry: ViewerEntry): HTMLElement {
   effectHeading.textContent = '結算順序';
   effects.appendChild(effectHeading);
   const list = document.createElement('ol');
-  base.effects.forEach((effect) => {
+  (base.effects ?? []).forEach((effect) => {
     const li = document.createElement('li');
     li.textContent = effectText(effect);
     list.appendChild(li);
@@ -193,7 +202,7 @@ function detailPanel(entry: ViewerEntry): HTMLElement {
   if (upgraded) {
     const plusFace = document.createElement('div');
     plusFace.className = `designer-preview card ${upgraded.type}`;
-    plusFace.innerHTML = `<div class="designer-preview-label">升級</div>${cardFaceHtml(upgraded, { upgradeLevel: 1 })}`;
+    plusFace.innerHTML = `<div class="designer-preview-label">升級</div>${cardFaceHtml(upgraded)}`;
     comparison.appendChild(plusFace);
   } else {
     const pending = document.createElement('div');
@@ -218,10 +227,6 @@ function detailPanel(entry: ViewerEntry): HTMLElement {
   cueBlock.appendChild(cueList);
   panel.appendChild(cueBlock);
 
-  const note = document.createElement('p');
-  note.className = 'designer-balance-note adult-text';
-  note.textContent = `平衡備註：${base.balanceNote}`;
-  panel.appendChild(note);
   return panel;
 }
 
@@ -301,10 +306,9 @@ export function renderDeckViewer(onClose: () => void): HTMLElement {
     type.append(
       option('all', '全部分類'),
       option('attack', '攻擊'),
+      option('block', '防守'),
       option('skill', '技能'),
       option('power', '能力'),
-      option('status', '狀態'),
-      option('curse', '詛咒'),
     );
     type.value = state.type;
     type.addEventListener('change', () => {

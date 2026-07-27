@@ -1,8 +1,8 @@
-import { getCard, getCardAtUpgrade } from '../data/cards';
-import { PLAYABLE_CHARACTER_IDS, getCharacter } from '../data/characters';
+import { getCard, resolveCard } from '../data/cards';
+import { CHARACTER_IDS, getCharacter } from '../data/characters';
 import { getRelic } from '../data/relics';
 import { sfx, startMusic, warmAudio } from '../game/audio';
-import { getActiveProfile } from '../game/profiles';
+import { getActiveProfile, getCharacterCardProgress } from '../game/profiles';
 import { warmSpeech } from '../game/speech';
 import {
   PRACTICE_BADGE_THRESHOLD,
@@ -10,6 +10,9 @@ import {
   applyRestHeal,
   restHealAmount,
   beginRestRemove,
+  beginSmith,
+  cancelSmith,
+  canSmith,
   beginShopRemove,
   buyShopCard,
   cancelShopRemove,
@@ -24,8 +27,8 @@ import {
   pickCharacter,
   pickReward,
   removeCardFromDeck,
+  smithCard,
   resumeSavedRun,
-  skipRemoveCard,
   startRun,
 } from '../game/state';
 import { cardFaceHtml } from './cards';
@@ -44,7 +47,7 @@ export function renderTitle(): HTMLElement {
   if (hasPracticeBadge()) badges.push('<div class="badge practice" title="練習">📚</div>');
   const practiceN = getPracticeLifetimeCorrect();
   el.innerHTML = `
-    <div class="hero-preview">🧒🥋🗼</div>
+    <div class="hero-preview">🥋🗼</div>
     <div class="title-zhuyin-row" aria-hidden="true">
       <span>ㄓ</span><span>ㄨ</span><span>ˋ</span>
       <span>ㄧ</span><span>ㄣ</span>
@@ -182,31 +185,61 @@ export function renderCharacterPick(): HTMLElement {
   const el = document.createElement('div');
   el.className = 'screen relic-screen character-screen';
   el.innerHTML = `
-    <div class="kid-prompt">🧒 選角色</div>
+    <div class="kid-prompt">🥋 選角色</div>
     <div class="adult-text center">角色決定起始牌組、打法主題和起始遺物</div>
   `;
   appendCoach(el);
 
   const row = document.createElement('div');
   row.className = 'relic-choices character-choices';
-  for (const id of PLAYABLE_CHARACTER_IDS) {
+  const profile = getActiveProfile();
+  for (const id of CHARACTER_IDS) {
     const character = getCharacter(id);
-    const relic = getRelic(character.startingRelicId);
     const btn = document.createElement('button');
     btn.className = 'relic-card character-card';
+    const progress = getCharacterCardProgress(profile, id);
+    if (character.status === 'inDesign') {
+      btn.classList.add('character-card-unavailable');
+      btn.disabled = true;
+      btn.setAttribute('aria-label', `${character.name}，設計中，尚未開放`);
+      btn.innerHTML = `
+        <div class="character-status">🚧 設計中 · 尚未開放</div>
+        <div class="relic-emoji character-emoji">${character.emoji}</div>
+        <div class="character-name">${character.name}</div>
+        <div class="adult-text character-title">${character.title}</div>
+        <div class="character-theme">🥋 ${character.theme}</div>
+        <div class="character-teaching-note">${character.teachingNote}</div>
+        <div class="character-progress-unreleased">牌池尚未發布</div>
+      `;
+      row.appendChild(btn);
+      continue;
+    }
+    const relic = getRelic(character.startingRelicId);
+    const starterSummary = character.starterSummary
+      .map((item) => `<span>${item.icon} ${item.label}</span>`)
+      .join('');
+    const progressMax = progress.nextUnlockScore ?? Math.max(1, progress.score);
+    const progressValue = progress.nextUnlockScore ? progress.score : progressMax;
+    const progressText = progress.nextUnlockScore
+      ? `下一批：${progress.score}/${progress.nextUnlockScore}`
+      : '目前發布的卡牌全數可用';
     btn.innerHTML = `
+      <div class="character-status character-status-playable">✨ 第一波可遊玩</div>
       <div class="relic-emoji character-emoji">${character.emoji}</div>
       <div class="character-name">${character.name}</div>
       <div class="adult-text character-title">${character.title}</div>
-      <div class="character-theme">🎶 ${character.theme}</div>
+      <div class="character-theme">🥋 ${character.theme}</div>
       <div class="starter-deck-summary" aria-label="起始牌組：五張基礎攻擊、四張防守、一張易傷攻擊">
-        <span>⚔️ 1⚡ ×5</span>
-        <span>🛡️ 1⚡ ×4</span>
-        <span>🎯 2⚡ ×1</span>
+        ${starterSummary}
       </div>
       <div class="starting-relic">
         <span class="starting-relic-emoji">${relic.emoji}</span>
         <span><strong>起始遺物：${relic.name}</strong><br>${relic.blurb}</span>
+      </div>
+      <div class="character-progress" aria-label="已解鎖 ${progress.unlockedCards} 張，共 ${progress.totalCards} 張卡牌，角色分數 ${progress.score}">
+        <div><strong>🃏 ${progress.unlockedCards}/${progress.totalCards}</strong><span>角色分數 ${progress.score}</span></div>
+        <progress max="${progressMax}" value="${progressValue}"></progress>
+        <small>${progressText}</small>
       </div>
       <div class="character-pick-cta">選這個角色 ▶️</div>
     `;
@@ -228,7 +261,7 @@ export function renderRest(): HTMLElement {
   el.innerHTML = `
     <div class="rest-fire">🔥</div>
     <div class="kid-prompt">選一個</div>
-    <div class="kid-status"><span class="kid-stat">🧒❤️${run().heroHp}/${run().heroMaxHp}</span></div>
+    <div class="kid-status"><span class="kid-stat">🥋❤️${run().heroHp}/${run().heroMaxHp}</span></div>
   `;
   appendCoach(el);
 
@@ -254,6 +287,26 @@ export function renderRest(): HTMLElement {
     showFlash(msg);
   });
 
+  const smith = document.createElement('button');
+  smith.className = 'rest-choice';
+  smith.innerHTML = `
+    <div class="rest-choice-emoji">🔨</div>
+    <div class="kid-prompt" style="font-size:1.2rem">升級</div>
+    <div class="adult-text">選一張牌永久變強</div>
+  `;
+  smith.disabled = !canSmith(run());
+  smith.addEventListener('click', () => {
+    if (run().screen !== 'rest') return;
+    sfx.click();
+    const ok = beginSmith(run());
+    if (!ok) {
+      showFlash('🔨×');
+      return;
+    }
+    session.smithSelectedUid = null;
+    render();
+  });
+
   const remove = document.createElement('button');
   remove.className = 'rest-choice';
   remove.innerHTML = `
@@ -275,12 +328,75 @@ export function renderRest(): HTMLElement {
 
   row.appendChild(heal);
   row.appendChild(remove);
+  if (canSmith(run())) row.appendChild(smith);
   el.appendChild(row);
   return el;
 }
 
 export function renderRemoveCard(): HTMLElement {
   return renderRemovePicker('rest');
+}
+
+export function renderSmith(): HTMLElement {
+  const el = document.createElement('div');
+  el.className = 'screen smith-screen';
+  el.innerHTML = `
+    <div class="kid-prompt">🔨 選一張升級</div>
+    <p class="adult-text center">每一張實體牌分開升級；綠色文字是改變後的效果。</p>
+  `;
+  appendCoach(el);
+  const row = document.createElement('div');
+  row.className = 'reward-cards smith-cards';
+  for (const card of run().deck) {
+    const current = resolveCard(card.defId, card.upgradeLevel);
+    const eligible = card.upgradeLevel === 0 && !!getCard(card.defId).upgrade;
+    const btn = document.createElement('button');
+    btn.className = `card ${current.type}${eligible ? '' : ' unplayable'}`;
+    btn.disabled = !eligible;
+    btn.innerHTML = cardFaceHtml(current);
+    btn.addEventListener('click', () => {
+      session.smithSelectedUid = card.uid;
+      render();
+    });
+    row.appendChild(btn);
+  }
+  el.appendChild(row);
+
+  const selected = run().deck.find((card) => card.uid === session.smithSelectedUid);
+  if (selected && selected.upgradeLevel === 0 && getCard(selected.defId).upgrade) {
+    const preview = document.createElement('section');
+    preview.className = 'smith-preview';
+    preview.innerHTML = `
+      <div class="card ${getCard(selected.defId).type}">${cardFaceHtml(resolveCard(selected.defId, 0))}</div>
+      <div class="smith-arrow">➡️</div>
+      <div class="card ${getCard(selected.defId).type}">${cardFaceHtml(resolveCard(selected.defId, 1))}</div>
+    `;
+    const confirm = document.createElement('button');
+    confirm.className = 'btn-primary btn-kid-main';
+    confirm.innerHTML = '<span class="btn-emoji">🔨</span><span class="adult-text"> 確認升級</span>';
+    confirm.addEventListener('click', () => {
+      const ok = smithCard(run(), selected.uid);
+      session.smithSelectedUid = null;
+      if (ok) {
+        sfx.cardPlay();
+        render();
+        showFlash('🔨✨');
+      }
+    });
+    preview.appendChild(confirm);
+    el.appendChild(preview);
+  }
+
+  const cancel = document.createElement('button');
+  cancel.className = 'btn-secondary';
+  cancel.textContent = '↩️ 回營火';
+  cancel.addEventListener('click', () => {
+    session.smithSelectedUid = null;
+    cancelSmith(run());
+    render();
+  });
+  el.appendChild(cancel);
+  return el;
 }
 
 export function renderShopRemove(): HTMLElement {
@@ -295,7 +411,7 @@ function renderRemovePicker(mode: 'rest' | 'shop'): HTMLElement {
     <div class="kid-prompt">🗑️ 丟一張</div>
     <div class="kid-status">
       ${isShop ? `<span class="kid-stat">🪙${run().gold}</span><span class="kid-stat adult-text">−${SHOP_REMOVE_PRICE}</span>` : ''}
-      <span class="kid-stat">🧒❤️${run().heroHp}/${run().heroMaxHp}</span>
+      <span class="kid-stat">🥋❤️${run().heroHp}/${run().heroMaxHp}</span>
     </div>
     ${isShop ? `<p class="adult-text center">花 🪙${SHOP_REMOVE_PRICE} 刪掉一張弱牌（本店一次）</p>` : ''}
   `;
@@ -304,11 +420,10 @@ function renderRemovePicker(mode: 'rest' | 'shop'): HTMLElement {
   const row = document.createElement('div');
   row.className = 'reward-cards';
   run().deck.forEach((card, index) => {
-    const def = getCardAtUpgrade(card.defId, card.upgradeLevel);
+    const def = resolveCard(card.defId, card.upgradeLevel);
     const btn = document.createElement('button');
     btn.className = `card ${def.type}`;
-    btn.innerHTML = cardFaceHtml(def, { upgradeLevel: card.upgradeLevel });
-    btn.setAttribute('aria-label', `${def.name}，牌組第 ${index + 1} 張`);
+    btn.innerHTML = cardFaceHtml(def);
     btn.addEventListener('click', () => {
       if (isShop && run().screen !== 'shopRemove') return;
       if (!isShop && run().screen !== 'removeCard') return;
@@ -342,7 +457,6 @@ function renderRemovePicker(mode: 'rest' | 'shop'): HTMLElement {
   skip.addEventListener('click', () => {
     sfx.click();
     if (isShop) cancelShopRemove(run());
-    else skipRemoveCard(run());
     render();
   });
   el.appendChild(skip);
@@ -368,7 +482,7 @@ export function renderShop(): HTMLElement {
   const row = document.createElement('div');
   row.className = 'shop-row';
   run().shopOffers.forEach((offer, i) => {
-    const def = getCard(offer.cardId);
+    const def = resolveCard(offer.defId, offer.upgradeLevel);
     const btn = document.createElement('button');
     btn.className = `card ${def.type} shop-card` + (offer.sold ? ' sold' : '');
     btn.disabled = offer.sold || run().gold < offer.price;
@@ -452,21 +566,21 @@ export function renderReward(): HTMLElement {
   el.innerHTML = `
     <div class="kid-prompt">${title}</div>
     <div class="reward-gains">${healBit}${goldBit}</div>
-    <div class="kid-status"><span class="kid-stat">🧒❤️${run().heroHp}/${run().heroMaxHp}</span><span class="kid-stat">🪙${run().gold}</span></div>
+    <div class="kid-status"><span class="kid-stat">🥋❤️${run().heroHp}/${run().heroMaxHp}</span><span class="kid-stat">🪙${run().gold}</span></div>
   `;
   appendCoach(el);
 
   const row = document.createElement('div');
   row.className = 'reward-cards';
-  for (const id of run().rewardOptions) {
-    const def = getCard(id);
+  for (const offer of run().rewardOptions) {
+    const def = resolveCard(offer.defId, offer.upgradeLevel);
     const btn = document.createElement('button');
     btn.className = `card ${def.type}`;
     btn.innerHTML = cardFaceHtml(def);
     btn.setAttribute('aria-label', `注音 ${def.zhuyin}`);
     btn.addEventListener('click', () => {
       sfx.click();
-      pickReward(run(), id);
+      pickReward(run(), offer.uid);
       render();
     });
     row.appendChild(btn);
@@ -500,12 +614,35 @@ export function renderEnd(won: boolean): HTMLElement {
       ${run().listenSuccesses > 0 ? `<div class="kid-prompt">👂×${run().listenSuccesses}</div>` : ''}
     `
     : `
-      <div class="end-emoji soft-sway">💫🧒🥋</div>
+      <div class="end-emoji soft-sway">💫🥋</div>
       <div class="kid-prompt">再試一次！</div>
-      <p class="adult-text center">法師只是累了，沒有受傷喔</p>
+      <p class="adult-text center">小武者只是累了，休息後再挑戰</p>
     `;
   el.appendChild(body);
   appendCoach(el);
+
+  const score = run().scoreResult;
+  if (score) {
+    const scorecard = document.createElement('section');
+    scorecard.className = 'run-scorecard';
+    scorecard.setAttribute('aria-label', '本次角色分數');
+    const rows = score.breakdown
+      .map((item) => `<li><span>${item.label} ×${item.count}</span><strong>+${item.points}</strong></li>`)
+      .join('');
+    const unlocks = score.newlyUnlockedCardIds.length
+      ? `<div class="score-unlocks">
+          <strong>🎉 新卡牌解鎖！</strong>
+          <span>${score.newlyUnlockedCardIds.map((id) => getCard(id).name).join('、')}</span>
+        </div>`
+      : '';
+    scorecard.innerHTML = `
+      <h2>⭐ 本次角色分數</h2>
+      <ul>${rows || '<li><span>這次先休息</span><strong>+0</strong></li>'}</ul>
+      <div class="score-total"><span>本次 +${score.gained}</span><strong>累積 ${score.cumulativeScore}</strong></div>
+      ${unlocks}
+    `;
+    el.appendChild(scorecard);
+  }
 
   const again = document.createElement('button');
   again.className = 'btn-primary btn-kid-main';

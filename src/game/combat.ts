@@ -11,7 +11,6 @@ export type {
   CombatState,
   EnemyUnit,
   PlayerImpact,
-  DamagePreview,
 } from './battle';
 
 export {
@@ -31,7 +30,6 @@ export {
   makeCard,
   nextIntentForUnit,
   pickRewardIds,
-  previewCardDamage,
   resolveCastFizzle,
   resolveCastSuccess,
   selectEnemy,

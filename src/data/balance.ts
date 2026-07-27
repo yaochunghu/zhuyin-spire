@@ -1,7 +1,7 @@
 /**
  * Central combat / economy targets (preschool co-op).
- * Tuned for **15-floor × 7-lane** acts: more rooms, campfires matter,
- * no free heal after every fight.
+ * Tuned for **15 climb floors + boss × 7-lane** acts: more rooms,
+ * campfires matter, no free heal after every ordinary fight.
  */
 
 /** Player life pool — longer climb needs a bit more buffer */
@@ -26,11 +26,15 @@ export function restHealAmount(heroMaxHp: number): number {
   return Math.max(1, Math.floor(heroMaxHp * REST_HEAL_FRACTION));
 }
 
-/** Heal when clearing Act I or II boss (before next act) */
-export const ACT_CLEAR_HEAL = 16;
+/**
+ * @deprecated Boss clears now restore directly to heroMaxHp.
+ * Kept as the default hero's full-pool equivalent for compatibility.
+ */
+export const ACT_CLEAR_HEAL = HERO_MAX_HP;
 
 /**
- * Post-combat heal removed for 15-floor pacing — campfires are the recovery beat.
+ * Post-combat heal removed for climb pacing — campfires and boss clears are
+ * the recovery beats.
  * Constant kept at 0 so any leftover callers are no-ops.
  */
 export const HEAL_AFTER_COMBAT = 0;

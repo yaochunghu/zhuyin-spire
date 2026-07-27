@@ -23,7 +23,7 @@ src/
   game/battle/     Combat implementation (modular)
   ui/              DOM views + drag/FX (no balance constants of record)
   debug/           Playtest overlay (DEV / ?debug=1)
-  styles/main.css  Kid-friendly phone/tablet stages, options, debug panel
+  styles/main.css  Kid-friendly responsive stages, options, debug panel
 ```
 
 **Rule of thumb:** numbers live in `data/balance.ts` (and content files). Views call `game/state` / combat APIs; they should not invent economy.
@@ -39,7 +39,8 @@ src/
 | `title` | New run / continue / practice |
 | `relicPick` | Character selection (legacy internal name kept for v1 saves) |
 | `map` | Climb current act web |
-| `rest` / `removeCard` | Campfire heal or deck remove |
+| `rest` | Campfire Rest-or-Remove choice |
+| `smith` | Dormant exact-copy upgrade screen; schema is present but the live character gates it off |
 | `shop` / `shopRemove` | Buy cards / paid remove |
 | `combat` | Fight |
 | `castCheck` | 注音 cast gate for a played card |
@@ -64,11 +65,11 @@ Owned by `main.ts` as a single mutable object; UI modules reach it via `ui/runti
 
 Important fields:
 
-- **Hero:** `heroHp`, `heroMaxHp`, physical `DeckCardV2[]`, `gold`, `characterId`, `relicId`
+- **Hero:** `heroHp`, `heroMaxHp`, physical `deck[]`, `nextCardUid`, `gold`, `characterId`, `relicId`
 - **Map:** `runMap` (3 acts), `actIndex`, `currentNodeId`, `activeNodeId`, `visitedIds`, `pathIds`
 - **Combat:** `combat: CombatState | null`
 - **Cast:** `cast: { prompt, cardDef } | null`
-- **Meta UI:** `flash`, `floatText`, shop/reward pending fields
+- **Meta UI:** `flash`, `floatText`, physical shop/reward card-instance fields
 - **Tutorial (ephemeral):** `tutorial`, plus optional saved `tutorialEligibleRun` so old saves are not retrofitted
 
 Map navigation helpers: `getAvailableMapNodes`, `selectMapNode`, `getActiveNode`.
@@ -82,11 +83,6 @@ Map navigation helpers: `getAvailableMapNodes`, `selectMapNode`, `getActiveNode`
 3. Combat has a special path: after paint, `playPendingCombatFx` runs the FX queue; **do not full-remount combat while FX plays** (breaks hand drag and pile anchors).
 
 **Debug panel** mounts on `document.body`, not `#app`, because `render()` wipes `#app`.
-The global pause menu, Options, and deck/designer viewer are also body-mounted modal layers;
-`ui/modal.ts` gives them reference-counted page locking and focus containment.
-
-Orientation changes are CSS layout changes. They must not call `render()` or replace
-the combat root, so the hand, current cast, drag state, and pending FX survive rotation.
 
 ---
 
@@ -99,7 +95,7 @@ Play pipeline (product):
 
 1. Player plays a card (tap or drag-drop) → `tryPlayCard` in `state.ts`.
 2. Unless **debug skip cast**, open `castCheck`.
-3. Correct spell → `resolveCastSuccess` (ordered effects; Powers enter `powerPile`); wrong → `resolveCastFizzle` (energy already spent and card discarded).
+3. Correct spell → `resolveCastSuccess` (effects + discard); wrong → `resolveCastFizzle` (energy already spent).
 4. End turn → enemy intents → draw next hand.
 
 The first-run tutorial is an ephemeral state machine in `state.ts`. Only the active
@@ -114,9 +110,6 @@ File: `src/game/save.ts`
 
 - Key: `zhuyin-spire-run-v1:<profile-id>`; the first profile mirrors the old
   `zhuyin-spire-run-v1` key for migration compatibility
-- Payload version is V2. `deck` is ordered `DeckCardV2[]` with stable physical
-  UIDs and upgrade levels. Valid V1 string-array decks migrate once without
-  dropping, reordering, or grouping duplicate definitions.
 - **Stable screens only** (map, rest, shop, reward, actClear, relicPick, …) — **not** mid-combat or mid-cast
 - Title offers continue vs new game; new game clears save
 
@@ -153,10 +146,6 @@ words and never requests microphone permission.
 | `game/coach.ts` | Adult tip strip |
 | `ui/castView.ts` | Big 注音 keyboard + practice room |
 | `ui/options.ts` | Body-mounted global, accessible Options dialog |
-| `ui/phoneMenu.ts` | Global pause sheet and context actions (legacy filename) |
-| `ui/deckViewer.ts` | Exact-copy deck plus searchable designer catalog |
-| `ui/pauseTimers.ts` | Pause/resume teaching delays with remaining time intact |
-| `ui/responsive.ts` | Shared phone-layout media-query decision |
 
 Full contract and future-provider checklist: [CASTING_GATES.md](./CASTING_GATES.md).
 

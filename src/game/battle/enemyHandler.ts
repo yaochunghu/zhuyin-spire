@@ -29,7 +29,10 @@ export function spawnEnemies(defIds: string[]): EnemyUnit[] {
       block: 0,
       intentIndex: 0,
       alive: true,
+      echoTurns: 0,
       vulnerableTurns: 0,
+      weakTurns: 0,
+      echoTriggeredThisTurn: false,
     };
   });
 }
@@ -145,7 +148,19 @@ export function applyEnemyIntent(state: CombatState, unit: EnemyUnit): void {
 
   // —— Attack (single / heavy / multi) ——
   const hits = Math.max(1, intentHitCount(intent));
-  const perHit = intent.value;
+  const perHit = Math.max(0, Math.floor(intent.value * (unit.weakTurns > 0 ? 0.75 : 1)));
+  const jinBeforeAction = state.jin;
+  if (
+    state.activePowerIds.includes('B090') &&
+    (state.powerTriggersThisTurn.B090 ?? 0) === 0 &&
+    state.jin > 0 &&
+    perHit * hits > state.block
+  ) {
+    state.jin -= 1;
+    state.block += 5;
+    state.powerTriggersThisTurn.B090 = 1;
+    state.log.push('不動如山：消耗 1 勁，護盾 +5');
+  }
   const blockBefore = state.block;
   let totalBlocked = 0;
   let totalDamage = 0;
@@ -178,6 +193,32 @@ export function applyEnemyIntent(state: CombatState, unit: EnemyUnit): void {
     );
   } else if (totalBlocked > 0 && totalDamage === 0) {
     state.log.push(`${def.name} 的攻擊全被擋住了！`);
+    if (state.jin < 9) {
+      state.jin += 1;
+      state.gainedJinThisEnemyPhase = true;
+      state.log.push(`完整化解攻擊：勁 +1（${state.jin}/9）`);
+      if (state.drawIfJinPending) {
+        state.bonusDrawNextTurn += 1;
+        state.drawIfJinPending = false;
+      }
+      if (state.bonusJinNextEnemyPhase > 0) {
+        state.jin = Math.min(9, state.jin + state.bonusJinNextEnemyPhase);
+        state.bonusJinNextEnemyPhase = 0;
+      }
+      if (
+        state.activePowerIds.includes('B100') &&
+        (state.powerTriggersThisTurn.B100 ?? 0) === 0
+      ) {
+        unit.vulnerableTurns = Math.min(9, unit.vulnerableTurns + 1);
+        pushFx(state, {
+          type: 'enemyStatus',
+          enemyId: unit.id,
+          status: 'vulnerable',
+          turns: unit.vulnerableTurns,
+        });
+        state.powerTriggersThisTurn.B100 = 1;
+      }
+    }
   }
 
   pushFx(state, {
@@ -188,15 +229,28 @@ export function applyEnemyIntent(state: CombatState, unit: EnemyUnit): void {
     enemyId: unit.id,
     hits,
   });
+  if (state.jin !== jinBeforeAction) {
+    pushFx(state, {
+      type: 'playerResource',
+      resource: 'jin',
+      delta: state.jin - jinBeforeAction,
+      value: state.jin,
+    });
+  }
   unit.intentIndex += 1;
 }
 
 /** Run sequential intents for all living enemies. */
 export function runEnemyTurn(state: CombatState): void {
+  const hpBefore = state.heroHp;
   for (const unit of state.enemies) {
     if (!unit.alive || unit.hp <= 0) continue;
     applyEnemyIntent(state, unit);
     if (state.heroHp <= 0) break;
+  }
+  if (state.flawlessTrainingPending) {
+    if (state.heroHp === hpBefore) state.training += 1;
+    state.flawlessTrainingPending = false;
   }
 }
 
@@ -204,6 +258,9 @@ export function runEnemyTurn(state: CombatState): void {
 export function advanceEnemyStatuses(state: CombatState): void {
   for (const unit of state.enemies) {
     if (!unit.alive) continue;
+    if (unit.echoTurns > 0) unit.echoTurns -= 1;
     if (unit.vulnerableTurns > 0) unit.vulnerableTurns -= 1;
+    if (unit.weakTurns > 0) unit.weakTurns -= 1;
+    unit.echoTriggeredThisTurn = false;
   }
 }

@@ -54,6 +54,18 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - Added gesture and pause-timer unit tests plus Chromium/WebKit phone smoke tests
   alongside the existing three tablet viewport projects
 
+### 共鳴武者 first playable wave
+
+- Replaced the player-facing Echo Mage with 共鳴武者 while retaining the
+  internal `echoMage` id for save compatibility
+- Added 易傷、基礎攻擊／練功、轉拍、and 化勁／勁 combat rules with dedicated
+  status and hit feedback
+- Added the 5/4/1 starter, nine-card reward wave, and 初心音叉 first-hit relic
+- Migrated decks and offers to stable physical card instances with V1 save
+  compatibility
+- Kept the remaining generated 75-card catalog, upgrades, Smith, and upgraded
+  offers behind human review gates
+
 ---
 
 ## [0.2.1] — 2026-07-22

@@ -3,7 +3,8 @@
 ## Design
 
 - **3 acts**, each with its own branching climb map
-- **15 floors × 7 lanes** per act (row 0 bottom … row 14 boss)
+- **15 climb floors × 7 lanes**, then a boss floor per act
+  (rows 0–14 climb, row 15 boss; 16 floors total)
 - Path topology ported from (MIT):  
   [silverua/slay-the-spire-map-in-unity](https://github.com/silverua/slay-the-spire-map-in-unity) — `MapGenerator.cs`-style pipeline
 - Typical node count after prune: **~40–55** per act (not a full honeycomb of 100+)
@@ -33,7 +34,7 @@ Content hooks:
 Layout notes baked into generation:
 
 - Treasure often mid-act (around floor 8 band)
-- Pre-boss rest / shop opportunities so campfires matter before the boss
+- Floor 15 is always Rest on every route; the boss is alone on floor 16
 
 ---
 
@@ -57,14 +58,9 @@ Layout notes baked into generation:
 Edges resize with the panel while node hit targets remain fixed at 56px (boss 64px).
 The stage renders at the actual viewport size—there is no 1920×1080 uniform scale.
 
-The web has a minimum usable height and its panel scrolls when fifteen floors do not
-fit. Rendering centers the next available room and shows `目前第 N/15 層`. Locked
+The web has a minimum usable height and its panel scrolls when sixteen floors do not
+fit. Rendering centers the next available room and shows `目前第 N/16 層`. Locked
 nodes and unused edges keep visible contrast but remain below available/visited paths.
-
-On phones, act/floor progress stays in the compact header while the route plane pans
-inside its own viewport. The plane may be wider than the screen so 48px node targets
-and edge endpoints remain usable instead of shrinking; the page itself must not gain
-horizontal overflow. Available rooms are automatically centered after render.
 
 ---
 
@@ -75,6 +71,6 @@ Map structure assumes:
 - **More rooms** than a short demo climb → lower gold per fight than early prototypes
 - **Rest = 40% max HP** (campfires are the recovery beat)
 - **No free heal after every fight** (`HEAL_AFTER_COMBAT = 0`)
-- Act clear heal after bosses before next act (`ACT_CLEAR_HEAL`)
+- Every cleared boss restores HP to full before its reward/act transition
 
 See [BALANCE.md](./BALANCE.md).
