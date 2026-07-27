@@ -5,11 +5,6 @@
 > scaled for a 40-HP hero, three Energy, five cards per turn, persistent HP, and
 > a full 注音 cast before every playable card. Names, prose, and mechanics are
 > original to **注音之塔**.
->
-> **Character compatibility:** deterministic intents, capability tests,
-> encounters, events, and economy remain inputs to 共鳴武者 testing. Any
-> Echo-named boss, reward, status interaction, or flavor dependency must be
-> reviewed through [DESIGN_PLAYBOOK.md](./DESIGN_PLAYBOOK.md) before activation.
 
 ## Design promises
 

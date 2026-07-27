@@ -1,11 +1,4 @@
 import { ALL_PHRASE_PACKS } from '../data/phrases';
-import { CARDS } from '../data/cards';
-import {
-  CHARACTER_IDS,
-  getCharacter,
-  type CharacterId,
-  type PlayableCharacterId,
-} from '../data/characters';
 import type {
   CastingHistory,
   CastingPreferences,
@@ -22,8 +15,6 @@ export const MAX_NICKNAME_LENGTH = 12;
 const MAX_PROFILE_STORE_BYTES = 1_000_000;
 const MAX_CUSTOM_WORDS = 256;
 const MAX_LESSONS = 128;
-const MAX_CHARACTER_SCORE = 100_000_000;
-const LEGACY_ECHO_MAGE_SCORE = 300;
 const AVATARS = ['🧒', '👧', '👦', '🐣', '🐰', '🐻'] as const;
 
 function announceProfileChange(): void {
@@ -42,27 +33,8 @@ export interface LearnerProfileV1 {
   cleared: boolean;
   earBadge: boolean;
   completedRuns: number;
-  characterProgress: Partial<Record<CharacterId, CharacterProgress>>;
   casting: CastingPreferences;
   castingHistory: CastingHistory;
-}
-
-export interface CharacterProgress {
-  score: number;
-}
-
-export interface CharacterCardProgress {
-  characterId: CharacterId;
-  score: number;
-  unlockedCards: number;
-  totalCards: number;
-  nextUnlockScore: number | null;
-}
-
-export interface CharacterScoreAward {
-  previousScore: number;
-  score: number;
-  newlyUnlockedCardIds: string[];
 }
 
 interface LearnerProfileStoreV1 {
@@ -222,16 +194,6 @@ function createLegacyProfile(): LearnerProfileV1 {
   } catch {
     /* use default */
   }
-  const hasLegacyData = [
-    LEGACY_PHRASE_KEY,
-    LEGACY_GAME_SETTINGS_KEY,
-    LEGACY_TUTORIAL_KEY,
-    'zhuyin-spire-practice-correct',
-    'zhuyin-spire-cleared',
-    'zhuyin-spire-ear-badge',
-    'zhuyin-spire-run-count',
-    'zhuyin-spire-run-v1',
-  ].some((key) => localStorage.getItem(key) !== null);
   return {
     id: makeId(),
     name: '小玩家 1',
@@ -243,36 +205,9 @@ function createLegacyProfile(): LearnerProfileV1 {
     cleared: localStorage.getItem('zhuyin-spire-cleared') === '1',
     earBadge: localStorage.getItem('zhuyin-spire-ear-badge') === '1',
     completedRuns: safeNumber(localStorage.getItem('zhuyin-spire-run-count')),
-    characterProgress: hasLegacyData
-      ? { echoMage: { score: LEGACY_ECHO_MAGE_SCORE } }
-      : {},
     casting: legacyPreferences(),
     castingHistory: { lessons: {} },
   };
-}
-
-function sanitizeCharacterProgress(
-  value: unknown,
-  legacyProfile: boolean,
-): Partial<Record<CharacterId, CharacterProgress>> {
-  const source = value && typeof value === 'object'
-    ? value as Record<string, unknown>
-    : {};
-  const progress: Partial<Record<CharacterId, CharacterProgress>> = {};
-  for (const characterId of CHARACTER_IDS) {
-    const candidate = source[characterId];
-    const rawScore = candidate && typeof candidate === 'object'
-      ? Number((candidate as { score?: unknown }).score)
-      : 0;
-    const score = Number.isFinite(rawScore)
-      ? Math.min(MAX_CHARACTER_SCORE, Math.max(0, Math.floor(rawScore)))
-      : 0;
-    if (score > 0) progress[characterId] = { score };
-  }
-  if (legacyProfile && !progress.echoMage) {
-    progress.echoMage = { score: LEGACY_ECHO_MAGE_SCORE };
-  }
-  return progress;
 }
 
 function sanitizeHistory(value: unknown): CastingHistory {
@@ -311,7 +246,6 @@ function sanitizeHistory(value: unknown): CastingHistory {
 function sanitizeProfile(value: unknown, index: number): LearnerProfileV1 | null {
   if (!value || typeof value !== 'object') return null;
   const data = value as Partial<LearnerProfileV1>;
-  const hasProgressField = Object.prototype.hasOwnProperty.call(data, 'characterProgress');
   if (typeof data.id !== 'string' || !/^[A-Za-z0-9_-]{1,80}$/.test(data.id)) return null;
   return {
     id: data.id,
@@ -329,7 +263,6 @@ function sanitizeProfile(value: unknown, index: number): LearnerProfileV1 | null
     cleared: data.cleared === true,
     earBadge: data.earBadge === true,
     completedRuns: Math.min(1_000_000, Math.max(0, Math.floor(Number(data.completedRuns) || 0))),
-    characterProgress: sanitizeCharacterProgress(data.characterProgress, !hasProgressField),
     casting: parseCastingPreferences(data.casting),
     castingHistory: sanitizeHistory(data.castingHistory),
   };
@@ -432,7 +365,6 @@ export function createProfile(name: string, avatar: string): LearnerProfileV1 | 
     cleared: false,
     earBadge: false,
     completedRuns: 0,
-    characterProgress: {},
     casting: defaultCastingPreferences(),
     castingHistory: { lessons: {} },
   };
@@ -511,80 +443,4 @@ export function learnerAvatars(): readonly string[] {
 
 export function maxLearnerProfiles(): number {
   return MAX_PROFILES;
-}
-
-export function getCharacterScore(
-  profile: LearnerProfileV1,
-  characterId: CharacterId,
-): number {
-  return profile.characterProgress[characterId]?.score ?? 0;
-}
-
-export function getCharacterCardProgress(
-  profile: LearnerProfileV1,
-  characterId: CharacterId,
-): CharacterCardProgress {
-  const character = getCharacter(characterId);
-  const score = getCharacterScore(profile, characterId);
-  if (character.status !== 'playable') {
-    return { characterId, score, unlockedCards: 0, totalCards: 0, nextUnlockScore: null };
-  }
-  const thresholds = character.cardPoolIds
-    .map((id) => CARDS[id]?.unlockScore ?? 0)
-    .filter((threshold) => threshold > score)
-    .sort((a, b) => a - b);
-  return {
-    characterId,
-    score,
-    unlockedCards: character.cardPoolIds.filter(
-      (id) => (CARDS[id]?.unlockScore ?? 0) <= score,
-    ).length,
-    totalCards: character.cardPoolIds.length,
-    nextUnlockScore: thresholds[0] ?? null,
-  };
-}
-
-export function isCardUnlockedForProfile(
-  profile: LearnerProfileV1,
-  characterId: PlayableCharacterId,
-  cardId: string,
-): boolean {
-  const character = getCharacter(characterId);
-  if (character.status !== 'playable' || !character.cardPoolIds.includes(cardId)) return false;
-  return (CARDS[cardId]?.unlockScore ?? 0) <= getCharacterScore(profile, characterId);
-}
-
-export function filterUnlockedCardsForProfile(
-  profile: LearnerProfileV1,
-  characterId: PlayableCharacterId,
-  cardIds: readonly string[],
-): string[] {
-  return cardIds.filter((cardId) =>
-    isCardUnlockedForProfile(profile, characterId, cardId)
-  );
-}
-
-export function awardActiveCharacterScore(
-  characterId: PlayableCharacterId,
-  points: number,
-): CharacterScoreAward {
-  const profile = getActiveProfile();
-  const previousScore = getCharacterScore(profile, characterId);
-  const safePoints = Math.min(MAX_CHARACTER_SCORE, Math.max(0, Math.floor(points)));
-  const score = Math.min(MAX_CHARACTER_SCORE, previousScore + safePoints);
-  const character = getCharacter(characterId);
-  const newlyUnlockedCardIds = character.status === 'playable'
-    ? character.cardPoolIds.filter((id) => {
-        const threshold = CARDS[id]?.unlockScore ?? 0;
-        return threshold > previousScore && threshold <= score;
-      })
-    : [];
-  updateActiveProfile((current) => ({
-    ...current,
-    characterProgress: {
-      ...current.characterProgress,
-      [characterId]: { score },
-    },
-  }));
-  return { previousScore, score, newlyUnlockedCardIds };
 }

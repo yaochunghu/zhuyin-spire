@@ -4,9 +4,7 @@ This is a systems reference for designing **注音之塔**, not a specification 
 clone *Slay the Spire* (StS) exactly. It records how StS1 joins combat,
 deck-building, map risk, rewards, progression, and information design into one
 coherent loop. Project decisions and live values remain in
-[DECK_DESIGN.md](./DECK_DESIGN.md) and [BALANCE.md](./BALANCE.md). The workflow
-for applying these lessons, including evidence confidence and interaction debt,
-lives in [DESIGN_PLAYBOOK.md](./DESIGN_PLAYBOOK.md).
+[DECK_DESIGN.md](./DECK_DESIGN.md) and [BALANCE.md](./BALANCE.md).
 
 ## How to use this reference
 
@@ -643,7 +641,7 @@ players. It is not a self-executing balance verdict.
 | Reward Skip | **Copy with positive wording** | Avoids forced deck dilution |
 | Character-specific score unlocks | **Adapt** | Unlock breadth without permanent stats |
 | Rarity rolls and pity counters | **Stage, then activate** | Keep uniform rewards now; activate authored odds with the approved 75-card pool |
-| Guaranteed act landmarks | **Adapt to 15 climb floors + boss** | Preserve rhythm without copying run length |
+| Guaranteed act landmarks | **Adapt to 15 floors** | Preserve rhythm without copying run length |
 | Easy/hard encounter quotas | **Copy and soften** | Protects onboarding independently of path |
 | Rest versus Smith | **Implement after migration** | Requires card-instance saves and a complete approved upgrade roster |
 | Potions, curses, Status cards, Exhaust | **Implement in later checkpoints** | Full-system scope, introduced only after the core lifecycle is stable |
@@ -693,9 +691,6 @@ Project-owner research inputs:
 
 - “Designing a new character and their deck…” supplied with this task.
 - “Card costing benchmarks…” supplied with this task.
-- “Procedural Architecture and Systems Design in Roguelike Deckbuilders”
-  supplied later as a systems memo.
 
-Those notes helped route the research. Where they make precise claims, this
-document prefers official material and linked mechanics references. Unsourced
-sequel-specific values remain hypotheses rather than project requirements.
+Those two notes helped route the research. Where they made precise claims, this
+document prefers the official GDC material and linked mechanics references.

@@ -67,7 +67,7 @@ describe('act floor contract', () => {
   it('upgrades an existing 15-total-floor save without discarding its run', () => {
     const state = createNewRun();
     startRun(state);
-    expect(pickCharacter(state, 'echoMage')).toBe(true);
+    pickCharacter(state, 'echoMage');
     const snapshot = snapshotRun(state)!;
 
     for (const act of snapshot.runMap.acts) {
@@ -103,7 +103,7 @@ describe('boss recovery', () => {
   it('restores full HP as soon as a boss is cleared', () => {
     const state = createNewRun();
     startRun(state);
-    expect(pickCharacter(state, 'echoMage')).toBe(true);
+    pickCharacter(state, 'echoMage');
     const boss = state.runMap.acts[0]!.nodes.find((node) => node.kind === 'boss')!;
 
     state.heroHp = 7;

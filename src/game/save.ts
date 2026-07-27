@@ -30,6 +30,7 @@ import {
 const LEGACY_SAVE_KEY = 'zhuyin-spire-run-v1';
 const SAVE_VERSION = 2 as const;
 const MAX_SAVE_BYTES = 1_000_000;
+const LEGACY_BOSS_ROW = CLIMB_ROWS - 1;
 
 export function activeRunSaveKey(): string {
   return `${LEGACY_SAVE_KEY}:${getActiveProfileId()}`;
@@ -311,11 +312,80 @@ function migrateSnapshotV1(snapshot: RunSnapshotV1): RunSnapshotV2 {
   };
 }
 
-export function parseSnapshot(data: unknown): RunSnapshotV2 | null {
-  if (isValidSnapshotV2(data)) {
-    return { ...data, deck: data.deck.map(cloneDeckCard) };
+/**
+ * Preserve valid saves made when the boss occupied row 14 by inserting the
+ * guaranteed pre-boss Rest layer and moving the boss to row 15.
+ */
+function migrateLegacyMapFloors(data: unknown): unknown {
+  if (!isPlainObject(data) || data.v !== SAVE_VERSION || !isPlainObject(data.runMap)) {
+    return data;
   }
-  return isValidSnapshotV1(data) ? migrateSnapshotV1(data) : null;
+  const acts = data.runMap.acts;
+  if (!Array.isArray(acts)) return data;
+  if (acts.every((act) => isPlainObject(act) && act.maxRow === CLIMB_ROWS)) return data;
+  if (!acts.every((act) => isPlainObject(act) && act.maxRow === LEGACY_BOSS_ROW)) return data;
+
+  let migrated: Record<string, unknown>;
+  try {
+    migrated = structuredClone(data);
+  } catch {
+    return null;
+  }
+  const runMap = migrated.runMap;
+  if (!isPlainObject(runMap) || !Array.isArray(runMap.acts)) return null;
+
+  for (const rawAct of runMap.acts) {
+    if (!isPlainObject(rawAct) || !Array.isArray(rawAct.nodes)) return null;
+    if (!isIntIn(rawAct.act, 1, 3) || typeof rawAct.bossId !== 'string') return null;
+    const boss = rawAct.nodes.find(
+      (node) => isPlainObject(node) && node.id === rawAct.bossId && node.row === LEGACY_BOSS_ROW,
+    );
+    if (!isPlainObject(boss)) return null;
+    const preBossNodes = rawAct.nodes.filter(
+      (node) =>
+        isPlainObject(node) &&
+        node.row === LEGACY_BOSS_ROW - 1 &&
+        Array.isArray(node.nextIds) &&
+        node.nextIds.includes(rawAct.bossId),
+    );
+    if (preBossNodes.length === 0) return null;
+
+    boss.row = CLIMB_ROWS;
+    for (const preBoss of preBossNodes) {
+      if (
+        !isIntIn(preBoss.col, 0, MAP_COLS - 1) ||
+        !Array.isArray(preBoss.nextIds) ||
+        !preBoss.nextIds.every((id: unknown) => typeof id === 'string')
+      ) return null;
+      const restId = `a${rawAct.act}-r${LEGACY_BOSS_ROW}-c${preBoss.col}`;
+      preBoss.nextIds = [...new Set((preBoss.nextIds as string[]).map((id) =>
+        id === rawAct.bossId ? restId : id,
+      ))];
+      rawAct.nodes.push({
+        id: restId,
+        act: rawAct.act,
+        row: LEGACY_BOSS_ROW,
+        col: preBoss.col,
+        kind: 'rest',
+        emoji: '🔥',
+        label: '營火',
+        castStage: boss.castStage,
+        nextIds: [rawAct.bossId],
+        layoutX: preBoss.layoutX,
+        layoutY: 0,
+      });
+    }
+    rawAct.maxRow = CLIMB_ROWS;
+  }
+  return migrated;
+}
+
+export function parseSnapshot(data: unknown): RunSnapshotV2 | null {
+  const migrated = migrateLegacyMapFloors(data);
+  if (isValidSnapshotV2(migrated)) {
+    return { ...migrated, deck: migrated.deck.map(cloneDeckCard) };
+  }
+  return isValidSnapshotV1(migrated) ? migrateSnapshotV1(migrated) : null;
 }
 
 export function loadSnapshot(): RunSnapshotV2 | null {

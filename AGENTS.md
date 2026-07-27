@@ -66,9 +66,6 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 - Do not force-push or rewrite published history unless the user asks.
 - Prefer landing **docs with features** so the tree stays resume-friendly.
 - Before push: confirm remote is a **dedicated** zhuyin-spire repo, not an unrelated project.
-- For a user-requested GitHub publish/release, create and verify the versioned
-  GitHub Release **and** deploy GitHub Pages from that same release ref; confirm
-  the Pages workflow succeeds and the hosted URL reflects the release.
 
 ## Docs map
 
