@@ -6,28 +6,53 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ---
 
-## [0.2.2] — 2026-07-24
+## [0.3.1] — 2026-07-23
 
-### 共鳴武者 first playable wave
+### Card-system foundation and Resonance Warrior
 
-- Replaced the player-facing Echo Mage with 共鳴武者 while retaining the
-  internal `echoMage` id for save compatibility
-- Added 易傷、基礎攻擊／練功、轉拍、and 化勁／勁 combat rules with dedicated
-  status and hit feedback
-- Added the 5/4/1 starter, nine-card reward wave, and 初心音叉 first-hit relic
-- Migrated decks and offers to stable physical card instances with V1 save
-  compatibility
-- Kept the remaining generated 75-card catalog, upgrades, Smith, and upgraded
-  offers behind human review gates
+- Migrated run decks from ordered definition strings to validated physical
+  `DeckCardV2` copies with stable UIDs and per-copy upgrade levels; valid V1
+  saves migrate without losing, grouping, or reordering duplicates
+- Added Attack/Skill/Power/Status/Curse categories, rarity/pool/tag metadata,
+  ordered typed effects, authored upgrade resolution, and catalog validation
+- Replaced the grouped deck popup with an exact-copy player deck and searchable
+  designer catalog showing IDs, effects, targets, rarity, tags, upgrades,
+  casting cues, unlock data, and balance notes
+- Reframed the first character as 🧒🥋 共鳴武者 while preserving internal
+  `echoMage` save compatibility; replaced Echo with additive 🎯 易傷 and added
+  tagged basic-Attack scaling through the true Power 聲波架式
+- Changed universal 🎵 初心音叉 to +1 on the first resolved Attack hit every
+  player turn, including accurate failed-cast, blocked-hit, multi-hit, and area
+  behavior
+- Added live base-to-effective damage previews, tappable enemy status help,
+  persistent player Power/relic badges, and fixed-height combat cards
+- Consolidated sound, Options, deck/designer access, and development debug tools
+  into one global pause menu on every viewport
+- Updated the StS expansion roadmap and froze the old Echo-specific card,
+  relic, potion, and upgrade rows pending a reviewed Resonance rewrite
 
-### Map progression and recovery
+---
 
-- Added a guaranteed Rest floor before each act boss, expanding every act to
-  fifteen climb floors plus the boss floor
-- Restored the hero to full HP after each cleared boss and updated map progress
-  and act-clear feedback to match
-- Migrated valid existing saves to the extended map layout without breaking
-  in-progress routes
+## [0.3.0] — 2026-07-22
+
+### Phone-screen optimization
+
+- Added dedicated portrait and landscape phone layouts for combat, casting, the
+  tower map, rewards, shops, rests, character selection, and title screens
+- Rebuilt the phone hand as a full-width, snap-scrolling carousel with fixed card
+  heights, a persistent action bar, and gesture arbitration between horizontal
+  scrolling, tapping, and intentional upward casting
+- Added a single large phone pause menu for sound, Options, the current deck, and
+  development-only debug tools; its modal focus trap and scroll lock are shared
+  with Options and the deck viewer
+- Paused auto-submit, teaching reveals, and speech while the phone menu is open,
+  then resumed the exact pending lesson without changing combat state
+- Kept phone map nodes at least 48px while panning the route plane internally,
+  preserving route alignment and keeping act/floor progress outside the map web
+- Preserved browser pinch zoom and added reduced-height landscape layouts without
+  remounting combat on orientation changes
+- Added gesture and pause-timer unit tests plus Chromium/WebKit phone smoke tests
+  alongside the existing three tablet viewport projects
 
 ---
 
@@ -137,7 +162,8 @@ Baseline snapshot of the preschool Spire + 注音 game, documented for long-term
 - Standalone git repository for the game folder (tag `v0.1.0`)
 
 [Unreleased]: #unreleased
-[0.2.2]: #022--2026-07-24
+[0.3.1]: #031--2026-07-23
+[0.3.0]: #030--2026-07-22
 [0.2.1]: #021--2026-07-22
 [0.2.0]: #020--2026-07-22
 [0.1.0]: #010--2026-07-21

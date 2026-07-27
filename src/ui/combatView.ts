@@ -1,4 +1,4 @@
-import { getCard, resolveCard, type CardDef } from '../data/cards';
+import { getCardAtUpgrade } from '../data/cards';
 import {
   ENEMIES,
   intentIsUrgent,
@@ -13,6 +13,7 @@ import {
   intentForUnit,
   livingEnemies,
   nextIntentForUnit,
+  previewCardDamage,
   type CombatCard,
   type CombatState,
   type EnemyUnit,
@@ -30,6 +31,8 @@ import { sfx } from '../game/audio';
 import { playCombatFxBatch, queryCombatAnchors } from './cardFx';
 import { cardFaceHtml } from './cards';
 import { bindCardDrag, cleanupDragUi, collectDropTargets } from './dragPlay';
+import { teachingTimers } from './pauseTimers';
+import { isPhoneLayout } from './responsive';
 import {
   appendCoach,
   app,
@@ -42,20 +45,6 @@ import {
 } from './runtime';
 
 /** Group pile cards by defId for a compact grid (×N badge). */
-function pileCounts(cards: CombatCard[]): { def: CardDef; count: number }[] {
-  const map = new Map<string, number>();
-  for (const c of cards) {
-    const key = `${c.defId}:${c.upgradeLevel}`;
-    map.set(key, (map.get(key) ?? 0) + 1);
-  }
-  return [...map.entries()]
-    .map(([key, count]) => {
-      const [id, level] = key.split(':');
-      return { def: resolveCard(id, level === '1' ? 1 : 0), count };
-    })
-    .sort((a, b) => a.def.zhuyin.localeCompare(b.def.zhuyin, 'zh-Hant'));
-}
-
 /** Inspect draw or discard pile (kid-friendly grid). */
 function renderPileViewer(kind: 'draw' | 'discard', cards: CombatCard[]): HTMLElement {
   const overlay = document.createElement('div');
@@ -84,13 +73,11 @@ function renderPileViewer(kind: 'draw' | 'discard', cards: CombatCard[]): HTMLEl
     empty.textContent = '（空的）';
     grid.appendChild(empty);
   } else {
-    for (const { def, count } of pileCounts(cards)) {
+    for (const card of cards) {
+      const def = getCardAtUpgrade(card.defId, card.upgradeLevel);
       const cell = document.createElement('div');
       cell.className = `deck-viewer-card card ${def.type}`;
-      cell.innerHTML = `
-        ${cardFaceHtml(def)}
-        ${count > 1 ? `<div class="deck-count-badge">×${count}</div>` : ''}
-      `;
+      cell.innerHTML = cardFaceHtml(def, { upgradeLevel: card.upgradeLevel });
       grid.appendChild(cell);
     }
   }
@@ -126,7 +113,10 @@ export async function playPendingCombatFx(): Promise<void> {
   app().querySelector('.combat-screen')?.classList.add('fx-playing');
 
   try {
-    await playCombatFxBatch(batch, anchors, (defId) => cardFaceHtml(getCard(defId)));
+    await playCombatFxBatch(batch, anchors, (card) => cardFaceHtml(
+      getCardAtUpgrade(card.defId, card.upgradeLevel),
+      { upgradeLevel: card.upgradeLevel },
+    ));
   } finally {
     session.combatFxPlaying = false;
     app().querySelector('.combat-screen')?.classList.remove('fx-playing');
@@ -149,7 +139,7 @@ function playCardFromUi(uid: string, targetIds: string[] = []): void {
     session.spellUsedBankIdx = [];
     session.castLocked = false;
     session.castSpeechPlayedForOpen = false;
-    window.clearTimeout(session.autoSubmitTimer);
+    teachingTimers.clear(session.autoSubmitTimer);
     cleanupDragUi();
     render();
   } else if (run().flash) {
@@ -214,13 +204,12 @@ function renderEnemySlot(
     </div>
     <div class="enemy-emoji${opts.damaged && !dead ? ' enemy-flinch enemy-impact' : ''}${opts.castOk && !opts.damaged && !dead ? ' enemy-cast-ok' : ''}${dead ? ' enemy-poof' : ''}" data-enemy>${dead ? '💨' : def.emoji}</div>
     <div class="adult-text enemy-name-adult">${def.name}${def.isElite ? ' · 菁英' : ''}${def.isBoss ? ' · BOSS' : ''}</div>
-      ${
-        !dead && unit.echoTurns > 0
-        ? `<div class="enemy-status echo-status${unit.echoTriggeredThisTurn ? ' status-used' : ''}" data-enemy-status="${unit.id}" title="回音：本回合第一次攻擊 +2 傷害">🔔 回音 ${unit.echoTurns}</div>`
-          : ''
-      }
-      ${!dead && unit.vulnerableTurns > 0 ? `<div class="enemy-status vulnerable-status">💥 易傷 ${unit.vulnerableTurns}</div>` : ''}
-      ${!dead && unit.weakTurns > 0 ? `<div class="enemy-status weak-status">🥀 虛弱 ${unit.weakTurns}</div>` : ''}
+    ${
+      !dead && unit.vulnerableTurns > 0
+        ? `<button type="button" class="enemy-status vulnerable-status" data-enemy-status="${unit.id}" aria-expanded="${session.enemyStatusHelpId === unit.id}" title="易傷：攻擊傷害變成 1.5 倍">🎯 易傷 ${unit.vulnerableTurns}</button>
+          ${session.enemyStatusHelpId === unit.id ? '<div class="enemy-status-help" role="status">攻擊傷害 ×1.5，無條件捨去小數。怪物行動後少 1 回合。</div>' : ''}`
+        : ''
+    }
     <div class="enemy-bars">
       <div class="bar" data-enemy-bar data-enemy-bar-id="${unit.id}"><span style="width:${dead ? 0 : hpPct}%"></span></div>
       <div class="bar shield-bar enemy-shield-bar${!unit.block || dead ? ' shield-bar-empty' : ''}" data-enemy-shield="${unit.id}">
@@ -231,6 +220,13 @@ function renderEnemySlot(
   `;
 
   if (!dead) {
+    const status = slot.querySelector<HTMLButtonElement>('[data-enemy-status]');
+    status?.addEventListener('click', (event) => {
+      event.stopPropagation();
+      sfx.click();
+      session.enemyStatusHelpId = session.enemyStatusHelpId === unit.id ? null : unit.id;
+      render();
+    });
     const pick = (): void => {
       if (session.combatFxPlaying || session.outcomeAnimPlaying) return;
       if (run().tutorial) return;
@@ -391,12 +387,12 @@ export function renderCombat(): HTMLElement {
     (blockGained ? ' shield-bar-pulse' : '');
 
   heroZone.innerHTML = `
-    <div class="hero-actor" aria-hidden="true">🥋</div>
+    <div class="hero-actor" aria-hidden="true">${run().characterId === 'echoMage' ? '🧒🥋' : '🧒'}</div>
     <div class="hero-vitals">
       <div class="hero-vital-row">
         <div class="stat-pill hero-stat${heroLow ? ' danger-hp' : ''}${heroDamaged ? ' hero-hit' : ''}" data-hero-hp>❤️ ${c.heroHp}/${c.heroMaxHp}</div>
         <div class="stat-pill block-pill${blockGained ? ' block-pulse' : ''}${c.block <= 0 ? ' shield-empty' : ''}" data-hero-block>🛡️ <span data-block-val>${c.block}</span></div>
-        <div class="stat-pill energy" title="能量 ${c.energy}/${c.maxEnergy}" aria-label="能量 ${c.energy} / ${c.maxEnergy}">
+        <div class="stat-pill energy hero-energy" title="能量 ${c.energy}/${c.maxEnergy}" aria-label="能量 ${c.energy} / ${c.maxEnergy}">
           <span class="energy-readout">⚡ ${c.energy}/${c.maxEnergy}</span>
           <span class="energy-orbs" data-energy-orbs></span>
         </div>
@@ -406,15 +402,8 @@ export function renderCombat(): HTMLElement {
         <div class="${shieldBarCls}" data-hero-shield-bar><span style="width:${c.block <= 0 ? 0 : shieldPct}%"></span></div>
       </div>
       <div class="hero-combat-powers">
-        ${c.firstAttackBonusReady ? '<span class="combat-power relic-ready" title="初心音叉本回合尚未使用">🎵 首擊 +1</span>' : ''}
-        ${c.echoGuardAmount > 0 ? `<span class="combat-power" title="每次回音觸發時獲得護盾">🌱 回音盾 +${c.echoGuardAmount}</span>` : ''}
-        <span class="combat-power" title="完整擋住一次敵方攻擊可獲得勁">🥋 勁 ${c.jin}/9</span>
-        ${c.training > 0 ? `<span class="combat-power" title="每次基礎攻擊命中都增加傷害">👊 練功 +${c.training}</span>` : ''}
-        ${
-          c.lastPlayedType === 'attack' || c.lastPlayedType === 'skill'
-            ? `<span class="combat-power" title="攻擊與技能交替成功就會轉拍">🥁 上張 ${c.lastPlayedType === 'attack' ? '⚔️' : '✨'}${c.tempoCount > 0 ? ` · 轉拍 ${c.tempoCount}` : ''}</span>`
-            : ''
-        }
+        ${c.firstAttackBonusDamage > 0 ? `<span class="combat-power relic-ready${c.firstAttackBonusReady ? '' : ' status-used'}" title="初心音叉：每回合第一次攻擊 +${c.firstAttackBonusDamage}">🎵 首擊 +${c.firstAttackBonusDamage}${c.firstAttackBonusReady ? '' : ' ✓'}</span>` : ''}
+        ${c.basicAttackBonusDamage > 0 ? `<span class="combat-power" title="聲波架式：基礎攻擊每一下追加傷害">🥋 基礎攻擊 +${c.basicAttackBonusDamage}</span>` : ''}
       </div>
     </div>
   `;
@@ -452,7 +441,7 @@ export function renderCombat(): HTMLElement {
   // Floating coach (collapsed by default — does not take layout space)
   appendCoach(stage);
 
-  // —— Bottom row: hand (left/center) + end-turn pass (right) ——
+  // —— Bottom dock: full hand plus a phone-friendly action bar ——
   const bottom = document.createElement('div');
   bottom.className = 'combat-bottom-row';
 
@@ -464,7 +453,7 @@ export function renderCombat(): HTMLElement {
   const livingIds = living.map((e) => e.id);
 
   for (const card of c.hand) {
-    const def = resolveCard(card.defId, card.upgradeLevel);
+    const def = getCardAtUpgrade(card.defId, card.upgradeLevel);
     const btn = document.createElement('button');
     btn.className = `card ${def.type}`;
     // Energy/phase only — bind drag even during FX so post-FX enable works;
@@ -481,11 +470,26 @@ export function renderCombat(): HTMLElement {
     ) {
       btn.classList.add('tutorial-focus');
     }
-    btn.innerHTML = cardFaceHtml(def);
+    const previewEnemy = living.find((enemy) => enemy.id === c.selectedEnemyId) ?? living[0] ?? null;
+    const damagePreview = previewCardDamage(c, def, previewEnemy);
+    btn.innerHTML = cardFaceHtml(def, {
+      upgradeLevel: card.upgradeLevel,
+      damagePreview,
+    });
     btn.disabled = !energyPlayable || !tutorialPlayable || locked;
     btn.dataset.uid = card.uid;
-    btn.setAttribute('aria-label', `注音 ${def.zhuyin}`);
-    btn.style.touchAction = 'none';
+    btn.setAttribute(
+      'aria-label',
+      `注音 ${def.zhuyin}${
+        damagePreview
+          ? damagePreview.hits > 1 && damagePreview.effective !== damagePreview.laterEffective
+            ? `，第一下傷害 ${damagePreview.effective}，後續每下 ${damagePreview.laterEffective}`
+            : `，目前每下傷害 ${damagePreview.effective}`
+          : ''
+      }`,
+    );
+    const scrollableHand = isPhoneLayout();
+    btn.style.touchAction = scrollableHand ? 'pan-x' : 'none';
 
     const defaultTargets = (): string[] => {
       const t = cardTargetType(def);
@@ -503,6 +507,7 @@ export function renderCombat(): HTMLElement {
       cardEl: btn,
       def,
       enabled: energyPlayable && tutorialPlayable,
+      allowHorizontalScroll: scrollableHand,
       getTargets: () => collectDropTargets(stage, def, livingIds),
       onPlay: (targetIds) => playCardFromUi(card.uid, targetIds),
       onTap: () => playCardFromUi(card.uid, defaultTargets()),
@@ -512,9 +517,17 @@ export function renderCombat(): HTMLElement {
   }
   bottom.appendChild(hand);
 
+  const actionBar = document.createElement('div');
+  actionBar.className = 'combat-action-bar';
+  const actionEnergy = document.createElement('div');
+  actionEnergy.className = 'combat-action-energy';
+  actionEnergy.setAttribute('aria-label', `能量 ${c.energy} / ${c.maxEnergy}`);
+  actionEnergy.innerHTML = `<span aria-hidden="true">⚡</span><strong>${c.energy}/${c.maxEnergy}</strong>`;
+  actionBar.appendChild(actionEnergy);
+
   const end = document.createElement('button');
   end.className = 'btn-secondary btn-kid-main end-turn-btn';
-  end.innerHTML = `<span class="btn-emoji">✋</span>`;
+  end.innerHTML = `<span class="btn-emoji">✋</span><span class="end-turn-label">結束回合</span>`;
   end.setAttribute('aria-label', '結束回合（過牌）');
   end.title = '結束回合';
   const tutorialEndAllowed = canTutorialEndTurn(run());
@@ -530,14 +543,15 @@ export function renderCombat(): HTMLElement {
     playerEndTurn(run());
     if (run().screen === 'defeat') {
       render();
-      playOutcomeOverlay('faint', { emoji: '🥋' }, () => {
+      playOutcomeOverlay('faint', { emoji: '🧒🥋' }, () => {
         render();
       });
       return;
     }
     render();
   });
-  bottom.appendChild(end);
+  actionBar.appendChild(end);
+  bottom.appendChild(actionBar);
   stage.appendChild(bottom);
 
   if (session.pileViewer === 'draw') {

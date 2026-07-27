@@ -5,12 +5,10 @@
 import { DRAW_PER_TURN } from '../../data/balance';
 import { resolveEnemyDefIds } from '../../data/encounters';
 import { ENEMIES } from '../../data/enemies';
-import { resolveCard } from '../../data/cards';
 import type { RelicDef } from '../../data/relics';
-import type { DeckCard } from '../cardInstances';
+import type { DeckCardV2 } from '../cardInstances';
 import {
   advanceEnemyStatuses,
-  intentForUnit,
   runEnemyTurn,
   spawnEnemies,
   syncPrimaryEnemy,
@@ -20,7 +18,7 @@ import { drawCards, makeCard, shuffle } from './piles';
 import type { CombatState } from './types';
 
 export function createCombat(
-  deckDefIds: Array<string | DeckCard>,
+  deckDefIds: Array<string | DeckCardV2>,
   enemyIdOrIds: string | string[],
   heroHp: number,
   heroMaxHp: number,
@@ -47,27 +45,11 @@ export function createCombat(
     maxEnergy,
     firstAttackBonusDamage: relic?.firstAttackBonusDamage ?? 0,
     firstAttackBonusReady: (relic?.firstAttackBonusDamage ?? 0) > 0,
-    echoGuardAmount: 0,
-    training: 0,
-    jin: 0,
-    gainedJinLastEnemyPhase: false,
-    gainedJinThisEnemyPhase: false,
-    lastPlayedType: null,
-    tempoCount: 0,
-    basicPlayedThisTurn: 0,
-    basicTrainingCounter: 0,
-    nextAttackBonus: 0,
-    freeBasicsRemaining: 0,
-    bonusDrawNextTurn: 0,
-    drawIfJinPending: false,
-    bonusJinNextEnemyPhase: 0,
-    flawlessTrainingPending: false,
-    activePowerIds: [],
-    powerTriggersThisTurn: {},
-    exhaustPile: [],
+    basicAttackBonusDamage: 0,
     drawPile,
     hand: [],
     discardPile: [],
+    powerPile: [],
     enemies,
     selectedEnemyId: enemies[0]?.id ?? null,
     pendingTargetIds: [],
@@ -90,7 +72,7 @@ export function createCombat(
     state.log.push(`晨光：第 1 回合 ⚡${relic.firstTurnEnergy}`);
   }
   if (relic?.firstAttackBonusDamage) {
-    state.log.push(`初心音叉：首次攻擊 +${relic.firstAttackBonusDamage}`);
+    state.log.push(`初心音叉：每回合首擊 +${relic.firstAttackBonusDamage}`);
   }
   drawCards(state, DRAW_PER_TURN);
   if (relic?.startDraw && relic.startDraw > 0) {
@@ -122,42 +104,10 @@ export function endTurn(state: CombatState): CombatState['status'] {
   state.turn += 1;
   state.energy = state.maxEnergy;
   state.firstAttackBonusReady = state.firstAttackBonusDamage > 0;
-  state.gainedJinLastEnemyPhase = state.gainedJinThisEnemyPhase;
-  state.gainedJinThisEnemyPhase = false;
-  state.lastPlayedType = null;
-  state.tempoCount = 0;
-  state.basicPlayedThisTurn = 0;
-  state.powerTriggersThisTurn = {};
-  state.nextAttackBonus = 0;
   state.phase = 'playerStart';
   drawCards(state, DRAW_PER_TURN);
-  if (state.activePowerIds.includes('B129') && state.hand.length < 10) {
-    const wantsSkill = state.enemies
-      .filter((enemy) => enemy.alive)
-      .some((enemy) => intentForUnit(enemy).kind === 'attack');
-    const wantedType = wantsSkill ? 'skill' : 'attack';
-    const index = lastIndexWhere(
-      state.drawPile,
-      (card) => resolveCard(card.defId, card.upgradeLevel).type === wantedType,
-    );
-    if (index >= 0) {
-      const [card] = state.drawPile.splice(index, 1);
-      state.hand.push(card!);
-    }
-  }
-  if (state.bonusDrawNextTurn > 0) {
-    drawCards(state, state.bonusDrawNextTurn);
-    state.bonusDrawNextTurn = 0;
-  }
   state.phase = 'playerAction';
   state.log.push(`—— 第 ${state.turn} 回合 ——`);
   syncPrimaryEnemy(state);
   return state.status;
-}
-
-function lastIndexWhere<T>(items: T[], predicate: (item: T) => boolean): number {
-  for (let index = items.length - 1; index >= 0; index -= 1) {
-    if (predicate(items[index]!)) return index;
-  }
-  return -1;
 }

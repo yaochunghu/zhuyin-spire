@@ -1,4 +1,4 @@
-/** Character-bound starter relics plus legacy definitions kept for v1 saves. */
+/** Universal relic definitions; characters may choose one as their starter. */
 
 export interface RelicDef {
   id: string;
@@ -10,7 +10,7 @@ export interface RelicDef {
   maxEnergy?: number;
   firstTurnEnergy?: number;
   startDraw?: number;
-  /** Added once to the first damaging Attack hit of each player turn. */
+  /** Added to the first resolved Attack hit of every player turn. */
   firstAttackBonusDamage?: number;
 }
 

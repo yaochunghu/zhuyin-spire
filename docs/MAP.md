@@ -62,6 +62,11 @@ The web has a minimum usable height and its panel scrolls when sixteen floors do
 fit. Rendering centers the next available room and shows `目前第 N/16 層`. Locked
 nodes and unused edges keep visible contrast but remain below available/visited paths.
 
+On phones, act/floor progress stays in the compact header while the route plane pans
+inside its own viewport. The plane may be wider than the screen so 48px node targets
+and edge endpoints remain usable instead of shrinking; the page itself must not gain
+horizontal overflow. Available rooms are automatically centered after render.
+
 ---
 
 ## Economy interaction

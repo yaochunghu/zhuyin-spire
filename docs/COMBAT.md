@@ -9,7 +9,7 @@ Public imports should use **`src/game/combat.ts`**, which re-exports `src/game/b
 | `battle/types.ts` | `CombatState`, `EnemyUnit`, `CombatCard`, `CombatFx`, phases |
 | `battle/fx.ts` | `pushFx` / `takePendingFx` queue |
 | `battle/piles.ts` | Shuffle, draw (respect max hand), reward id picks |
-| `battle/effects.ts` | Target types, primitives, 共鳴 mechanics, and Power triggers |
+| `battle/effects.ts` | Ordered effects, damage preview, Vulnerable, Block/draw/Energy/Powers |
 | `battle/playerHandler.ts` | `canPlay`, `beginPlay`, cast success/fizzle, end-turn discard |
 | `battle/enemyHandler.ts` | Spawn, select, intents, enemy turn |
 | `battle/battleManager.ts` | `createCombat`, `endTurn` |
@@ -37,19 +37,19 @@ From `data/balance.ts`:
 
 Energy is per-combat; end turn discards remaining hand then enemy acts then redraw.
 
-## 共鳴武者 combat rules
+## First-character combat rules
 
-- 💥 **易傷:** Attack damage is multiplied by 1.5, rounded down; duration
-  decreases at the next player-turn boundary.
-- 👊 **基礎攻擊 / 練功:** each hit of a tagged basic Attack adds the current
-  combat-long 練功 amount.
-- 🥁 **轉拍:** a successful Attack after a Skill, or Skill after an Attack, is
-  one 轉拍. Failed casts do not advance it.
-- 🥋 **勁:** fully blocking one enemy attack action grants 1 勁, capped at 9.
-  Authored spenders consume fixed or bounded amounts.
-- 🎵 **初心音叉:** the first resolved Attack hit each player turn gains +1
-  before 易傷. `PlayerImpact.relicBonus` keeps the feedback explainable.
-- Powers leave draw/discard circulation and remain active for the combat.
+- 🎯 **易傷 N:** Attack damage ×1.5, rounded down. Add flat card, Power, and
+  relic bonuses first; remove enemy Block afterward. Every hit of multi-hit and
+  area Attacks benefits. Direct/non-Attack damage does not. Applications add to
+  a cap of nine; duration decreases after the enemy phase.
+- 🥋 **基礎攻擊:** explicit card tag. `聲波架式` is a true Power and adds
+  +2 to every tagged hit for the rest of combat (+3 upgraded).
+- 🎵 **初心音叉:** the first resolved Attack hit every player turn gains +1.
+  A failed cast does not spend it, a fully blocked hit does, and only the first
+  hit/target in a multi-hit or area sequence receives it.
+- Live damage previews call `previewCardDamage`, the same modifier ordering used
+  by resolution. Once-only first-hit bonuses are shown separately from later hits.
 
 ---
 
@@ -71,7 +71,7 @@ Normal path:
 
 1. `beginPlay` spends energy, holds pending card
 2. Screen → `castCheck` with prompt from `buildCastPrompt`
-3. Correct → `resolveCastSuccess` → effects + discard FX
+3. Correct → `resolveCastSuccess` → ordered effects; ordinary cards discard and Powers enter `powerPile`
 4. Wrong → `resolveCastFizzle` (card still consumed / energy spent)
 
 **Debug only:** `getDebugSkipCast()` in `tryPlayCard` may resolve success without opening cast. Never enable this for real kid play. See [DEBUG.md](./DEBUG.md).
@@ -104,10 +104,15 @@ Completion is written only in `finishFight` after victory.
 | Type | Default target | Drag drop |
 |------|----------------|-----------|
 | Attack | `singleEnemy` (or `allEnemies` if set) | Enemy unit(s) |
-| Self Skill / Power | `self` | Shield / hero drop zone |
+| Skill / Power | `self` unless explicitly authored otherwise | Hero drop zone |
 | Explicit `target` on `CardDef` | overrides default | matching zones |
 
 `cardNeedsEnemyTarget` / `collectDropTargets` drive UI highlights.
+
+On phones, the hand is a full-width horizontal snap carousel and every card keeps
+the same fixed height regardless of copy length. A horizontal touch gesture scrolls
+the hand, a tap uses the existing tap-to-play path, and only a clear upward gesture
+commits to drag targeting. Mouse and larger-screen drag behavior is unchanged.
 
 ---
 
@@ -121,11 +126,16 @@ Completion is written only in `finishFight` after victory.
 enemy id, hit index, shield before/blocked/after, HP overflow, and kill state. The UI
 can therefore clang/crack/break a monster shield before showing HP damage, including
 fully blocked hits that previously produced no strike FX.
-Optional `echoBonus` and `relicBonus` fields explain why a hit was larger than
-the printed base number.
+`baseDamage`, `basicAttackBonus`, `relicBonus`, `vulnerableApplied`, and
+`finalDamage` explain why a hit differs from its printed value.
 
 Gameplay waits and Web Animations use `gameplayMs()`. End-turn discards and redraws
 are staggered concurrently; 2× halves gameplay movement without changing teaching pauses.
+
+The global pause menu freezes pause-aware teaching timers and cancels current speech.
+Resume continues each timer from its remaining duration and replays the current cue
+when appropriate. Combat state, turn timing, energy, and effects are not advanced by
+opening or closing this transient menu.
 
 ### Known footgun
 

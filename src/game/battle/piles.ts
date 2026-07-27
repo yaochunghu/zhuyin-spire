@@ -3,25 +3,12 @@
  */
 
 import { MAX_HAND_SIZE } from '../../data/balance';
-import type { DeckCard } from '../cardInstances';
+import { cloneDeckCard, createDeckCard, type DeckCardV2 } from '../cardInstances';
 import type { CombatCard, CombatState } from './types';
 import { pushFx } from './fx';
 
-let uidCounter = 0;
-
-export function makeCard(source: string | DeckCard): CombatCard {
-  uidCounter += 1;
-  const card = typeof source === 'string'
-    ? { uid: `legacy-${uidCounter}`, defId: source, upgradeLevel: 0 as const }
-    : source;
-  return {
-    uid: `c${uidCounter}`,
-    sourceUid: card.uid,
-    defId: card.defId,
-    upgradeLevel: card.upgradeLevel,
-    temporaryCostReduction: 0,
-    basicOverride: false,
-  };
+export function makeCard(card: string | DeckCardV2): CombatCard {
+  return typeof card === 'string' ? createDeckCard(card) : cloneDeckCard(card);
 }
 
 export function shuffle<T>(arr: T[], rng: () => number = Math.random): T[] {

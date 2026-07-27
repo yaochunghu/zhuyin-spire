@@ -1,6 +1,6 @@
 import {
+  ACT_CLEAR_HEAL,
   continueAfterActClear,
-  deckCounts,
   getActiveRelic,
   getAvailableMapNodes,
   getCurrentAct,
@@ -10,7 +10,7 @@ import {
 import type { MapNode } from '../data/map';
 import { sfx } from '../game/audio';
 import { gameplayMs } from '../game/settings';
-import { cardFaceHtml } from './cards';
+import { renderDeckViewer } from './deckViewer';
 import { appendCoach, render, run, session } from './runtime';
 
 const SELECT_FLASH_MS = 480;
@@ -58,6 +58,7 @@ export function renderMap(): HTMLElement {
     </div>
     <div class="map-stage-title">
       <span class="kid-prompt map-act-title"></span>
+      <span class="kid-stat map-phone-progress"></span>
       <span class="kid-stat map-floor-progress"></span>
       <span class="adult-text map-stage-hint">亮圈＝可走 · 由下往上</span>
     </div>
@@ -65,13 +66,14 @@ export function renderMap(): HTMLElement {
   top.querySelector<HTMLElement>('[data-map-act]')!.textContent =
     `${act.emoji} 第${run().actIndex + 1}幕`;
   const hp = top.querySelector<HTMLElement>('[data-map-hp]')!;
-  hp.textContent = `🥋❤️${run().heroHp}`;
+  hp.textContent = `🧒❤️${run().heroHp}`;
   if (run().heroHp <= 8) hp.classList.add('danger-hp');
   top.querySelector<HTMLElement>('[data-map-gold]')!.textContent = `🪙${run().gold}`;
   top.querySelector<HTMLElement>('.map-act-title')!.textContent = `${act.emoji} ${act.title}`;
-  const totalFloors = act.maxRow + 1;
   top.querySelector<HTMLElement>('.map-floor-progress')!.textContent =
-    `目前第 ${Math.min(totalFloors, (available[0]?.row ?? act.maxRow) + 1)}/${totalFloors} 層`;
+    `目前第 ${Math.min(15, (available[0]?.row ?? act.maxRow) + 1)}/15 層`;
+  top.querySelector<HTMLElement>('.map-phone-progress')!.textContent =
+    `第${run().actIndex + 1}幕 · 第 ${Math.min(15, (available[0]?.row ?? act.maxRow) + 1)}/15 層`;
   if (relic) {
     const relicPill = document.createElement('span');
     relicPill.className = 'kid-stat relic-pill';
@@ -228,7 +230,12 @@ export function renderMap(): HTMLElement {
   appendCoach(stage);
 
   if (session.deckViewerOpen) {
-    stage.appendChild(renderDeckViewer());
+    stage.appendChild(
+      renderDeckViewer(() => {
+        session.deckViewerOpen = false;
+        render();
+      }),
+    );
   }
 
   el.appendChild(stage);
@@ -243,46 +250,6 @@ export function renderMap(): HTMLElement {
   return el;
 }
 
-export function renderDeckViewer(): HTMLElement {
-  const overlay = document.createElement('div');
-  overlay.className = 'deck-viewer map-deck-viewer';
-  overlay.setAttribute('role', 'dialog');
-  overlay.setAttribute('aria-label', '目前牌組');
-
-  const head = document.createElement('div');
-  head.className = 'deck-viewer-head';
-  head.innerHTML = `
-    <div class="kid-prompt">🃏 牌組 ×${run().deck.length}</div>
-    <p class="adult-text">你現在擁有的注音牌（相同的會疊數字）</p>
-  `;
-  overlay.appendChild(head);
-
-  const grid = document.createElement('div');
-  grid.className = 'deck-viewer-grid';
-  for (const { def, count } of deckCounts(run())) {
-    const cell = document.createElement('div');
-    cell.className = `deck-viewer-card card ${def.type}`;
-    cell.innerHTML = `
-      ${cardFaceHtml(def)}
-      ${count > 1 ? `<div class="deck-count-badge">×${count}</div>` : ''}
-    `;
-    grid.appendChild(cell);
-  }
-  overlay.appendChild(grid);
-
-  const close = document.createElement('button');
-  close.className = 'btn-primary btn-kid-main';
-  close.innerHTML = `<span class="btn-emoji">✅</span>`;
-  close.setAttribute('aria-label', '關閉牌組');
-  close.addEventListener('click', () => {
-    sfx.click();
-    session.deckViewerOpen = false;
-    render();
-  });
-  overlay.appendChild(close);
-  return overlay;
-}
-
 export function renderActClear(): HTMLElement {
   const el = document.createElement('div');
   el.className = 'screen act-clear-screen';
@@ -291,7 +258,7 @@ export function renderActClear(): HTMLElement {
   el.innerHTML = `
     <div class="end-emoji bounce-in">🏆</div>
     <div class="kid-prompt">第 ${run().lastClearedAct} 幕過關！</div>
-    <div class="kid-stat">❤️ 回滿</div>
+    <div class="kid-stat">❤️+${ACT_CLEAR_HEAL}</div>
     <p class="adult-text center" data-next-act></p>
     <p class="kid-prompt" style="font-size:1.1rem">往上 · 第 ${nextAct} 幕</p>
   `;

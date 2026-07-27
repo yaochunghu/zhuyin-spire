@@ -1,100 +1,63 @@
 import type { CardJob } from './cards';
-import {
-  RESONANCE_INITIAL_REWARD_IDS,
-} from './resonanceCards';
 import type { CastingGateId } from '../game/casting/types';
 
-export type CharacterStatus = 'playable' | 'inDesign';
-
-export interface CharacterPreviewDef {
+/**
+ * A character owns a starter deck, a starter relic, and one clear deck theme.
+ * Keeping this data together prevents a future character from accidentally
+ * receiving another character's cards or relic during new-run setup.
+ */
+export interface CharacterDef {
   id: string;
-  status: CharacterStatus;
   emoji: string;
   name: string;
   title: string;
   theme: string;
   teachingNote: string;
-}
-
-/** Runtime dependencies required before a character may start a run. */
-export interface PlayableCharacterDef extends CharacterPreviewDef {
-  status: 'playable';
-  starterDeckIds: readonly string[];
-  starterSummary: ReadonlyArray<{ icon: string; label: string }>;
+  starterDeckIds: string[];
   startingRelicId: string;
+  /** Educational gate used after this character commits a card. */
   castingGateId: CastingGateId;
-  actIRewardIds: readonly string[];
-  /** Every unique implemented card design owned by this character. */
-  cardPoolIds: readonly string[];
-  /** Content flag: the physical-card schema may land before upgrades are released. */
-  upgradesEnabled: boolean;
-  featuredJobs: readonly CardJob[];
+  /** Character-themed cards available during Act I rewards and shops. */
+  actIRewardIds: string[];
+  featuredJobs: CardJob[];
 }
 
-export interface InDesignCharacterDef extends CharacterPreviewDef {
-  status: 'inDesign';
-}
-
-export type CharacterDef = PlayableCharacterDef | InDesignCharacterDef;
-
-export const CHARACTERS = {
+export const CHARACTERS: Record<string, CharacterDef> = {
   echoMage: {
     id: 'echoMage',
-    status: 'playable',
-    emoji: '🥋',
+    emoji: '🧒🥋',
     name: '共鳴武者',
-    title: '以聲辨位，攻守換拍',
-    theme: '完整防守累積「勁」，在「易傷」窗口用攻守換拍反擊。',
-    teachingNote: '先讀意圖、完整防守，再把累積的力量化成反擊。',
+    title: '聽見破綻，再出拳',
+    theme: '用聲音找出怪物的「易傷」，再強化基礎攻擊把握機會。',
+    teachingNote: '先防守、再標記弱點、最後攻擊；每一步都有清楚用途。',
     starterDeckIds: [
-      'bo', 'bo', 'bo', 'bo', 'bo',
-      'mo', 'mo', 'mo', 'mo',
+      'bo',
+      'bo',
+      'bo',
+      'bo',
+      'bo',
+      'mo',
+      'mo',
+      'mo',
+      'mo',
       'po',
-    ],
-    starterSummary: [
-      { icon: '⚔️', label: '1⚡ ×5' },
-      { icon: '🛡️', label: '1⚡ ×4' },
-      { icon: '🎯', label: '2⚡ ×1' },
     ],
     startingRelicId: 'tuningFork',
     castingGateId: 'zhuyin',
-    actIRewardIds: [...RESONANCE_INITIAL_REWARD_IDS],
-    cardPoolIds: [
-      'bo',
-      'mo',
-      'po',
-      ...RESONANCE_INITIAL_REWARD_IDS,
-    ],
-    upgradesEnabled: false,
+    actIRewardIds: ['ge', 'ri', 'ke', 'te', 'he', 'shi', 'le', 'yi', 'fo'],
     featuredJobs: ['frontload', 'defense', 'scaling', 'draw'],
   },
-} as const satisfies Record<string, CharacterDef>;
+};
 
-export type CharacterId = keyof typeof CHARACTERS;
-export type PlayableCharacterId = 'echoMage';
-
-export const FIRST_CHARACTER_ID: PlayableCharacterId = 'echoMage';
-export const CHARACTER_IDS = Object.keys(CHARACTERS) as CharacterId[];
-export const PLAYABLE_CHARACTER_IDS = CHARACTER_IDS.filter(
-  (id): id is PlayableCharacterId => CHARACTERS[id].status === 'playable',
-);
+export const FIRST_CHARACTER_ID = 'echoMage';
+export const PLAYABLE_CHARACTER_IDS = [FIRST_CHARACTER_ID] as const;
 
 export function getCharacter(id: string): CharacterDef {
-  const character = CHARACTERS[id as CharacterId];
+  const character = CHARACTERS[id];
   if (!character) throw new Error(`Unknown character ${id}`);
   return character;
 }
 
-export function getPlayableCharacter(id: string): PlayableCharacterDef {
-  const character = getCharacter(id);
-  if (character.status !== 'playable') throw new Error(`Character ${id} is not playable`);
-  return character;
-}
-
-export function isCharacterId(value: unknown): value is CharacterId {
+export function isCharacterId(value: unknown): value is string {
   return typeof value === 'string' && value in CHARACTERS;
-}
-
-export function isPlayableCharacterId(value: unknown): value is PlayableCharacterId {
-  return isCharacterId(value) && CHARACTERS[value].status === 'playable';
 }

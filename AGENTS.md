@@ -6,7 +6,7 @@ Read this first in a **new human or AI session**. Deep detail lives under `docs/
 
 1. **Full 注音 cast gate** for real play — skip only via **debug** (`getDebugSkipCast`)
 2. **Adult co-play** — coach strip / 家長提示
-3. **Touch-first** UI (tablet-friendly targets)
+3. **Touch-first** UI (phone- and tablet-friendly targets)
 4. **High-stakes death** — HP → 0 ends the run
 5. **Vite + TypeScript** SPA only (no backend required)
 
@@ -25,7 +25,7 @@ npm run build     # tsc && vite build
 |----------|-----------|
 | HP / gold / rest / hand size | `src/data/balance.ts` → [docs/BALANCE.md](docs/BALANCE.md) |
 | Cards / starter / rewards | `src/data/cards.ts` → [docs/CONTENT.md](docs/CONTENT.md); target roster in [docs/CARD_BIBLE.md](docs/CARD_BIBLE.md) |
-| Card instances / upgrades / Smith | [docs/UPGRADE_BIBLE.md](docs/UPGRADE_BIBLE.md) before changing the save shape |
+| Card instances / upgrades / Smith | `src/game/cardInstances.ts`, `game/save.ts` → [docs/UPGRADE_BIBLE.md](docs/UPGRADE_BIBLE.md) |
 | Relics / potions / keys | `src/data/relics.ts` → [docs/RELIC_POTION_BIBLE.md](docs/RELIC_POTION_BIBLE.md) |
 | Monsters / intents / roles | `src/data/enemies.ts` → [docs/EVENT_ENCOUNTER_BIBLE.md](docs/EVENT_ENCOUNTER_BIBLE.md) |
 | Multi-enemy packs | `src/data/encounters.ts` |
@@ -38,7 +38,7 @@ npm run build     # tsc && vite build
 | Map / combat / shop UI | `src/ui/mapView.ts`, `combatView.ts`, `screens.ts` |
 | Drag / card fly FX | `src/ui/dragPlay.ts`, `cardFx.ts` |
 | Debug cheats | `src/debug/*` → [docs/DEBUG.md](docs/DEBUG.md) |
-| Responsive tablet stages | `src/styles/main.css` |
+| Responsive phone/tablet stages | `src/styles/main.css`, `src/ui/responsive.ts` |
 
 ## Architecture in one breath
 
@@ -55,6 +55,8 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 - A parent curriculum edit must leave every obtainable card with a valid prompt.
 - Prefer balance constants from `data/balance.ts`; don’t hardcode economy in UI.
 - Keep preschool UX: big hit targets, icons first, adult text secondary.
+- On phones, preserve horizontal hand scrolling: a touch drag becomes card play
+  only after a clear upward gesture. Do not capture every pointer on press.
 
 ## Git rules (this project only)
 

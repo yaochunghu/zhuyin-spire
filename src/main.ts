@@ -1,5 +1,5 @@
 import './styles/main.css';
-import { cycleVolume, sfx, volumeIcon } from './game/audio';
+import { sfx } from './game/audio';
 import { coachForScreen, getCompletedRunCount, isEarlyLearningRuns } from './game/coach';
 import type { CastMode } from './game/castCheck';
 import {
@@ -13,8 +13,13 @@ import { renderCastCheck, renderPractice, submitSpell } from './ui/castView';
 import { renderActClear, renderMap } from './ui/mapView';
 import { playOutcomeOverlay } from './ui/outcome';
 import { openOptions } from './ui/options';
+import { cancelSpeech, speakCue } from './game/speech';
 import { applyGameSettingsToDocument } from './game/settings';
 import { bindUi, session } from './ui/runtime';
+import { openDeckViewer } from './ui/deckViewer';
+import { teachingTimers } from './ui/pauseTimers';
+import { openPhoneMenu } from './ui/phoneMenu';
+import { isPhoneLayout } from './ui/responsive';
 import {
   renderEnd,
   renderCharacterPick,
@@ -61,41 +66,55 @@ function clearFloatSoon(): void {
   }, 700);
 }
 
-function muteButton(): HTMLButtonElement {
-  const b = document.createElement('button');
-  b.className = 'mute-btn';
-  b.type = 'button';
-  b.setAttribute('aria-label', '音量：點一下切換 大／小／靜音');
-  b.title = '音量：大 → 小 → 靜音';
-  b.textContent = volumeIcon();
-  b.addEventListener('click', (e) => {
-    e.stopPropagation();
-    cycleVolume();
-    b.textContent = volumeIcon();
-    sfx.click();
-  });
-  return b;
-}
-
 function globalControls(): HTMLElement {
   const controls = document.createElement('div');
   controls.className = 'global-controls';
-  const mute = muteButton();
-  mute.classList.remove('mute-btn');
-  mute.classList.add('global-control-btn');
-  controls.appendChild(mute);
 
-  const options = document.createElement('button');
-  options.type = 'button';
-  options.className = 'global-control-btn';
-  options.textContent = '⚙️';
-  options.setAttribute('aria-label', '開啟遊戲選項');
-  options.addEventListener('click', (event) => {
+  const menu = document.createElement('button');
+  menu.type = 'button';
+  menu.className = 'global-control-btn pause-global-control';
+  menu.textContent = '☰';
+  menu.setAttribute('aria-label', '開啟暫停選單');
+  menu.addEventListener('click', (event) => {
     event.stopPropagation();
     sfx.click();
-    openOptions({ allowProfileSwitch: runState.screen === 'title' });
+    const noDeckScreens: RunState['screen'][] = [
+      'title',
+      'relicPick',
+      'castCheck',
+      'practice',
+      'defeat',
+      'victory',
+    ];
+    openPhoneMenu({
+      screen: runState.screen,
+      canViewDeck:
+        runState.deck.length > 0 &&
+        !noDeckScreens.includes(runState.screen),
+      onPause: () => {
+        session.phoneMenuOpen = true;
+        teachingTimers.pause();
+        cancelSpeech();
+      },
+      onResume: () => {
+        session.phoneMenuOpen = false;
+        teachingTimers.resume();
+        if (
+          (runState.screen === 'castCheck' || runState.screen === 'practice') &&
+          runState.cast
+        ) {
+          speakCue(runState.cast.prompt.cue.speechText);
+        }
+      },
+      onOpenOptions: (onClose) =>
+        openOptions({
+          allowProfileSwitch: runState.screen === 'title',
+          onClose,
+        }),
+      onOpenDeck: openDeckViewer,
+    });
   });
-  controls.appendChild(options);
+  controls.appendChild(menu);
   return controls;
 }
 
@@ -112,6 +131,14 @@ function appendCoach(parent: HTMLElement, castMode?: CastMode): void {
   const isCombat = runState.screen === 'combat';
   // Screen entry decides the initial state. Once rendered, the player's toggle
   // must stay authoritative; otherwise early-run tips can never be collapsed.
+  if (isPhoneLayout() && session.coachPhoneScreen !== runState.screen) {
+    // Combat has its own always-visible scripted guide. The cast screen does
+    // not, so keep its tutorial co-play explanation open automatically.
+    session.coachCollapsed = !(
+      runState.tutorial && runState.screen === 'castCheck'
+    );
+    session.coachPhoneScreen = runState.screen;
+  }
   const collapsed = session.coachCollapsed;
 
   const box = document.createElement('aside');
@@ -152,6 +179,7 @@ function appendCoach(parent: HTMLElement, castMode?: CastMode): void {
 }
 
 function render(): void {
+  document.documentElement.dataset.screen = runState.screen;
   // Pile inspect only valid on combat screen
   if (runState.screen !== 'combat') {
     session.pileViewer = null;
@@ -231,16 +259,6 @@ bindUi({
 applyGameSettingsToDocument();
 window.addEventListener('zhuyin-settings-change', () => {
   applyGameSettingsToDocument();
-  const icon = appEl.querySelector<HTMLButtonElement>(
-    '.global-controls .global-control-btn',
-  );
-  if (icon) icon.textContent = volumeIcon();
-});
-window.addEventListener('zhuyin-volume-change', () => {
-  const icon = appEl.querySelector<HTMLButtonElement>(
-    '.global-controls .global-control-btn',
-  );
-  if (icon) icon.textContent = volumeIcon();
 });
 window.addEventListener('zhuyin-profile-change', () => {
   // Profile switching is title-only, so replacing this idle title state cannot

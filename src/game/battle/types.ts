@@ -3,14 +3,9 @@
  * Handlers, effects, and UI import from here (not from combat facade).
  */
 
-export interface CombatCard {
-  uid: string;
-  sourceUid: string;
-  defId: string;
-  upgradeLevel: 0 | 1;
-  temporaryCostReduction: number;
-  basicOverride: boolean;
-}
+import type { DeckCardV2 } from '../cardInstances';
+
+export type CombatCard = DeckCardV2;
 
 export interface EnemyUnit {
   id: string;
@@ -20,11 +15,8 @@ export interface EnemyUnit {
   block: number;
   intentIndex: number;
   alive: boolean;
-  /** Echo: first incoming attack each player turn gains +2 damage. */
-  echoTurns: number;
+  /** Attack damage received is multiplied by 1.5 while active. */
   vulnerableTurns: number;
-  weakTurns: number;
-  echoTriggeredThisTurn: boolean;
 }
 
 /** One ordered hit, including the monster shield state before and after it. */
@@ -36,9 +28,12 @@ export interface PlayerImpact {
   blockAfter: number;
   hpDamage: number;
   killed: boolean;
-  /** Optional damage additions, kept separate so feedback can explain them. */
-  echoBonus?: number;
+  /** Damage additions are separate so previews and feedback can explain them. */
+  baseDamage: number;
+  basicAttackBonus?: number;
   relicBonus?: number;
+  vulnerableApplied?: boolean;
+  finalDamage: number;
 }
 
 /** Visual / motion events for UI */
@@ -52,15 +47,8 @@ export type CombatFx =
     }
   | { type: 'playerBlock'; amount: number }
   | { type: 'playerEnergy'; amount: number }
-  | { type: 'playerPower'; power: 'echoGuard' | 'training'; amount: number }
-  | { type: 'playerResource'; resource: 'jin'; delta: number; value: number }
-  | { type: 'playerTempo'; count: number }
-  | {
-      type: 'enemyStatus';
-      enemyId: string;
-      status: 'echo' | 'vulnerable' | 'weak';
-      turns: number;
-    }
+  | { type: 'playerPower'; power: 'basicAttackDamage'; amount: number }
+  | { type: 'enemyStatus'; enemyId: string; status: 'vulnerable'; turns: number }
   | {
       type: 'enemyStrike';
       blockBefore: number;
@@ -90,31 +78,16 @@ export interface CombatState {
   block: number;
   energy: number;
   maxEnergy: number;
-  /** Character relic: spent by the first damaging hit of this combat. */
+  /** Universal relic: readied again at the start of every player turn. */
   firstAttackBonusDamage: number;
   firstAttackBonusReady: boolean;
-  /** Battle-long scaling from 共鳴護唱. */
-  echoGuardAmount: number;
-  training: number;
-  jin: number;
-  gainedJinLastEnemyPhase: boolean;
-  gainedJinThisEnemyPhase: boolean;
-  lastPlayedType: 'attack' | 'skill' | 'power' | null;
-  tempoCount: number;
-  basicPlayedThisTurn: number;
-  basicTrainingCounter: number;
-  nextAttackBonus: number;
-  freeBasicsRemaining: number;
-  bonusDrawNextTurn: number;
-  drawIfJinPending: boolean;
-  bonusJinNextEnemyPhase: number;
-  flawlessTrainingPending: boolean;
-  activePowerIds: string[];
-  powerTriggersThisTurn: Record<string, number>;
-  exhaustPile: CombatCard[];
+  /** Battle-long scaling installed by 聲波架式. */
+  basicAttackBonusDamage: number;
   drawPile: CombatCard[];
   hand: CombatCard[];
   discardPile: CombatCard[];
+  /** Successfully cast Power cards leave ordinary pile circulation. */
+  powerPile: CombatCard[];
   enemies: EnemyUnit[];
   /** Highlighted single-target enemy */
   selectedEnemyId: string | null;
