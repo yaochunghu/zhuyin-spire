@@ -150,17 +150,18 @@ function appendCoach(parent: HTMLElement, castMode?: CastMode): void {
   const head = document.createElement('button');
   head.type = 'button';
   head.className = 'adult-coach-head';
-  head.innerHTML = `<span>👨‍👩‍👧 ${isCombat && collapsed ? '提示' : tip.title}</span><span class="adult-coach-toggle">${collapsed ? '＋' : '－'}</span>`;
-  head.setAttribute('aria-expanded', String(!collapsed));
-  head.setAttribute('aria-label', collapsed ? '展開家長提示' : '收合家長提示');
-  head.addEventListener('click', () => {
-    session.coachCollapsed = !session.coachCollapsed;
-    render();
-  });
-
   box.appendChild(head);
 
-  if (!collapsed) {
+  const syncCoach = () => {
+    const nextCollapsed = session.coachCollapsed;
+    box.classList.toggle('collapsed', nextCollapsed);
+    head.innerHTML = `<span>👨‍👩‍👧 ${isCombat && nextCollapsed ? '提示' : tip.title}</span><span class="adult-coach-toggle">${nextCollapsed ? '＋' : '－'}</span>`;
+    head.setAttribute('aria-expanded', String(!nextCollapsed));
+    head.setAttribute('aria-label', nextCollapsed ? '展開家長提示' : '收合家長提示');
+    box.querySelector('.adult-coach-early')?.remove();
+    box.querySelector('.adult-coach-body')?.remove();
+    if (nextCollapsed) return;
+
     if (early) {
       const n = getCompletedRunCount();
       const banner = document.createElement('div');
@@ -172,7 +173,14 @@ function appendCoach(parent: HTMLElement, castMode?: CastMode): void {
     body.className = 'adult-coach-body';
     body.textContent = tip.body;
     box.appendChild(body);
-  }
+  };
+  head.addEventListener('click', () => {
+    session.coachCollapsed = !session.coachCollapsed;
+    // This control changes only its own disclosure content. Updating it in
+    // place avoids remounting combat while initial draw animations are active.
+    syncCoach();
+  });
+  syncCoach();
 
   parent.appendChild(box);
 }
