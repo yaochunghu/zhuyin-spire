@@ -129,7 +129,7 @@ test('phone map keeps routes attached, nodes large, and scrolling internal', asy
   }));
   expect(panel.scrollHeight).toBeGreaterThan(panel.clientHeight);
   expect(panel.pageOverflow).toBe(false);
-  await expect(page.locator('.map-phone-progress')).toContainText('/15 層');
+  await expect(page.locator('.map-phone-progress')).toContainText('/16 層');
 
   const maxEdgeDistance = await page.locator('.map-edge').evaluateAll((edges) => {
     const center = (id: string) => {
