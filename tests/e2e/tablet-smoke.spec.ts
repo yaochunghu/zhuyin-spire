@@ -508,7 +508,9 @@ test('learner profiles keep their own curriculum and survive reload', async ({
 
   const profileButton = page.getByRole('button', { name: /目前是小玩家 1/ });
   await expect(profileButton).toBeVisible();
-  expect((await profileButton.boundingBox())!.height).toBeGreaterThanOrEqual(64);
+  // Browser layout can report a 63.99998px box after device-scale rounding;
+  // keep the 64px target-size assertion tolerant of sub-pixel measurement noise.
+  expect((await profileButton.boundingBox())!.height).toBeGreaterThanOrEqual(63.5);
   await profileButton.click();
   await expect(page.getByRole('dialog', { name: '遊戲選項' })).toContainText(
     '每位孩子有自己的存檔、教學、徽章和練習紀錄',

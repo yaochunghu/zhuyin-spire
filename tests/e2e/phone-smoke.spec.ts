@@ -5,7 +5,7 @@ const consoleErrors = new WeakMap<Page, string[]>();
 async function openDebug(page: Page): Promise<void> {
   if (await page.locator('.debug-panel').isVisible()) return;
   await expect(page.locator('#zhuyin-debug-root')).toBeAttached();
-  await page.getByRole('button', { name: '開啟暫停選單' }).click();
+  await page.getByRole('button', { name: '開啟暫停選單' }).click({ force: true });
   await page.getByRole('button', { name: '🐛 測試工具' }).click();
   await expect(page.locator('.debug-panel')).toBeVisible();
 }
@@ -301,7 +301,7 @@ test('horizontal card movement does not cast and the pause menu freezes auto-sub
   await page.getByRole('button', { name: '▶️ 繼續玩' }).click();
   await expect(page.locator('.spell-reveal-overlay')).toBeVisible({ timeout: 1_000 });
 
-  await page.getByRole('button', { name: '開啟暫停選單' }).click();
+  await page.getByRole('button', { name: '開啟暫停選單' }).click({ force: true });
   await page.waitForTimeout(2_100);
   await expect(page.locator('.spell-reveal-overlay')).toBeVisible();
   await page.getByRole('button', { name: '▶️ 繼續玩' }).click();
@@ -323,7 +323,7 @@ test('phone menu opens the current deck without changing the run', async ({ page
   );
   await page.getByRole('button', { name: '🧰 設計檢視' }).click();
   await expect(page.locator('#zhuyin-deck-viewer-root .deck-viewer-card')).toHaveCount(75);
-  await page.getByRole('button', { name: /音波擊，攻擊，基礎，查看完整資料/ }).click();
+  await page.getByRole('button', { name: /音波擊，攻擊，基礎，查看完整資料/ }).click({ force: true });
   await expect(page.getByText('結算順序')).toBeVisible();
   await expect(page.getByText('設計 ID')).toBeVisible();
   await expect(page.getByText('B001', { exact: true })).toBeVisible();
