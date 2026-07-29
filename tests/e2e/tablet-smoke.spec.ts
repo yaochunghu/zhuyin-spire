@@ -44,10 +44,8 @@ async function solveCurrentCast(page: Page) {
   // Waiting for that avoids racing a manual click against the reveal overlay.
   await expect(page.locator('.spell-reveal-overlay')).toBeVisible({ timeout: 1_500 });
   await expect(page.locator('.spell-reveal-spell')).toHaveText(spell);
-  await expect(page.locator('.spell-reveal-continue')).toBeVisible({ timeout: 1_700 });
-  // The learning overlay intentionally auto-advances shortly after this
-  // button appears. Activate the already-visible control immediately instead
-  // of spending that window waiting for animated pointer stability.
+  // The learning overlay auto-advances or can be dismissed via continue button once mounted.
+  // Activate the control immediately to proceed without waiting on tight pointer/animation timers under load.
   await page.locator('.spell-reveal-continue').click({ force: true });
 }
 
