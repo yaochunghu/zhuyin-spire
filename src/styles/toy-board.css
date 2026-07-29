@@ -1225,6 +1225,137 @@ button:active:not(:disabled) {
   }
 }
 
+/*
+ * Short, medium-narrow browser windows (including tablet split view) need the
+ * same two-pane casting composition as landscape phones. Without this range,
+ * the display:contents defaults stack every answer control into one tall
+ * column and push the lower controls below the viewport.
+ */
+@media (min-width: 601px) and (max-width: 760px) and (max-height: 820px) {
+  .cast-screen {
+    width: 100%;
+    min-height: calc(100dvh - 24px);
+    height: calc(100dvh - 24px);
+    max-height: calc(100dvh - 24px);
+    flex-basis: calc(100dvh - 24px);
+    padding: max(5px, env(safe-area-inset-top))
+      max(74px, calc(env(safe-area-inset-right) + 70px))
+      max(5px, env(safe-area-inset-bottom))
+      max(5px, env(safe-area-inset-left));
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    align-items: stretch;
+    gap: 6px;
+    overflow: hidden;
+  }
+
+  .cast-header {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+  }
+
+  .cast-layout {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(220px, 40%) minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .cast-cue-pane,
+  .cast-answer-pane {
+    min-width: 0;
+    min-height: 0;
+    padding: 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .cast-screen .cue-box {
+    width: 100%;
+    min-width: 0;
+    min-height: 190px;
+    flex: 1 1 auto;
+    padding: 10px 14px;
+    display: grid;
+    align-content: center;
+  }
+
+  .cast-screen .cue-emoji {
+    font-size: 3.2rem;
+  }
+
+  .cast-screen .cue-word {
+    font-size: 2rem;
+  }
+
+  .cast-screen .cast-kid-prompt {
+    margin-top: 3px;
+    font-size: 1.15rem;
+  }
+
+  .cast-screen .replay-btn-big {
+    width: 100%;
+    max-width: none;
+    min-height: 58px;
+    height: 58px;
+    flex: 0 0 58px;
+  }
+
+  .cast-screen .adult-coach {
+    width: 100%;
+    max-width: none;
+    padding-block: 4px;
+  }
+
+  .cast-screen .adult-coach-head {
+    min-height: 40px;
+  }
+
+  .cast-screen .spell-slots {
+    min-height: 60px;
+    height: 60px;
+    flex: 0 0 60px;
+  }
+
+  .cast-screen .spell-slot {
+    width: 52px;
+    height: 60px;
+    font-size: 1.75rem;
+  }
+
+  .cast-screen .spell-bank-wrap,
+  .cast-screen .spell-bank {
+    gap: 6px;
+  }
+
+  .cast-screen .spell-key {
+    min-width: 58px;
+    min-height: 58px;
+    font-size: 1.6rem;
+  }
+
+  .cast-screen .spell-controls {
+    width: 100%;
+    max-width: 520px;
+    min-height: 58px;
+    gap: 7px;
+  }
+
+  .cast-screen .spell-ctrl {
+    min-height: 58px;
+  }
+
+  .cast-screen .hint-btn {
+    min-height: 44px;
+    margin: 0;
+  }
+}
+
 @media (min-width: 761px) and (max-height: 820px) {
   .title-screen {
     gap: 9px;

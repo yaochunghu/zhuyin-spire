@@ -183,6 +183,16 @@ test('combat hand stays between pile rails, scrolls, and survives rotation', asy
 }, testInfo) => {
   await openTutorial(page);
   await expectNoPageOverflow(page);
+  await expect
+    .poll(() =>
+      page.locator('.hand .card').evaluateAll(
+        (cards) =>
+          new Set(
+            cards.map((card) => Math.round(card.getBoundingClientRect().height)),
+          ).size,
+      ),
+    )
+    .toBe(1);
 
   const geometry = await page.evaluate(() => {
     const hand = document.querySelector<HTMLElement>('.hand')!;
@@ -305,7 +315,7 @@ test('horizontal card movement does not cast and the pause menu freezes auto-sub
   await page.waitForTimeout(2_100);
   await expect(page.locator('.spell-reveal-overlay')).toBeVisible();
   await page.getByRole('button', { name: '▶️ 繼續玩' }).click();
-  await page.locator('.spell-reveal-continue').click();
+  await page.locator('.spell-reveal-continue').click({ force: true });
   await expect(page.locator('.tutorial-step-endTurn')).toBeVisible();
 });
 

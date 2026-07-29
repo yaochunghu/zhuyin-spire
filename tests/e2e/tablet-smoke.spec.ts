@@ -45,7 +45,10 @@ async function solveCurrentCast(page: Page) {
   await expect(page.locator('.spell-reveal-overlay')).toBeVisible({ timeout: 1_500 });
   await expect(page.locator('.spell-reveal-spell')).toHaveText(spell);
   await expect(page.locator('.spell-reveal-continue')).toBeVisible({ timeout: 1_700 });
-  await page.locator('.spell-reveal-continue').click();
+  // The learning overlay intentionally auto-advances shortly after this
+  // button appears. Activate the already-visible control immediately instead
+  // of spending that window waiting for animated pointer stability.
+  await page.locator('.spell-reveal-continue').click({ force: true });
 }
 
 async function expectMapEdgesAttached(page: Page) {
@@ -270,6 +273,109 @@ test('combat hand keeps cards separate when they fit and scrolls at ten cards', 
   expect(layout.hand.right).toBeLessThanOrEqual(layout.discard.left + 1);
   expect(layout.end.left).toBeGreaterThanOrEqual(layout.discard.left - 1);
   expect(layout.end.top).toBeGreaterThanOrEqual(layout.discard.top);
+});
+
+test('combat animation batches do not remount the settled battlefield', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'tablet-landscape');
+  await page.goto('/?debug=1');
+  await page
+    .locator('.debug-row')
+    .filter({ hasText: 'Cast' })
+    .getByRole('button', { name: /^Skip cast/ })
+    .click();
+  await page
+    .locator('.debug-row')
+    .filter({ hasText: 'Start' })
+    .getByRole('button', { name: 'Go', exact: true })
+    .click();
+  await page.locator('.debug-head .debug-btn-icon').click();
+  await expect(page.locator('.hand-card-hidden')).toHaveCount(0);
+
+  await page.evaluate(() => {
+    const probe = { removed: 0 };
+    const observer = new MutationObserver((records) => {
+      for (const record of records) {
+        for (const node of record.removedNodes) {
+          if (
+            node instanceof HTMLElement &&
+            (node.matches('.combat-screen') || !!node.querySelector('.combat-screen'))
+          ) {
+            probe.removed += 1;
+          }
+        }
+      }
+    });
+    observer.observe(document.querySelector('#app')!, { childList: true, subtree: true });
+    Object.assign(window, { __combatRemountProbe: probe });
+  });
+
+  const removedScreens = () =>
+    page.evaluate(
+      () =>
+        (
+          window as typeof window & {
+            __combatRemountProbe: { removed: number };
+          }
+        ).__combatRemountProbe.removed,
+    );
+
+  await page.locator('.hand .card:not([disabled])').first().click();
+  await expect.poll(removedScreens).toBeGreaterThanOrEqual(1);
+  await page.waitForTimeout(2_500);
+  expect(await removedScreens()).toBe(1);
+
+  await page.evaluate(
+    () =>
+      ((
+        window as typeof window & {
+          __combatRemountProbe: { removed: number };
+        }
+      ).__combatRemountProbe.removed = 0),
+  );
+  await page.locator('.end-turn-btn').click();
+  await expect.poll(removedScreens).toBeGreaterThanOrEqual(1);
+  await page.waitForTimeout(5_000);
+  expect(await removedScreens()).toBe(1);
+  await expect(page.locator('.hand-card-hidden')).toHaveCount(0);
+});
+
+test('casting controls stay inside a short medium-width viewport', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'tablet-landscape');
+  await page.setViewportSize({ width: 720, height: 640 });
+  await page.goto('/?debug=1');
+  await debugAction(page, 'Cast', 'Hear');
+  await debugAction(page, 'Tutorial', 'Start');
+  await page.locator('.debug-head .debug-btn-icon').click();
+  await expect(page.locator('.hand-card-hidden')).toHaveCount(0);
+  await page.getByRole('button', { name: '注音 ㄇ', exact: true }).click();
+  await expect(page.locator('.cast-screen')).toBeVisible();
+
+  const layout = await page.locator('.cast-screen').evaluate((screen) => {
+    const answer = screen.querySelector<HTMLElement>('.cast-answer-pane')!;
+    const screenRect = screen.getBoundingClientRect();
+    const answerRect = answer.getBoundingClientRect();
+    return {
+      viewportHeight: window.innerHeight,
+      documentHeight: document.documentElement.scrollHeight,
+      screenBottom: screenRect.bottom,
+      answerBottom: answerRect.bottom,
+      answerClientHeight: answer.clientHeight,
+      answerScrollHeight: answer.scrollHeight,
+    };
+  });
+  expect(layout.documentHeight).toBeLessThanOrEqual(layout.viewportHeight + 1);
+  expect(layout.screenBottom).toBeLessThanOrEqual(layout.viewportHeight + 1);
+  expect(layout.answerBottom).toBeLessThanOrEqual(layout.viewportHeight + 1);
+
+  await page
+    .locator('.cast-answer-pane')
+    .evaluate((answer) => answer.scrollTo({ top: answer.scrollHeight }));
+  await expect(page.locator('.spell-controls')).toBeInViewport();
+  await expect(page.locator('.hint-btn')).toBeInViewport();
 });
 
 test('combat chrome stays clear and supports a five-enemy formation', async ({

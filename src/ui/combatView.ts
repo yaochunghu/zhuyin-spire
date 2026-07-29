@@ -98,8 +98,16 @@ function renderPileViewer(kind: 'draw' | 'discard', cards: CombatCard[]): HTMLEl
 }
 
 export async function playPendingCombatFx(): Promise<void> {
+  // Never consume a second batch while the current one is still playing.
+  // A render can be requested by a timer during FX; consuming first would
+  // silently drop the queued animation.
+  if (session.combatFxPlaying) return;
   const batch = consumeCombatFx(run());
-  if (batch.length === 0 || session.combatFxPlaying) return;
+  if (batch.length === 0) return;
+
+  session.combatFxPlaying = true;
+  syncCombatInteractionState();
+  app().querySelector('.combat-screen')?.classList.add('fx-playing');
 
   // Wait for 1080p stage scale + layout so pile/hand rects are real (not 0,0)
   await new Promise<void>((r) => {
@@ -107,22 +115,46 @@ export async function playPendingCombatFx(): Promise<void> {
   });
   const anchors = queryCombatAnchors(app());
 
-  session.combatFxPlaying = true;
-  app().querySelectorAll<HTMLButtonElement>('.hand .card, .end-turn-btn').forEach((b) => {
-    b.disabled = true;
-  });
-  app().querySelector('.combat-screen')?.classList.add('fx-playing');
-
   try {
     await playCombatFxBatch(batch, anchors, (defId) => cardFaceHtml(getCard(defId)));
   } finally {
     session.combatFxPlaying = false;
     app().querySelector('.combat-screen')?.classList.remove('fx-playing');
-    // Full re-render rebinds drag listeners (disabled-during-FX path had no binds)
-    if (run().screen === 'combat' && run().combat) {
-      render();
-    }
+    // The post-action combat DOM was already rendered before FX started.
+    // Re-enable it in place so the battlefield, hand, and background do not
+    // flash from a second full-screen remount after every play/draw/discard.
+    syncCombatInteractionState();
   }
+}
+
+function syncCombatInteractionState(): void {
+  const state = run();
+  const combat = state.screen === 'combat' ? state.combat : null;
+  const locked =
+    !combat ||
+    combat.status !== 'playing' ||
+    session.combatFxPlaying ||
+    session.outcomeAnimPlaying;
+
+  app().querySelectorAll<HTMLButtonElement>('.hand .card[data-uid]').forEach((button) => {
+    const uid = button.dataset.uid;
+    const playable =
+      !!combat &&
+      !!uid &&
+      canPlay(combat, uid) &&
+      canTutorialPlayCard(state, uid);
+    button.disabled = locked || !playable;
+    button.classList.toggle('unplayable', !playable);
+  });
+
+  const endTurn = app().querySelector<HTMLButtonElement>('.end-turn-btn');
+  if (endTurn) {
+    endTurn.disabled = locked || !canTutorialEndTurn(state);
+  }
+
+  app().querySelectorAll<HTMLButtonElement>('.combat-pile-btn').forEach((button) => {
+    button.disabled = locked || !!state.tutorial;
+  });
 }
 
 function playCardFromUi(uid: string, targetIds: string[] = []): void {
