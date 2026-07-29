@@ -5,6 +5,7 @@
 import { ENCOUNTERS } from '../data/encounters';
 import { ENEMIES } from '../data/enemies';
 import { drawCards, livingEnemies } from '../game/combat';
+import { createCombat } from '../game/battle/battleManager';
 import {
   createNewRun,
   debugFinishFight,
@@ -16,6 +17,7 @@ import {
   selectMapNode,
   startRun,
   type RunState,
+  type Screen,
 } from '../game/state';
 import { resetTutorialCompletion, updateGameSettings } from '../game/settings';
 import type { CastMode } from '../game/casting/types';
@@ -199,6 +201,147 @@ export function debugResetCastingBags(): void {
       ),
     },
   }));
+}
+
+export interface VisualReviewOptions {
+  actIndex?: number;
+  enemyCount?: number;
+  enemyDefIds?: string[];
+  handCount?: number;
+}
+
+/**
+ * Deterministic, development-only state seeding for screenshot review.
+ * It intentionally bypasses room eligibility, but uses the real renderers and
+ * combat model so no visual-review route or production state is introduced.
+ */
+export function debugPrepareVisualReview(
+  state: RunState,
+  screen: Screen,
+  options: VisualReviewOptions = {},
+): void {
+  Object.assign(state, createNewRun());
+
+  if (screen === 'title') {
+    state.screen = 'title';
+    return;
+  }
+
+  startRun(state);
+  if (screen === 'relicPick') return;
+
+  pickCharacter(state, 'echoMage');
+  state.actIndex = Math.max(0, Math.min(2, options.actIndex ?? 0));
+  state.gold = 240;
+  state.heroHp = Math.max(1, state.heroMaxHp - 7);
+
+  const reviewOffers = state.deck.slice(0, 3).map((card, index) => ({
+    ...card,
+    uid: `visual-offer-${index}`,
+  }));
+  const enemyIdsByAct = [
+    ['rock', 'bat', 'ember', 'fang', 'eliteArmor'],
+    ['armor', 'spike', 'fangHard', 'toad', 'eliteStorm'],
+    ['wraith', 'owl', 'crystal', 'eliteShadow', 'boss3'],
+  ] as const;
+
+  switch (screen) {
+    case 'map':
+      state.screen = 'map';
+      return;
+    case 'rest':
+    case 'smith':
+    case 'removeCard':
+      state.screen = screen;
+      return;
+    case 'shop':
+    case 'shopRemove':
+      state.shopOffers = reviewOffers.map((offer, index) => ({
+        ...offer,
+        price: 35 + index * 10,
+        sold: false,
+      }));
+      state.screen = screen;
+      return;
+    case 'combat': {
+      const enemyCount = Math.max(1, Math.min(5, options.enemyCount ?? 3));
+      const requestedIds = options.enemyDefIds?.filter((id) => ENEMIES[id]);
+      const enemyIds =
+        requestedIds && requestedIds.length > 0
+          ? requestedIds.slice(0, 5)
+          : enemyIdsByAct[state.actIndex]!.slice(0, enemyCount);
+      state.combat = createCombat(
+        state.deck,
+        [...enemyIds],
+        state.heroHp,
+        state.heroMaxHp,
+      );
+      for (
+        let index = state.combat.enemies.length;
+        index < enemyIds.length;
+        index += 1
+      ) {
+        const defId = enemyIds[index]!;
+        const def = ENEMIES[defId]!;
+        state.combat.enemies.push({
+          id: `visual-enemy-${index}`,
+          defId,
+          hp: def.maxHp,
+          maxHp: def.maxHp,
+          block: 0,
+          intentIndex: 0,
+          alive: true,
+          echoTurns: 0,
+          vulnerableTurns: 0,
+          weakTurns: 0,
+          echoTriggeredThisTurn: false,
+        });
+      }
+      const handCount = Math.max(5, Math.min(10, options.handCount ?? 5));
+      drawCards(state.combat, handCount - state.combat.hand.length);
+      state.screen = 'combat';
+      return;
+    }
+    case 'castCheck': {
+      enterPractice(state);
+      const reviewCast = state.cast;
+      state.combat = createCombat(
+        state.deck,
+        ['rock', 'bat'],
+        state.heroHp,
+        state.heroMaxHp,
+      );
+      state.cast = reviewCast;
+      state.screen = 'castCheck';
+      return;
+    }
+    case 'practice':
+      enterPractice(state);
+      return;
+    case 'reward':
+      state.rewardOptions = reviewOffers;
+      state.rewardTier = 'normal';
+      state.rewardSource = 'fight';
+      state.pendingGold = 18;
+      state.gold += state.pendingGold;
+      state.screen = 'reward';
+      return;
+    case 'actClear':
+      state.lastClearedAct = state.actIndex === 0 ? 1 : 2;
+      state.actIndex = state.lastClearedAct;
+      state.screen = 'actClear';
+      return;
+    case 'defeat':
+      state.heroHp = 0;
+      state.screen = 'defeat';
+      return;
+    case 'victory':
+      state.actIndex = 2;
+      state.screen = 'victory';
+      return;
+    default:
+      state.screen = screen;
+  }
 }
 
 export function listEnemyOptions(): { id: string; label: string }[] {

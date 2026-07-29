@@ -89,6 +89,9 @@ function runAction(opts: DebugMountOpts, fn: (s: RunState) => void): void {
 }
 
 let skipToggleBtn: HTMLButtonElement | null = null;
+let openPhoneHandler: (() => void) | null = null;
+let keyHandler: ((event: KeyboardEvent) => void) | null = null;
+let inspectInterval: number | null = null;
 
 function paintSkipToggle(): void {
   if (!skipToggleBtn) return;
@@ -276,19 +279,9 @@ function buildPanel(opts: DebugMountOpts): HTMLElement {
 function paint(opts: DebugMountOpts): void {
   if (!root) return;
   root.innerHTML = '';
-  if (!panelOpen) {
-    const fab = document.createElement('button');
-    fab.type = 'button';
-    fab.className = 'debug-fab';
-    fab.textContent = '🐛';
-    fab.title = 'Open debug (`)';
-    fab.addEventListener('click', () => {
-      panelOpen = true;
-      paint(opts);
-    });
-    root.appendChild(fab);
-    return;
-  }
+  // A closed development panel stays fully out of the game surface. It can be
+  // reopened from the pause menu or with the documented keyboard shortcut.
+  if (!panelOpen) return;
   root.appendChild(buildPanel(opts));
 }
 
@@ -301,14 +294,15 @@ export function mountDebugLayer(opts: DebugMountOpts): void {
   document.body.appendChild(root);
   paint(opts);
 
-  window.addEventListener('zhuyin-debug-open-phone', () => {
+  openPhoneHandler = () => {
     phoneDebugOpen = true;
     panelOpen = true;
     root?.classList.add('debug-phone-open');
     paint(opts);
-  });
+  };
+  window.addEventListener('zhuyin-debug-open-phone', openPhoneHandler);
 
-  window.addEventListener('keydown', (e) => {
+  keyHandler = (e: KeyboardEvent) => {
     if (e.key === '`' || (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'd')) {
       e.preventDefault();
       panelOpen = !panelOpen;
@@ -320,16 +314,37 @@ export function mountDebugLayer(opts: DebugMountOpts): void {
       }
       paint(opts);
     }
-  });
+  };
+  window.addEventListener('keydown', keyHandler);
 
   // Keep inspect fresh after game renders
   const origRender = opts.render;
   // Caller should call refreshDebugInspect after render; we also poll lightly
-  window.setInterval(() => {
+  inspectInterval = window.setInterval(() => {
     if (panelOpen && inspectEl) refreshInspect(opts.getRun);
   }, 800);
 
   void origRender;
+}
+
+export function unmountDebugLayer(): void {
+  if (openPhoneHandler) {
+    window.removeEventListener('zhuyin-debug-open-phone', openPhoneHandler);
+  }
+  if (keyHandler) window.removeEventListener('keydown', keyHandler);
+  if (inspectInterval !== null) window.clearInterval(inspectInterval);
+  root?.remove();
+  root = null;
+  mounted = false;
+  panelOpen = true;
+  phoneDebugOpen = false;
+  inspectEl = null;
+  enemySelect = null;
+  encSelect = null;
+  skipToggleBtn = null;
+  openPhoneHandler = null;
+  keyHandler = null;
+  inspectInterval = null;
 }
 
 export function refreshDebugInspect(getRun: () => RunState): void {

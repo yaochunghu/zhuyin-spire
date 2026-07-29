@@ -1,5 +1,6 @@
 import { getVolume, setVolume, sfx, type VolLevel } from '../game/audio';
 import type { Screen } from '../game/state';
+import { isDebugEnabled } from '../debug/debugFlags';
 import { lockPageScroll, trapModalFocus } from './modal';
 
 export interface PhoneMenuOptions {
@@ -132,7 +133,7 @@ export function openPhoneMenu(options: PhoneMenuOptions): void {
     links.appendChild(deck);
   }
 
-  if (import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEBUG_TOOLS === 'true') {
+  if (isDebugEnabled()) {
     const debug = document.createElement('button');
     debug.type = 'button';
     debug.className = 'btn-secondary phone-menu-debug';

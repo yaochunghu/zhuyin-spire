@@ -6,6 +6,7 @@ import {
   getCurrentActNodes,
   selectMapNode,
 } from '../game/state';
+import { actTransitionArtKeyFor, artImageHtml } from './assets';
 import type { MapNode } from '../data/map';
 import { sfx } from '../game/audio';
 import { gameplayMs } from '../game/settings';
@@ -256,12 +257,20 @@ export function renderActClear(): HTMLElement {
   el.className = 'screen act-clear-screen';
   const nextAct = run().actIndex + 1;
   const next = getCurrentAct(run());
+  const transitionArt = actTransitionArtKeyFor(run().lastClearedAct);
   el.innerHTML = `
-    <div class="end-emoji bounce-in">🏆</div>
-    <div class="kid-prompt">第 ${run().lastClearedAct} 幕過關！</div>
-    <div class="kid-stat">❤️ 回滿</div>
-    <p class="adult-text center" data-next-act></p>
-    <p class="kid-prompt" style="font-size:1.1rem">往上 · 第 ${nextAct} 幕</p>
+    ${
+      transitionArt
+        ? `<div class="act-transition-backdrop" aria-hidden="true">${artImageHtml(transitionArt, 'act-transition-art', true)}</div>`
+        : ''
+    }
+    <div class="act-transition-content">
+      <div class="end-emoji bounce-in">🏆</div>
+      <div class="kid-prompt">第 ${run().lastClearedAct} 幕過關！</div>
+      <div class="kid-stat">❤️ 回滿</div>
+      <p class="adult-text center" data-next-act></p>
+      <p class="kid-prompt act-transition-next">往上 · 第 ${nextAct} 幕</p>
+    </div>
   `;
   el.querySelector<HTMLElement>('[data-next-act]')!.textContent =
     `下一幕：${next.emoji} ${next.title}`;
@@ -277,6 +286,6 @@ export function renderActClear(): HTMLElement {
     session.deckViewerOpen = false;
     render();
   });
-  el.appendChild(go);
+  el.querySelector('.act-transition-content')?.appendChild(go);
   return el;
 }

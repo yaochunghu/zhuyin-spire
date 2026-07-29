@@ -27,7 +27,7 @@ export function isDebugEnabled(): boolean {
   } catch {
     /* ignore */
   }
-  return DEBUG_BUILD_ENABLED;
+  return false;
 }
 
 export function setDebugPersisted(on: boolean): void {
@@ -40,6 +40,9 @@ export function setDebugPersisted(on: boolean): void {
     else localStorage.removeItem(LS_KEY);
   } catch {
     /* ignore */
+  }
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('zhuyin-debug-change'));
   }
 }
 

@@ -35,6 +35,7 @@ import { cardFaceHtml } from './cards';
 import { openOptions } from './options';
 import { createConfettiLayer } from './outcome';
 import { appendCoach, render, run, session, showFlash } from './runtime';
+import { artImageHtml } from './assets';
 
 export function renderTitle(): HTMLElement {
   const el = document.createElement('div');
@@ -47,7 +48,7 @@ export function renderTitle(): HTMLElement {
   if (hasPracticeBadge()) badges.push('<div class="badge practice" title="練習">📚</div>');
   const practiceN = getPracticeLifetimeCorrect();
   el.innerHTML = `
-    <div class="hero-preview">🥋🗼</div>
+    <div class="hero-preview">${artImageHtml('heroMartialArtist', 'title-hero-art')}</div>
     <div class="title-zhuyin-row" aria-hidden="true">
       <span>ㄓ</span><span>ㄨ</span><span>ˋ</span>
       <span>ㄧ</span><span>ㄣ</span>
@@ -225,7 +226,7 @@ export function renderCharacterPick(): HTMLElement {
       : '目前發布的卡牌全數可用';
     btn.innerHTML = `
       <div class="character-status character-status-playable">✨ 第一波可遊玩</div>
-      <div class="relic-emoji character-emoji">${character.emoji}</div>
+      <div class="relic-emoji character-emoji">${artImageHtml('heroMartialArtist', 'character-hero-art')}</div>
       <div class="character-name">${character.name}</div>
       <div class="adult-text character-title">${character.title}</div>
       <div class="character-theme">🥋 ${character.theme}</div>

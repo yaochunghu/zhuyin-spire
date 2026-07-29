@@ -178,7 +178,7 @@ test('phone map keeps routes attached, nodes large, and scrolling internal', asy
   expect(overlapsHeaderContent).toBe(false);
 });
 
-test('combat hand is full-width, equal-height, scrollable, and state survives rotation', async ({
+test('combat hand stays between pile rails, scrolls, and survives rotation', async ({
   page,
 }, testInfo) => {
   await openTutorial(page);
@@ -188,20 +188,26 @@ test('combat hand is full-width, equal-height, scrollable, and state survives ro
     const hand = document.querySelector<HTMLElement>('.hand')!;
     const cards = [...hand.querySelectorAll<HTMLElement>('.card')];
     const action = document.querySelector<HTMLElement>('.combat-action-bar')!;
+    const draw = document.querySelector<HTMLElement>('[data-pile="draw"]')!;
+    const discard = document.querySelector<HTMLElement>('[data-pile="discard"]')!;
+    const handRect = hand.getBoundingClientRect();
+    const drawRect = draw.getBoundingClientRect();
+    const discardRect = discard.getBoundingClientRect();
     return {
-      handWidth: hand.getBoundingClientRect().width,
-      viewport: window.innerWidth,
+      handWidth: handRect.width,
+      drawRight: drawRect.right,
+      handLeft: handRect.left,
+      handRight: handRect.right,
+      discardLeft: discardRect.left,
       scrollWidth: hand.scrollWidth,
       clientWidth: hand.clientWidth,
       heights: cards.map((card) => card.getBoundingClientRect().height),
       actionHeight: action.getBoundingClientRect().height,
     };
   });
-  if (testInfo.project.name.includes('portrait')) {
-    expect(geometry.handWidth).toBeGreaterThanOrEqual(geometry.viewport - 20);
-  } else {
-    expect(geometry.handWidth).toBeGreaterThanOrEqual(240);
-  }
+  expect(geometry.handWidth).toBeGreaterThanOrEqual(96);
+  expect(geometry.drawRight).toBeLessThanOrEqual(geometry.handLeft + 1);
+  expect(geometry.handRight).toBeLessThanOrEqual(geometry.discardLeft + 1);
   expect(geometry.scrollWidth).toBeGreaterThan(geometry.clientWidth);
   expect(new Set(geometry.heights.map(Math.round)).size).toBe(1);
   expect(geometry.actionHeight).toBeGreaterThanOrEqual(63.9);
@@ -216,7 +222,7 @@ test('combat hand is full-width, equal-height, scrollable, and state survives ro
   await expect(page.locator('.hand .card').last()).toBeInViewport();
 
   const before = {
-    hp: await page.locator('.kid-hp-num').textContent(),
+    hp: await page.locator('.hero-kid-hp').textContent(),
     cards: await page.locator('.hand .card').count(),
   };
   const enemyHandle = await page.locator('.enemy-slot').elementHandle();
@@ -224,7 +230,7 @@ test('combat hand is full-width, equal-height, scrollable, and state survives ro
     ? { width: 640, height: 360 }
     : { width: 360, height: 640 };
   await page.setViewportSize(nextViewport);
-  await expect(page.locator('.kid-hp-num')).toHaveText(before.hp!);
+  await expect(page.locator('.hero-kid-hp')).toHaveText(before.hp!);
   await expect(page.locator('.hand .card')).toHaveCount(before.cards);
   expect(await enemyHandle!.evaluate((node) => node.isConnected)).toBe(true);
   await expectNoPageOverflow(page);
