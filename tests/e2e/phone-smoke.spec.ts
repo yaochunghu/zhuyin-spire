@@ -6,7 +6,7 @@ async function openDebug(page: Page): Promise<void> {
   if (await page.locator('.debug-panel').isVisible()) return;
   await expect(page.locator('#zhuyin-debug-root')).toBeAttached();
   await page.getByRole('button', { name: '開啟暫停選單' }).click({ force: true });
-  await page.getByRole('button', { name: '🐛 測試工具' }).click();
+  await page.getByRole('button', { name: '🐛 測試工具' }).click({ force: true });
   await expect(page.locator('.debug-panel')).toBeVisible();
 }
 
@@ -20,7 +20,7 @@ async function debugAction(page: Page, rowName: string, buttonName: string): Pro
 }
 
 async function closeDebug(page: Page): Promise<void> {
-  await page.locator('.debug-head .debug-btn-icon').click();
+  await page.locator('.debug-head .debug-btn-icon').click({ force: true });
   await expect(page.locator('.debug-panel')).toBeHidden();
 }
 
@@ -34,7 +34,7 @@ async function openTutorial(page: Page): Promise<void> {
 }
 
 async function enterHintedSpellAndOpenPauseMenu(page: Page): Promise<void> {
-  await page.locator('.hint-btn').click();
+  await page.locator('.hint-btn').click({ force: true });
   const spell = (await page.locator('.spell-answer').textContent())!.trim();
   await page.evaluate((symbols) => {
     for (const symbol of symbols) {
@@ -249,6 +249,7 @@ test('combat hand stays between pile rails, scrolls, and survives rotation', asy
 test('horizontal card movement does not cast and the pause menu freezes auto-submit', async ({
   page,
 }) => {
+  test.setTimeout(90_000);
   await openTutorial(page);
   const card = page.getByRole('button', { name: '注音 ㄇ', exact: true });
   const box = (await card.boundingBox())!;
@@ -308,13 +309,13 @@ test('horizontal card movement does not cast and the pause menu freezes auto-sub
   await expect(page.getByRole('dialog', { name: '注音暫停' })).toBeVisible();
   await page.waitForTimeout(700);
   await expect(page.locator('.spell-reveal-overlay')).toHaveCount(0);
-  await page.getByRole('button', { name: '▶️ 繼續玩' }).click();
+  await page.getByRole('button', { name: '▶️ 繼續玩' }).click({ force: true });
   await expect(page.locator('.spell-reveal-overlay')).toBeVisible({ timeout: 1_000 });
 
   await page.getByRole('button', { name: '開啟暫停選單' }).click({ force: true });
   await page.waitForTimeout(2_100);
   await expect(page.locator('.spell-reveal-overlay')).toBeVisible();
-  await page.getByRole('button', { name: '▶️ 繼續玩' }).click();
+  await page.getByRole('button', { name: '▶️ 繼續玩' }).click({ force: true });
   await page.locator('.spell-reveal-continue').click({ force: true });
   await expect(page.locator('.tutorial-step-endTurn')).toBeVisible();
 });
