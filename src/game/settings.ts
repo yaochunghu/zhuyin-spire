@@ -14,6 +14,8 @@ export type AnimationSpeed = 1 | 2;
 export interface GameSettingsV1 {
   tutorialEnabled: boolean;
   animationSpeed: AnimationSpeed;
+  /** Adult co-play note on the combat stage. Off by default to protect play space. */
+  combatTipsEnabled: boolean;
 }
 
 /** Teaching pauses intentionally ignore animationSpeed. */
@@ -24,6 +26,7 @@ export function defaultGameSettings(): GameSettingsV1 {
   return {
     tutorialEnabled: true,
     animationSpeed: 1,
+    combatTipsEnabled: false,
   };
 }
 
@@ -37,6 +40,10 @@ export function parseGameSettings(value: unknown): GameSettingsV1 {
         ? data.tutorialEnabled
         : defaults.tutorialEnabled,
     animationSpeed: data.animationSpeed === 2 ? 2 : 1,
+    combatTipsEnabled:
+      typeof data.combatTipsEnabled === 'boolean'
+        ? data.combatTipsEnabled
+        : defaults.combatTipsEnabled,
   };
 }
 

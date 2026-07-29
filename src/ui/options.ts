@@ -27,6 +27,11 @@ import {
 } from '../game/settings';
 import { clearAllAppData } from '../game/privacy';
 import { exportPlaytestTelemetry } from '../game/playtestTelemetry';
+import {
+  DEBUG_BUILD_ENABLED,
+  isDebugEnabled,
+  setDebugPersisted,
+} from '../debug/debugFlags';
 
 const PACK_LABELS: Record<PhrasePack, string> = {
   core: '基礎本',
@@ -542,6 +547,49 @@ function paint(): void {
   speedNote.textContent = '只加快戰鬥與地圖動畫；注音答案和語音仍保持正常速度。';
   speed.appendChild(speedNote);
   dialog.appendChild(speed);
+
+  const combatTips = section('戰鬥家長提示');
+  const combatTipsRow = document.createElement('div');
+  combatTipsRow.className = 'option-choice-row';
+  combatTipsRow.appendChild(
+    optionButton('顯示', settings.combatTipsEnabled, () =>
+      updateGameSettings({ combatTipsEnabled: true }),
+    ),
+  );
+  combatTipsRow.appendChild(
+    optionButton('隱藏', !settings.combatTipsEnabled, () =>
+      updateGameSettings({ combatTipsEnabled: false }),
+    ),
+  );
+  combatTips.appendChild(combatTipsRow);
+  const combatTipsNote = document.createElement('p');
+  combatTipsNote.className = 'adult-text';
+  combatTipsNote.textContent = '預設隱藏，避免提示牌遮住戰鬥場地。';
+  combatTips.appendChild(combatTipsNote);
+  dialog.appendChild(combatTips);
+
+  if (DEBUG_BUILD_ENABLED) {
+    const debugTools = section('開發測試工具');
+    const debugRow = document.createElement('div');
+    debugRow.className = 'option-choice-row';
+    const debugEnabled = isDebugEnabled();
+    debugRow.appendChild(
+      optionButton('開啟', debugEnabled, () => {
+        setDebugPersisted(true);
+      }),
+    );
+    debugRow.appendChild(
+      optionButton('關閉', !debugEnabled, () => {
+        setDebugPersisted(false);
+      }),
+    );
+    debugTools.appendChild(debugRow);
+    const debugNote = document.createElement('p');
+    debugNote.className = 'adult-text';
+    debugNote.textContent = '只在開發或測試版本提供；預設隱藏。';
+    debugTools.appendChild(debugNote);
+    dialog.appendChild(debugTools);
+  }
 
   const tutorial = section('第一次戰鬥教學');
   const tutorialRow = document.createElement('div');

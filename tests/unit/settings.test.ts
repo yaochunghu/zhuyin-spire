@@ -31,7 +31,11 @@ beforeEach(() => {
 
 describe('GameSettingsV1', () => {
   it('uses safe defaults and validates malformed values', () => {
-    expect(defaultGameSettings()).toEqual({ tutorialEnabled: true, animationSpeed: 1 });
+    expect(defaultGameSettings()).toEqual({
+      tutorialEnabled: true,
+      animationSpeed: 1,
+      combatTipsEnabled: false,
+    });
     expect(parseGameSettings(null)).toEqual(defaultGameSettings());
     expect(parseGameSettings({ tutorialEnabled: 'yes', animationSpeed: 99 })).toEqual(
       defaultGameSettings(),
@@ -39,6 +43,7 @@ describe('GameSettingsV1', () => {
     expect(parseGameSettings({ tutorialEnabled: false, animationSpeed: 2 })).toEqual({
       tutorialEnabled: false,
       animationSpeed: 2,
+      combatTipsEnabled: false,
     });
   });
 

@@ -10,5 +10,6 @@ dist/
 
 # Tooling
 .superpowers
+.superdesign/tmp/
 test-results/
 playwright-report/

@@ -8,6 +8,7 @@ import {
   intentTotalDamage,
   intentTotalLabel,
 } from '../data/enemies';
+import { getRelic } from '../data/relics';
 import {
   canPlay,
   intentForUnit,
@@ -42,6 +43,7 @@ import {
   session,
   showFlash,
 } from './runtime';
+import { artImageHtml, enemyArtKeyFor } from './assets';
 
 /** Group pile cards by defId for a compact grid (×N badge). */
 /** Inspect draw or discard pile (kid-friendly grid). */
@@ -96,8 +98,16 @@ function renderPileViewer(kind: 'draw' | 'discard', cards: CombatCard[]): HTMLEl
 }
 
 export async function playPendingCombatFx(): Promise<void> {
+  // Never consume a second batch while the current one is still playing.
+  // A render can be requested by a timer during FX; consuming first would
+  // silently drop the queued animation.
+  if (session.combatFxPlaying) return;
   const batch = consumeCombatFx(run());
-  if (batch.length === 0 || session.combatFxPlaying) return;
+  if (batch.length === 0) return;
+
+  session.combatFxPlaying = true;
+  syncCombatInteractionState();
+  app().querySelector('.combat-screen')?.classList.add('fx-playing');
 
   // Wait for 1080p stage scale + layout so pile/hand rects are real (not 0,0)
   await new Promise<void>((r) => {
@@ -105,22 +115,46 @@ export async function playPendingCombatFx(): Promise<void> {
   });
   const anchors = queryCombatAnchors(app());
 
-  session.combatFxPlaying = true;
-  app().querySelectorAll<HTMLButtonElement>('.hand .card, .end-turn-btn').forEach((b) => {
-    b.disabled = true;
-  });
-  app().querySelector('.combat-screen')?.classList.add('fx-playing');
-
   try {
     await playCombatFxBatch(batch, anchors, (defId) => cardFaceHtml(getCard(defId)));
   } finally {
     session.combatFxPlaying = false;
     app().querySelector('.combat-screen')?.classList.remove('fx-playing');
-    // Full re-render rebinds drag listeners (disabled-during-FX path had no binds)
-    if (run().screen === 'combat' && run().combat) {
-      render();
-    }
+    // The post-action combat DOM was already rendered before FX started.
+    // Re-enable it in place so the battlefield, hand, and background do not
+    // flash from a second full-screen remount after every play/draw/discard.
+    syncCombatInteractionState();
   }
+}
+
+function syncCombatInteractionState(): void {
+  const state = run();
+  const combat = state.screen === 'combat' ? state.combat : null;
+  const locked =
+    !combat ||
+    combat.status !== 'playing' ||
+    session.combatFxPlaying ||
+    session.outcomeAnimPlaying;
+
+  app().querySelectorAll<HTMLButtonElement>('.hand .card[data-uid]').forEach((button) => {
+    const uid = button.dataset.uid;
+    const playable =
+      !!combat &&
+      !!uid &&
+      canPlay(combat, uid) &&
+      canTutorialPlayCard(state, uid);
+    button.disabled = locked || !playable;
+    button.classList.toggle('unplayable', !playable);
+  });
+
+  const endTurn = app().querySelector<HTMLButtonElement>('.end-turn-btn');
+  if (endTurn) {
+    endTurn.disabled = locked || !canTutorialEndTurn(state);
+  }
+
+  app().querySelectorAll<HTMLButtonElement>('.combat-pile-btn').forEach((button) => {
+    button.disabled = locked || !!state.tutorial;
+  });
 }
 
 function playCardFromUi(uid: string, targetIds: string[] = []): void {
@@ -182,6 +216,7 @@ function renderEnemySlot(
     );
   }
 
+  const enemyArtKey = enemyArtKeyFor(unit.defId);
   slot.innerHTML = `
     <div class="enemy-intent-stack">
       ${
@@ -198,7 +233,13 @@ function renderEnemySlot(
       </div>`
       }
     </div>
-    <div class="enemy-emoji${opts.damaged && !dead ? ' enemy-flinch enemy-impact' : ''}${opts.castOk && !opts.damaged && !dead ? ' enemy-cast-ok' : ''}${dead ? ' enemy-poof' : ''}" data-enemy>${dead ? '💨' : def.emoji}</div>
+    <div class="enemy-emoji${opts.damaged && !dead ? ' enemy-flinch enemy-impact' : ''}${opts.castOk && !opts.damaged && !dead ? ' enemy-cast-ok' : ''}${dead ? ' enemy-poof' : ''}" data-enemy>${
+      dead
+        ? '💨'
+        : enemyArtKey
+          ? artImageHtml(enemyArtKey, 'enemy-miniature-art')
+          : def.emoji
+    }</div>
     <div class="adult-text enemy-name-adult">${def.name}${def.isElite ? ' · 菁英' : ''}${def.isBoss ? ' · BOSS' : ''}</div>
     ${
       !dead && unit.vulnerableTurns > 0
@@ -248,6 +289,10 @@ export function renderCombat(): HTMLElement {
 
   const c = run().combat!;
   const living = livingEnemies(c);
+  const incoming = living.reduce(
+    (sum, unit) => sum + intentTotalDamage(intentForUnit(unit)),
+    0,
+  );
   const el = document.createElement('div');
   el.className = `screen combat-screen${run().tutorial ? ' tutorial-active' : ''}`;
 
@@ -284,10 +329,36 @@ export function renderCombat(): HTMLElement {
     stage.appendChild(guide);
   }
 
-  // —— Enemy row (1–3) ——
+  const actLabels = ['庭園', '圖書館', '觀測台'];
+  const relicId = run().relicId;
+  const relic = relicId ? getRelic(relicId) : null;
+  const hud = document.createElement('div');
+  hud.className = 'combat-hud-strip';
+  hud.innerHTML = `
+    <div class="combat-hud-location">
+      <span aria-hidden="true">${run().actIndex === 0 ? '🌿' : run().actIndex === 1 ? '📚' : '🔭'}</span>
+      <strong>${actLabels[run().actIndex] ?? actLabels[0]} · 第 ${c.turn} 回合</strong>
+    </div>
+    <div class="combat-hud-relics" aria-label="${relic ? `遺物：${relic.name}` : '沒有遺物'}">
+      ${relic ? `<span class="combat-relic-token" title="${relic.name}">${relic.emoji}</span>` : ''}
+    </div>
+    <div class="combat-hud-resources">
+      ${incoming > 0 ? `<span class="combat-hud-counter combat-hud-incoming" aria-label="本回合敵人預計造成 ${incoming} 點傷害">⚔️ <strong>${incoming}</strong></span>` : ''}
+      <span class="combat-hud-counter" aria-label="生命 ${c.heroHp} / ${c.heroMaxHp}">❤️ <strong>${c.heroHp}/${c.heroMaxHp}</strong></span>
+      <span class="combat-hud-counter" aria-label="金幣 ${run().gold}">🪙 <strong>${run().gold}</strong></span>
+    </div>
+  `;
+  stage.appendChild(hud);
+
+  const battlefield = document.createElement('div');
+  battlefield.className = 'combat-battlefield';
+  battlefield.setAttribute('aria-label', '戰鬥場地');
+
+  // —— Enemy row (1–5) ——
   const enemyRow = document.createElement('div');
   enemyRow.className = 'enemy-row combat-top';
   enemyRow.dataset.drop = 'all';
+  enemyRow.dataset.count = String(c.enemies.length);
   if (run().flash?.includes('💨')) enemyRow.classList.add('shake');
   if (castOkFlash) enemyRow.classList.add('pulse-ok');
 
@@ -310,11 +381,6 @@ export function renderCombat(): HTMLElement {
     enemyRow.appendChild(flo);
     clearFloatSoon();
   }
-  stage.appendChild(enemyRow);
-
-  // —— Piles + turn ——
-  const pileRow = document.createElement('div');
-  pileRow.className = 'combat-pile-row';
 
   const makePileBtn = (
     kind: 'draw' | 'discard',
@@ -342,24 +408,6 @@ export function renderCombat(): HTMLElement {
     return btn;
   };
 
-  pileRow.appendChild(makePileBtn('draw', '📚', '抽牌', c.drawPile.length));
-  const turn = document.createElement('div');
-  turn.className = 'combat-turn adult-text';
-  const incoming = living.reduce(
-    (sum, u) => sum + intentTotalDamage(intentForUnit(u)),
-    0,
-  );
-  const turnBits = [`第 ${c.turn} 回合`];
-  if (living.length > 1) turnBits.push(`${living.length} 隻`);
-  if (incoming > 0) turnBits.push(`本回合 ⚔️${incoming}`);
-  turn.textContent = turnBits.join(' · ');
-  if (incoming >= 7 || (incoming > 0 && incoming - c.block >= Math.max(4, c.heroHp * 0.35))) {
-    turn.classList.add('combat-turn-danger');
-  }
-  pileRow.appendChild(turn);
-  pileRow.appendChild(makePileBtn('discard', '🗑️', '棄牌', c.discardPile.length));
-  stage.appendChild(pileRow);
-
   // —— Large hero drop zone (shield / self skills) ——
   const heroZone = document.createElement('div');
   heroZone.className =
@@ -383,19 +431,19 @@ export function renderCombat(): HTMLElement {
     (blockGained ? ' shield-bar-pulse' : '');
 
   heroZone.innerHTML = `
-    <div class="hero-actor" aria-hidden="true">${run().characterId === 'echoMage' ? '🧒🥋' : '🧒'}</div>
+    <div class="hero-actor" aria-hidden="true">${
+      run().characterId === 'echoMage'
+        ? artImageHtml('heroMartialArtist', 'combat-hero-art', true)
+        : '🧒'
+    }</div>
     <div class="hero-vitals">
-      <div class="hero-vital-row">
-        <div class="stat-pill hero-stat${heroLow ? ' danger-hp' : ''}${heroDamaged ? ' hero-hit' : ''}" data-hero-hp>❤️ ${c.heroHp}/${c.heroMaxHp}</div>
-        <div class="stat-pill block-pill${blockGained ? ' block-pulse' : ''}${c.block <= 0 ? ' shield-empty' : ''}" data-hero-block>🛡️ <span data-block-val>${c.block}</span></div>
-        <div class="stat-pill energy hero-energy" title="能量 ${c.energy}/${c.maxEnergy}" aria-label="能量 ${c.energy} / ${c.maxEnergy}">
-          <span class="energy-readout">⚡ ${c.energy}/${c.maxEnergy}</span>
-          <span class="energy-orbs" data-energy-orbs></span>
-        </div>
-      </div>
       <div class="hero-bars">
         <div class="${heroBarCls}" data-hero-bar><span style="width:${heroPct}%"></span></div>
         <div class="${shieldBarCls}" data-hero-shield-bar><span style="width:${c.block <= 0 ? 0 : shieldPct}%"></span></div>
+      </div>
+      <div class="kid-hp-num hero-kid-hp${heroLow ? ' danger-hp' : ''}${heroDamaged ? ' hero-hit' : ''}" data-hero-hp>
+        <span>❤️ ${c.heroHp}/${c.heroMaxHp}</span>
+        <span class="hero-inline-shield${blockGained ? ' block-pulse' : ''}${c.block <= 0 ? ' shield-empty' : ''}" data-hero-block>🛡️ <span data-block-val>${c.block}</span></span>
       </div>
       <div class="hero-combat-powers">
         ${c.firstAttackBonusDamage > 0 ? `<span class="combat-power relic-ready${c.firstAttackBonusReady ? '' : ' status-used'}" title="初心音叉：每回合第一次攻擊 +${c.firstAttackBonusDamage}">🎵 首擊 +${c.firstAttackBonusDamage}${c.firstAttackBonusReady ? '' : ' ✓'}</span>` : ''}
@@ -404,21 +452,8 @@ export function renderCombat(): HTMLElement {
     </div>
   `;
 
-  const orbsEl = heroZone.querySelector('[data-energy-orbs]')!;
-  // Show one orb per max energy (cap visual at 8; number always shows true max)
-  const orbCount = Math.min(c.maxEnergy, 8);
-  for (let i = 0; i < orbCount; i += 1) {
-    const orb = document.createElement('span');
-    orb.className = 'orb' + (i < c.energy ? ' on' : '');
-    orbsEl.appendChild(orb);
-  }
-  if (c.maxEnergy > 8) {
-    const more = document.createElement('span');
-    more.className = 'energy-orbs-more adult-text';
-    more.textContent = `+${c.maxEnergy - 8}`;
-    orbsEl.appendChild(more);
-  }
-  stage.appendChild(heroZone);
+  battlefield.append(heroZone, enemyRow);
+  stage.appendChild(battlefield);
 
   if (blockGained && run().floatText) {
     const flo = document.createElement('div');
@@ -434,16 +469,26 @@ export function renderCombat(): HTMLElement {
   log.textContent = c.log.slice(-1)[0] ?? '';
   stage.appendChild(log);
 
-  // Floating coach (collapsed by default — does not take layout space)
+  // Adult co-play guidance is opt-in in Options and never baked into the stage art.
   appendCoach(stage);
 
-  // —— Bottom dock: full hand plus a phone-friendly action bar ——
+  // —— Bottom command deck: DOM piles + scrollable hand + compact End Turn ——
   const bottom = document.createElement('div');
   bottom.className = 'combat-bottom-row';
 
+  const leftRail = document.createElement('div');
+  leftRail.className = 'combat-command-rail combat-command-rail-left';
+  leftRail.appendChild(makePileBtn('draw', '📚', '抽牌', c.drawPile.length));
+
+  const actionEnergy = document.createElement('div');
+  actionEnergy.className = 'combat-action-energy';
+  actionEnergy.setAttribute('aria-label', `能量 ${c.energy} / ${c.maxEnergy}`);
+  actionEnergy.innerHTML = `<span aria-hidden="true">⚡</span><strong>${c.energy}/${c.maxEnergy}</strong>`;
+  leftRail.appendChild(actionEnergy);
+  bottom.appendChild(leftRail);
+
   const hand = document.createElement('div');
-  hand.className = 'hand' + (c.hand.length >= 7 ? ' hand-fan' : '');
-  if (c.hand.length >= 9) hand.classList.add('hand-fan-tight');
+  hand.className = 'hand';
   hand.setAttribute('data-hand', '');
   hand.dataset.count = String(c.hand.length);
   const livingIds = living.map((e) => e.id);
@@ -500,15 +545,12 @@ export function renderCombat(): HTMLElement {
   bottom.appendChild(hand);
 
   const actionBar = document.createElement('div');
-  actionBar.className = 'combat-action-bar';
-  const actionEnergy = document.createElement('div');
-  actionEnergy.className = 'combat-action-energy';
-  actionEnergy.setAttribute('aria-label', `能量 ${c.energy} / ${c.maxEnergy}`);
-  actionEnergy.innerHTML = `<span aria-hidden="true">⚡</span><strong>${c.energy}/${c.maxEnergy}</strong>`;
-  actionBar.appendChild(actionEnergy);
+  actionBar.className = 'combat-action-bar combat-command-rail combat-command-rail-right';
+  actionBar.appendChild(makePileBtn('discard', '🗑️', '棄牌', c.discardPile.length));
 
   const end = document.createElement('button');
   end.className = 'btn-secondary btn-kid-main end-turn-btn';
+  end.classList.add(c.energy === 0 ? 'end-turn-ready' : 'end-turn-waiting');
   end.innerHTML = `<span class="btn-emoji">✋</span><span class="end-turn-label">結束回合</span>`;
   end.setAttribute('aria-label', '結束回合（過牌）');
   end.title = '結束回合';

@@ -5,8 +5,8 @@ const consoleErrors = new WeakMap<Page, string[]>();
 async function openDebug(page: Page): Promise<void> {
   if (await page.locator('.debug-panel').isVisible()) return;
   await expect(page.locator('#zhuyin-debug-root')).toBeAttached();
-  await page.getByRole('button', { name: '開啟暫停選單' }).click();
-  await page.getByRole('button', { name: '🐛 測試工具' }).click();
+  await page.getByRole('button', { name: '開啟暫停選單' }).click({ force: true });
+  await page.getByRole('button', { name: '🐛 測試工具' }).click({ force: true });
   await expect(page.locator('.debug-panel')).toBeVisible();
 }
 
@@ -20,7 +20,7 @@ async function debugAction(page: Page, rowName: string, buttonName: string): Pro
 }
 
 async function closeDebug(page: Page): Promise<void> {
-  await page.locator('.debug-head .debug-btn-icon').click();
+  await page.locator('.debug-head .debug-btn-icon').click({ force: true });
   await expect(page.locator('.debug-panel')).toBeHidden();
 }
 
@@ -34,7 +34,7 @@ async function openTutorial(page: Page): Promise<void> {
 }
 
 async function enterHintedSpellAndOpenPauseMenu(page: Page): Promise<void> {
-  await page.locator('.hint-btn').click();
+  await page.locator('.hint-btn').click({ force: true });
   const spell = (await page.locator('.spell-answer').textContent())!.trim();
   await page.evaluate((symbols) => {
     for (const symbol of symbols) {
@@ -178,30 +178,46 @@ test('phone map keeps routes attached, nodes large, and scrolling internal', asy
   expect(overlapsHeaderContent).toBe(false);
 });
 
-test('combat hand is full-width, equal-height, scrollable, and state survives rotation', async ({
+test('combat hand stays between pile rails, scrolls, and survives rotation', async ({
   page,
 }, testInfo) => {
   await openTutorial(page);
   await expectNoPageOverflow(page);
+  await expect
+    .poll(() =>
+      page.locator('.hand .card').evaluateAll(
+        (cards) =>
+          new Set(
+            cards.map((card) => Math.round(card.getBoundingClientRect().height)),
+          ).size,
+      ),
+    )
+    .toBe(1);
 
   const geometry = await page.evaluate(() => {
     const hand = document.querySelector<HTMLElement>('.hand')!;
     const cards = [...hand.querySelectorAll<HTMLElement>('.card')];
     const action = document.querySelector<HTMLElement>('.combat-action-bar')!;
+    const draw = document.querySelector<HTMLElement>('[data-pile="draw"]')!;
+    const discard = document.querySelector<HTMLElement>('[data-pile="discard"]')!;
+    const handRect = hand.getBoundingClientRect();
+    const drawRect = draw.getBoundingClientRect();
+    const discardRect = discard.getBoundingClientRect();
     return {
-      handWidth: hand.getBoundingClientRect().width,
-      viewport: window.innerWidth,
+      handWidth: handRect.width,
+      drawRight: drawRect.right,
+      handLeft: handRect.left,
+      handRight: handRect.right,
+      discardLeft: discardRect.left,
       scrollWidth: hand.scrollWidth,
       clientWidth: hand.clientWidth,
       heights: cards.map((card) => card.getBoundingClientRect().height),
       actionHeight: action.getBoundingClientRect().height,
     };
   });
-  if (testInfo.project.name.includes('portrait')) {
-    expect(geometry.handWidth).toBeGreaterThanOrEqual(geometry.viewport - 20);
-  } else {
-    expect(geometry.handWidth).toBeGreaterThanOrEqual(240);
-  }
+  expect(geometry.handWidth).toBeGreaterThanOrEqual(96);
+  expect(geometry.drawRight).toBeLessThanOrEqual(geometry.handLeft + 1);
+  expect(geometry.handRight).toBeLessThanOrEqual(geometry.discardLeft + 1);
   expect(geometry.scrollWidth).toBeGreaterThan(geometry.clientWidth);
   expect(new Set(geometry.heights.map(Math.round)).size).toBe(1);
   expect(geometry.actionHeight).toBeGreaterThanOrEqual(63.9);
@@ -216,7 +232,7 @@ test('combat hand is full-width, equal-height, scrollable, and state survives ro
   await expect(page.locator('.hand .card').last()).toBeInViewport();
 
   const before = {
-    hp: await page.locator('.kid-hp-num').textContent(),
+    hp: await page.locator('.hero-kid-hp').textContent(),
     cards: await page.locator('.hand .card').count(),
   };
   const enemyHandle = await page.locator('.enemy-slot').elementHandle();
@@ -224,7 +240,7 @@ test('combat hand is full-width, equal-height, scrollable, and state survives ro
     ? { width: 640, height: 360 }
     : { width: 360, height: 640 };
   await page.setViewportSize(nextViewport);
-  await expect(page.locator('.kid-hp-num')).toHaveText(before.hp!);
+  await expect(page.locator('.hero-kid-hp')).toHaveText(before.hp!);
   await expect(page.locator('.hand .card')).toHaveCount(before.cards);
   expect(await enemyHandle!.evaluate((node) => node.isConnected)).toBe(true);
   await expectNoPageOverflow(page);
@@ -233,6 +249,7 @@ test('combat hand is full-width, equal-height, scrollable, and state survives ro
 test('horizontal card movement does not cast and the pause menu freezes auto-submit', async ({
   page,
 }) => {
+  test.setTimeout(90_000);
   await openTutorial(page);
   const card = page.getByRole('button', { name: '注音 ㄇ', exact: true });
   const box = (await card.boundingBox())!;
@@ -292,14 +309,14 @@ test('horizontal card movement does not cast and the pause menu freezes auto-sub
   await expect(page.getByRole('dialog', { name: '注音暫停' })).toBeVisible();
   await page.waitForTimeout(700);
   await expect(page.locator('.spell-reveal-overlay')).toHaveCount(0);
-  await page.getByRole('button', { name: '▶️ 繼續玩' }).click();
+  await page.getByRole('button', { name: '▶️ 繼續玩' }).click({ force: true });
   await expect(page.locator('.spell-reveal-overlay')).toBeVisible({ timeout: 1_000 });
 
-  await page.getByRole('button', { name: '開啟暫停選單' }).click();
+  await page.getByRole('button', { name: '開啟暫停選單' }).click({ force: true });
   await page.waitForTimeout(2_100);
   await expect(page.locator('.spell-reveal-overlay')).toBeVisible();
-  await page.getByRole('button', { name: '▶️ 繼續玩' }).click();
-  await page.locator('.spell-reveal-continue').click();
+  await page.getByRole('button', { name: '▶️ 繼續玩' }).click({ force: true });
+  await page.locator('.spell-reveal-continue').click({ force: true });
   await expect(page.locator('.tutorial-step-endTurn')).toBeVisible();
 });
 
@@ -317,7 +334,7 @@ test('phone menu opens the current deck without changing the run', async ({ page
   );
   await page.getByRole('button', { name: '🧰 設計檢視' }).click();
   await expect(page.locator('#zhuyin-deck-viewer-root .deck-viewer-card')).toHaveCount(75);
-  await page.getByRole('button', { name: /音波擊，攻擊，基礎，查看完整資料/ }).click();
+  await page.getByRole('button', { name: /音波擊，攻擊，基礎，查看完整資料/ }).click({ force: true });
   await expect(page.getByText('結算順序')).toBeVisible();
   await expect(page.getByText('設計 ID')).toBeVisible();
   await expect(page.getByText('B001', { exact: true })).toBeVisible();

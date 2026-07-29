@@ -1,0 +1,377 @@
+[
+  {
+    "viewport": "tablet-1024x768",
+    "state": "01-title",
+    "file": "design/reviews/next-stage/screenshots/tablet-1024x768/01-title.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "tablet-1024x768",
+    "state": "02-character",
+    "file": "design/reviews/next-stage/screenshots/tablet-1024x768/02-character.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "tablet-1024x768",
+    "state": "03-map",
+    "file": "design/reviews/next-stage/screenshots/tablet-1024x768/03-map.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "tablet-1024x768",
+    "state": "04-rest",
+    "file": "design/reviews/next-stage/screenshots/tablet-1024x768/04-rest.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "tablet-1024x768",
+    "state": "05-smith",
+    "file": "design/reviews/next-stage/screenshots/tablet-1024x768/05-smith.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "tablet-1024x768",
+    "state": "06-remove-card",
+    "file": "design/reviews/next-stage/screenshots/tablet-1024x768/06-remove-card.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "tablet-1024x768",
+    "state": "07-shop",
+    "file": "design/reviews/next-stage/screenshots/tablet-1024x768/07-shop.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "tablet-1024x768",
+    "state": "08-shop-remove",
+    "file": "design/reviews/next-stage/screenshots/tablet-1024x768/08-shop-remove.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "tablet-1024x768",
+    "state": "09-combat",
+    "file": "design/reviews/next-stage/screenshots/tablet-1024x768/09-combat.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "tablet-1024x768",
+    "state": "10-cast-check",
+    "file": "design/reviews/next-stage/screenshots/tablet-1024x768/10-cast-check.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "tablet-1024x768",
+    "state": "11-practice",
+    "file": "design/reviews/next-stage/screenshots/tablet-1024x768/11-practice.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "tablet-1024x768",
+    "state": "12-reward",
+    "file": "design/reviews/next-stage/screenshots/tablet-1024x768/12-reward.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "tablet-1024x768",
+    "state": "13-act-clear",
+    "file": "design/reviews/next-stage/screenshots/tablet-1024x768/13-act-clear.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "tablet-1024x768",
+    "state": "14-defeat",
+    "file": "design/reviews/next-stage/screenshots/tablet-1024x768/14-defeat.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "tablet-1024x768",
+    "state": "15-victory",
+    "file": "design/reviews/next-stage/screenshots/tablet-1024x768/15-victory.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "tablet-1024x768",
+    "state": "console",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "phone-portrait-390x844",
+    "state": "01-title",
+    "file": "design/reviews/next-stage/screenshots/phone-portrait-390x844/01-title.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-portrait-390x844",
+    "state": "02-character",
+    "file": "design/reviews/next-stage/screenshots/phone-portrait-390x844/02-character.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-portrait-390x844",
+    "state": "03-map",
+    "file": "design/reviews/next-stage/screenshots/phone-portrait-390x844/03-map.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-portrait-390x844",
+    "state": "04-rest",
+    "file": "design/reviews/next-stage/screenshots/phone-portrait-390x844/04-rest.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-portrait-390x844",
+    "state": "05-smith",
+    "file": "design/reviews/next-stage/screenshots/phone-portrait-390x844/05-smith.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-portrait-390x844",
+    "state": "06-remove-card",
+    "file": "design/reviews/next-stage/screenshots/phone-portrait-390x844/06-remove-card.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-portrait-390x844",
+    "state": "07-shop",
+    "file": "design/reviews/next-stage/screenshots/phone-portrait-390x844/07-shop.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-portrait-390x844",
+    "state": "08-shop-remove",
+    "file": "design/reviews/next-stage/screenshots/phone-portrait-390x844/08-shop-remove.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-portrait-390x844",
+    "state": "09-combat",
+    "file": "design/reviews/next-stage/screenshots/phone-portrait-390x844/09-combat.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-portrait-390x844",
+    "state": "10-cast-check",
+    "file": "design/reviews/next-stage/screenshots/phone-portrait-390x844/10-cast-check.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-portrait-390x844",
+    "state": "11-practice",
+    "file": "design/reviews/next-stage/screenshots/phone-portrait-390x844/11-practice.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-portrait-390x844",
+    "state": "12-reward",
+    "file": "design/reviews/next-stage/screenshots/phone-portrait-390x844/12-reward.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-portrait-390x844",
+    "state": "13-act-clear",
+    "file": "design/reviews/next-stage/screenshots/phone-portrait-390x844/13-act-clear.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-portrait-390x844",
+    "state": "14-defeat",
+    "file": "design/reviews/next-stage/screenshots/phone-portrait-390x844/14-defeat.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-portrait-390x844",
+    "state": "15-victory",
+    "file": "design/reviews/next-stage/screenshots/phone-portrait-390x844/15-victory.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-portrait-390x844",
+    "state": "console",
+    "consoleErrors": []
+  },
+  {
+    "viewport": "phone-landscape-844x390",
+    "state": "01-title",
+    "file": "design/reviews/next-stage/screenshots/phone-landscape-844x390/01-title.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-landscape-844x390",
+    "state": "02-character",
+    "file": "design/reviews/next-stage/screenshots/phone-landscape-844x390/02-character.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-landscape-844x390",
+    "state": "03-map",
+    "file": "design/reviews/next-stage/screenshots/phone-landscape-844x390/03-map.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-landscape-844x390",
+    "state": "04-rest",
+    "file": "design/reviews/next-stage/screenshots/phone-landscape-844x390/04-rest.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-landscape-844x390",
+    "state": "05-smith",
+    "file": "design/reviews/next-stage/screenshots/phone-landscape-844x390/05-smith.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-landscape-844x390",
+    "state": "06-remove-card",
+    "file": "design/reviews/next-stage/screenshots/phone-landscape-844x390/06-remove-card.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-landscape-844x390",
+    "state": "07-shop",
+    "file": "design/reviews/next-stage/screenshots/phone-landscape-844x390/07-shop.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-landscape-844x390",
+    "state": "08-shop-remove",
+    "file": "design/reviews/next-stage/screenshots/phone-landscape-844x390/08-shop-remove.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-landscape-844x390",
+    "state": "09-combat",
+    "file": "design/reviews/next-stage/screenshots/phone-landscape-844x390/09-combat.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-landscape-844x390",
+    "state": "10-cast-check",
+    "file": "design/reviews/next-stage/screenshots/phone-landscape-844x390/10-cast-check.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-landscape-844x390",
+    "state": "11-practice",
+    "file": "design/reviews/next-stage/screenshots/phone-landscape-844x390/11-practice.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-landscape-844x390",
+    "state": "12-reward",
+    "file": "design/reviews/next-stage/screenshots/phone-landscape-844x390/12-reward.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-landscape-844x390",
+    "state": "13-act-clear",
+    "file": "design/reviews/next-stage/screenshots/phone-landscape-844x390/13-act-clear.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-landscape-844x390",
+    "state": "14-defeat",
+    "file": "design/reviews/next-stage/screenshots/phone-landscape-844x390/14-defeat.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-landscape-844x390",
+    "state": "15-victory",
+    "file": "design/reviews/next-stage/screenshots/phone-landscape-844x390/15-victory.png",
+    "pageOverflowX": 0,
+    "missingImages": [],
+    "clippedControls": []
+  },
+  {
+    "viewport": "phone-landscape-844x390",
+    "state": "console",
+    "consoleErrors": []
+  }
+]

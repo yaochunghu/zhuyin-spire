@@ -59,6 +59,17 @@ export function playSpellReveal(
   let autoTimer = 0;
   const finish = (): void => {
     if (finished) return;
+    // The pause-aware group normally prevents this callback from running
+    // while the phone menu is open. Keep the reveal defensive as well: a
+    // callback already queued by the browser must never dismiss the learning
+    // answer behind a modal.
+    if (
+      session.phoneMenuOpen ||
+      document.getElementById('zhuyin-phone-menu-root')
+    ) {
+      autoTimer = teachingTimers.set(finish, 120);
+      return;
+    }
     finished = true;
     teachingTimers.clear(autoTimer);
     teachingTimers.clear(revealContinueTimer);

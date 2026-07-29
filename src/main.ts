@@ -1,4 +1,5 @@
 import './styles/main.css';
+import './styles/toy-board.css';
 import { sfx } from './game/audio';
 import { coachForScreen, getCompletedRunCount, isEarlyLearningRuns } from './game/coach';
 import type { CastMode } from './game/castCheck';
@@ -14,12 +15,18 @@ import { renderActClear, renderMap } from './ui/mapView';
 import { playOutcomeOverlay } from './ui/outcome';
 import { openOptions } from './ui/options';
 import { cancelSpeech, speakCue } from './game/speech';
-import { applyGameSettingsToDocument } from './game/settings';
+import { applyGameSettingsToDocument, loadGameSettings } from './game/settings';
 import { bindUi, session } from './ui/runtime';
 import { openDeckViewer } from './ui/deckViewer';
 import { teachingTimers } from './ui/pauseTimers';
 import { openPhoneMenu } from './ui/phoneMenu';
 import { isPhoneLayout } from './ui/responsive';
+import {
+  applyVisualTheme,
+  actAmbienceElement,
+  hydrateArtImages,
+  towerProgressElement,
+} from './ui/assets';
 import {
   renderEnd,
   renderCharacterPick,
@@ -119,6 +126,7 @@ function globalControls(): HTMLElement {
 }
 
 function appendCoach(parent: HTMLElement, castMode?: CastMode): void {
+  if (runState.screen === 'combat' && !loadGameSettings().combatTipsEnabled) return;
   const node = getActiveNode(runState) ?? getAvailableMapNodes(runState)[0] ?? undefined;
   const tip = coachForScreen(runState.screen, {
     node,
@@ -194,7 +202,11 @@ function render(): void {
   }
 
   appEl.innerHTML = '';
+  const visualTheme = applyVisualTheme(appEl, runState.screen, runState.actIndex);
   appEl.appendChild(globalControls());
+  appEl.appendChild(towerProgressElement(runState.screen, runState.actIndex));
+  const ambience = actAmbienceElement(visualTheme);
+  if (ambience) appEl.appendChild(ambience);
 
   if (runState.flash) {
     const f = document.createElement('div');
@@ -251,6 +263,7 @@ function render(): void {
       appEl.appendChild(renderEnd(true));
       break;
   }
+  hydrateArtImages(appEl);
 }
 
 bindUi({
@@ -277,15 +290,42 @@ window.addEventListener('zhuyin-profile-change', () => {
 render();
 
 // Vite folds this condition at build time, so ordinary public builds do not
-// emit the debug-panel chunk at all.
+// emit the debug-panel chunk at all. Debug-capable builds still start hidden.
 if (import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEBUG_TOOLS === 'true') {
-  void import('./debug/debugFlags').then(({ isDebugEnabled }) => {
-    if (!isDebugEnabled()) return;
-    void import('./debug/debugPanel').then(({ mountDebugLayer }) => {
+  type VisualReviewWindow = Window & {
+    __zhuyinVisualReview?: (
+      screen: RunState['screen'],
+      options?: {
+        actIndex?: number;
+        enemyCount?: number;
+        enemyDefIds?: string[];
+        handCount?: number;
+      },
+    ) => Promise<void>;
+  };
+  (window as VisualReviewWindow).__zhuyinVisualReview = async (
+    screen,
+    options,
+  ) => {
+    const { debugPrepareVisualReview } = await import('./debug/debugActions');
+    debugPrepareVisualReview(runState, screen, options);
+    render();
+  };
+
+  const syncDebugLayer = async (): Promise<void> => {
+    const { isDebugEnabled } = await import('./debug/debugFlags');
+    const { mountDebugLayer, unmountDebugLayer } = await import('./debug/debugPanel');
+    if (isDebugEnabled()) {
       mountDebugLayer({
         getRun: () => runState,
         render,
       });
-    });
+    } else {
+      unmountDebugLayer();
+    }
+  };
+  void syncDebugLayer();
+  window.addEventListener('zhuyin-debug-change', () => {
+    void syncDebugLayer();
   });
 }

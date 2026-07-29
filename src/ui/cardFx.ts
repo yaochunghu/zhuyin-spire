@@ -409,7 +409,7 @@ async function playEnemyStatus(
 async function playPlayerEnergy(
   fx: Extract<CombatFx, { type: 'playerEnergy' }>,
 ): Promise<void> {
-  const energy = document.querySelector<HTMLElement>('.stat-pill.energy');
+  const energy = document.querySelector<HTMLElement>('.combat-action-energy');
   sfx.fork();
   spawnFloat(energy, `⚡+${fx.amount}`, 'strike-float-energy');
   energy?.classList.add('energy-gain-pop');
