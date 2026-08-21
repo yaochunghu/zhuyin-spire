@@ -37,11 +37,17 @@ before 易傷.
 
 ## Catalog and progression
 
-The generated data draft contains all 75 post-cull definitions, but the live
-character, rewards, shops, and later acts expose only the 12-card teaching wave.
-Character score publishes the reviewed 21-card waves at 300, 1000, and 2000
-points. Existing decks and saved offers remain instance-safe when progression
-changes.
+The generated data draft contains all 75 post-cull definitions. Live offers are
+the reviewed waves only:
+
+- **Wave 1 (Act I, always):** 12 designs (3 starter + 9 rewards).
+- **Wave 2 (Acts II–III, character score 300):** 13 Commons listed in
+  `RESONANCE_WAVE_TWO_IDS`.
+
+Character score still counts catalog rows (12 → 33 at 300 → 54 at 1000 → 75 at
+2000) in the 🃏 UI. Unreviewed 300-tier Uncommons/Rares and all 1000/2000 rows
+stay out of fights, shops, and treasure until a later `LIVE_REVIEWED_WAVE`.
+Existing decks and saved offers remain instance-safe when progression changes.
 
 The exact base catalog, cull ledger, roles, directions, and release gates live
 in [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md).
@@ -61,7 +67,6 @@ The canonical 75-row catalog and reusable migration rules live in
 
 ## Evidence gate
 
-The catalog generator can audit 75 unique draft definitions. Only the live
-12-card wave is a playable claim. Later card and upgrade waves still require
-the cast-on/debug-skip human draft matrix specified in the design-process memo;
-implementation is not automatic balance approval.
+The catalog generator can audit 75 unique draft definitions. Playable claims are
+Wave 1 plus Wave 2 Commons. Later card waves still require the cast-on /
+debug-skip human draft matrix; implementation is not automatic balance approval.

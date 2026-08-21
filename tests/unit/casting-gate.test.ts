@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { getCard } from '../../src/data/cards';
+import { getCard, RESONANCE_WAVE_TWO_IDS } from '../../src/data/cards';
 import { PHRASES_BY_INITIAL } from '../../src/data/phrases';
 import { buildCastPrompt } from '../../src/game/castCheck';
 import {
@@ -78,6 +78,19 @@ describe('Zhuyin casting provider', () => {
       const answerFloor = starter ? 12 : 8;
       return item.promptCount < promptFloor || item.distinctAnswerCount < answerFloor
         ? [`${item.cardId}/${item.displayGlyph}: ${item.promptCount} prompts, ${item.distinctAnswerCount} answers`]
+        : [];
+    });
+    expect(deficits).toEqual([]);
+  });
+
+  it('meets the authored diversity floor for Wave 2 Commons', () => {
+    const coverage = getZhuyinCardCoverage(defaultCastingPreferences());
+    const byId = new Map(coverage.map((item) => [item.cardId, item]));
+    const deficits = RESONANCE_WAVE_TWO_IDS.flatMap((cardId) => {
+      const item = byId.get(cardId);
+      if (!item) return [`${cardId}: missing coverage`];
+      return item.promptCount < 16 || item.distinctAnswerCount < 8
+        ? [`${cardId}: ${item.promptCount} prompts, ${item.distinctAnswerCount} answers`]
         : [];
     });
     expect(deficits).toEqual([]);

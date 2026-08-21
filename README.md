@@ -3,7 +3,7 @@
 A **preschool** browser deckbuilder inspired by *Slay the Spire*: climb a colorful tower with **注音符號** spell cards.  
 Recognize or **listen** for the correct 注音 to cast. **Wrong answer = fizzle** (energy spent). **HP → 0 ends the run.**
 
-**Version:** 0.2.1 · **Stack:** Vite + TypeScript (no backend)
+**Version:** 0.4.0 · **Stack:** Vite + TypeScript (no backend)
 
 **Play online:** [https://yaochunghu.github.io/zhuyin-spire/](https://yaochunghu.github.io/zhuyin-spire/)
 
@@ -84,9 +84,10 @@ The first character starts with exactly 10 cards: 5 one-energy 基礎攻擊,
 4 one-energy shields, and 1 two-energy attack that applies 易傷. Act I adds a
 focused nine-card reward pool. 共鳴武者 learns four linked ideas: 易傷、
 基礎攻擊／練功、攻守轉拍、and fully blocking an enemy action to gain 勁.
-See [docs/DECK_DESIGN.md](docs/DECK_DESIGN.md) for the live 12-design wave.
-The generated 75-card catalog and `+` faces remain review drafts; they are not
-obtainable until later waves pass the playbook's human release gates.
+See [docs/DECK_DESIGN.md](docs/DECK_DESIGN.md) for the live 12-design Act I wave
+and the 13 Wave 2 Commons that later acts can offer after character score 300.
+The remaining generated catalog stays a review draft until later waves pass the
+playbook's human release gates.
 
 On a fresh installation, the first Act I battle is a one-monster guided lesson:
 shield → End Turn → attack → finish normally. The ⚙️ button is available on every
@@ -139,6 +140,7 @@ CHANGELOG.md        version history
 | [docs/BALANCE.md](docs/BALANCE.md) | HP, gold, rest, hand rules |
 | [docs/DEBUG.md](docs/DEBUG.md) | Skip cast, jump fights, cheats for testing |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | What’s done / next |
+| [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) | Live version, obtainability rules, next slice after Wave 2 |
 
 ---
 
@@ -161,7 +163,7 @@ This folder is its **own git repository** (`zhuyin-spire/.git`).
 
 - Do **not** commit the game through a parent home-directory repo (e.g. unrelated remotes).
 - From this directory: `git status`, `git add`, `git commit` as usual.
-- Latest release: `v0.2.1`; baseline tag: `v0.1.0` (see [CHANGELOG.md](CHANGELOG.md)).
+- Latest release tag: `v0.2.2`; code version: `0.4.0` (see [CHANGELOG.md](CHANGELOG.md)).
 - Dedicated remote: `https://github.com/yaochunghu/zhuyin-spire.git`.
 
 ```bash

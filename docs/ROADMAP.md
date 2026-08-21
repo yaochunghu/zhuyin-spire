@@ -1,6 +1,9 @@
 # Roadmap
 
-## Shipped (v0.2.0)
+The live version, obtainability rules, and next implementation slice live in
+[NEXT_PHASE.md](./NEXT_PHASE.md). This page stays a short resume checklist.
+
+## Shipped (through v0.4.0)
 
 - Vite + TypeScript SPA; touch-first preschool UI; adult coach strip  
 - Full first-syllable 注音 cast (including 聲調); listen mode (Web Speech zh-TW)  
@@ -19,33 +22,31 @@
 - Debug overlay (skip cast, jump screens, force combat outcomes)  
 - Project docs + standalone git (this documentation package)
 - Playable GitHub Pages release build
-- 共鳴武者 first playable wave: 12 reviewed designs, four signature mechanics,
-  physical-copy V2 saves, local playtest telemetry, and a generated 75-card
-  implementation draft kept outside live pools
+- 共鳴武者 Act I: 12 reviewed Chinese-facing designs, four signature mechanics,
+  physical-copy V2 saves, Smith, later-act `+` rolls, and local playtest telemetry
+- Resonance Wave 2: `reviewedWave` gate, 13 score-300 Commons in later acts after
+  character score 300, Chinese faces and upgrades; unreviewed catalog rows stay
+  out of offers
 
 ---
 
 ## Natural next steps
 
-Ordered by “resume playtest” value — not a binding schedule:
+Ordered by “resume playtest” value — not a binding schedule. Detail:
+[NEXT_PHASE.md](./NEXT_PHASE.md).
 
-1. **Playtest the 共鳴武者 first wave** — run the cast-on/debug-skip matrix in
+1. **Playtest Waves 1–2** — cast-on / debug-skip matrix in
    [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md)
-   and review 易傷、練功、轉拍、勁 feedback at tablet sizes
-2. **Promote cards through human-reviewed waves** — keep the generated
-   75-card draft unobtainable until each batch passes the documented matrix
-3. **Author upgrades, then enable Smith** — the UID/save layer exists, but
-   generated `+` faces and upgraded offers remain gated
-4. **Add expanded relics and potions** — keep acquisition and temporary
-   upgrades instance-safe; test timing hooks before increasing content volume
-5. **Add events and encounters one act at a time** — seeded simulation and
-   cast-off/cast-on playtests before enabling the next act
-6. **Add the 20-level difficulty track, keys, and Act IV last** — only after the
-   base three-act game passes save/load, tablet, and accessibility gates
-7. **Remote git / CI** — dedicated GitHub repository and build/test checks if not
-   already configured
-8. Optional later: second character/theme using a reviewed English or math
-   provider contract, plus recorded audio assets
+2. **Relic pool (chest + elite), then a small potion belt** — do not import the
+   Echo-era 40/20 bible wholesale
+3. **Act I events, then encounter rewrites one act at a time**
+4. **Waves 3–4 (Uncommons, then Rares)** after human drafts
+5. **Keys, Act IV, and a 20-level track last**
+6. Optional later: second character using a reviewed English or math provider,
+   plus recorded audio
+
+Smith, physical-copy upgrades, toy-board enemy art, phone layouts, CI, and
+Wave 2 obtainability are already in the tree. Do not re-plan them as gated.
 
 ---
 

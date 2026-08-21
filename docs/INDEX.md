@@ -8,7 +8,7 @@ Start here when you return after a break.
 2. **Skim** [AGENTS.md](../AGENTS.md) — non-negotiables and “where to change X”.
 3. **Architecture** — [ARCHITECTURE.md](./ARCHITECTURE.md) for screens, state, and render flow.
 4. **Playtest tools** — [DEBUG.md](./DEBUG.md) (`?debug=1`, skip cast for combat balance).
-5. **What’s next** — [ROADMAP.md](./ROADMAP.md).
+5. **What’s next** — [NEXT_PHASE.md](./NEXT_PHASE.md), then [ROADMAP.md](./ROADMAP.md).
 
 Product pitch and parent/child how-to-play: [README.md](../README.md).
 
@@ -35,6 +35,7 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [BALANCE.md](./BALANCE.md) | Live economy / HP / hand numbers + design intent |
 | [DEBUG.md](./DEBUG.md) | Debug panel, flags, skip-cast testing |
 | [ROADMAP.md](./ROADMAP.md) | Shipped systems, next work, known pitfalls |
+| [NEXT_PHASE.md](./NEXT_PHASE.md) | Current version, live vs draft, next feature after Wave 2 |
 
 Root companions:
 
@@ -46,14 +47,18 @@ Root companions:
 
 ---
 
-## Snapshot (v0.2.0)
+## Snapshot (v0.4.0)
 
 - **Stack:** Vite + TypeScript SPA, no backend; localStorage save
 - **Acts:** 3 × (15 floors × 7 lanes), STS-style path generation
 - **Combat:** modular `src/game/battle/*`, multi-enemy intents, drag-and-drop cards
 - **Teaching:** full first-syllable 注音 cast, per-learner persistent shuffle bags,
   detailed curriculum controls, and a provider boundary for future subjects
+- **Cards:** Act I is the 12-design teaching wave. Later acts add 13 reviewed
+  Commons after character score 300. The 75-card catalog remains for score UI
+  and the designer; unreviewed rows are not obtainable.
 - **Debug:** body-mounted panel for testing (not for kids in normal play)
 
-The 共鳴武者 catalog and upgrade bible are live. `CARD_BIBLE.md` and portions of
-the relic/event bibles remain historical Echo-era design references.
+共鳴武者 Smith and physical-copy upgrades are live for reviewed cards.
+`CARD_BIBLE.md` and portions of the relic/event bibles remain historical
+Echo-era design references.

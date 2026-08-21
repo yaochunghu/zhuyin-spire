@@ -1,11 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
   createProfile,
+  filterObtainableCardsForProfile,
   filterUnlockedCardsForProfile,
   getActiveProfile,
   getCharacterCardProgress,
   getCharacterScore,
+  isCardObtainableForProfile,
 } from '../../src/game/profiles';
+import { getCharacter } from '../../src/data/characters';
 import {
   calculateRunScore,
   createRunScoreStats,
@@ -92,6 +95,9 @@ describe('character progression', () => {
     expect(
       filterUnlockedCardsForProfile(profile, 'echoMage', ['ge', 'ji', 'ci']),
     ).toEqual(['ge']);
+    expect(
+      filterObtainableCardsForProfile(profile, 'echoMage', ['ge', 'ji', 'ci', 'rw_b024']),
+    ).toEqual(['ge']);
   });
 
   it('banks a terminal score once and unlocks the 300-point wave', () => {
@@ -109,6 +115,23 @@ describe('character progression', () => {
     });
     expect(state.scoreResult?.newlyUnlockedCardIds).toHaveLength(21);
     expect(getCharacterScore(getActiveProfile(), 'echoMage')).toBe(300);
+    expect(getCharacterCardProgress(getActiveProfile(), 'echoMage').unlockedCards).toBe(33);
+    expect(
+      filterObtainableCardsForProfile(
+        getActiveProfile(),
+        'echoMage',
+        ['ge', 'ji', 'ci', 'rw_b024', 'o'],
+      ),
+    ).toEqual(['ge', 'ji', 'ci']);
+    expect(isCardObtainableForProfile(getActiveProfile(), 'echoMage', 'ji')).toBe(true);
+    expect(isCardObtainableForProfile(getActiveProfile(), 'echoMage', 'rw_b024')).toBe(false);
+    expect(isCardObtainableForProfile(getActiveProfile(), 'echoMage', 'o')).toBe(false);
+
+    const character = getCharacter('echoMage');
+    if (character.status !== 'playable') throw new Error('Expected playable character');
+    expect(
+      filterObtainableCardsForProfile(getActiveProfile(), 'echoMage', character.cardPoolIds),
+    ).toHaveLength(25);
 
     commitRunScore(state, false);
     expect(getCharacterScore(getActiveProfile(), 'echoMage')).toBe(300);
