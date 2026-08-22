@@ -6,6 +6,13 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ---
 
+## [Unreleased]
+
+### Combat layout
+
+- Pinned the command deck to the bottom of the viewport so tall screens no
+  longer show a band of empty garden under the hand
+
 ## [0.4.0] — 2026-08-21
 
 ### Resonance Wave 2 obtainability
