@@ -1,6 +1,10 @@
 # Roadmap
 
-## Shipped (v0.2.0)
+The ordered next implementation slice, version drift, and live-vs-draft
+inventory live in [NEXT_PHASE.md](./NEXT_PHASE.md). This page stays a short
+resume checklist.
+
+## Shipped (through v0.3.1 on `main`, GitHub release still v0.2.2)
 
 - Vite + TypeScript SPA; touch-first preschool UI; adult coach strip  
 - Full first-syllable 注音 cast (including 聲調); listen mode (Web Speech zh-TW)  
@@ -19,33 +23,37 @@
 - Debug overlay (skip cast, jump screens, force combat outcomes)  
 - Project docs + standalone git (this documentation package)
 - Playable GitHub Pages release build
-- 共鳴武者 first playable wave: 12 reviewed designs, four signature mechanics,
-  physical-copy V2 saves, local playtest telemetry, and a generated 75-card
-  implementation draft kept outside live pools
+- 共鳴武者 first playable wave: 12 reviewed Chinese-facing designs, four
+  signature mechanics, physical-copy V2 saves, Smith, later-act `+` rolls, and
+  local playtest telemetry. The 75-card generated catalog is in the runtime
+  file; score 300+ can currently offer unreviewed English rows in later acts
+  (the next feature closes that)
 
 ---
 
 ## Natural next steps
 
-Ordered by “resume playtest” value — not a binding schedule:
+Ordered by “resume playtest” value — not a binding schedule. Detail:
+[NEXT_PHASE.md](./NEXT_PHASE.md).
 
-1. **Playtest the 共鳴武者 first wave** — run the cast-on/debug-skip matrix in
+1. **Align version docs** — README/INDEX still mention 0.2.x while
+   `package.json` is 0.3.1 and GitHub’s latest tag is v0.2.2
+2. **Close the obtainability leak, then ship Resonance Wave 2** — Act I stays
+   at 12 designs; later acts currently can offer unreviewed English catalog
+   rows after character score 300. Add an explicit reviewed-wave flag, then
+   author Chinese presentation for a culled Common set
+3. **Playtest Waves 1–2** — cast-on / debug-skip matrix in
    [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md)
-   and review 易傷、練功、轉拍、勁 feedback at tablet sizes
-2. **Promote cards through human-reviewed waves** — keep the generated
-   75-card draft unobtainable until each batch passes the documented matrix
-3. **Author upgrades, then enable Smith** — the UID/save layer exists, but
-   generated `+` faces and upgraded offers remain gated
-4. **Add expanded relics and potions** — keep acquisition and temporary
-   upgrades instance-safe; test timing hooks before increasing content volume
-5. **Add events and encounters one act at a time** — seeded simulation and
-   cast-off/cast-on playtests before enabling the next act
-6. **Add the 20-level difficulty track, keys, and Act IV last** — only after the
-   base three-act game passes save/load, tablet, and accessibility gates
-7. **Remote git / CI** — dedicated GitHub repository and build/test checks if not
-   already configured
-8. Optional later: second character/theme using a reviewed English or math
-   provider contract, plus recorded audio assets
+4. **Relic pool (chest + elite), then a small potion belt** — after Wave 2 is
+   gated; do not import the Echo-era 40/20 bible wholesale
+5. **Act I events, then encounter rewrites one act at a time**
+6. **Keys, Act IV, and a 20-level track last**
+7. Optional later: second character using a reviewed English or math provider,
+   plus recorded audio
+
+Smith, physical-copy upgrades, toy-board enemy art, phone layouts, and CI are
+already on `main`. Do not re-plan them as if they were still gated unless a
+rollback is explicitly requested.
 
 ---
 
