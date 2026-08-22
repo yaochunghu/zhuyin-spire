@@ -62,6 +62,33 @@ async function expectNoPageOverflow(page: Page): Promise<void> {
   expect(widths.body).toBeLessThanOrEqual(widths.viewport);
 }
 
+async function expectCommandDeckOnViewportBottom(page: Page, slack = 8): Promise<void> {
+  const metrics = await page.evaluate(() => {
+    const stage = document.querySelector<HTMLElement>('.combat-stage');
+    const dock = document.querySelector<HTMLElement>('.combat-bottom-row');
+    if (!stage || !dock) throw new Error('Missing combat stage or command deck');
+    const stageRect = stage.getBoundingClientRect();
+    const dockRect = dock.getBoundingClientRect();
+    return {
+      viewportHeight: window.innerHeight,
+      stageTop: stageRect.top,
+      stageBottom: stageRect.bottom,
+      dockBottom: dockRect.bottom,
+      dockHeight: dockRect.height,
+    };
+  });
+  expect(metrics.stageTop, JSON.stringify(metrics)).toBeLessThanOrEqual(slack);
+  expect(
+    metrics.viewportHeight - metrics.stageBottom,
+    JSON.stringify(metrics),
+  ).toBeLessThanOrEqual(slack);
+  expect(
+    metrics.viewportHeight - metrics.dockBottom,
+    JSON.stringify(metrics),
+  ).toBeLessThanOrEqual(slack);
+  expect(metrics.dockHeight, JSON.stringify(metrics)).toBeGreaterThan(80);
+}
+
 test.beforeEach(async ({ page }) => {
   const errors: string[] = [];
   consoleErrors.set(page, errors);
@@ -223,6 +250,7 @@ test('combat hand stays between pile rails, scrolls, and survives rotation', asy
   expect(geometry.actionHeight).toBeGreaterThanOrEqual(63.9);
   await expect(page.locator('.combat-action-energy')).toContainText('3/3');
   await expect(page.locator('.end-turn-label')).toBeVisible();
+  await expectCommandDeckOnViewportBottom(page);
 
   const hand = page.locator('.hand');
   await hand.evaluate((element) => element.scrollTo({ left: element.scrollWidth }));
