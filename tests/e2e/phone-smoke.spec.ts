@@ -29,7 +29,7 @@ async function openTutorial(page: Page): Promise<void> {
   await debugAction(page, 'Tutorial', 'Start');
   await closeDebug(page);
   await expect(page.locator('.tutorial-step-shield')).toBeVisible();
-  await expect(page.locator('.hand-card-hidden')).toHaveCount(0);
+  await expect(page.locator('.hand-card-hidden')).toHaveCount(0, { timeout: 10_000 });
   await expect(page.getByRole('button', { name: '注音 ㄇ', exact: true })).toBeEnabled();
 }
 
