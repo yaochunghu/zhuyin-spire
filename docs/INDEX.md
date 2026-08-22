@@ -4,7 +4,7 @@ Start here when you return after a break.
 
 ## Returning after a break (≈10 min)
 
-1. **Run the game:** from repo root, `npm install && npm run dev` → open the local URL (usually `http://localhost:5173`).
+1. **Run the game:** from repo root, `npm install && npm start` → `http://localhost:5173`.
 2. **Skim** [AGENTS.md](../AGENTS.md) — non-negotiables and “where to change X”.
 3. **Architecture** — [ARCHITECTURE.md](./ARCHITECTURE.md) for screens, state, and render flow.
 4. **Playtest tools** — [DEBUG.md](./DEBUG.md) (`?debug=1`, skip cast for combat balance).

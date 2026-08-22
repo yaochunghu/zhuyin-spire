@@ -13,9 +13,9 @@ Read this first in a **new human or AI session**. Deep detail lives under `docs/
 ## Quick commands
 
 ```bash
-cd zhuyin-spire   # must be this project root
 npm install
-npm run dev       # http://localhost:5173
+npm start         # opens http://localhost:5173
+npm run dev       # same server, no browser
 npm run build     # tsc && vite build
 ```
 
