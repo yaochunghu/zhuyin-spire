@@ -39,8 +39,8 @@ src/
 | `title` | New run / continue / practice |
 | `relicPick` | Character selection (legacy internal name kept for v1 saves) |
 | `map` | Climb current act web |
-| `rest` | Campfire Rest-or-Remove choice |
-| `smith` | Dormant exact-copy upgrade screen; schema is present but the live character gates it off |
+| `rest` | Campfire Rest, Smith, or Remove choice |
+| `smith` | Exact-copy upgrade; live for 共鳴武者 (`upgradesEnabled`) |
 | `shop` / `shopRemove` | Buy cards / paid remove |
 | `combat` | Fight |
 | `castCheck` | 注音 cast gate for a played card |

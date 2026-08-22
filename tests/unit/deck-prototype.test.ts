@@ -3,15 +3,18 @@ import {
   CARDS,
   LATER_ACT_ELITE_REWARD_POOL_IDS,
   LATER_ACT_REWARD_POOL_IDS,
+  RESONANCE_WAVE_TWO_IDS,
   REWARD_POOL_IDS,
   STARTER_DECK_IDS,
   getCard,
+  resolveCard,
 } from '../../src/data/cards';
 import { getCharacter } from '../../src/data/characters';
 import { getRelic } from '../../src/data/relics';
 import {
   beginPlay,
   createCombat,
+  drawCards,
   endTurn,
   executeEffects,
   resolveCastFizzle,
@@ -73,6 +76,30 @@ describe('共鳴武者 catalog', () => {
         !/\b(?:Deal|Gain|Apply|Draw|Spend|Cannot|Costs)\b/.test(getCard(id).description)
       ),
     ).toBe(true);
+  });
+
+  it('authors Chinese Wave 2 Commons and keeps unreviewed 300-tier cards gated', () => {
+    expect(RESONANCE_WAVE_TWO_IDS).toHaveLength(13);
+    const liveOfferIds = [...new Set([...STARTER_DECK_IDS, ...REWARD_POOL_IDS, ...RESONANCE_WAVE_TWO_IDS])];
+    expect(liveOfferIds).toHaveLength(25);
+    expect(liveOfferIds.every((id) => getCard(id).cues.length >= 2)).toBe(true);
+    expect(
+      liveOfferIds.every((id) => {
+        const card = getCard(id);
+        const english = /\b(?:Deal|Gain|Apply|Draw|Spend|Cannot|Costs|Exhaust)\b/;
+        return !english.test(card.description) && !english.test(card.upgrade?.description ?? '');
+      }),
+    ).toBe(true);
+    expect(getCard('ne').effects).toEqual([
+      { kind: 'block', amount: 3 },
+      { kind: 'draw', amount: 1 },
+    ]);
+    expect(resolveCard('ne', 1).effects).toEqual([
+      { kind: 'block', amount: 5 },
+      { kind: 'draw', amount: 1 },
+    ]);
+    expect(getCard('rw_b024').reviewedWave).toBeUndefined();
+    expect(getCard('o').reviewedWave).toBeUndefined();
   });
 
   it('creates physical starter copies and preserves the compatibility lineage', () => {
@@ -199,6 +226,15 @@ describe('共鳴 combat rules', () => {
     resolveCastSuccess(combat, def);
     expect(combat.jin).toBe(0);
     expect(enemy.hp).toBe(hpBefore - 8);
+  });
+
+  it('draws one card when 邊擋邊唱 resolves', () => {
+    const combat = createCombat(['ne', 'bo', 'bo', 'bo', 'bo', 'mo'], 'rock', 30, 30);
+    const handBefore = combat.hand.length;
+    const blockBefore = combat.block;
+    executeEffects(combat, getCard('ne'), [], () => {}, drawCards);
+    expect(combat.block).toBe(blockBefore + 3);
+    expect(combat.hand.length).toBe(handBefore + 1);
   });
 
   it('uses 初心音叉 once each player turn', () => {

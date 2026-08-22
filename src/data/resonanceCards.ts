@@ -290,12 +290,12 @@ export const RESONANCE_CARDS: Record<string, CardDef> = {
     retain: false,
     target: 'self',
     cues: [{ word: '牛奶', emoji: '🥛', spell: 'ㄋㄧㄡˊ' }],
-    effects: [{ kind: 'block', amount: 3 }],
+    effects: [{ kind: 'block', amount: 3 }, { kind: 'draw', amount: 1 }],
     description: 'Gain 3 Block. Draw 1 card.',
     unlockScore: 300,
     upgrade: {
       
-      effects: [{ kind: 'block', amount: 5 }],
+      effects: [{ kind: 'block', amount: 5 }, { kind: 'draw', amount: 1 }],
       description: 'Gain 5 Block. Draw 1 card.',
     },
   },

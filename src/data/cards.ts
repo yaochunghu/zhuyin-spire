@@ -92,6 +92,11 @@ export interface CardDef {
   upgrade?: CardUpgradeDef;
   /** Cumulative per-character score needed before this card enters run pools. */
   unlockScore?: 300 | 1000 | 2000;
+  /**
+   * Human-reviewed obtainability wave. Unset cards stay in the catalog and
+   * score UI but never enter run offers until a later wave is approved.
+   */
+  reviewedWave?: 1 | 2 | 3 | 4;
 }
 
 export interface ResolvedCardDef extends CardDef {
@@ -551,67 +556,175 @@ export const LEGACY_CARDS: Record<string, CardDef> = {
   },
 };
 
+/** Highest reviewed wave allowed into run offers, shops, and treasure. */
+export const LIVE_REVIEWED_WAVE = 2 as const;
+
+export const RESONANCE_WAVE_ONE_IDS = [
+  'bo', 'mo', 'po', 'he', 'ge', 'ri', 'ke', 'te', 'le', 'shi', 'yi', 'fo',
+] as const;
+
+/** Score-300 Commons with Chinese faces. Uncommons/Rares at 300 stay gated. */
+export const RESONANCE_WAVE_TWO_IDS = [
+  'de', 'ne', 'ji', 'qi', 'xi', 'zhi', 'chi', 'zi', 'ci', 'wu', 'yu', 'si', 'a',
+] as const;
+
+const WAVE_ONE_ID_SET = new Set<string>(RESONANCE_WAVE_ONE_IDS);
+const WAVE_TWO_ID_SET = new Set<string>(RESONANCE_WAVE_TWO_IDS);
+
+function reviewedWaveForId(id: string): 1 | 2 | undefined {
+  if (WAVE_ONE_ID_SET.has(id)) return 1;
+  if (WAVE_TWO_ID_SET.has(id)) return 2;
+  return undefined;
+}
+
+export function isCardReviewedForLiveWave(card: CardDef): boolean {
+  const wave = card.reviewedWave ?? 0;
+  return wave > 0 && wave <= LIVE_REVIEWED_WAVE;
+}
+
 /**
- * The generated mature catalog stays available for static review, but only the
- * authored wave-one ids below are obtainable in live runs. Reused stable ids
- * keep their full pronunciation cue families so the character migration does
- * not shrink a learner's casting curriculum.
+ * The generated mature catalog stays available for static review and score
+ * unlocks. Live offers only include ids whose `reviewedWave` is at or below
+ * `LIVE_REVIEWED_WAVE`. Reused stable ids keep their full pronunciation cue
+ * families so the character migration does not shrink a learner's curriculum.
  */
-const RESONANCE_WAVE_ONE_PRESENTATION: Record<string, Partial<CardDef>> = {
+const RESONANCE_LIVE_PRESENTATION: Record<string, Partial<CardDef>> = {
   bo: {
     icon: '💫',
     description: '造成 3 點傷害。這是基礎攻擊。',
+    upgrade: { description: '造成 5 點傷害。這是基礎攻擊。' },
   },
   mo: {
     icon: '🛡️',
     description: '獲得 4 點護盾。',
+    upgrade: { description: '獲得 6 點護盾。' },
   },
   po: {
     icon: '🎯',
     description: '造成 5 點傷害。附上 2 層易傷。',
+    upgrade: { description: '造成 7 點傷害。附上 2 層易傷。' },
   },
   he: {
     icon: '📍',
     description: '造成 2 點傷害。附上 2 層易傷。',
+    upgrade: { description: '造成 4 點傷害。附上 2 層易傷。' },
   },
   ge: {
     icon: '💥',
     description: '造成 6 點傷害。',
+    upgrade: { description: '造成 8 點傷害。' },
   },
   ri: {
     icon: '☀️',
     description: '對所有怪物造成 3 點傷害。',
+    upgrade: { description: '對所有怪物造成 5 點傷害。' },
   },
   ke: {
     icon: '🧱',
     description: '獲得 7 點護盾。',
+    upgrade: { description: '獲得 9 點護盾。' },
   },
   te: {
     icon: '🥁',
     description: '造成 2 點傷害，兩次。這是基礎攻擊。',
+    upgrade: { description: '造成 3 點傷害，兩次。這是基礎攻擊。' },
   },
   le: {
     icon: '📖',
     description: '抽 2 張牌。',
+    upgrade: { description: '抽 3 張牌。' },
   },
   shi: {
     icon: '🥋',
     description: '這場戰鬥：練功 2。',
+    upgrade: { description: '這場戰鬥：練功 3。' },
   },
   yi: {
     icon: '🔄',
     description: '造成 4 點傷害。轉拍：獲得 3 點護盾。',
+    upgrade: { description: '造成 6 點傷害。轉拍：獲得 3 點護盾。' },
   },
   fo: {
     icon: '👊',
     description: '消耗 1 勁，造成 8 點傷害。沒有勁時不能使用。',
+    upgrade: { description: '消耗 1 勁，造成 10 點傷害。沒有勁時不能使用。' },
+  },
+  de: {
+    icon: '🌬️',
+    description: '獲得 1 點能量。消耗。',
+    upgrade: { description: '獲得 1 點能量。抽 1 張牌。消耗。' },
+  },
+  ne: {
+    icon: '🎤',
+    description: '獲得 3 點護盾。抽 1 張牌。',
+    upgrade: { description: '獲得 5 點護盾。抽 1 張牌。' },
+  },
+  ji: {
+    icon: '👉',
+    description: '造成 2 點傷害。若目標有易傷，抽 1 張牌。消耗。',
+    upgrade: { description: '造成 4 點傷害。若目標有易傷，抽 1 張牌。消耗。' },
+  },
+  qi: {
+    icon: '🪟',
+    description: '造成 4 點傷害。若目標沒有易傷，附上 1 層易傷。',
+    upgrade: { description: '造成 6 點傷害。若目標沒有易傷，附上 1 層易傷。' },
+  },
+  xi: {
+    icon: '🗡️',
+    description: '造成 4 點傷害。若目標有易傷，再造成 3 點傷害。',
+    upgrade: { description: '造成 6 點傷害。若目標有易傷，再造成 3 點傷害。' },
+  },
+  zhi: {
+    icon: '🌀',
+    description: '對所有怪物造成 5 點傷害。沒有易傷的再附上 1 層易傷。',
+    upgrade: { description: '對所有怪物造成 7 點傷害。沒有易傷的再附上 1 層易傷。' },
+  },
+  chi: {
+    icon: '💪',
+    description: '練功 1。消耗。',
+    upgrade: { description: '練功 2。消耗。' },
+  },
+  zi: {
+    icon: '👟',
+    description: '從抽牌堆拿出 1 張基礎攻擊到手牌。消耗。',
+    upgrade: { description: '從抽牌堆拿出 1 張基礎攻擊到手牌。抽 1 張牌。消耗。' },
+  },
+  ci: {
+    icon: '🪵',
+    description: '造成 4 點傷害，獲得 2 點護盾。這是基礎攻擊。',
+    upgrade: { description: '造成 6 點傷害，獲得 2 點護盾。這是基礎攻擊。' },
+  },
+  wu: {
+    icon: '🌊',
+    description: '對所有怪物造成 5 點傷害。這是基礎攻擊。',
+    upgrade: { description: '對所有怪物造成 7 點傷害。這是基礎攻擊。' },
+  },
+  yu: {
+    icon: '♻️',
+    description: '從棄牌堆把 1 張基礎攻擊拿回手牌。本回合花費 0。',
+    upgrade: { description: '花費 0。從棄牌堆把 1 張基礎攻擊拿回手牌。本回合花費 0。' },
+  },
+  si: {
+    icon: '🏯',
+    description: '獲得 5 點護盾。若本回合打過基礎攻擊，再獲得 2 點。',
+    upgrade: { description: '獲得 7 點護盾。若本回合打過基礎攻擊，再獲得 2 點。' },
+  },
+  a: {
+    icon: '🔀',
+    description: '獲得 5 點護盾。轉拍：對選定怪物造成 3 點直傷。',
+    upgrade: { description: '獲得 7 點護盾。轉拍：對選定怪物造成 3 點直傷。' },
   },
 };
 
 export const CARDS: Record<string, CardDef> = Object.fromEntries(
   Object.entries(RESONANCE_CARDS).map(([id, def]) => {
     const legacy = LEGACY_CARDS[id];
-    const presentation = RESONANCE_WAVE_ONE_PRESENTATION[id];
+    const presentation = RESONANCE_LIVE_PRESENTATION[id];
+    const { upgrade: presentationUpgrade, ...presentationRest } = presentation ?? {};
+    const reviewedWave = reviewedWaveForId(id);
+    const upgrade = def.upgrade
+      ? { ...def.upgrade, ...presentationUpgrade }
+      : def.upgrade;
     return [
       id,
       {
@@ -619,7 +732,9 @@ export const CARDS: Record<string, CardDef> = Object.fromEntries(
         ...(legacy
           ? { cues: legacy.cues.map((cue) => ({ ...cue })) }
           : {}),
-        ...presentation,
+        ...presentationRest,
+        ...(reviewedWave ? { reviewedWave } : {}),
+        ...(upgrade ? { upgrade } : {}),
       },
     ];
   }),
@@ -666,7 +781,7 @@ export const REWARD_POOL_IDS: string[] = [
 
 export const ELITE_REWARD_POOL_IDS: string[] = [...REWARD_POOL_IDS];
 
-/** Later acts draw from the complete progression-gated character catalog. */
+/** Later acts draw from the catalog, then score + reviewed-wave filters. */
 export const LATER_ACT_REWARD_POOL_IDS: string[] = [...RESONANCE_CARD_IDS];
 
 export const LATER_ACT_ELITE_REWARD_POOL_IDS: string[] = [...RESONANCE_CARD_IDS];

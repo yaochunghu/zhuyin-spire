@@ -77,7 +77,7 @@ import {
 } from './settings';
 import {
   awardActiveCharacterScore,
-  filterUnlockedCardsForProfile,
+  filterObtainableCardsForProfile,
   getActiveProfile,
   updateActiveProfile,
 } from './profiles';
@@ -1018,7 +1018,7 @@ function fightGold(state: RunState): number {
   return base + jitter + bonus;
 }
 
-function rewardPoolFor(
+export function rewardPoolFor(
   state: RunState,
   tier: RewardTier,
 ): string[] {
@@ -1036,7 +1036,7 @@ function rewardPoolFor(
   const characterId = state.characterId;
   if (!characterId) return [...pool];
   const profile = getActiveProfile();
-  return filterUnlockedCardsForProfile(profile, characterId, pool);
+  return filterObtainableCardsForProfile(profile, characterId, pool);
 }
 
 function finishFight(state: RunState): void {

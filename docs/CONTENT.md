@@ -6,10 +6,11 @@ How to add playable content without reverse-engineering the whole repo.
 
 ## Cards — `src/data/cards.ts`
 
-The live 共鳴武者 release is the ten-card starter plus nine reward designs
-(12 unique designs total). `resonanceCards.ts` also contains a generated
-75-card implementation draft for static review, but cards outside the first
-wave are not in character, reward, shop, or later-act pools. Review
+The live 共鳴武者 release is the ten-card starter plus nine Act I reward designs
+(12 unique designs). After character score 300, later-act fights, shops, and
+treasure may also offer the 13 reviewed Wave 2 Commons. `resonanceCards.ts`
+still contains the generated 75-card catalog for the designer and score UI;
+cards without `reviewedWave <= LIVE_REVIEWED_WAVE` are not obtainable. Review
 [DESIGN_PLAYBOOK.md](./DESIGN_PLAYBOOK.md) and
 [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md)
 before promoting another wave.
@@ -39,9 +40,14 @@ type. Status and Curse are separate pollution types.
 | `cues` | Fallback teaching phrases on the card |
 | `description` | Exact readable effect text |
 | `upgrade` | Live `+` face applied to one physical card copy |
+| `unlockScore` | Catalog / 🃏 progress threshold (300 / 1000 / 2000) |
+| `reviewedWave` | Human-reviewed obtainability wave; live offers use `LIVE_REVIEWED_WAVE` |
 | `designId` / `mechanics` / `direction` | Design-audit metadata |
 
-Also maintain **pools**: `STARTER_DECK_IDS`, `REWARD_POOL_IDS`, `ELITE_REWARD_POOL_IDS`, practice ids, etc. For the first character, keep the starter at 3 designs and Act I rewards at exactly 9 until playtesting justifies expansion.
+Also maintain **pools**: `STARTER_DECK_IDS`, `REWARD_POOL_IDS` (Act I, exactly 9),
+`RESONANCE_WAVE_TWO_IDS`, and `LIVE_REVIEWED_WAVE`. Later-act / shop / treasure
+offers come from `character.cardPoolIds` filtered by score **and** reviewed wave.
+Do not grow the Act I reward table until playtesting asks for it.
 
 ### Teaching rules for cues / phrases
 

@@ -1,5 +1,5 @@
 import { ALL_PHRASE_PACKS } from '../data/phrases';
-import { CARDS } from '../data/cards';
+import { CARDS, isCardReviewedForLiveWave } from '../data/cards';
 import {
   CHARACTER_IDS,
   getCharacter,
@@ -561,6 +561,26 @@ export function filterUnlockedCardsForProfile(
 ): string[] {
   return cardIds.filter((cardId) =>
     isCardUnlockedForProfile(profile, characterId, cardId)
+  );
+}
+
+export function isCardObtainableForProfile(
+  profile: LearnerProfileV1,
+  characterId: PlayableCharacterId,
+  cardId: string,
+): boolean {
+  if (!isCardUnlockedForProfile(profile, characterId, cardId)) return false;
+  const card = CARDS[cardId];
+  return !!card && isCardReviewedForLiveWave(card);
+}
+
+export function filterObtainableCardsForProfile(
+  profile: LearnerProfileV1,
+  characterId: PlayableCharacterId,
+  cardIds: readonly string[],
+): string[] {
+  return cardIds.filter((cardId) =>
+    isCardObtainableForProfile(profile, characterId, cardId)
   );
 }
 

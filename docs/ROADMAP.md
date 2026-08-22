@@ -1,10 +1,9 @@
 # Roadmap
 
-The ordered next implementation slice, version drift, and live-vs-draft
-inventory live in [NEXT_PHASE.md](./NEXT_PHASE.md). This page stays a short
-resume checklist.
+The live version, obtainability rules, and next implementation slice live in
+[NEXT_PHASE.md](./NEXT_PHASE.md). This page stays a short resume checklist.
 
-## Shipped (through v0.3.1 on `main`, GitHub release still v0.2.2)
+## Shipped (through v0.4.0)
 
 - Vite + TypeScript SPA; touch-first preschool UI; adult coach strip  
 - Full first-syllable 注音 cast (including 聲調); listen mode (Web Speech zh-TW)  
@@ -23,11 +22,11 @@ resume checklist.
 - Debug overlay (skip cast, jump screens, force combat outcomes)  
 - Project docs + standalone git (this documentation package)
 - Playable GitHub Pages release build
-- 共鳴武者 first playable wave: 12 reviewed Chinese-facing designs, four
-  signature mechanics, physical-copy V2 saves, Smith, later-act `+` rolls, and
-  local playtest telemetry. The 75-card generated catalog is in the runtime
-  file; score 300+ can currently offer unreviewed English rows in later acts
-  (the next feature closes that)
+- 共鳴武者 Act I: 12 reviewed Chinese-facing designs, four signature mechanics,
+  physical-copy V2 saves, Smith, later-act `+` rolls, and local playtest telemetry
+- Resonance Wave 2: `reviewedWave` gate, 13 score-300 Commons in later acts after
+  character score 300, Chinese faces and upgrades; unreviewed catalog rows stay
+  out of offers
 
 ---
 
@@ -36,24 +35,18 @@ resume checklist.
 Ordered by “resume playtest” value — not a binding schedule. Detail:
 [NEXT_PHASE.md](./NEXT_PHASE.md).
 
-1. **Align version docs** — README/INDEX still mention 0.2.x while
-   `package.json` is 0.3.1 and GitHub’s latest tag is v0.2.2
-2. **Close the obtainability leak, then ship Resonance Wave 2** — Act I stays
-   at 12 designs; later acts currently can offer unreviewed English catalog
-   rows after character score 300. Add an explicit reviewed-wave flag, then
-   author Chinese presentation for a culled Common set
-3. **Playtest Waves 1–2** — cast-on / debug-skip matrix in
+1. **Playtest Waves 1–2** — cast-on / debug-skip matrix in
    [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md)
-4. **Relic pool (chest + elite), then a small potion belt** — after Wave 2 is
-   gated; do not import the Echo-era 40/20 bible wholesale
-5. **Act I events, then encounter rewrites one act at a time**
-6. **Keys, Act IV, and a 20-level track last**
-7. Optional later: second character using a reviewed English or math provider,
+2. **Relic pool (chest + elite), then a small potion belt** — do not import the
+   Echo-era 40/20 bible wholesale
+3. **Act I events, then encounter rewrites one act at a time**
+4. **Waves 3–4 (Uncommons, then Rares)** after human drafts
+5. **Keys, Act IV, and a 20-level track last**
+6. Optional later: second character using a reviewed English or math provider,
    plus recorded audio
 
-Smith, physical-copy upgrades, toy-board enemy art, phone layouts, and CI are
-already on `main`. Do not re-plan them as if they were still gated unless a
-rollback is explicitly requested.
+Smith, physical-copy upgrades, toy-board enemy art, phone layouts, CI, and
+Wave 2 obtainability are already in the tree. Do not re-plan them as gated.
 
 ---
 

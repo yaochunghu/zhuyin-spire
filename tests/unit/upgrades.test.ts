@@ -113,4 +113,18 @@ describe('card upgrades', () => {
     expect(migrated.rewardOptions.map((card) => card.defId)).toEqual(['ge', 'ri']);
     expect(migrated.shopOffers[0]).toMatchObject({ defId: 'ke', upgradeLevel: 0 });
   });
+
+  it('upgrades an exact Wave 2 physical copy at Smith', () => {
+    const state = restState();
+    const target = state.deck[0]!;
+    target.defId = 'de';
+    target.upgradeLevel = 0;
+    expect(beginSmith(state)).toBe(true);
+    expect(smithCard(state, target.uid)).toBe(true);
+    expect(state.deck.find((card) => card.uid === target.uid)).toMatchObject({
+      defId: 'de',
+      upgradeLevel: 1,
+    });
+    expect(state.screen).toBe('map');
+  });
 });

@@ -6,6 +6,24 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ---
 
+## [0.4.0] — 2026-08-21
+
+### Resonance Wave 2 obtainability
+
+- Added an explicit `reviewedWave` flag and `LIVE_REVIEWED_WAVE = 2` so character
+  score can still unlock catalog rows in the 🃏 progress UI without leaking
+  unreviewed English cards into later-act fights, shops, or treasure
+- Act I remains the ten-card starter plus nine reward designs
+- After character score 300, later acts can offer 13 reviewed Commons (深呼吸,
+  邊擋邊唱, 試探拳, 開窗掌, 趁隙直拳, 掃堂尋隙, 練拳, 基本步, 低樁拳, 掃堂基本式,
+  溫習, 基本防線, 守攻換拍) with Chinese faces, icons, and `+` text
+- Uncommons and Rares that share the 300-point catalog band stay gated
+- Fixed 邊擋邊唱 (`ne`) so its draw matches the card text
+- Smith still upgrades one physical copy; reviewed live faces now stay Chinese
+  after upgrade
+
+---
+
 ## [0.3.1] — 2026-07-23
 
 ### Card-system foundation and Resonance Warrior
@@ -174,6 +192,7 @@ Baseline snapshot of the preschool Spire + 注音 game, documented for long-term
 - Standalone git repository for the game folder (tag `v0.1.0`)
 
 [Unreleased]: #unreleased
+[0.4.0]: #040--2026-08-21
 [0.3.1]: #031--2026-07-23
 [0.3.0]: #030--2026-07-22
 [0.2.1]: #021--2026-07-22

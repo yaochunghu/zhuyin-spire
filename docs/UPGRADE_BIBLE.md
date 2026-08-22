@@ -1,18 +1,17 @@
 # Upgrade Bible: 共鳴武者
 
-> **Status:** physical-copy foundation implemented; card upgrades not released.
-> The V1→V2 save model and dormant Smith/offer plumbing use this contract.
-> Generated `+` faces are an engineering draft and must not be treated as
-> authored or balanced content.
+> **Status:** physical-copy upgrades are live for reviewed cards. Smith
+> upgrades one UID at a campfire. Later-act offers may roll `+` for non-basic
+> reviewed cards. Generated `+` faces on unreviewed catalog rows remain drafts
+> and are not obtainable.
 
 ## Locked rules
 
-- A future collectible card upgrade will be permanent and non-repeatable.
+- A collectible card upgrade is permanent and non-repeatable.
 - Status and Curse cards cannot be upgraded.
 - Upgrades preserve the card's 注音 family, role, direction, and physical-copy UID.
-- The live campfire remains Rest or Remove; Smith is gated off.
-- Live reward and shop offers always use upgrade level 0.
-- Proposed later-act upgrade rates require a separate approval and playtest.
+- Campfires offer Rest, Smith, or Remove.
+- Act I offers are always upgrade level 0. Act II/III may roll upgraded offers.
 - Temporary, relic-driven, and event-driven upgrade sources are deferred.
 
 ## Runtime contract
@@ -26,8 +25,8 @@ interface DeckCard {
 ```
 
 Deck order and duplicate copies survive V1→V2 migration. Reward and shop
-instances serialize an upgrade level for forward compatibility, but the current
-character only creates level-zero offers.
+instances serialize an upgrade level. Act I creates level-zero offers; later
+acts may roll `upgradeLevel: 1` for eligible reviewed cards.
 
 ## Generated draft catalog (not live)
 
