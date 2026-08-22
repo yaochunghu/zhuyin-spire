@@ -236,6 +236,7 @@ test('combat command deck sits on the bottom of the screen', async ({ page }) =>
   await debugAction(page, 'Start', 'Go');
   await page.locator('.debug-head .debug-btn-icon').click();
   await expect(page.locator('.hand-card-hidden')).toHaveCount(0);
+  await expect(page.locator('.hand-card-land')).toHaveCount(0);
   await expect(page.locator('.combat-bottom-row')).toBeVisible();
 
   await expectCommandDeckOnViewportBottom(page);
@@ -256,6 +257,7 @@ test('combat hand keeps cards separate when they fit and scrolls at ten cards', 
     .click();
   await page.locator('.debug-head .debug-btn-icon').click();
   await expect(page.locator('.hand-card-hidden')).toHaveCount(0);
+  await expect(page.locator('.hand-card-land')).toHaveCount(0);
   await expect(page.locator('.hand .card')).toHaveCount(5);
   await expect(page.locator('.combat-stage .adult-coach')).toHaveCount(0);
 
@@ -290,6 +292,7 @@ test('combat hand keeps cards separate when they fit and scrolls at ten cards', 
   await debugAction(page, 'Energy', 'Draw 5');
   await page.locator('.debug-head .debug-btn-icon').click();
   await expect(page.locator('.hand-card-hidden')).toHaveCount(0);
+  await expect(page.locator('.hand-card-land')).toHaveCount(0);
   await expect(page.locator('.hand .card')).toHaveCount(10);
   const tenCards = await handMetrics();
   expectSeparatedCards(tenCards.cards);
