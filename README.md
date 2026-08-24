@@ -11,15 +11,18 @@ Recognize or **listen** for the correct 注音 to cast. **Wrong answer = fizzle*
 
 ## Quick start
 
+From this repo root:
+
 ```bash
-cd zhuyin-spire
 npm install
-npm run dev
+npm start
 ```
 
-Open the local URL (usually `http://localhost:5173`). Best on a tablet or large window.
-The development server listens only on your own computer. To test from another
-device on your trusted LAN, opt in explicitly with `npm run dev -- --host 0.0.0.0`.
+That opens `http://localhost:5173` on this computer. Best on a tablet or large window.
+
+`npm run dev` is the same local server without opening a browser. The server
+listens only on your machine. To try a phone on your trusted LAN, opt in with
+`npm run dev -- --host 0.0.0.0`.
 
 ```bash
 npm run build    # typecheck + production bundle
