@@ -443,6 +443,19 @@ describe('共鳴 combat rules', () => {
     expect(combat.discardPile).toHaveLength(1);
   });
 
+  it('lets 聞聲即動 find the needed type after a discard reshuffle', () => {
+    const combat = createCombat(['bo'], 'rock', 30, 30);
+    combat.activePowerIds = ['B129'];
+    combat.activePowerLevels = { B129: 0 };
+    combat.hand = [];
+    combat.drawPile = Array.from({ length: 5 }, () => makeCard('bo'));
+    combat.discardPile = [makeCard('mo')];
+    combat.block = 99;
+    endTurn(combat);
+    expect(combat.hand).toHaveLength(6);
+    expect(combat.hand.some((card) => card.defId === 'mo')).toBe(true);
+  });
+
   it('uses 初心音叉 once each player turn', () => {
     const combat = createCombat(['bo', 'bo'], 'rock', 99, 99, getRelic('tuningFork'));
     const enemy = combat.enemies[0]!;
