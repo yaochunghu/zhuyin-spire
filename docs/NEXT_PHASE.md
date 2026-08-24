@@ -8,8 +8,7 @@ matrix has at least one debug-skip and one cast-on Act II pass.
 
 | Source | Says |
 |--------|------|
-| `package.json` / `CHANGELOG.md` | **0.4.0** |
-| GitHub Releases | Latest published tag may still be **v0.2.2** until an owner cuts a release |
+| `package.json` / `CHANGELOG.md` / GitHub Releases | **0.4.0** |
 
 ## What is live
 

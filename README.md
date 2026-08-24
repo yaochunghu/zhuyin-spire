@@ -166,7 +166,7 @@ This folder is its **own git repository** (`zhuyin-spire/.git`).
 
 - Do **not** commit the game through a parent home-directory repo (e.g. unrelated remotes).
 - From this directory: `git status`, `git add`, `git commit` as usual.
-- Latest release tag: `v0.2.2`; code version: `0.4.0` (see [CHANGELOG.md](CHANGELOG.md)).
+- Latest release tag: `v0.4.0`; code version: `0.4.0` (see [CHANGELOG.md](CHANGELOG.md)).
 - Dedicated remote: `https://github.com/yaochunghu/zhuyin-spire.git`.
 
 ```bash

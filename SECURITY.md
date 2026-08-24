@@ -2,7 +2,7 @@
 
 ## Supported version
 
-Security fixes are applied to the latest published `0.2.x` release and the live
+Security fixes are applied to the latest published `0.4.x` release and the live
 GitHub Pages build. Older tags are historical snapshots and are not maintained.
 
 ## Report a vulnerability privately
