@@ -8,6 +8,10 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+---
+
+## [0.4.0] — 2026-08-24
+
 ### Combat layout
 
 - Pinned the command deck to the bottom of the viewport so tall screens no
@@ -16,10 +20,6 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 ### Local playtest
 
 - `npm start` opens the Vite game at `http://localhost:5173` on this computer
-
----
-
-## [0.4.0] — 2026-08-21
 
 ### Resonance Wave 2 obtainability
 
@@ -205,7 +205,7 @@ Baseline snapshot of the preschool Spire + 注音 game, documented for long-term
 - Standalone git repository for the game folder (tag `v0.1.0`)
 
 [Unreleased]: #unreleased
-[0.4.0]: #040--2026-08-21
+[0.4.0]: #040--2026-08-24
 [0.3.1]: #031--2026-07-23
 [0.3.0]: #030--2026-07-22
 [0.2.1]: #021--2026-07-22
