@@ -27,7 +27,7 @@ export interface PlayableCharacterDef extends CharacterPreviewDef {
   actIRewardIds: readonly string[];
   /** Every unique implemented card design owned by this character. */
   cardPoolIds: readonly string[];
-  /** Content flag: the physical-card schema may land before upgrades are released. */
+  /** Content flag: Smith and authored + faces are live for this character. */
   upgradesEnabled: boolean;
   featuredJobs: readonly CardJob[];
 }

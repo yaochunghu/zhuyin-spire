@@ -33,7 +33,7 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [BALANCE.md](./BALANCE.md) | Live economy / HP / hand numbers + design intent |
 | [DEBUG.md](./DEBUG.md) | Debug panel, flags, skip-cast testing |
 | [ROADMAP.md](./ROADMAP.md) | Shipped systems, next work, known pitfalls |
-| [NEXT_PHASE.md](./NEXT_PHASE.md) | Current version, live vs draft, next feature after Wave 2 |
+| [NEXT_PHASE.md](./NEXT_PHASE.md) | Current version, complete 75-card progression, next feature slice |
 
 Root companions:
 

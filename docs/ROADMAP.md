@@ -35,18 +35,18 @@ The live version, obtainability rules, and next implementation slice live in
 Ordered by “resume playtest” value — not a binding schedule. Detail:
 [NEXT_PHASE.md](./NEXT_PHASE.md).
 
-1. **Playtest Waves 1–2** — cast-on / debug-skip matrix in
+1. **Playtest all score milestones** — cast-on / debug-skip matrix in
    [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md)
 2. **Relic pool (chest + elite), then a small potion belt** — do not import the
    Echo-era 40/20 bible wholesale
 3. **Act I events, then encounter rewrites one act at a time**
-4. **Waves 3–4 (Uncommons, then Rares)** after human drafts
-5. **Keys, Act IV, and a 20-level track last**
-6. Optional later: second character using a reviewed English or math provider,
+4. **Keys, Act IV, and a 20-level track last**
+5. Optional later: second character using a reviewed English or math provider,
    plus recorded audio
 
-Smith, physical-copy upgrades, toy-board enemy art, phone layouts, CI, and
-Wave 2 obtainability are already in the tree. Do not re-plan them as gated.
+Smith, physical-copy upgrades, the full 75-card score progression, toy-board
+enemy art, phone layouts, and CI are already in the tree. Do not re-plan them
+as gated.
 
 ---
 

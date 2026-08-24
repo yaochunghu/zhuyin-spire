@@ -67,6 +67,7 @@ The canonical 75-row catalog and reusable migration rules live in
 
 ## Evidence gate
 
-The catalog generator can audit 75 unique draft definitions. Playable claims are
-Wave 1 plus Wave 2 Commons. Later card waves still require the cast-on /
-debug-skip human draft matrix; implementation is not automatic balance approval.
+The catalog generator audits 75 unique definitions. All 75 designs are
+obtainable at character score 2,000; Smith and later-act `+` rolls are live.
+Cast-on / debug-skip playtests at each score milestone remain the human balance
+gate — implementation does not replace evidence review.

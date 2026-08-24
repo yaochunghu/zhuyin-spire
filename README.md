@@ -135,7 +135,7 @@ CHANGELOG.md        version history
 | [docs/DECK_DESIGN.md](docs/DECK_DESIGN.md) | Live 共鳴武者 wave, four mechanics, and expansion boundary |
 | [docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md](docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md) | Locked 共鳴武者 75-card roster, meta progression, simulation, and review checks |
 | [docs/STS_DESIGN_REFERENCE.md](docs/STS_DESIGN_REFERENCE.md) | StS systems reference and what to copy, adapt, or defer |
-| [docs/UPGRADE_BIBLE.md](docs/UPGRADE_BIBLE.md) | Physical-copy migration contract and gated upgrade draft |
+| [docs/UPGRADE_BIBLE.md](docs/UPGRADE_BIBLE.md) | Physical-copy migration contract and live 75-card upgrades |
 | [docs/EVENT_ENCOUNTER_BIBLE.md](docs/EVENT_ENCOUNTER_BIBLE.md) | Proposed events, encounters, difficulty variants, keys, and Act IV |
 | [docs/BALANCE.md](docs/BALANCE.md) | HP, gold, rest, hand rules |
 | [docs/DEBUG.md](docs/DEBUG.md) | Skip cast, jump fights, cheats for testing |

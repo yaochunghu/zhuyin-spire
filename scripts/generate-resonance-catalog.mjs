@@ -182,18 +182,18 @@ if (process.argv.includes('--markdown')) {
   process.stdout.write(`# Upgrade Bible: 共鳴武者
 
 > **Status:** all 75 physical-copy upgrades are live through character-score unlocks.
-> The V1→V2 save model and Smith/offer plumbing use this contract.
-> Generated \`+\` faces are an engineering draft and must not be treated as
-> authored or balanced content.
+> The V1→V2 save model, Smith, and later-act offer rolls use this contract.
+> Generated \`+\` faces mirror the locked design memo and must stay aligned with
+> player-facing Chinese overlays in \`src/data/cards.ts\`.
 
 ## Locked rules
 
-- A future collectible card upgrade will be permanent and non-repeatable.
+- A collectible card upgrade is permanent and non-repeatable.
 - Status and Curse cards cannot be upgraded.
 - Upgrades preserve the card's 注音 family, role, direction, and physical-copy UID.
-- The live campfire remains Rest or Remove; Smith is gated off.
-- Live reward and shop offers always use upgrade level 0.
-- Proposed later-act upgrade rates require a separate approval and playtest.
+- Campfires offer Rest or Smith; Smith upgrades one exact physical copy.
+- Later-act rewards and shop offers may arrive at upgrade level 1 per act roll.
+- Proposed act-specific upgrade rates still require playtest review.
 - Temporary, relic-driven, and event-driven upgrade sources are deferred.
 
 ## Runtime contract
@@ -207,10 +207,9 @@ interface DeckCard {
 \`\`\`
 
 Deck order and duplicate copies survive V1→V2 migration. Reward and shop
-instances serialize an upgrade level for forward compatibility, but the current
-character only creates level-zero offers.
+instances serialize upgrade level for Smith and later-act rolls.
 
-## Generated draft catalog (not live)
+## Live catalog (score-gated obtainability)
 
 | Runtime ID | Card | Base | Upgraded |
 |---|---|---|---|
@@ -218,11 +217,11 @@ ${table}
 
 ## Validation gates
 
-The build may assert that generated draft faces are structurally resolvable and
-that no upgrade level exceeds 1. It must also assert that 共鳴武者 keeps Smith
-disabled and live offers at level zero. No draft \`+\` face becomes canonical
-until its wording, number, casting cost, touch presentation, and human evidence
-pass [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md).
+The build asserts that all 75 faces are structurally resolvable, that no upgrade
+level exceeds 1, and that 共鳴武者 keeps Smith enabled with score-gated pool
+expansion. Player-facing wording must match the Chinese overlays in
+\`src/data/cards.ts\`. Human cast-on / debug-skip evidence still gates balance
+approval per [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md).
 `);
   process.exit(0);
 }

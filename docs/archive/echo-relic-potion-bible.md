@@ -1,18 +1,11 @@
 # Archived: Echo-era relic and potion design bible
 
-> **Not a backlog. Do not implement this pool.** It predates 共鳴武者 and
-> contains 回音-specific content that is incompatible with the live character.
-> `初心音叉` remains live only through `src/data/relics.ts`, where it grants
-> +1 damage to the first Attack hit each turn.
-
-> **Compatibility status:** this roster was authored for 回音法師. Universal
-> timing, inventory, pool, feedback, and validation rules remain useful, but
-> every Echo-specific relic or potion is frozen until it passes the
-> [design playbook](../DESIGN_PLAYBOOK.md) against 共鳴武者. Do not mechanically
-> replace “Echo” with 易傷, 練功, 轉拍, or 勁.
-
-**Status:** design proposal for review; none of the new entries are live unless
-they already exist in `src/data/relics.ts`.
+> **Frozen historical evidence — not a backlog and not for implementation.**
+> This roster predates 共鳴武者 and contains 回音-specific content that is
+> incompatible with the live character. `初心音叉` remains live only through
+> `src/data/relics.ts`, where it grants +1 damage to the first Attack hit each
+> turn. Universal timing, inventory, pool, feedback, and validation rules may
+> inform future work, but every Echo-specific relic or potion here stays frozen.
 
 This bible defines the complete first-character target of **40 original relics**
 and **20 original potions**. It follows the decision structure documented in
