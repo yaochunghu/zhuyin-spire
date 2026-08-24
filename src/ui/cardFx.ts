@@ -330,14 +330,10 @@ async function playPlayerStrike(
   for (const impact of fx.impacts) {
     const target = impactTarget(impact.enemyId, anchors);
 
-    if ((impact.echoBonus ?? 0) > 0 || (impact.relicBonus ?? 0) > 0) {
+    if ((impact.relicBonus ?? 0) > 0) {
       sfx.fork();
-      const bonuses = [
-        (impact.echoBonus ?? 0) > 0 ? `🔔+${impact.echoBonus}` : '',
-        (impact.relicBonus ?? 0) > 0 ? `🎵+${impact.relicBonus}` : '',
-      ].filter(Boolean);
-      spawnFloat(target.emoji, bonuses.join(' '), 'strike-float-echo');
-      target.emoji?.classList.add('echo-trigger-pop');
+      spawnFloat(target.emoji, `🎵+${impact.relicBonus}`, 'strike-float-bonus');
+      target.emoji?.classList.add('first-hit-pop');
       await sleep(140);
     }
 
@@ -406,10 +402,8 @@ async function playEnemyStatus(
   sfx.fork();
   const label = fx.status === 'vulnerable'
     ? `💥 易傷 ${fx.turns}`
-    : fx.status === 'weak'
-      ? `🥀 虛弱 ${fx.turns}`
-      : `🔔 回音 ${fx.turns}`;
-  spawnFloat(target.emoji, label, 'strike-float-echo');
+    : `🥀 虛弱 ${fx.turns}`;
+  spawnFloat(target.emoji, label, 'strike-float-bonus');
   const slot = document.querySelector<HTMLElement>(
     `[data-enemy-id="${fx.enemyId}"]`,
   );
@@ -432,10 +426,7 @@ async function playPlayerPower(
 ): Promise<void> {
   const hero = document.querySelector<HTMLElement>('.hero-actor');
   sfx.relic();
-  const label = fx.power === 'training'
-    ? `👊 練功 +${fx.amount}`
-    : `🌱 回音盾 +${fx.amount}`;
-  spawnFloat(hero, label, 'strike-float-energy');
+  spawnFloat(hero, `👊 練功 +${fx.amount}`, 'strike-float-energy');
   await sleep(220);
 }
 

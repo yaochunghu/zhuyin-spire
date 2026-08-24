@@ -3356,7 +3356,7 @@ button.enemy-status {
   filter: grayscale(0.3);
 }
 
-.strike-float-echo {
+.strike-float-bonus {
   color: #ffe779 !important;
   text-shadow: 0 2px 0 #5b3700, 0 0 14px rgba(255, 225, 90, 0.8) !important;
 }
@@ -3366,7 +3366,7 @@ button.enemy-status {
 }
 
 .enemy-status-pop,
-.echo-trigger-pop,
+.first-hit-pop,
 .energy-gain-pop {
   animation: statusPop 0.42s ease-out;
 }

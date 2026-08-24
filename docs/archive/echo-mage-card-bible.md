@@ -1,14 +1,19 @@
-# Card Bible: 回音法師歷史牌池提案
+# Archived: 回音法師 card bible
+
+> **Not a backlog. Do not implement these cards or mechanics.** The live first
+> character is 共鳴武者. Its authoritative roster is the Final 75 in
+> [RESONANCE_WARRIOR_DESIGN_PROCESS.md](../RESONANCE_WARRIOR_DESIGN_PROCESS.md).
+> This file remains only as historical design evidence.
 
 > **Status:** frozen historical reference. It is not the current implementation
 > target. The active replacement roster is 共鳴武者 in
-> [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md),
-> and new review work follows [DESIGN_PLAYBOOK.md](./DESIGN_PLAYBOOK.md).
+> [RESONANCE_WARRIOR_DESIGN_PROCESS.md](../RESONANCE_WARRIOR_DESIGN_PROCESS.md),
+> and new review work follows [DESIGN_PLAYBOOK.md](../DESIGN_PLAYBOOK.md).
 > Preserve these rows for comparison, stable-ID migration, and reusable
 > Colorless/Status/Curse ideas; do not mechanically rename Echo mechanics.
 
 This bible specifies the complete first-character pool before implementation.
-It follows the structural lessons in [STS_DESIGN_REFERENCE.md](./STS_DESIGN_REFERENCE.md)
+It follows the structural lessons in [STS_DESIGN_REFERENCE.md](../STS_DESIGN_REFERENCE.md)
 while using the smaller values, full-注音 cast cost, short fights, and icon-first
 presentation of 注音之塔. Names, rules text, and themes are original.
 

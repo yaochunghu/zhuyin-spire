@@ -24,9 +24,9 @@ npm run build     # tsc && vite build
 | Want to… | Look here |
 |----------|-----------|
 | HP / gold / rest / hand size | `src/data/balance.ts` → [docs/BALANCE.md](docs/BALANCE.md) |
-| Cards / starter / rewards | `src/data/cards.ts` → [docs/CONTENT.md](docs/CONTENT.md); target roster in [docs/CARD_BIBLE.md](docs/CARD_BIBLE.md) |
+| Cards / starter / rewards | `src/data/cards.ts` → [docs/CONTENT.md](docs/CONTENT.md); locked roster in [docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md](docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md) |
 | Card instances / upgrades / Smith | `src/game/cardInstances.ts`, `game/save.ts` → [docs/UPGRADE_BIBLE.md](docs/UPGRADE_BIBLE.md) |
-| Relics / potions / keys | `src/data/relics.ts` → [docs/RELIC_POTION_BIBLE.md](docs/RELIC_POTION_BIBLE.md) |
+| Relics / potions / keys | `src/data/relics.ts` → [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) |
 | Monsters / intents / roles | `src/data/enemies.ts` → [docs/EVENT_ENCOUNTER_BIBLE.md](docs/EVENT_ENCOUNTER_BIBLE.md) |
 | Multi-enemy packs | `src/data/encounters.ts` |
 | Map topology / room kinds | `src/data/map.ts` → [docs/MAP.md](docs/MAP.md) |

@@ -92,22 +92,13 @@ export function executeEffects(
         let dealt = 0;
         for (let i = 0; i < hits; i += 1) {
           if (!enemy.alive) break;
-          const echoBonus =
-            enemy.echoTurns > 0 && !enemy.echoTriggeredThisTurn ? 2 : 0;
-          if (echoBonus > 0) {
-            enemy.echoTriggeredThisTurn = true;
-            if (state.echoGuardAmount > 0) {
-              state.block += state.echoGuardAmount;
-              totalBlock += state.echoGuardAmount;
-            }
-          }
           const relicBonus = state.firstAttackBonusReady
             ? state.firstAttackBonusDamage
             : 0;
           if (state.firstAttackBonusReady) state.firstAttackBonusReady = false;
           const basicBonus = (def.basicAttack || card?.basicOverride) ? state.training : 0;
           const attackBonus = state.nextAttackBonus;
-          const rawAmount = eff.amount + basicBonus + attackBonus + echoBonus + relicBonus;
+          const rawAmount = eff.amount + basicBonus + attackBonus + relicBonus;
           const hitAmount = Math.floor(rawAmount * (enemy.vulnerableTurns > 0 ? 1.5 : 1));
           const blockBefore = enemy.block;
           const blocked = Math.min(blockBefore, hitAmount);
@@ -127,7 +118,6 @@ export function executeEffects(
             blockAfter: enemy.block,
             hpDamage,
             killed,
-            ...(echoBonus > 0 ? { echoBonus } : {}),
             ...(relicBonus > 0 ? { relicBonus } : {}),
           });
         }
@@ -142,20 +132,6 @@ export function executeEffects(
     } else if (eff.kind === 'energy') {
       state.energy += eff.amount;
       totalEnergy += eff.amount;
-    } else if (eff.kind === 'echo' && targets !== 'self') {
-      for (const enemy of targets) {
-        if (!enemy.alive) continue;
-        enemy.echoTurns = Math.max(enemy.echoTurns, eff.amount);
-        statusFx.push({
-          type: 'enemyStatus',
-          enemyId: enemy.id,
-          status: 'echo',
-          turns: enemy.echoTurns,
-        });
-      }
-    } else if (eff.kind === 'echoGuard') {
-      state.echoGuardAmount += eff.amount;
-      pushFx({ type: 'playerPower', power: 'echoGuard', amount: eff.amount });
     } else if (eff.kind === 'vulnerable' && targets !== 'self') {
       for (const enemy of targets) {
         if (!enemy.alive) continue;
@@ -240,9 +216,6 @@ export function executeEffects(
   }
   if (state.jin < jinBefore) {
     state.log.push(`消耗 ${jinBefore - state.jin} 勁（剩 ${state.jin}）`);
-  }
-  if (effects.some((effect) => effect.kind === 'echoGuard')) {
-    state.log.push(`共鳴護唱：回音時護盾 +${state.echoGuardAmount}`);
   }
 
   if (livingEnemies(state).length === 0) {

@@ -69,10 +69,6 @@ function effectText(effect: EffectDef): string {
       return `獲得 ${effect.amount} 練功`;
     case 'jin':
       return `獲得 ${effect.amount} 勁`;
-    case 'echo':
-      return `施加 ${effect.amount} 回音`;
-    case 'echoGuard':
-      return `獲得 ${effect.amount} 回音護盾`;
   }
 }
 

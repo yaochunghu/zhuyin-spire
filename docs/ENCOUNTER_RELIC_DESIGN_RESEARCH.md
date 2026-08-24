@@ -18,7 +18,7 @@
   randomness, and product-specific readability rules. Its treatment of enemies,
   bosses, relics, events, and economy is much thinner. The current
   [event/encounter](./EVENT_ENCOUNTER_BIBLE.md) and
-  [relic/potion](./RELIC_POTION_BIBLE.md) bibles move to exact catalogs and
+  archived [relic/potion](./archive/echo-relic-potion-bible.md) record moves to exact catalogs and
   numbers before their shared capability coverage, offer architecture, and
   runtime prerequisites have been approved.
 - **Design the game as one run ecology.** Cards provide capabilities; normal
@@ -1459,7 +1459,7 @@ the method in this memo.
 - [DESIGN_PLAYBOOK.md](./DESIGN_PLAYBOOK.md)
 - [STS_DESIGN_REFERENCE.md](./STS_DESIGN_REFERENCE.md)
 - [EVENT_ENCOUNTER_BIBLE.md](./EVENT_ENCOUNTER_BIBLE.md)
-- [RELIC_POTION_BIBLE.md](./RELIC_POTION_BIBLE.md)
+- [Archived Echo-era relic/potion record](./archive/echo-relic-potion-bible.md)
 - [DECK_DESIGN.md](./DECK_DESIGN.md)
 - [BALANCE.md](./BALANCE.md)
 - [ROADMAP.md](./ROADMAP.md)

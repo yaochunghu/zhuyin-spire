@@ -28,7 +28,7 @@ Deck order and duplicate copies survive V1→V2 migration. Reward and shop
 instances serialize an upgrade level. Act I creates level-zero offers; later
 acts may roll `upgradeLevel: 1` for eligible reviewed cards.
 
-## Generated draft catalog (not live)
+## Canonical catalog (obtainability gated)
 
 | Runtime ID | Card | Base | Upgraded |
 |---|---|---|---|
@@ -110,8 +110,10 @@ acts may roll `upgradeLevel: 1` for eligible reviewed cards.
 
 ## Validation gates
 
-The build may assert that generated draft faces are structurally resolvable and
-that no upgrade level exceeds 1. It must also assert that 共鳴武者 keeps Smith
-disabled and live offers at level zero. No draft `+` face becomes canonical
-until its wording, number, casting cost, touch presentation, and human evidence
-pass [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md).
+The build asserts that all 75 faces are structurally resolvable, every card has
+one authored `+` face, and no upgrade level exceeds 1. Smith is enabled for
+reviewed cards and upgrades one physical UID. Act I offers stay level zero;
+later-act reviewed offers may roll level one. Unreviewed rows remain catalog
+data only until their wording, casting cost, touch presentation, runtime
+effects, and human evidence pass
+[RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md).

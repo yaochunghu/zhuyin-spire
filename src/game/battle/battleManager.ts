@@ -47,7 +47,6 @@ export function createCombat(
     maxEnergy,
     firstAttackBonusDamage: relic?.firstAttackBonusDamage ?? 0,
     firstAttackBonusReady: (relic?.firstAttackBonusDamage ?? 0) > 0,
-    echoGuardAmount: 0,
     training: 0,
     jin: 0,
     gainedJinLastEnemyPhase: false,

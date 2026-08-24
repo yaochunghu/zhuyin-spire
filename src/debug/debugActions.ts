@@ -291,10 +291,8 @@ export function debugPrepareVisualReview(
           block: 0,
           intentIndex: 0,
           alive: true,
-          echoTurns: 0,
           vulnerableTurns: 0,
           weakTurns: 0,
-          echoTriggeredThisTurn: false,
         });
       }
       const handCount = Math.max(5, Math.min(10, options.handCount ?? 5));
