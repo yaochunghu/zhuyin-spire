@@ -251,9 +251,14 @@ export function debugPrepareVisualReview(
       return;
     case 'rest':
     case 'smith':
-    case 'removeCard':
+    case 'removeCard': {
+      const restNode = state.runMap.acts[state.actIndex]?.nodes.find(
+        (node) => node.kind === 'rest',
+      );
+      state.activeNodeId = restNode?.id ?? null;
       state.screen = screen;
       return;
+    }
     case 'shop':
     case 'shopRemove':
       state.shopOffers = reviewOffers.map((offer, index) => ({
@@ -291,10 +296,8 @@ export function debugPrepareVisualReview(
           block: 0,
           intentIndex: 0,
           alive: true,
-          echoTurns: 0,
           vulnerableTurns: 0,
           weakTurns: 0,
-          echoTriggeredThisTurn: false,
         });
       }
       const handCount = Math.max(5, Math.min(10, options.handCount ?? 5));

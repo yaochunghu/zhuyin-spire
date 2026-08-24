@@ -29,10 +29,8 @@ export function spawnEnemies(defIds: string[]): EnemyUnit[] {
       block: 0,
       intentIndex: 0,
       alive: true,
-      echoTurns: 0,
       vulnerableTurns: 0,
       weakTurns: 0,
-      echoTriggeredThisTurn: false,
     };
   });
 }
@@ -209,7 +207,8 @@ export function applyEnemyIntent(state: CombatState, unit: EnemyUnit): void {
         state.activePowerIds.includes('B100') &&
         (state.powerTriggersThisTurn.B100 ?? 0) === 0
       ) {
-        unit.vulnerableTurns = Math.min(9, unit.vulnerableTurns + 1);
+        const vulnerable = state.activePowerLevels.B100 === 1 ? 2 : 1;
+        unit.vulnerableTurns = Math.min(9, unit.vulnerableTurns + vulnerable);
         pushFx(state, {
           type: 'enemyStatus',
           enemyId: unit.id,
@@ -258,9 +257,7 @@ export function runEnemyTurn(state: CombatState): void {
 export function advanceEnemyStatuses(state: CombatState): void {
   for (const unit of state.enemies) {
     if (!unit.alive) continue;
-    if (unit.echoTurns > 0) unit.echoTurns -= 1;
     if (unit.vulnerableTurns > 0) unit.vulnerableTurns -= 1;
     if (unit.weakTurns > 0) unit.weakTurns -= 1;
-    unit.echoTriggeredThisTurn = false;
   }
 }

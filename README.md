@@ -134,11 +134,9 @@ CHANGELOG.md        version history
 | [docs/CASTING_GATES.md](docs/CASTING_GATES.md) | Casting metaphor, anti-repeat pools, profiles, future subjects |
 | [docs/DESIGN_PLAYBOOK.md](docs/DESIGN_PLAYBOOK.md) | Character design funnel, evidence ladder, and release gates |
 | [docs/DECK_DESIGN.md](docs/DECK_DESIGN.md) | Live 共鳴武者 wave, four mechanics, and expansion boundary |
-| [docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md](docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md) | 共鳴武者 concepts, culls, simulations, and 75-card target |
+| [docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md](docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md) | Locked 共鳴武者 75-card roster, simulation, and release gates |
 | [docs/STS_DESIGN_REFERENCE.md](docs/STS_DESIGN_REFERENCE.md) | StS systems reference and what to copy, adapt, or defer |
-| [docs/CARD_BIBLE.md](docs/CARD_BIBLE.md) | Frozen historical Echo Mage roster for comparison |
 | [docs/UPGRADE_BIBLE.md](docs/UPGRADE_BIBLE.md) | Physical-copy migration contract and gated upgrade draft |
-| [docs/RELIC_POTION_BIBLE.md](docs/RELIC_POTION_BIBLE.md) | Proposed 40 relics, 20 potions, and timing rules |
 | [docs/EVENT_ENCOUNTER_BIBLE.md](docs/EVENT_ENCOUNTER_BIBLE.md) | Proposed events, encounters, difficulty variants, keys, and Act IV |
 | [docs/BALANCE.md](docs/BALANCE.md) | HP, gold, rest, hand rules |
 | [docs/DEBUG.md](docs/DEBUG.md) | Skip cast, jump fights, cheats for testing |

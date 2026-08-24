@@ -2,104 +2,66 @@ import fs from 'node:fs';
 
 const docPath = new URL('../docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md', import.meta.url);
 const source = fs.readFileSync(docPath, 'utf8');
+const upgradePath = new URL('../docs/UPGRADE_BIBLE.md', import.meta.url);
+const upgradeSource = fs.readFileSync(upgradePath, 'utf8');
 
-const survivorText = source.match(
-  /### Survivor IDs after the first cull\s+([\s\S]*?)\s+### Rejected ideas/,
-)?.[1] ?? '';
 const finalCatalogText = source.match(
   /## Final 75-card pool\s+([\s\S]*?)\s+## Human playtest gates/,
 )?.[1] ?? '';
-
-function expandIds(text) {
-  const ids = new Set();
-  for (const match of text.matchAll(/B(\d{3})(?:[–-]B(\d{3}))?/g)) {
-    const start = Number(match[1]);
-    const end = Number(match[2] ?? match[1]);
-    for (let value = start; value <= end; value += 1) {
-      ids.add(`B${String(value).padStart(3, '0')}`);
-    }
-  }
-  return ids;
-}
+if (!finalCatalogText) throw new Error('Final 75-card pool section is missing');
 
 const finalCatalogIds = new Set(
   [...finalCatalogText.matchAll(/^\| (B\d{3}) \|/gm)].map((match) => match[1]),
 );
-const survivors = finalCatalogIds.size > 0 ? finalCatalogIds : expandIds(survivorText);
-if (survivors.size !== 75) {
-  throw new Error(`Expected 75 survivors, found ${survivors.size}`);
+if (finalCatalogIds.size !== 75) {
+  throw new Error(`Expected 75 final designs, found ${finalCatalogIds.size}`);
 }
 
 const cardRows = new Map();
-const balanceOverrides = {
-  B022: { effect: 'Move all 易傷 from one enemy to another. Gain 5 Block. Draw 1 card.' },
-  B030: { cost: 1 },
-  B037: {
-    effect: 'Return a 基礎攻擊 from your discard pile to your hand. It costs 0 this turn.',
-  },
-  B045: { cost: 2 },
-  B060: {
-    effect: 'The first time each turn you perform your second 轉拍, gain 1 Energy and 3 Block.',
-  },
-  B062: {
-    effect: 'The next card this turn triggers 轉拍 even if it matches the previous card type. Draw 1 card. Exhaust.',
-  },
-  B077: { effect: 'Spend 1 勁. Deal 8 damage. Cannot be played without enough 勁.' },
-  B078: { effect: 'Gain 5 Block plus 2 for each 勁 you have, maximum +4.' },
-  B080: { effect: 'Deal 4 damage. If you have 勁, spend 1 and apply 1 易傷.' },
-  B084: { effect: 'Spend 1 勁. Gain 10 Block.' },
-  B122: { effect: 'Draw 2 cards. If they have different types, apply 1 易傷.' },
-  B127: {
-    effect: 'The first time each turn you play your third 基礎攻擊 in combat, it costs 0, deals twice, and draws 1 card.',
-  },
-  B128: {
-    effect: 'Gain 12 Block. If you take no HP damage next enemy phase, 練功 1. Exhaust.',
-  },
-  B150: {
-    effect: 'Once each turn, after you have applied 易傷, gained 練功, performed 轉拍, and spent 勁 that turn, gain 2 Energy and draw 2 cards.',
-  },
-};
-for (const line of (finalCatalogText || source).split('\n')) {
+for (const line of finalCatalogText.split('\n')) {
   const cells = line.split('|').map((cell) => cell.trim());
   if (!/^\| B\d{3} /.test(line) || cells.length < 9) continue;
   const [, id, name, type, costText] = cells;
-  const effect = finalCatalogText ? cells[5] : cells[6];
-  const rarity = finalCatalogText ? cells[6] : cells[5];
+  const effect = cells[5];
+  const rarity = cells[6];
   const mechanics = cells[7];
-  const direction = finalCatalogText ? cells[8] : '';
-  if (!survivors.has(id) || cardRows.has(id)) continue;
+  const direction = cells[8];
+  if (!finalCatalogIds.has(id) || cardRows.has(id)) continue;
   cardRows.set(id, {
     id,
     name,
     type,
-    cost: finalCatalogText
-      ? (costText === 'X' ? 2.5 : Number(costText))
-      : (balanceOverrides[id]?.cost ?? (costText === 'X' ? 2.5 : Number(costText))),
+    cost: costText === 'X' ? 2.5 : Number(costText),
     rarity,
-    effect: finalCatalogText ? effect : (balanceOverrides[id]?.effect ?? effect),
+    effect,
     tags: mechanics.split('/'),
     direction,
   });
 }
 
 if (cardRows.size !== 75) {
-  throw new Error(`Parsed ${cardRows.size} survivor definitions`);
+  throw new Error(`Parsed ${cardRows.size} final definitions`);
 }
 
-const roleRows = new Map();
-const roleSection = source.match(/## Step 5 — Role assignment([\s\S]*)/)?.[1] ?? '';
-for (const line of roleSection.split('\n')) {
+const upgradeRows = new Map();
+for (const line of upgradeSource.split('\n')) {
   const cells = line.split('|').map((cell) => cell.trim());
-  if (!/^\| B\d{3} /.test(line) || cells.length < 5) continue;
-  roleRows.set(cells[1], cells[2]);
+  if (!/^\| `[^`]+` \| B\d{3} /.test(line) || cells.length < 6) continue;
+  const match = cells[2].match(/^(B\d{3})\s/);
+  if (!match) continue;
+  upgradeRows.set(match[1], { base: cells[3], upgraded: cells[4] });
 }
-roleRows.set('B065', 'Front-load damage');
-roleRows.set('B019', 'Glue');
-roleRows.set('B038', 'Glue');
-roleRows.set('B064', 'Engine piece');
-roleRows.set('B097', 'Scaling piece');
-roleRows.set('B100', 'Scaling piece');
-roleRows.set('B144', 'Situational tech');
+if (upgradeRows.size !== 75) {
+  throw new Error(`Expected 75 upgrade rows, found ${upgradeRows.size}`);
+}
+
+const normalizeText = (text) => text.replace(/\s+/g, ' ').trim().toLowerCase();
+const baseMismatches = [...cardRows.values()]
+  .filter((card) => normalizeText(upgradeRows.get(card.id)?.base ?? '') !== normalizeText(card.effect))
+  .map((card) => card.id);
+if (baseMismatches.length > 0) {
+  throw new Error(`Upgrade bible base mismatch: ${baseMismatches.join(', ')}`);
+}
 
 function firstNumber(pattern, text) {
   const match = text.match(pattern);
@@ -167,32 +129,12 @@ function features(card) {
   };
 }
 
-function upgradeEffect(card) {
-  let text = card.effect;
-  if (card.id === 'B010') return 'Gain 1 Energy. Draw 1 card. Exhaust.';
-  const damage = text.match(/Deal (\d+) damage/);
-  if (damage) {
-    const amount = Number(damage[1]) + (/twice|three times|four times/.test(text) ? 1 : 2);
-    return text.replace(damage[0], `Deal ${amount} damage`);
-  }
-  const block = text.match(/Gain (\d+) Block/);
-  if (block) return text.replace(block[0], `Gain ${Number(block[1]) + 2} Block`);
-  const draw = text.match(/Draw (\d+) cards?/i);
-  if (draw) return text.replace(draw[0], `Draw ${Number(draw[1]) + 1} cards`);
-  const vulnerable = text.match(/(\d+) 易傷/);
-  if (vulnerable) return text.replace(vulnerable[0], `${Number(vulnerable[1]) + 1} 易傷`);
-  const training = text.match(/練功 (\d+)/);
-  if (training) return text.replace(training[0], `練功 ${Number(training[1]) + 1}`);
-  if (card.cost > 0) return `Costs ${card.cost - 1}. ${text}`;
-  return `${text} Draw 1 card.`;
-}
-
 const cards = [...cardRows.values()].map((card) => ({
   ...card,
-  role: roleRows.get(card.id) ?? 'Unknown',
   f: features(card),
-  upgradeEffect: upgradeEffect(card),
-  upgradeF: features({ ...card, effect: upgradeEffect(card) }),
+  upgradeEffect: upgradeRows.get(card.id).upgraded,
+  upgradeCost: Number(upgradeRows.get(card.id).upgraded.match(/^Costs (\d+)/i)?.[1] ?? card.cost),
+  upgradeF: features({ ...card, effect: upgradeRows.get(card.id).upgraded }),
 }));
 const byId = new Map(cards.map((card) => [card.id, card]));
 
@@ -248,15 +190,11 @@ function pickValue(card, deck, focusTags = []) {
   if (/becomes a 基礎攻擊/i.test(card.effect)) value += 1.2 + tagCount(deck, 'B') * 0.08;
   if (/next 2 基礎攻擊s.*cost 0/i.test(card.effect)) value += 3.2;
   if (f.requiresJin) value -= Math.max(0.7, 2.2 - tagCount(deck, 'J') * 0.09);
-  if (card.role === 'Engine piece') value += 1.7;
-  if (card.role === 'Glue') value += 0.7;
-  if (card.role === 'Scaling piece') value += 0.9;
   value -= f.conditional * 0.6;
   value -= f.exhaust * 0.25;
   value -= Math.max(0, deck.length - 18) * 0.08;
   for (const tag of card.tags) value += tagCount(deck, tag) * 0.11;
   value += card.tags.filter((tag) => focusTags.includes(tag)).length * 0.85;
-  if (card.role === 'Build-around' && deck.length < 14) value -= 0.8;
   return value + (random() - 0.5) * 3.2;
 }
 
@@ -359,7 +297,12 @@ for (let run = 0; run < runs; run += 1) {
         .map((card) => {
           const base = pickValue(card, deck, focus.tags);
           const plus = pickValue(
-            { ...card, effect: card.upgradeEffect, f: card.upgradeF },
+            {
+              ...card,
+              cost: card.upgradeCost,
+              effect: card.upgradeEffect,
+              f: card.upgradeF,
+            },
             deck,
             focus.tags,
           );
@@ -368,6 +311,7 @@ for (let run = 0; run < runs; run += 1) {
         .sort((left, right) => right.gain - left.gain)[0];
       if (candidate) {
         candidate.card.upgraded = true;
+        candidate.card.cost = candidate.card.upgradeCost;
         candidate.card.effect = candidate.card.upgradeEffect;
         candidate.card.f = { ...candidate.card.upgradeF };
         stats.get(candidate.card.id).smithed += 1;
@@ -444,15 +388,34 @@ const typeCounts = Object.groupBy(cards, (card) => card.type);
 const duplicateEffects = Object.entries(Object.groupBy(cards, (card) => card.effect))
   .filter(([, group]) => group.length > 1)
   .map(([effect, group]) => ({ effect, ids: group.map((card) => card.id) }));
+const silentUpgradeIds = cards
+  .filter((card) => normalizeText(card.effect) === normalizeText(card.upgradeEffect))
+  .map((card) => card.id);
+const rarityAudit = Object.fromEntries(
+  Object.entries(rarityCounts).map(([key, group]) => [key, group.length]),
+);
+const typeAudit = Object.fromEntries(
+  Object.entries(typeCounts).map(([key, group]) => [key, group.length]),
+);
+if (JSON.stringify(rarityAudit) !== JSON.stringify({ Basic: 3, Common: 20, Rare: 17, Uncommon: 35 })) {
+  throw new Error(`Unexpected rarity counts: ${JSON.stringify(rarityAudit)}`);
+}
+if (JSON.stringify(typeAudit) !== JSON.stringify({ Attack: 31, Skill: 29, Power: 15 })) {
+  throw new Error(`Unexpected type counts: ${JSON.stringify(typeAudit)}`);
+}
+if (duplicateEffects.length > 0) {
+  throw new Error(`Duplicate base effects: ${JSON.stringify(duplicateEffects)}`);
+}
+if (silentUpgradeIds.length > 0) {
+  throw new Error(`No-op upgrades: ${silentUpgradeIds.join(', ')}`);
+}
 console.log(
   'STATIC AUDIT',
   JSON.stringify({
-    rarity: Object.fromEntries(
-      Object.entries(rarityCounts).map(([key, group]) => [key, group.length]),
-    ),
-    type: Object.fromEntries(
-      Object.entries(typeCounts).map(([key, group]) => [key, group.length]),
-    ),
+    rarity: rarityAudit,
+    type: typeAudit,
     duplicateEffects,
+    upgradeRows: upgradeRows.size,
+    silentUpgradeIds,
   }),
 );

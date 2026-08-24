@@ -51,6 +51,7 @@ for (const row of rows) {
 }
 
 const familyById = new Map(families.map((family) => [family[0], family]));
+const selfTargetDesignIds = new Set(['B024', 'B028', 'B030', 'B114', 'B100']);
 const escape = (value) => value.replaceAll('\\', '\\\\').replaceAll("'", "\\'");
 const mechanics = (raw) => {
   const out = [];
@@ -88,13 +89,15 @@ const effects = (row, text = row.text) => {
   }
   const block = text.match(/Gain (\d+) Block/);
   if (block) out.push({ kind: 'block', amount: Number(block[1]) });
-  const draw = text.match(/^Draw (\d+) cards?/);
+  const draw = text.match(/(?:^|\. )Draw (\d+) cards?/);
   if (draw) out.push({ kind: 'draw', amount: Number(draw[1]) });
   const energy = text.match(/^Gain (\d+) Energy/);
   if (energy) out.push({ kind: 'energy', amount: Number(energy[1]) });
   const vulnerable = text.match(/^Apply (\d+) 易傷|\. Apply (\d+) 易傷/);
-  if (vulnerable) out.push({ kind: 'vulnerable', amount: Number(vulnerable[1] ?? vulnerable[2]) });
-  const weak = text.match(/^Apply (\d+) Weak/);
+  if (vulnerable && row.designId !== 'B017') {
+    out.push({ kind: 'vulnerable', amount: Number(vulnerable[1] ?? vulnerable[2]) });
+  }
+  const weak = text.match(/(?:^|\. )Apply (\d+) Weak/);
   if (weak) out.push({ kind: 'weak', amount: Number(weak[1]) });
   return out;
 };
@@ -156,7 +159,7 @@ const definitions = rows.map((row, index) => {
     basicAttack: ${/This is a 基礎攻擊/.test(row.text)},
     exhaust: ${/Exhaust/.test(row.text)},
     retain: ${/Retain/.test(row.text)},
-    target: '${/all enemies/.test(row.text) ? 'allEnemies' : row.type === 'attack' || /selected enemy|one enemy|target|易傷|Weak/.test(row.text) ? 'singleEnemy' : 'self'}',
+    target: '${selfTargetDesignIds.has(row.designId) ? 'self' : /all enemies/.test(row.text) ? 'allEnemies' : row.type === 'attack' || /selected enemy|one enemy|target|易傷|Weak/.test(row.text) ? 'singleEnemy' : 'self'}',
     cues: [{ word: '${word}', emoji: '${emoji}', spell: '${spell}' }],
     effects: [${baseEffects.map(serializedEffect).join(', ')}],
     description: '${escape(row.text)}',
@@ -224,7 +227,7 @@ pass [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md
   process.exit(0);
 }
 
-process.stdout.write(`/* Generated implementation draft from the post-cull design table. Only wave-one IDs are live. */
+process.stdout.write(`/* Generated implementation draft from the locked Final 75 table. Obtainability is wave-gated in cards.ts. */
 import type { CardDef } from './cards';
 
 export const RESONANCE_CARDS: Record<string, CardDef> = {

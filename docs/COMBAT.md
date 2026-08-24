@@ -127,7 +127,7 @@ Completion is written only in `finishFight` after victory.
 enemy id, hit index, shield before/blocked/after, HP overflow, and kill state. The UI
 can therefore clang/crack/break a monster shield before showing HP damage, including
 fully blocked hits that previously produced no strike FX.
-Optional `echoBonus` and `relicBonus` fields explain why a hit was larger than
+The optional `relicBonus` field explains when 初心音叉 made a hit larger than
 the printed base number.
 
 Gameplay waits and Web Animations use `gameplayMs()`. End-turn discards and redraws

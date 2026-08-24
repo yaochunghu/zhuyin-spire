@@ -96,7 +96,9 @@ export function resolveCastSuccess(state: CombatState, def: CardDef): void {
   executeEffects(state, def, targets, (fx) => pushFx(state, fx), drawCards, card, isTempo);
   if (card) {
     if (def.type === 'power') {
-      state.activePowerIds.push(def.designId ?? def.id);
+      const powerId = def.designId ?? def.id;
+      state.activePowerIds.push(powerId);
+      state.activePowerLevels[powerId] = card.upgradeLevel;
     } else if (def.exhaust) {
       state.exhaustPile.push(card);
     } else {

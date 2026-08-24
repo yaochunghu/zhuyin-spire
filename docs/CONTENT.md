@@ -152,9 +152,9 @@ waves at scores 300, 1000, and 2000. Profiles saved before character
 progression migrate to score 300 and therefore begin with 33 cards unlocked.
 
 The live first-character specification and future upgrade constraints are in
-[DECK_DESIGN.md](./DECK_DESIGN.md).
-The proposed full 40-relic and 20-potion catalog is in
-[RELIC_POTION_BIBLE.md](./RELIC_POTION_BIBLE.md).
+[DECK_DESIGN.md](./DECK_DESIGN.md). Relic and potion work is deliberately
+gated by [NEXT_PHASE.md](./NEXT_PHASE.md); do not restore the archived
+Echo-coupled proposal.
 
 ---
 

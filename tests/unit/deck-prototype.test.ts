@@ -237,6 +237,109 @@ describe('共鳴 combat rules', () => {
     expect(combat.hand.length).toBe(handBefore + 1);
   });
 
+  it('keeps conditional riders unchanged on upgraded Wave 2 cards', () => {
+    const vulnerableCombat = createCombat(['xi'], 'rock', 30, 30);
+    const vulnerableEnemy = vulnerableCombat.enemies[0]!;
+    vulnerableEnemy.vulnerableTurns = 2;
+    const hpBefore = vulnerableEnemy.hp;
+    executeEffects(
+      vulnerableCombat,
+      resolveCard('xi', 1),
+      [vulnerableEnemy.id],
+      () => {},
+      noDraw,
+    );
+    expect(vulnerableEnemy.hp).toBe(hpBefore - 12);
+
+    const tempoCombat = createCombat(['a'], 'rock', 30, 30);
+    const tempoEnemy = tempoCombat.enemies[0]!;
+    const tempoHpBefore = tempoEnemy.hp;
+    executeEffects(
+      tempoCombat,
+      resolveCard('a', 1),
+      [tempoEnemy.id],
+      () => {},
+      noDraw,
+      undefined,
+      true,
+    );
+    expect(tempoCombat.block).toBe(7);
+    expect(tempoEnemy.hp).toBe(tempoHpBefore - 3);
+
+    const basicDefense = createCombat(['si'], 'rock', 30, 30);
+    basicDefense.basicPlayedThisTurn = 1;
+    executeEffects(basicDefense, resolveCard('si', 1), [], () => {}, noDraw);
+    expect(basicDefense.block).toBe(9);
+  });
+
+  it('applies conditional area 易傷 only to enemies without it', () => {
+    const combat = createCombat(['zhi'], ['slime', 'bat'], 30, 30);
+    const [marked, open] = combat.enemies;
+    marked!.vulnerableTurns = 2;
+    executeEffects(
+      combat,
+      getCard('zhi'),
+      combat.enemies.map((enemy) => enemy.id),
+      () => {},
+      noDraw,
+    );
+    expect(marked!.vulnerableTurns).toBe(2);
+    expect(open!.vulnerableTurns).toBe(1);
+  });
+
+  it('resolves upgraded draw riders from their structured effects', () => {
+    const combat = createCombat(['de'], 'rock', 30, 30);
+    let drawn = 0;
+    executeEffects(
+      combat,
+      resolveCard('de', 1),
+      [],
+      () => {},
+      (_state, count) => {
+        drawn += count;
+        return [];
+      },
+    );
+    expect(drawn).toBe(1);
+  });
+
+  it('uses the installed Power copy upgrade for later triggers', () => {
+    const combat = createCombat(['he', 'bo', 'bo'], 'rock', 30, 30);
+    const enemy = combat.enemies[0]!;
+    let drawn = 0;
+    const countDraw = (_state: typeof combat, count: number) => {
+      drawn += count;
+      return [];
+    };
+
+    combat.activePowerIds = ['B024', 'B040', 'B093', 'B131'];
+    combat.activePowerLevels = { B024: 1, B040: 1, B093: 1, B131: 1 };
+    executeEffects(combat, getCard('he'), [enemy.id], () => {}, countDraw);
+    expect(drawn).toBe(2);
+
+    executeEffects(combat, getCard('bo'), [enemy.id], () => {}, countDraw);
+    executeEffects(combat, getCard('bo'), [enemy.id], () => {}, countDraw);
+    executeEffects(combat, getCard('bo'), [enemy.id], () => {}, countDraw);
+    expect(combat.training).toBe(2);
+
+    combat.jin = 1;
+    executeEffects(combat, getCard('fo'), [enemy.id], () => {}, countDraw);
+    expect(drawn).toBe(4);
+
+    combat.tempoCount = 1;
+    executeEffects(combat, getCard('mo'), [], () => {}, countDraw, undefined, true);
+    expect(combat.training).toBe(4);
+  });
+
+  it('uses the upgraded 化勁留隙 duration during the enemy phase', () => {
+    const combat = createCombat(['mo'], 'slime', 30, 30);
+    combat.activePowerIds = ['B100'];
+    combat.activePowerLevels = { B100: 1 };
+    combat.block = 99;
+    applyEnemyIntent(combat, combat.enemies[0]!);
+    expect(combat.enemies[0]!.vulnerableTurns).toBe(2);
+  });
+
   it('uses 初心音叉 once each player turn', () => {
     const combat = createCombat(['bo', 'bo'], 'rock', 99, 99, getRelic('tuningFork'));
     const enemy = combat.enemies[0]!;

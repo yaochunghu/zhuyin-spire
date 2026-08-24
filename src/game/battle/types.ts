@@ -20,11 +20,8 @@ export interface EnemyUnit {
   block: number;
   intentIndex: number;
   alive: boolean;
-  /** Echo: first incoming attack each player turn gains +2 damage. */
-  echoTurns: number;
   vulnerableTurns: number;
   weakTurns: number;
-  echoTriggeredThisTurn: boolean;
 }
 
 /** One ordered hit, including the monster shield state before and after it. */
@@ -37,7 +34,6 @@ export interface PlayerImpact {
   hpDamage: number;
   killed: boolean;
   /** Optional damage additions, kept separate so feedback can explain them. */
-  echoBonus?: number;
   relicBonus?: number;
 }
 
@@ -52,13 +48,13 @@ export type CombatFx =
     }
   | { type: 'playerBlock'; amount: number }
   | { type: 'playerEnergy'; amount: number }
-  | { type: 'playerPower'; power: 'echoGuard' | 'training'; amount: number }
+  | { type: 'playerPower'; power: 'training'; amount: number }
   | { type: 'playerResource'; resource: 'jin'; delta: number; value: number }
   | { type: 'playerTempo'; count: number }
   | {
       type: 'enemyStatus';
       enemyId: string;
-      status: 'echo' | 'vulnerable' | 'weak';
+      status: 'vulnerable' | 'weak';
       turns: number;
     }
   | {
@@ -93,8 +89,6 @@ export interface CombatState {
   /** Character relic: spent by the first damaging hit of this combat. */
   firstAttackBonusDamage: number;
   firstAttackBonusReady: boolean;
-  /** Battle-long scaling from 共鳴護唱. */
-  echoGuardAmount: number;
   training: number;
   jin: number;
   gainedJinLastEnemyPhase: boolean;
@@ -110,6 +104,7 @@ export interface CombatState {
   bonusJinNextEnemyPhase: number;
   flawlessTrainingPending: boolean;
   activePowerIds: string[];
+  activePowerLevels: Record<string, 0 | 1>;
   powerTriggersThisTurn: Record<string, number>;
   exhaustPile: CombatCard[];
   drawPile: CombatCard[];
