@@ -50,7 +50,6 @@ describe('score-based card obtainability', () => {
     const state = scoredRun(300, 0);
     const pool = rewardPoolFor(state, 'normal');
     expect(pool).toHaveLength(9);
-    expect(pool.sort()).toEqual([...REWARD_POOL_IDS].sort());
     expect(pool).toEqual(REWARD_POOL_IDS);
   });
 
