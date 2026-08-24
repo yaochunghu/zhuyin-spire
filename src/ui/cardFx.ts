@@ -95,6 +95,16 @@ function flyOne(
     el.style.transform = `translate(${x0}px, ${y0}px) scale(0.5) rotate(-14deg)`;
     void el.offsetWidth;
 
+    const flyMs = fxMs(durationMs);
+    const settleMs = fxMs(90);
+    let settled = false;
+    const finish = (): void => {
+      if (settled) return;
+      settled = true;
+      el.remove();
+      resolve();
+    };
+
     const anim = el.animate(
       [
         {
@@ -114,7 +124,7 @@ function flyOne(
         },
       ],
       {
-        duration: fxMs(durationMs),
+        duration: flyMs,
         easing: 'cubic-bezier(0.22, 0.9, 0.3, 1)',
         fill: 'forwards',
       },
@@ -122,18 +132,19 @@ function flyOne(
 
     anim.onfinish = () => {
       el.style.transform = `translate(${x1}px, ${y1}px) scale(1)`;
-      // brief settle pop
-      el.animate(
+      const settle = el.animate(
         [
           { transform: `translate(${x1}px, ${y1}px) scale(1.06)` },
           { transform: `translate(${x1}px, ${y1}px) scale(1)` },
         ],
-        { duration: fxMs(90), easing: 'ease-out' },
-      ).onfinish = () => {
-        el.remove();
-        resolve();
-      };
+        { duration: settleMs, easing: 'ease-out' },
+      );
+      settle.onfinish = finish;
+      window.setTimeout(finish, settleMs + 40);
     };
+    // WebKit can skip WAAPI onfinish while the debug panel closes; never leave
+    // the deal batch hanging with hand cards still hidden.
+    window.setTimeout(finish, flyMs + settleMs + 80);
   });
 }
 

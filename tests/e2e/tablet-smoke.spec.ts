@@ -51,6 +51,34 @@ async function solveCurrentCast(page: Page) {
   await page.locator('.spell-reveal-continue').click({ force: true });
 }
 
+async function expectCommandDeckOnViewportBottom(page: Page, slack = 8) {
+  const metrics = await page.evaluate(() => {
+    const stage = document.querySelector<HTMLElement>('.combat-stage');
+    const dock = document.querySelector<HTMLElement>('.combat-bottom-row');
+    if (!stage || !dock) throw new Error('Missing combat stage or command deck');
+    const stageRect = stage.getBoundingClientRect();
+    const dockRect = dock.getBoundingClientRect();
+    return {
+      viewportHeight: window.innerHeight,
+      stageTop: stageRect.top,
+      stageBottom: stageRect.bottom,
+      dockTop: dockRect.top,
+      dockBottom: dockRect.bottom,
+      dockHeight: dockRect.height,
+    };
+  });
+  expect(metrics.stageTop, JSON.stringify(metrics)).toBeLessThanOrEqual(slack);
+  expect(
+    metrics.viewportHeight - metrics.stageBottom,
+    JSON.stringify(metrics),
+  ).toBeLessThanOrEqual(slack);
+  expect(
+    metrics.viewportHeight - metrics.dockBottom,
+    JSON.stringify(metrics),
+  ).toBeLessThanOrEqual(slack);
+  expect(metrics.dockHeight, JSON.stringify(metrics)).toBeGreaterThan(120);
+}
+
 async function expectMapEdgesAttached(page: Page) {
   const distances = await page.locator('.map-edge').evaluateAll((edges) => {
     const centerOf = (nodeId: string) => {
@@ -203,6 +231,20 @@ test('debug tools are hidden by default and can be enabled from Options', async 
   await expect(page.locator('#zhuyin-debug-root')).toBeAttached();
 });
 
+test('combat command deck sits on the bottom of the screen', async ({ page }) => {
+  await page.goto('/?debug=1');
+  await debugAction(page, 'Start', 'Go');
+  await page.locator('.debug-head .debug-btn-icon').click();
+  await expect(page.locator('.hand-card-hidden')).toHaveCount(0);
+  await expect(page.locator('.hand-card-land')).toHaveCount(0);
+  await expect(page.locator('.combat-bottom-row')).toBeVisible();
+
+  await expectCommandDeckOnViewportBottom(page);
+
+  await page.setViewportSize({ width: 1100, height: 1600 });
+  await expectCommandDeckOnViewportBottom(page);
+});
+
 test('combat hand keeps cards separate when they fit and scrolls at ten cards', async ({
   page,
 }, testInfo) => {
@@ -215,6 +257,7 @@ test('combat hand keeps cards separate when they fit and scrolls at ten cards', 
     .click();
   await page.locator('.debug-head .debug-btn-icon').click();
   await expect(page.locator('.hand-card-hidden')).toHaveCount(0);
+  await expect(page.locator('.hand-card-land')).toHaveCount(0);
   await expect(page.locator('.hand .card')).toHaveCount(5);
   await expect(page.locator('.combat-stage .adult-coach')).toHaveCount(0);
 
@@ -249,6 +292,7 @@ test('combat hand keeps cards separate when they fit and scrolls at ten cards', 
   await debugAction(page, 'Energy', 'Draw 5');
   await page.locator('.debug-head .debug-btn-icon').click();
   await expect(page.locator('.hand-card-hidden')).toHaveCount(0);
+  await expect(page.locator('.hand-card-land')).toHaveCount(0);
   await expect(page.locator('.hand .card')).toHaveCount(10);
   const tenCards = await handMetrics();
   expectSeparatedCards(tenCards.cards);

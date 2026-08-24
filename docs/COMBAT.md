@@ -26,6 +26,12 @@ UI:
 
 Orchestration of play + cast gate: **`game/state.ts`** (`tryPlayCard`, fight finish).
 
+Stage layout (`styles/toy-board.css`, with fallbacks in `styles/main.css`): the
+fight is a three-row grid — HUD, a flexible battlefield, and a command deck
+sized to the cards. The deck stays on the bottom edge of the viewport. Do not
+give that last row a percentage max; the purple bar is content-sized, so a
+tall `%` track leaves empty garden under the hand.
+
 ---
 
 ## Hand rules (StS-aligned)
