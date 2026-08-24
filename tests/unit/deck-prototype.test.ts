@@ -21,6 +21,7 @@ import {
   type CombatFx,
 } from '../../src/game/combat';
 import { applyEnemyIntent } from '../../src/game/battle/enemyHandler';
+import { makeCard } from '../../src/game/battle/piles';
 import {
   canSmith,
   createNewRun,
@@ -340,6 +341,106 @@ describe('共鳴 combat rules', () => {
     combat.block = 99;
     applyEnemyIntent(combat, combat.enemies[0]!);
     expect(combat.enemies[0]!.vulnerableTurns).toBe(2);
+  });
+
+  it('keeps cost-only basic discounts aligned with their locked text', () => {
+    const combat = createCombat(['bo'], 'rock', 30, 30);
+    executeEffects(combat, resolveCard('rw_b049', 1), [], () => {}, noDraw);
+    expect(combat.freeBasicsRemaining).toBe(2);
+
+    combat.freeBasicsRemaining = 0;
+    combat.hand = [];
+    executeEffects(
+      combat,
+      getCard('rw_b107'),
+      [combat.enemies[0]!.id],
+      () => {},
+      noDraw,
+    );
+    expect(combat.freeBasicsRemaining).toBe(1);
+
+    combat.block = 99;
+    endTurn(combat);
+    expect(combat.freeBasicsRemaining).toBe(0);
+  });
+
+  it('checks exactly the cards drawn by 聽拍尋隙, including its upgrade', () => {
+    const combat = createCombat(['bo'], 'rock', 30, 30);
+    const enemy = combat.enemies[0]!;
+    executeEffects(
+      combat,
+      resolveCard('rw_b122', 1),
+      [enemy.id],
+      () => {},
+      () => [makeCard('bo'), makeCard('mo'), makeCard('mo')],
+    );
+    expect(enemy.vulnerableTurns).toBe(1);
+
+    enemy.vulnerableTurns = 0;
+    executeEffects(
+      combat,
+      resolveCard('rw_b122', 1),
+      [enemy.id],
+      () => {},
+      () => [makeCard('bo'), makeCard('bo'), makeCard('mo')],
+    );
+    expect(enemy.vulnerableTurns).toBe(0);
+  });
+
+  it('applies 轉拍 hit bonuses through ordinary damage rules', () => {
+    const combat = createCombat(['bo'], 'rock', 30, 30);
+    const enemy = combat.enemies[0]!;
+    combat.tempoCount = 2;
+    enemy.block = 10;
+    enemy.vulnerableTurns = 1;
+    const hpBefore = enemy.hp;
+    executeEffects(
+      combat,
+      getCard('rw_b061'),
+      [enemy.id],
+      () => {},
+      noDraw,
+    );
+    expect(enemy.block).toBe(0);
+    expect(enemy.hp).toBe(hpBefore - 8);
+  });
+
+  it('repeats the second basic Attack damage with its resolved bonuses', () => {
+    const combat = createCombat(['bo'], 'rock', 30, 30);
+    const enemy = combat.enemies[0]!;
+    combat.activePowerIds = ['B127'];
+    combat.activePowerLevels = { B127: 0 };
+    combat.basicPlayedThisTurn = 1;
+    combat.training = 2;
+    enemy.vulnerableTurns = 1;
+    const hpBefore = enemy.hp;
+    let drawn = 0;
+    executeEffects(
+      combat,
+      getCard('bo'),
+      [enemy.id],
+      () => {},
+      (_state, count) => {
+        drawn += count;
+        return [];
+      },
+    );
+    expect(enemy.hp).toBe(hpBefore - 14);
+    expect(drawn).toBe(1);
+  });
+
+  it('triggers 聲波循環 from its installed Power once per turn', () => {
+    const combat = createCombat(['bo'], 'rock', 30, 30);
+    combat.activePowerIds = ['B115'];
+    combat.activePowerLevels = { B115: 0 };
+    combat.discardPile = [makeCard('mo')];
+    executeEffects(combat, getCard('bo'), [combat.enemies[0]!.id], () => {}, noDraw, undefined, true);
+    expect(combat.drawPile.at(-1)?.defId).toBe('mo');
+    expect(combat.powerTriggersThisTurn.B115).toBe(1);
+
+    combat.discardPile = [makeCard('ne')];
+    executeEffects(combat, getCard('bo'), [combat.enemies[0]!.id], () => {}, noDraw, undefined, true);
+    expect(combat.discardPile).toHaveLength(1);
   });
 
   it('uses 初心音叉 once each player turn', () => {

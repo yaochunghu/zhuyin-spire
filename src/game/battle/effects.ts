@@ -82,11 +82,14 @@ export function executeEffects(
   let totalBlock = 0;
   let totalEnergy = 0;
   const impacts: PlayerImpact[] = [];
+  const drawnCards: CombatCard[] = [];
   const statusFx: CombatFx[] = [];
 
   for (const eff of effects) {
     if (eff.kind === 'damage' && targets !== 'self') {
-      const hits = eff.hits ?? 1;
+      const priorTempo = Math.max(0, state.tempoCount - (triggeredTempo ? 1 : 0));
+      const repeatHits = def.designId === 'B071' ? Math.min(2, priorTempo) : 0;
+      const hits = (eff.hits ?? 1) + repeatHits;
       for (const enemy of targets) {
         if (!enemy.alive) continue;
         let dealt = 0;
@@ -98,7 +101,8 @@ export function executeEffects(
           if (state.firstAttackBonusReady) state.firstAttackBonusReady = false;
           const basicBonus = (def.basicAttack || card?.basicOverride) ? state.training : 0;
           const attackBonus = state.nextAttackBonus;
-          const rawAmount = eff.amount + basicBonus + attackBonus + relicBonus;
+          const tempoBonus = def.designId === 'B061' ? state.tempoCount : 0;
+          const rawAmount = eff.amount + basicBonus + attackBonus + relicBonus + tempoBonus;
           const hitAmount = Math.floor(rawAmount * (enemy.vulnerableTurns > 0 ? 1.5 : 1));
           const blockBefore = enemy.block;
           const blocked = Math.min(blockBefore, hitAmount);
@@ -127,7 +131,7 @@ export function executeEffects(
       state.block += eff.amount;
       totalBlock += eff.amount;
     } else if (eff.kind === 'draw') {
-      drawCards(state, eff.amount);
+      drawnCards.push(...drawCards(state, eff.amount));
       state.log.push(`${def.zhuyin} 成功！抽 ${eff.amount} 張`);
     } else if (eff.kind === 'energy') {
       state.energy += eff.amount;
@@ -165,15 +169,15 @@ export function executeEffects(
   if (def.basicAttack || card?.basicOverride) state.basicPlayedThisTurn += 1;
   const blockBeforeSpecial = state.block;
   const energyBeforeSpecial = state.energy;
-  applySpecialCardEffect(state, def, targets, drawCards, card, triggeredTempo);
+  applySpecialCardEffect(state, def, targets, drawCards, drawnCards, card, triggeredTempo);
   applyPowerTriggers(
     state,
     def,
     targets,
-    effects,
     vulnerableBefore,
     jinBefore,
     drawCards,
+    impacts,
     triggeredTempo,
     card,
   );
@@ -229,6 +233,7 @@ function applySpecialCardEffect(
   def: CardDef,
   targets: EnemyUnit[] | 'self',
   drawCards: (state: CombatState, n: number) => CombatCard[],
+  drawnCards: CombatCard[],
   card?: CombatCard | null,
   tempo = false,
 ): void {
@@ -327,11 +332,6 @@ function applySpecialCardEffect(
     case 'B055':
       if (tempo && enemy) enemy.vulnerableTurns += 1;
       break;
-    case 'B061':
-      if (enemy && state.tempoCount > 0) {
-        dealDirect(enemy, state.tempoCount * 3);
-      }
-      break;
     case 'B064':
       if (tempo) {
         const next = state.hand.find((candidate) => getResolved(candidate).type === 'attack');
@@ -342,12 +342,6 @@ function applySpecialCardEffect(
       if (!tempo && state.hand.length > 0) {
         const discarded = state.hand.pop();
         if (discarded) state.discardPile.push(discarded);
-      }
-      break;
-    case 'B071':
-      if (enemy) {
-        const repeats = Math.min(2, Math.max(0, state.tempoCount - (tempo ? 1 : 0)));
-        dealDirect(enemy, repeats * (upgraded ? 10 : 8));
       }
       break;
     case 'B076':
@@ -396,34 +390,16 @@ function applySpecialCardEffect(
       if (enemy && enemy.vulnerableTurns > 0) dealDirect(enemy, 2);
       break;
     case 'B107':
-      {
-        const next = state.hand.find((candidate) => {
-          const nextDef = getResolved(candidate);
-          return nextDef.basicAttack || candidate.basicOverride;
-        });
-        if (next) next.temporaryCostReduction = 99;
-      }
+      state.freeBasicsRemaining = Math.max(state.freeBasicsRemaining, 1);
       break;
     case 'B049':
-      state.freeBasicsRemaining = Math.max(state.freeBasicsRemaining, upgraded ? 3 : 2);
+      state.freeBasicsRemaining = Math.max(state.freeBasicsRemaining, 2);
       break;
     case 'B108':
       if (tempo) drawCards(state, 1);
       break;
     case 'B113':
       if (tempo) state.training += 1;
-      break;
-    case 'B115':
-      if (tempo && (def.basicAttack || card?.basicOverride)) {
-        const index = lastIndexWhere(
-          state.discardPile,
-          (candidate) => getResolved(candidate).type === 'skill',
-        );
-        if (index >= 0) {
-          const [skill] = state.discardPile.splice(index, 1);
-          state.drawPile.push(skill!);
-        }
-      }
       break;
     case 'B119': {
       if (!state.gainedJinLastEnemyPhase) break;
@@ -446,7 +422,7 @@ function applySpecialCardEffect(
       break;
     case 'B122':
       if (enemy) {
-        const attacks = state.hand.slice(-2)
+        const attacks = drawnCards
           .filter((candidate) => getResolved(candidate).type === 'attack').length;
         if (attacks === 1) enemy.vulnerableTurns += 1;
       }
@@ -495,10 +471,10 @@ function applyPowerTriggers(
   state: CombatState,
   def: CardDef,
   targets: EnemyUnit[] | 'self',
-  effects: EffectDef[],
   vulnerableBefore: Map<string, number>,
   jinBefore: number,
   drawCards: (state: CombatState, n: number) => CombatCard[],
+  impacts: PlayerImpact[],
   tempo: boolean,
   card?: CombatCard | null,
 ): void {
@@ -536,11 +512,40 @@ function applyPowerTriggers(
     for (const enemy of enemies) enemy.vulnerableTurns = Math.min(9, enemy.vulnerableTurns + 1);
   }
   if (basic && has('B127') && state.basicPlayedThisTurn === 2) {
-    const damage = effects.find((effect) => effect.kind === 'damage');
-    if (damage) {
-      for (const enemy of enemies) dealDirect(enemy, damage.amount * (damage.hits ?? 1));
-      drawCards(state, upgradedPower('B127') ? 2 : 1);
+    const originalImpacts = [...impacts];
+    for (const original of originalImpacts) {
+      const enemy = state.enemies.find((candidate) => candidate.id === original.enemyId);
+      if (!enemy?.alive) continue;
+      const amount = original.blocked + original.hpDamage;
+      const blockBefore = enemy.block;
+      const blocked = Math.min(blockBefore, amount);
+      enemy.block = Math.max(0, blockBefore - blocked);
+      const hpDamage = Math.max(0, amount - blocked);
+      enemy.hp = Math.max(0, enemy.hp - hpDamage);
+      const killed = enemy.hp <= 0;
+      if (killed) enemy.alive = false;
+      impacts.push({
+        enemyId: enemy.id,
+        hitIndex: original.hitIndex,
+        blockBefore,
+        blocked,
+        blockAfter: enemy.block,
+        hpDamage,
+        killed,
+      });
     }
+    drawCards(state, upgradedPower('B127') ? 2 : 1);
+  }
+  if (tempo && basic && has('B115') && triggers('B115') === 0) {
+    const index = lastIndexWhere(
+      state.discardPile,
+      (candidate) => getResolved(candidate).type === 'skill',
+    );
+    if (index >= 0) {
+      const [skill] = state.discardPile.splice(index, 1);
+      state.drawPile.push(skill!);
+    }
+    trigger('B115');
   }
   if (tempo && has('B059') && triggers('B059') === 0) {
     drawCards(state, upgradedPower('B059') ? 2 : 1);

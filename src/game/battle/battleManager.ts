@@ -129,6 +129,7 @@ export function endTurn(state: CombatState): CombatState['status'] {
   state.basicPlayedThisTurn = 0;
   state.powerTriggersThisTurn = {};
   state.nextAttackBonus = 0;
+  state.freeBasicsRemaining = 0;
   state.phase = 'playerStart';
   drawCards(state, DRAW_PER_TURN);
   if (state.activePowerIds.includes('B129') && state.hand.length < 10) {
