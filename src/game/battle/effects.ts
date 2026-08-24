@@ -169,7 +169,7 @@ export function executeEffects(
   if (def.basicAttack || card?.basicOverride) state.basicPlayedThisTurn += 1;
   const blockBeforeSpecial = state.block;
   const energyBeforeSpecial = state.energy;
-  applySpecialCardEffect(state, def, targets, drawCards, drawnCards, card, triggeredTempo);
+  applySpecialCardEffect(state, def, targets, drawCards, drawnCards, triggeredTempo);
   applyPowerTriggers(
     state,
     def,
@@ -234,7 +234,6 @@ function applySpecialCardEffect(
   targets: EnemyUnit[] | 'self',
   drawCards: (state: CombatState, n: number) => CombatCard[],
   drawnCards: CombatCard[],
-  card?: CombatCard | null,
   tempo = false,
 ): void {
   const enemy = targets === 'self' ? null : targets[0] ?? null;
