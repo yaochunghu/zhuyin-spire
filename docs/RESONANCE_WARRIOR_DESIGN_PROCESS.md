@@ -54,6 +54,19 @@ requiring a specific reward.
 - Every direction supplies front-load, defense, draw or Energy, area access,
   and long-fight scaling without requiring a named Rare.
 
+### Three-direction coverage
+
+| Direction | Core loop | Low-rarity access | Mature-pool coverage |
+|---|---|---|---|
+| 聽隙爆發 | Apply 易傷, alternate, burst inside the window | Starter setup; cheap setup, payoff, area, and 轉拍 Commons | Duration conversion, defensive marked-target glue, capped draw/Energy engines, and finishers |
+| 百鍊連環 | Increase 基礎攻擊 density, gain 練功, recur trained hits | Multi-hit basic, first 練功 Power, subtype draw, recursion, defense, and area | Conversion, density payoffs, multi-hit scaling, and per-turn cadence Powers |
+| 聽勁反擊 | Fully block an attack action, bank 勁, spend it later | Reliable Block and one fixed-price spender | Fixed and bounded spenders, area conversion, delayed counterattacks, insurance, and resource engines |
+
+轉拍 supplies the shared Attack↔Skill cadence. Hybrid cards must contribute
+meaningfully to both named directions; being merely playable in either is not
+enough. 百鍊 × 聽勁 is intentionally the thinnest bridge and should not be
+padded with redundant cards.
+
 ## Never-again rules
 
 These rules replace a live list of rejected card names:
@@ -80,6 +93,27 @@ The last equal-cohort pass split 160,000 drafts across 聽隙爆發, 百鍊連�
 聽勁反擊, and hybrid policies. The 5.4-point proxy-win spread is a watch list,
 not a balance verdict. Further number changes require turn-level and human
 cast-on evidence.
+
+### Catalog-lock simulation — 2026-08-24
+
+The simulator was changed to parse only this Final 75 table and the exact
+upgrade faces in `UPGRADE_BIBLE.md`; it now fails on count drift, duplicate
+effects, missing upgrades, no-op upgrades, or base-text disagreement.
+
+60,000 seeded drafts produced a 36.3% pool-average pick rate, 67.8% proxy win
+rate, and 18.97 average damage taken. Cohort proxy wins were 66.3% 聽隙爆發,
+67.5% 百鍊連環, 70.9% 聽勁反擊, and 68.9% hybrid: a 4.6-point spread.
+
+The synthetic watch list is intentionally unchanged in principle:
+
+- 聲波架式, 剛柔並濟, 勁貫破綻, 以剛護柔, and 一氣呵成 were picked above 80%.
+- 引勁入拳 and 反覆破綻 were picked below 3%; their resource/engine conditions
+  require targeted human drafts rather than automatic buffs.
+- 一氣呵成 was the dominant Smith target. Verify its real cast-chain cost
+  before changing its upgrade.
+
+No card number changed from this pass. The heuristic rewards printed scaling
+and does not model casting failure or exact resource availability.
 
 ## Final 75-card pool
 
