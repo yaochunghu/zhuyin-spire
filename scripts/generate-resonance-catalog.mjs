@@ -181,8 +181,8 @@ if (process.argv.includes('--markdown')) {
   }).join('\n');
   process.stdout.write(`# Upgrade Bible: 共鳴武者
 
-> **Status:** physical-copy foundation implemented; card upgrades not released.
-> The V1→V2 save model and dormant Smith/offer plumbing use this contract.
+> **Status:** all 75 physical-copy upgrades are live through character-score unlocks.
+> The V1→V2 save model and Smith/offer plumbing use this contract.
 > Generated \`+\` faces are an engineering draft and must not be treated as
 > authored or balanced content.
 
@@ -227,7 +227,7 @@ pass [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md
   process.exit(0);
 }
 
-process.stdout.write(`/* Generated implementation draft from the locked Final 75 table. Obtainability is wave-gated in cards.ts. */
+process.stdout.write(`/* Generated implementation from the locked Final 75 table. Obtainability follows unlockScore. */
 import type { CardDef } from './cards';
 
 export const RESONANCE_CARDS: Record<string, CardDef> = {

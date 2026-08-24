@@ -8,6 +8,15 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+### Complete card meta progression
+
+- Replaced the temporary reviewed-wave offer gate with the designed cumulative
+  score progression: 12 cards at 0, 33 at 300, 54 at 1,000, and all 75 at 2,000
+- Added debug Meta controls that persistently set the active learner to any card
+  unlock milestone
+- Kept Act I on its nine-card teaching reward pool while score expands
+  Acts II–III fights, shops, and treasure
+
 ### Combat layout
 
 - Pinned the command deck to the bottom of the viewport so tall screens no

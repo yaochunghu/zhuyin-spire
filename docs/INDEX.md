@@ -52,11 +52,10 @@ Root companions:
 - **Combat:** modular `src/game/battle/*`, multi-enemy intents, drag-and-drop cards
 - **Teaching:** full first-syllable 注音 cast, per-learner persistent shuffle bags,
   detailed curriculum controls, and a provider boundary for future subjects
-- **Cards:** Act I is the 12-design teaching wave. Later acts add 13 reviewed
-  Commons after character score 300. The 75-card catalog remains for score UI
-  and the designer; unreviewed rows are not obtainable.
+- **Cards:** Act I uses the 12-design teaching pool. Later acts expand by
+  cumulative character score: 12 → 33 → 54 → all 75.
 - **Debug:** body-mounted panel for testing (not for kids in normal play)
 
-共鳴武者 Smith and physical-copy upgrades are live for reviewed cards.
+共鳴武者 Smith and all 75 physical-copy upgrades are live through score unlocks.
 Rejected and pre-共鳴 design records are quarantined under `docs/archive/`;
 they are historical evidence, not implementation backlogs.

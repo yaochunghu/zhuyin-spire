@@ -24,9 +24,9 @@ The live version, obtainability rules, and next implementation slice live in
 - Playable GitHub Pages release build
 - 共鳴武者 Act I: 12 reviewed Chinese-facing designs, four signature mechanics,
   physical-copy V2 saves, Smith, later-act `+` rolls, and local playtest telemetry
-- Resonance Wave 2: `reviewedWave` gate, 13 score-300 Commons in later acts after
-  character score 300, Chinese faces and upgrades; unreviewed catalog rows stay
-  out of offers
+- 共鳴武者 meta progression: later-act fights, shops, and treasure expand from
+  12 → 33 → 54 → 75 cards at scores 0 / 300 / 1,000 / 2,000; debug can set
+  every milestone
 
 ---
 

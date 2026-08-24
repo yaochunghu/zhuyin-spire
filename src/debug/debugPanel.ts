@@ -22,6 +22,7 @@ import {
   debugSetCastingMode,
   debugSetAct,
   debugSetHp,
+  debugSetMetaProgress,
   debugStartFight,
   debugStartTutorial,
   debugWinCombat,
@@ -123,6 +124,15 @@ function buildPanel(opts: DebugMountOpts): HTMLElement {
       btn('Title', () => runAction(opts, debugGoTitle)),
       btn('New run', () => runAction(opts, debugNewRun)),
       btn('Practice', () => runAction(opts, debugPractice)),
+    ]),
+  );
+
+  panel.appendChild(
+    row('Meta', [
+      btn('0', () => runAction(opts, () => debugSetMetaProgress(0))),
+      btn('300', () => runAction(opts, () => debugSetMetaProgress(300))),
+      btn('1k', () => runAction(opts, () => debugSetMetaProgress(1000))),
+      btn('2k', () => runAction(opts, () => debugSetMetaProgress(2000))),
     ]),
   );
 

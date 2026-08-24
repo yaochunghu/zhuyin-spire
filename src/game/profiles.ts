@@ -1,5 +1,5 @@
 import { ALL_PHRASE_PACKS } from '../data/phrases';
-import { CARDS, isCardReviewedForLiveWave } from '../data/cards';
+import { CARDS } from '../data/cards';
 import {
   CHARACTER_IDS,
   getCharacter,
@@ -64,6 +64,10 @@ export interface CharacterScoreAward {
   score: number;
   newlyUnlockedCardIds: string[];
 }
+
+/** Designed cumulative-score milestones for the 共鳴武者 card pool. */
+export const CHARACTER_CARD_UNLOCK_TIERS = [0, 300, 1000, 2000] as const;
+export type CharacterCardUnlockTier = (typeof CHARACTER_CARD_UNLOCK_TIERS)[number];
 
 interface LearnerProfileStoreV1 {
   v: 1;
@@ -569,9 +573,7 @@ export function isCardObtainableForProfile(
   characterId: PlayableCharacterId,
   cardId: string,
 ): boolean {
-  if (!isCardUnlockedForProfile(profile, characterId, cardId)) return false;
-  const card = CARDS[cardId];
-  return !!card && isCardReviewedForLiveWave(card);
+  return isCardUnlockedForProfile(profile, characterId, cardId);
 }
 
 export function filterObtainableCardsForProfile(

@@ -3,7 +3,6 @@ import {
   CARDS,
   LATER_ACT_ELITE_REWARD_POOL_IDS,
   LATER_ACT_REWARD_POOL_IDS,
-  RESONANCE_WAVE_TWO_IDS,
   REWARD_POOL_IDS,
   STARTER_DECK_IDS,
   getCard,
@@ -78,13 +77,18 @@ describe('共鳴武者 catalog', () => {
     ).toBe(true);
   });
 
-  it('authors Chinese Wave 2 Commons and keeps unreviewed 300-tier cards gated', () => {
-    expect(RESONANCE_WAVE_TWO_IDS).toHaveLength(13);
-    const liveOfferIds = [...new Set([...STARTER_DECK_IDS, ...REWARD_POOL_IDS, ...RESONANCE_WAVE_TWO_IDS])];
-    expect(liveOfferIds).toHaveLength(25);
-    expect(liveOfferIds.every((id) => getCard(id).cues.length >= 2)).toBe(true);
+  it('keeps the localized teaching cards and their upgrades aligned', () => {
+    const localizedIds = [
+      ...new Set([
+        ...STARTER_DECK_IDS,
+        ...REWARD_POOL_IDS,
+        'de', 'ne', 'ji', 'qi', 'xi', 'zhi', 'chi', 'zi', 'ci', 'wu', 'yu', 'si', 'a',
+      ]),
+    ];
+    expect(localizedIds).toHaveLength(25);
+    expect(localizedIds.every((id) => getCard(id).cues.length >= 2)).toBe(true);
     expect(
-      liveOfferIds.every((id) => {
+      localizedIds.every((id) => {
         const card = getCard(id);
         const english = /\b(?:Deal|Gain|Apply|Draw|Spend|Cannot|Costs|Exhaust)\b/;
         return !english.test(card.description) && !english.test(card.upgrade?.description ?? '');
@@ -98,8 +102,6 @@ describe('共鳴武者 catalog', () => {
       { kind: 'block', amount: 5 },
       { kind: 'draw', amount: 1 },
     ]);
-    expect(getCard('rw_b024').reviewedWave).toBeUndefined();
-    expect(getCard('o').reviewedWave).toBeUndefined();
   });
 
   it('creates physical starter copies and preserves the compatibility lineage', () => {

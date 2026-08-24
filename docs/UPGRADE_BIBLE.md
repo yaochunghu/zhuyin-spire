@@ -1,9 +1,8 @@
 # Upgrade Bible: 共鳴武者
 
-> **Status:** physical-copy upgrades are live for reviewed cards. Smith
-> upgrades one UID at a campfire. Later-act offers may roll `+` for non-basic
-> reviewed cards. Generated `+` faces on unreviewed catalog rows remain drafts
-> and are not obtainable.
+> **Status:** all 75 physical-copy upgrades are live through character-score
+> unlocks. Smith upgrades one UID at a campfire. Later-act offers may roll `+`
+> for unlocked non-basic cards.
 
 ## Locked rules
 
@@ -26,9 +25,9 @@ interface DeckCard {
 
 Deck order and duplicate copies survive V1→V2 migration. Reward and shop
 instances serialize an upgrade level. Act I creates level-zero offers; later
-acts may roll `upgradeLevel: 1` for eligible reviewed cards.
+acts may roll `upgradeLevel: 1` for eligible unlocked cards.
 
-## Canonical catalog (obtainability gated)
+## Canonical score-gated catalog
 
 | Runtime ID | Card | Base | Upgraded |
 |---|---|---|---|
@@ -112,8 +111,7 @@ acts may roll `upgradeLevel: 1` for eligible reviewed cards.
 
 The build asserts that all 75 faces are structurally resolvable, every card has
 one authored `+` face, and no upgrade level exceeds 1. Smith is enabled for
-reviewed cards and upgrades one physical UID. Act I offers stay level zero;
-later-act reviewed offers may roll level one. Unreviewed rows remain catalog
-data only until their wording, casting cost, touch presentation, runtime
-effects, and human evidence pass
+all unlocked cards and upgrades one physical UID. Act I offers stay level zero;
+later-act unlocked offers may roll level one. The progression and ongoing human
+review checks live in
 [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md).

@@ -1,8 +1,8 @@
 # 共鳴武者: locked 75-card design
 
-> **Status:** authoritative design source. Only rows with `reviewedWave` at or
-> below `LIVE_REVIEWED_WAVE` are obtainable. The archived brainstorm is design
-> history, not a backlog.
+> **Status:** authoritative design source. All 75 designs are obtainable through
+> the cumulative character-score progression below. The archived brainstorm is
+> design history, not a backlog.
 
 ## Character foundation
 
@@ -53,6 +53,24 @@ requiring a specific reward.
   shared bridge; no fourth direction is planned.
 - Every direction supplies front-load, defense, draw or Energy, area access,
   and long-fight scaling without requiring a named Rare.
+
+## Meta progression
+
+Character score unlocks breadth, never permanent combat strength. Score is
+stored per learner profile and earned when a run ends. Act I always uses the
+small nine-card teaching reward pool; unlocked expansion cards enter fights,
+shops, and treasure in Acts II–III.
+
+| Cumulative score | Newly available | Total | Design purpose |
+|---:|---:|---:|---|
+| 0 | 12 | 12 | Three starter designs plus nine simple teaching rewards |
+| 300 | 21 | 33 | Complete the Common foundation and introduce focused direction pieces |
+| 1,000 | 21 | 54 | Add specialist engines, conditional payoffs, and deeper hybrids |
+| 2,000 | 21 | 75 | Open the full advanced pool, including the most build-dependent Rares |
+
+Unlocks are derived from each card's `unlockScore`; no second release-wave gate
+may make an unlocked card silently unobtainable. Existing saved decks and
+offers remain valid if a debug tester lowers the active profile's score.
 
 ### Three-direction coverage
 
@@ -221,9 +239,10 @@ testing because the heuristic overvalues persistent text and undervalues
 resource availability. These are the first cards to inspect in the human draft
 matrix, not automatic cut decisions.
 
-### Release requirements
+### Ongoing playtest requirements
 
-Before any additional wave becomes obtainable:
+All score tiers are obtainable. Continue to run these checks before calling a
+tier balance-locked:
 
 1. Run cast-on and debug-skip drafts for each direction and deliberate hybrids.
 2. Record offers, alternatives, picks, skips, removals, upgrades, HP loss,
@@ -232,13 +251,14 @@ Before any additional wave becomes obtainable:
    win association.
 4. Exercise failed casts, save/load, multi-enemy targets, full hands, empty
    piles, and lethal mid-resolution outcomes for every delayed trigger.
-5. Keep `LIVE_REVIEWED_WAVE = 2` until Wave 1–2 has both an Act II debug-skip
-   pass and an Act II cast-on pass.
+5. Run both an Act II debug-skip pass and an Act II cast-on pass at every score
+   milestone.
 
-## Wave 3 Uncommon review sheet
+## Advanced-card review sheet
 
-This is the next review package, not an obtainability change. Each row must
-still pass touch, feedback, failure, and human-draft gates.
+These cards are obtainable at their assigned score milestones. The sheet
+remains the focused regression package for touch, feedback, failure, and
+human-draft review.
 
 | Design | Purpose / standalone floor | Best interactions | Edge cases to falsify |
 |---|---|---|---|
@@ -255,5 +275,3 @@ still pass touch, feedback, failure, and human-draft gates.
 | B060 一攻一守 | Reward a deeper second alternation | B051, B052, B070 | exact trigger count, fizzle, save/load |
 | B061 變拍連環 | Turn sequencing into bounded multi-hit damage | B053, B059, B123 | include own 轉拍, 練功 ordering, 易傷 rounding |
 | B064 接續姿勢 | Natural Attack-Skill-Attack bridge | B051, B061, B065 | no Attack in hand, leftmost selection, cost floor |
-
-No row receives `reviewedWave: 3` from design approval alone.

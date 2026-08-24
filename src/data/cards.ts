@@ -90,11 +90,6 @@ export interface CardDef {
   upgrade?: CardUpgradeDef;
   /** Cumulative per-character score needed before this card enters run pools. */
   unlockScore?: 300 | 1000 | 2000;
-  /**
-   * Human-reviewed obtainability wave. Unset cards stay in the catalog and
-   * score UI but never enter run offers until a later wave is approved.
-   */
-  reviewedWave?: 1 | 2 | 3 | 4;
 }
 
 export interface ResolvedCardDef extends CardDef {
@@ -259,37 +254,10 @@ const CARD_CUE_OVERRIDES: Partial<Record<string, Cue[]>> = {
   ],
 };
 
-/** Highest reviewed wave allowed into run offers, shops, and treasure. */
-export const LIVE_REVIEWED_WAVE = 2 as const;
-
-export const RESONANCE_WAVE_ONE_IDS = [
-  'bo', 'mo', 'po', 'he', 'ge', 'ri', 'ke', 'te', 'le', 'shi', 'yi', 'fo',
-] as const;
-
-/** Score-300 Commons with Chinese faces. Uncommons/Rares at 300 stay gated. */
-export const RESONANCE_WAVE_TWO_IDS = [
-  'de', 'ne', 'ji', 'qi', 'xi', 'zhi', 'chi', 'zi', 'ci', 'wu', 'yu', 'si', 'a',
-] as const;
-
-const WAVE_ONE_ID_SET = new Set<string>(RESONANCE_WAVE_ONE_IDS);
-const WAVE_TWO_ID_SET = new Set<string>(RESONANCE_WAVE_TWO_IDS);
-
-function reviewedWaveForId(id: string): 1 | 2 | undefined {
-  if (WAVE_ONE_ID_SET.has(id)) return 1;
-  if (WAVE_TWO_ID_SET.has(id)) return 2;
-  return undefined;
-}
-
-export function isCardReviewedForLiveWave(card: CardDef): boolean {
-  const wave = card.reviewedWave ?? 0;
-  return wave > 0 && wave <= LIVE_REVIEWED_WAVE;
-}
-
 /**
- * The generated mature catalog stays available for static review and score
- * unlocks. Live offers only include ids whose `reviewedWave` is at or below
- * `LIVE_REVIEWED_WAVE`. Reused stable ids keep their full pronunciation cue
- * families so the character migration does not shrink a learner's curriculum.
+ * Reused stable ids keep their full pronunciation cue families and localized
+ * presentation so the character migration does not shrink a learner's
+ * curriculum. Character score is the sole obtainability gate.
  */
 const RESONANCE_LIVE_PRESENTATION: Record<string, Partial<CardDef>> = {
   bo: {
@@ -424,7 +392,6 @@ export const CARDS: Record<string, CardDef> = Object.fromEntries(
     const cueOverride = CARD_CUE_OVERRIDES[id];
     const presentation = RESONANCE_LIVE_PRESENTATION[id];
     const { upgrade: presentationUpgrade, ...presentationRest } = presentation ?? {};
-    const reviewedWave = reviewedWaveForId(id);
     const upgrade = def.upgrade
       ? { ...def.upgrade, ...presentationUpgrade }
       : def.upgrade;
@@ -436,7 +403,6 @@ export const CARDS: Record<string, CardDef> = Object.fromEntries(
           ? { cues: cueOverride.map((cue) => ({ ...cue })) }
           : {}),
         ...presentationRest,
-        ...(reviewedWave ? { reviewedWave } : {}),
         ...(upgrade ? { upgrade } : {}),
       },
     ];
@@ -484,7 +450,7 @@ export const REWARD_POOL_IDS: string[] = [
 
 export const ELITE_REWARD_POOL_IDS: string[] = [...REWARD_POOL_IDS];
 
-/** Later acts draw from the catalog, then score + reviewed-wave filters. */
+/** Later acts draw from the complete catalog, then apply character-score unlocks. */
 export const LATER_ACT_REWARD_POOL_IDS: string[] = [...RESONANCE_CARD_IDS];
 
 export const LATER_ACT_ELITE_REWARD_POOL_IDS: string[] = [...RESONANCE_CARD_IDS];

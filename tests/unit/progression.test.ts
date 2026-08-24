@@ -18,6 +18,7 @@ import {
   createNewRun,
   pickCharacter,
 } from '../../src/game/state';
+import { debugSetMetaProgress } from '../../src/debug/debugActions';
 import {
   applySnapshot,
   parseSnapshot,
@@ -42,7 +43,7 @@ beforeEach(() => {
 });
 
 describe('character progression', () => {
-  it('starts a fresh learner with the curated 12-card wave inside the 75-card catalog', () => {
+  it('starts a fresh learner with the curated 12-card teaching pool', () => {
     const profile = getActiveProfile();
     expect(getCharacterScore(profile, 'echoMage')).toBe(0);
     expect(getCharacterCardProgress(profile, 'echoMage')).toMatchObject({
@@ -122,19 +123,35 @@ describe('character progression', () => {
         'echoMage',
         ['ge', 'ji', 'ci', 'rw_b024', 'o'],
       ),
-    ).toEqual(['ge', 'ji', 'ci']);
+    ).toEqual(['ge', 'ji', 'ci', 'rw_b024', 'o']);
     expect(isCardObtainableForProfile(getActiveProfile(), 'echoMage', 'ji')).toBe(true);
-    expect(isCardObtainableForProfile(getActiveProfile(), 'echoMage', 'rw_b024')).toBe(false);
-    expect(isCardObtainableForProfile(getActiveProfile(), 'echoMage', 'o')).toBe(false);
+    expect(isCardObtainableForProfile(getActiveProfile(), 'echoMage', 'rw_b024')).toBe(true);
+    expect(isCardObtainableForProfile(getActiveProfile(), 'echoMage', 'o')).toBe(true);
 
     const character = getCharacter('echoMage');
     if (character.status !== 'playable') throw new Error('Expected playable character');
     expect(
       filterObtainableCardsForProfile(getActiveProfile(), 'echoMage', character.cardPoolIds),
-    ).toHaveLength(25);
+    ).toHaveLength(33);
 
     commitRunScore(state, false);
     expect(getCharacterScore(getActiveProfile(), 'echoMage')).toBe(300);
+  });
+
+  it('lets debug set each persisted meta milestone, including full unlock', () => {
+    for (const [score, unlockedCards, nextUnlockScore] of [
+      [0, 12, 300],
+      [300, 33, 1000],
+      [1000, 54, 2000],
+      [2000, 75, null],
+    ] as const) {
+      debugSetMetaProgress(score);
+      expect(getCharacterCardProgress(getActiveProfile(), 'echoMage')).toMatchObject({
+        score,
+        unlockedCards,
+        nextUnlockScore,
+      });
+    }
   });
 
   it('refuses to start an unknown retired character without mutating the run', () => {
