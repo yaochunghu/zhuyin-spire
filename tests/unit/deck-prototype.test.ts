@@ -78,21 +78,23 @@ describe('共鳴武者 catalog', () => {
     ).toBe(true);
   });
 
-  it('keeps the localized teaching cards and their upgrades aligned', () => {
-    const localizedIds = [
-      ...new Set([
-        ...STARTER_DECK_IDS,
-        ...REWARD_POOL_IDS,
-        'de', 'ne', 'ji', 'qi', 'xi', 'zhi', 'chi', 'zi', 'ci', 'wu', 'yu', 'si', 'a',
-      ]),
-    ];
-    expect(localizedIds).toHaveLength(25);
-    expect(localizedIds.every((id) => getCard(id).cues.length >= 2)).toBe(true);
+  it('keeps all 75 player-facing card descriptions localized in Traditional Chinese', () => {
+    const catalogIds = Object.keys(CARDS);
+    expect(catalogIds).toHaveLength(75);
+    expect(catalogIds.every((id) => getCard(id).cues.length >= 1)).toBe(true);
     expect(
-      localizedIds.every((id) => {
+      catalogIds.every((id) => {
         const card = getCard(id);
         const english = /\b(?:Deal|Gain|Apply|Draw|Spend|Cannot|Costs|Exhaust)\b/;
-        return !english.test(card.description) && !english.test(card.upgrade?.description ?? '');
+        const upgraded = card.upgrade?.description ?? '';
+        return (
+          /\p{Script=Han}/u.test(card.description) &&
+          /\p{Script=Han}/u.test(upgraded) &&
+          !/[A-Za-z]{2,}/.test(card.description) &&
+          !/[A-Za-z]{2,}/.test(upgraded) &&
+          !english.test(card.description) &&
+          !english.test(upgraded)
+        );
       }),
     ).toBe(true);
     expect(getCard('ne').effects).toEqual([

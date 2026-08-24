@@ -385,6 +385,286 @@ const RESONANCE_LIVE_PRESENTATION: Record<string, Partial<CardDef>> = {
     description: '獲得 5 點護盾。轉拍：對選定怪物造成 3 點直傷。',
     upgrade: { description: '獲得 7 點護盾。轉拍：對選定怪物造成 3 點直傷。' },
   },
+  o: {
+    icon: '😲',
+    description: '造成 7 點傷害。若目標有易傷，再造成 7 點傷害。',
+    upgrade: { description: '造成 9 點傷害。若目標有易傷，再造成 7 點傷害。' },
+  },
+  e: {
+    icon: '🦢',
+    description: '造成 3 點傷害。移除目標全部易傷，每移除 1 層再造成 2 點直傷。',
+    upgrade: { description: '造成 5 點傷害。移除目標全部易傷，每移除 1 層再造成 2 點直傷。' },
+  },
+  rw_b019: {
+    icon: '😲',
+    description: '獲得 4 點護盾。對選定怪物附上 1 層易傷。',
+    upgrade: { description: '獲得 6 點護盾。對選定怪物附上 1 層易傷。' },
+  },
+  rw_b024: {
+    icon: '🦢',
+    description: '每回合第一次附上易傷時，抽 1 張牌。',
+    upgrade: { description: '每回合第一次附上易傷時，抽 2 張牌。' },
+  },
+  rw_b028: {
+    icon: '👨',
+    description: '獲得 4 點護盾，場上每個有易傷的怪物再獲得 2 點。',
+    upgrade: { description: '獲得 6 點護盾，場上每個有易傷的怪物再獲得 2 點。' },
+  },
+  rw_b030: {
+    icon: '🏃',
+    description: '每回合第一次對有易傷的怪物成功打出攻擊牌時，獲得 1 點能量。',
+    upgrade: {
+      description: '花費 0。每回合第一次對有易傷的怪物成功打出攻擊牌時，獲得 1 點能量。',
+    },
+  },
+  rw_b040: {
+    icon: '✈️',
+    description: '打出 3 張基礎攻擊後，練功 1，並重算次數。',
+    upgrade: { description: '打出 3 張基礎攻擊後，練功 2，並重算次數。' },
+  },
+  rw_b041: {
+    icon: '🐘',
+    description: '選手牌中 1 張攻擊牌，這場戰鬥變成基礎攻擊。抽 1 張牌。',
+    upgrade: { description: '選手牌中 1 張攻擊牌，這場戰鬥變成基礎攻擊。抽 2 張牌。' },
+  },
+  rw_b042: {
+    icon: '🐰',
+    description: '抽牌堆、手牌、棄牌堆每有 1 張基礎攻擊，造成 2 點傷害 1 次，最多 6 次。',
+    upgrade: {
+      description: '抽牌堆、手牌、棄牌堆每有 1 張基礎攻擊，造成 4 點傷害 1 次，最多 6 次。',
+    },
+  },
+  rw_b049: {
+    icon: '🥛',
+    description: '本回合接下來 2 張基礎攻擊花費 0。消耗。',
+    upgrade: { description: '花費 0。本回合接下來 2 張基礎攻擊花費 0。消耗。' },
+  },
+  rw_b053: {
+    icon: '🐯',
+    description: '抽 1 張牌。轉拍：獲得 1 點能量。',
+    upgrade: { description: '抽 2 張牌。轉拍：獲得 1 點能量。' },
+  },
+  rw_b055: {
+    icon: '🐶',
+    description: '造成 2 點傷害，兩次。轉拍：附上 1 層易傷。',
+    upgrade: { description: '造成 3 點傷害，兩次。轉拍：附上 1 層易傷。' },
+  },
+  rw_b059: {
+    icon: '👖',
+    description: '每回合第一次轉拍時，抽 1 張牌。',
+    upgrade: { description: '每回合第一次轉拍時，抽 2 張牌。' },
+  },
+  rw_b060: {
+    icon: '🐵',
+    description: '每回合第一次完成第二次轉拍時，獲得 1 點能量和 3 點護盾。',
+    upgrade: {
+      description: '花費 0。每回合第一次完成第二次轉拍時，獲得 1 點能量和 3 點護盾。',
+    },
+  },
+  rw_b061: {
+    icon: '🐔',
+    description: '造成 2 點傷害，三次。本回合每完成 1 次轉拍（含此牌），每次命中多造成 1 點傷害。',
+    upgrade: {
+      description: '造成 3 點傷害，三次。本回合每完成 1 次轉拍（含此牌），每次命中多造成 1 點傷害。',
+    },
+  },
+  rw_b064: {
+    icon: '🎈',
+    description: '獲得 5 點護盾。轉拍：手牌最左邊的攻擊牌本回合花費減 1，最少 0。',
+    upgrade: { description: '獲得 7 點護盾。轉拍：手牌最左邊的攻擊牌本回合花費減 1，最少 0。' },
+  },
+  rw_b063: {
+    icon: '🍉',
+    description: '抽 2 張牌。若此牌未觸發轉拍，棄 1 張牌。',
+    upgrade: { description: '抽 3 張牌。若此牌未觸發轉拍，棄 1 張牌。' },
+  },
+  rw_b065: {
+    icon: '🐷',
+    description: '若本回合上一張成功打出的牌是技能牌，花費改為 1。對所有怪物造成 7 點傷害。',
+    upgrade: { description: '若本回合上一張成功打出的牌是技能牌，花費改為 1。對所有怪物造成 9 點傷害。' },
+  },
+  rw_b070: {
+    icon: '🚗',
+    description: '每次轉拍時，對所有怪物造成 2 點直傷並獲得 2 點護盾，每回合最多 3 次。',
+    upgrade: {
+      description: '花費 2。每次轉拍時，對所有怪物造成 2 點直傷並獲得 2 點護盾，每回合最多 3 次。',
+    },
+  },
+  rw_b071: {
+    icon: '🦁',
+    description: '造成 8 點傷害。本回合在此牌之前每完成 1 次轉拍，再造成 1 次，最多共 3 次。',
+    upgrade: {
+      description: '造成 10 點傷害。本回合在此牌之前每完成 1 次轉拍，再造成 1 次，最多共 3 次。',
+    },
+  },
+  rw_b076: {
+    icon: '🌞',
+    description: '獲得 6 點護盾。若下個怪物階段獲得勁，下回合多抽 1 張牌。',
+    upgrade: { description: '獲得 8 點護盾。若下個怪物階段獲得勁，下回合多抽 1 張牌。' },
+  },
+  rw_b078: {
+    icon: '🌿',
+    description: '獲得 5 點護盾。若有勁，消耗 1 勁並再獲得 4 點護盾。',
+    upgrade: { description: '獲得 7 點護盾。若有勁，消耗 1 勁並再獲得 4 點護盾。' },
+  },
+  rw_b080: {
+    icon: '🐿️',
+    description: '造成 4 點傷害。若有勁，消耗 1 勁並附上 1 層易傷。',
+    upgrade: { description: '造成 6 點傷害。若有勁，消耗 1 勁並附上 1 層易傷。' },
+  },
+  rw_b082: {
+    icon: '👕',
+    description: '自動消耗最多 3 勁。造成 5 點傷害，每消耗 1 勁再多造成 3 點。',
+    upgrade: { description: '自動消耗最多 3 勁。造成 7 點傷害，每消耗 1 勁再多造成 3 點。' },
+  },
+  rw_b084: {
+    icon: '☁️',
+    description: '消耗 1 勁，獲得 9 點護盾。沒有勁時不能使用。',
+    upgrade: { description: '消耗 1 勁，獲得 11 點護盾。沒有勁時不能使用。' },
+  },
+  rw_b085: {
+    icon: '🐟',
+    description: '造成 5 點傷害。若上個怪物階段獲得勁，再造成 5 點傷害。',
+    upgrade: { description: '造成 7 點傷害。若上個怪物階段獲得勁，再造成 5 點傷害。' },
+  },
+  rw_b087: {
+    icon: '👩',
+    description: '消耗 1 勁。本回合下一張攻擊牌多造成 8 點傷害。沒有勁時不能使用。',
+    upgrade: {
+      description: '花費 0。消耗 1 勁。本回合下一張攻擊牌多造成 8 點傷害。沒有勁時不能使用。',
+    },
+  },
+  rw_b089: {
+    icon: '😲',
+    description: '對所有怪物造成 6 點傷害。若有勁，消耗 1 勁並對所有怪物再造成 3 點傷害。',
+    upgrade: {
+      description: '對所有怪物造成 8 點傷害。若有勁，消耗 1 勁並對所有怪物再造成 3 點傷害。',
+    },
+  },
+  rw_b090: {
+    icon: '🦢',
+    description: '每個怪物階段一次：攻擊將破盾前，若可以就自動消耗 1 勁並獲得 5 點護盾。',
+    upgrade: {
+      description: '花費 1。每個怪物階段一次：攻擊將破盾前，若可以就自動消耗 1 勁並獲得 5 點護盾。',
+    },
+  },
+  rw_b093: {
+    icon: '👨',
+    description: '每當一張牌消耗勁，獲得 2 點護盾並抽 1 張牌，每張牌各一次。',
+    upgrade: { description: '每當一張牌消耗勁，獲得 2 點護盾並抽 2 張牌，每張牌各一次。' },
+  },
+  rw_b097: {
+    icon: '🏃',
+    description: '獲得 5 點護盾。下個怪物階段，第一次完整擋住的攻擊動作額外獲得 1 勁。消耗。',
+    upgrade: {
+      description: '獲得 7 點護盾。下個怪物階段，第一次完整擋住的攻擊動作額外獲得 1 勁。消耗。',
+    },
+  },
+  rw_b102: {
+    icon: '🐱',
+    description: '造成 3 點傷害。這是基礎攻擊。若目標有易傷，再造成 2 點傷害。',
+    upgrade: { description: '造成 5 點傷害。這是基礎攻擊。若目標有易傷，再造成 2 點傷害。' },
+  },
+  rw_b107: {
+    icon: '✈️',
+    description: '附上 1 層易傷。本回合下一張基礎攻擊花費 0。',
+    upgrade: { description: '附上 2 層易傷。本回合下一張基礎攻擊花費 0。' },
+  },
+  rw_b108: {
+    icon: '🐘',
+    description: '造成 3 點傷害。這是基礎攻擊。轉拍：抽 1 張牌。',
+    upgrade: { description: '造成 5 點傷害。這是基礎攻擊。轉拍：抽 1 張牌。' },
+  },
+  rw_b113: {
+    icon: '🐰',
+    description: '獲得 3 點護盾。轉拍：練功 1。消耗。',
+    upgrade: { description: '獲得 5 點護盾。轉拍：練功 1。消耗。' },
+  },
+  rw_b114: {
+    icon: '🥛',
+    description: '基礎攻擊打中有易傷的怪物時，延長該易傷 1 層，每張牌各一次，最多 9 層。',
+    upgrade: {
+      description: '花費 0。基礎攻擊打中有易傷的怪物時，延長該易傷 1 層，每張牌各一次，最多 9 層。',
+    },
+  },
+  rw_b115: {
+    icon: '🐯',
+    description: '每回合第一次用基礎攻擊完成轉拍時，把最近棄掉的技能牌放到抽牌堆頂。',
+    upgrade: {
+      description: '花費 1。每回合第一次用基礎攻擊完成轉拍時，把最近棄掉的技能牌放到抽牌堆頂。',
+    },
+  },
+  rw_b119: {
+    icon: '🐶',
+    description: '獲得 5 點護盾。若上個怪物階段獲得勁，從棄牌堆拿 1 張基礎攻擊到手牌，本回合花費 0。',
+    upgrade: {
+      description: '獲得 7 點護盾。若上個怪物階段獲得勁，從棄牌堆拿 1 張基礎攻擊到手牌，本回合花費 0。',
+    },
+  },
+  rw_b120: {
+    icon: '👖',
+    description: '造成 6 點傷害。若有勁，消耗 1 勁並附上 2 層易傷。',
+    upgrade: { description: '造成 8 點傷害。若有勁，消耗 1 勁並附上 2 層易傷。' },
+  },
+  rw_b122: {
+    icon: '🐵',
+    description: '抽 2 張牌。若抽到的牌剛好 1 張是攻擊牌，附上 1 層易傷。',
+    upgrade: { description: '抽 3 張牌。若抽到的牌剛好 1 張是攻擊牌，附上 1 層易傷。' },
+  },
+  rw_b123: {
+    icon: '🐔',
+    description: '造成 2 點傷害，兩次。若此牌觸發轉拍，每次命中再加一次練功加成。',
+    upgrade: { description: '造成 3 點傷害，兩次。若此牌觸發轉拍，每次命中再加一次練功加成。' },
+  },
+  rw_b124: {
+    icon: '🎈',
+    description: '從一個怪物移除最多 2 層易傷。每移除 1 層獲得 1 勁。',
+    upgrade: { description: '從一個怪物移除最多 3 層易傷。每移除 1 層獲得 1 勁。' },
+  },
+  rw_b127: {
+    icon: '🍉',
+    description: '每回合第一次打出第二張基礎攻擊時，再造成一次該牌傷害並抽 1 張牌。',
+    upgrade: { description: '每回合第一次打出第二張基礎攻擊時，再造成一次該牌傷害並抽 2 張牌。' },
+  },
+  rw_b128: {
+    icon: '🐷',
+    description: '獲得 10 點護盾。若下個怪物階段沒扣生命，練功 1。消耗。',
+    upgrade: { description: '獲得 12 點護盾。若下個怪物階段沒扣生命，練功 1。消耗。' },
+  },
+  rw_b129: {
+    icon: '🚗',
+    description: '每回合開始時，若有怪物打算攻擊就抽 1 張技能牌，否則抽 1 張攻擊牌。',
+    upgrade: {
+      description: '花費 1。每回合開始時，若有怪物打算攻擊就抽 1 張技能牌，否則抽 1 張攻擊牌。',
+    },
+  },
+  rw_b131: {
+    icon: '🦁',
+    description: '每回合第一次轉拍：練功 1；第二次轉拍：獲得 1 勁。',
+    upgrade: { description: '每回合第一次轉拍：練功 2；第二次轉拍：獲得 1 勁。' },
+  },
+  rw_b132: {
+    icon: '🌞',
+    description: '本回合在此牌之前每完成 1 次轉拍，花費減 1，最少 0。造成 4 點傷害，四次。',
+    upgrade: {
+      description: '本回合在此牌之前每完成 1 次轉拍，花費減 1，最少 0。造成 5 點傷害，四次。',
+    },
+  },
+  rw_b100: {
+    icon: '🚶',
+    description: '每個怪物階段第一次獲得勁時，對給你勁的那個怪物附上 1 層易傷。',
+    upgrade: { description: '每個怪物階段第一次獲得勁時，對給你勁的那個怪物附上 2 層易傷。' },
+  },
+  rw_b144: {
+    icon: '🌿',
+    description: '附上 2 層虛弱。若目標有易傷，獲得 5 點護盾。',
+    upgrade: { description: '花費 0。附上 2 層虛弱。若目標有易傷，獲得 5 點護盾。' },
+  },
+  rw_b149: {
+    icon: '🐿️',
+    description: '保留。造成 7 點傷害。若上個怪物階段獲得勁，再造成 8 點傷害。',
+    upgrade: { description: '保留。造成 9 點傷害。若上個怪物階段獲得勁，再造成 8 點傷害。' },
+  },
 };
 
 export const CARDS: Record<string, CardDef> = Object.fromEntries(
