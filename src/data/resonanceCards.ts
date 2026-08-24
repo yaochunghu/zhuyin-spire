@@ -1,4 +1,4 @@
-/* Generated implementation draft from the post-cull design table. Only wave-one IDs are live. */
+/* Generated implementation draft from the locked Final 75 table. Obtainability is wave-gated in cards.ts. */
 import type { CardDef } from './cards';
 
 export const RESONANCE_CARDS: Record<string, CardDef> = {
@@ -268,7 +268,7 @@ export const RESONANCE_CARDS: Record<string, CardDef> = {
     unlockScore: 300,
     upgrade: {
       
-      effects: [{ kind: 'energy', amount: 1 }],
+      effects: [{ kind: 'draw', amount: 1 }, { kind: 'energy', amount: 1 }],
       description: 'Gain 1 Energy. Draw 1 card. Exhaust.',
     },
   },
@@ -398,12 +398,12 @@ export const RESONANCE_CARDS: Record<string, CardDef> = {
     retain: false,
     target: 'allEnemies',
     cues: [{ word: '豬', emoji: '🐷', spell: 'ㄓㄨ' }],
-    effects: [{ kind: 'damage', amount: 5 }, { kind: 'vulnerable', amount: 1 }],
+    effects: [{ kind: 'damage', amount: 5 }],
     description: 'Deal 5 damage to all enemies. Apply 1 易傷 to each enemy that had none.',
     unlockScore: 300,
     upgrade: {
       
-      effects: [{ kind: 'damage', amount: 7 }, { kind: 'vulnerable', amount: 1 }],
+      effects: [{ kind: 'damage', amount: 7 }],
       description: 'Deal 7 damage to all enemies. Apply 1 易傷 to each enemy that had none.',
     },
   },
@@ -457,7 +457,7 @@ export const RESONANCE_CARDS: Record<string, CardDef> = {
     unlockScore: 300,
     upgrade: {
       
-      effects: [],
+      effects: [{ kind: 'draw', amount: 1 }],
       description: 'Put a random 基礎攻擊 from your draw pile into your hand. Exhaust. Draw 1 card.',
     },
   },
@@ -720,7 +720,7 @@ export const RESONANCE_CARDS: Record<string, CardDef> = {
     basicAttack: false,
     exhaust: false,
     retain: false,
-    target: 'singleEnemy',
+    target: 'self',
     cues: [{ word: '鵝', emoji: '🦢', spell: 'ㄜˊ' }],
     effects: [],
     description: 'The first time each turn you apply 易傷, draw 1 card.',
@@ -747,7 +747,7 @@ export const RESONANCE_CARDS: Record<string, CardDef> = {
     basicAttack: false,
     exhaust: false,
     retain: false,
-    target: 'singleEnemy',
+    target: 'self',
     cues: [{ word: '爸爸', emoji: '👨', spell: 'ㄅㄚˋ' }],
     effects: [{ kind: 'block', amount: 4 }],
     description: 'Gain 4 Block plus 2 for each living enemy with 易傷.',
@@ -774,7 +774,7 @@ export const RESONANCE_CARDS: Record<string, CardDef> = {
     basicAttack: false,
     exhaust: false,
     retain: false,
-    target: 'singleEnemy',
+    target: 'self',
     cues: [{ word: '跑步', emoji: '🏃', spell: 'ㄆㄠˇ' }],
     effects: [],
     description: 'The first time each turn you successfully play an Attack against an enemy with 易傷, gain 1 Energy.',
@@ -857,12 +857,12 @@ export const RESONANCE_CARDS: Record<string, CardDef> = {
     retain: false,
     target: 'self',
     cues: [{ word: '大象', emoji: '🐘', spell: 'ㄉㄚˋ' }],
-    effects: [],
+    effects: [{ kind: 'draw', amount: 1 }],
     description: 'Choose an Attack in your hand. It becomes a 基礎攻擊 for this combat. Draw 1 card.',
     unlockScore: 300,
     upgrade: {
       
-      effects: [],
+      effects: [{ kind: 'draw', amount: 2 }],
       description: 'Choose an Attack in your hand. It becomes a 基礎攻擊 for this combat. Draw 2 cards.',
     },
   },
@@ -1638,7 +1638,7 @@ export const RESONANCE_CARDS: Record<string, CardDef> = {
     basicAttack: false,
     exhaust: false,
     retain: false,
-    target: 'singleEnemy',
+    target: 'self',
     cues: [{ word: '牛奶', emoji: '🥛', spell: 'ㄋㄧㄡˊ' }],
     effects: [],
     description: 'When a 基礎攻擊 hits an enemy with 易傷, extend that 易傷 by 1, once per card played and up to 9.',
@@ -1962,7 +1962,7 @@ export const RESONANCE_CARDS: Record<string, CardDef> = {
     basicAttack: false,
     exhaust: false,
     retain: false,
-    target: 'singleEnemy',
+    target: 'self',
     cues: [{ word: '走路', emoji: '🚶', spell: 'ㄗㄡˇ' }],
     effects: [],
     description: 'The first time each enemy phase you gain 勁, apply 1 易傷 to the enemy whose attack granted it.',
@@ -1996,7 +1996,7 @@ export const RESONANCE_CARDS: Record<string, CardDef> = {
     unlockScore: 2000,
     upgrade: {
       cost: 0,
-      effects: [],
+      effects: [{ kind: 'weak', amount: 2 }],
       description: 'Costs 0. Apply 2 Weak. If the target has 易傷, gain 5 Block.',
     },
   },

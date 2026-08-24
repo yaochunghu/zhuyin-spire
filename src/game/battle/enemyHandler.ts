@@ -207,7 +207,8 @@ export function applyEnemyIntent(state: CombatState, unit: EnemyUnit): void {
         state.activePowerIds.includes('B100') &&
         (state.powerTriggersThisTurn.B100 ?? 0) === 0
       ) {
-        unit.vulnerableTurns = Math.min(9, unit.vulnerableTurns + 1);
+        const vulnerable = state.activePowerLevels.B100 === 1 ? 2 : 1;
+        unit.vulnerableTurns = Math.min(9, unit.vulnerableTurns + vulnerable);
         pushFx(state, {
           type: 'enemyStatus',
           enemyId: unit.id,

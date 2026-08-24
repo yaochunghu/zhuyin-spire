@@ -99,4 +99,33 @@ describe('locked 共鳴武者 catalog', () => {
       ).toBe(true);
     }
   });
+
+  it('locks self-target Powers and conditional structured effects', () => {
+    const byDesignId = new Map(
+      Object.values(RESONANCE_CARDS).map((card) => [card.designId, card]),
+    );
+    for (const designId of ['B024', 'B028', 'B030', 'B114', 'B100']) {
+      expect(byDesignId.get(designId)?.target, designId).toBe('self');
+    }
+
+    expect(byDesignId.get('B017')?.effects).toEqual([
+      { kind: 'damage', amount: 5 },
+    ]);
+    expect(byDesignId.get('B010')?.upgrade?.effects).toEqual([
+      { kind: 'draw', amount: 1 },
+      { kind: 'energy', amount: 1 },
+    ]);
+    expect(byDesignId.get('B032')?.upgrade?.effects).toEqual([
+      { kind: 'draw', amount: 1 },
+    ]);
+    expect(byDesignId.get('B041')?.effects).toEqual([
+      { kind: 'draw', amount: 1 },
+    ]);
+    expect(byDesignId.get('B041')?.upgrade?.effects).toEqual([
+      { kind: 'draw', amount: 2 },
+    ]);
+    expect(byDesignId.get('B144')?.upgrade?.effects).toEqual([
+      { kind: 'weak', amount: 2 },
+    ]);
+  });
 });

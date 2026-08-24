@@ -247,7 +247,7 @@ function applySpecialCardEffect(
       if (enemy && enemy.vulnerableTurns === 0) enemy.vulnerableTurns += 1;
       break;
     case 'B016':
-      if (enemy && enemy.vulnerableTurns > 0) dealDirect(enemy, upgraded ? 5 : 3);
+      if (enemy && enemy.vulnerableTurns > 0) dealDirect(enemy, 3);
       break;
     case 'B017':
       if (targets !== 'self') {
@@ -257,18 +257,18 @@ function applySpecialCardEffect(
       }
       break;
     case 'B020':
-      if (enemy && enemy.vulnerableTurns > 0) dealDirect(enemy, upgraded ? 9 : 7);
+      if (enemy && enemy.vulnerableTurns > 0) dealDirect(enemy, 7);
       break;
     case 'B021':
       if (enemy) {
         const duration = enemy.vulnerableTurns;
         enemy.vulnerableTurns = 0;
-        dealDirect(enemy, duration * (upgraded ? 3 : 2));
+        dealDirect(enemy, duration * 2);
       }
       break;
     case 'B028':
       state.block += livingEnemies(state).filter((target) => target.vulnerableTurns > 0).length *
-        (upgraded ? 3 : 2);
+        2;
       break;
     case 'B031':
       state.training += upgraded ? 2 : 1;
@@ -297,7 +297,7 @@ function applySpecialCardEffect(
       break;
     }
     case 'B038':
-      if (state.basicPlayedThisTurn > 0) state.block += upgraded ? 3 : 2;
+      if (state.basicPlayedThisTurn > 0) state.block += 2;
       break;
     case 'B041': {
       const attack = state.hand.find((candidate) => getResolved(candidate).type === 'attack');
@@ -316,16 +316,16 @@ function applySpecialCardEffect(
       break;
     }
     case 'B051':
-      if (tempo) state.block += upgraded ? 5 : 3;
+      if (tempo) state.block += 3;
       break;
     case 'B052':
-      if (tempo && enemy) dealDirect(enemy, upgraded ? 5 : 3);
+      if (tempo && enemy) dealDirect(enemy, 3);
       break;
     case 'B053':
       if (tempo) state.energy += 1;
       break;
     case 'B055':
-      if (tempo && enemy) enemy.vulnerableTurns += upgraded ? 2 : 1;
+      if (tempo && enemy) enemy.vulnerableTurns += 1;
       break;
     case 'B061':
       if (enemy && state.tempoCount > 0) {
@@ -359,25 +359,25 @@ function applySpecialCardEffect(
     case 'B078':
       if (state.jin > 0) {
         spendJin(1);
-        state.block += upgraded ? 6 : 4;
+        state.block += 4;
       }
       break;
     case 'B080':
       if (state.jin > 0 && enemy) {
         spendJin(1);
-        enemy.vulnerableTurns += upgraded ? 2 : 1;
+        enemy.vulnerableTurns += 1;
       }
       break;
     case 'B082': {
       const spent = spendJin(3);
-      if (spent > 0 && enemy) dealDirect(enemy, spent * (upgraded ? 4 : 3));
+      if (spent > 0 && enemy) dealDirect(enemy, spent * 3);
       break;
     }
     case 'B084':
       spendJin(1);
       break;
     case 'B085':
-      if (enemy && state.gainedJinLastEnemyPhase) dealDirect(enemy, upgraded ? 7 : 5);
+      if (enemy && state.gainedJinLastEnemyPhase) dealDirect(enemy, 5);
       break;
     case 'B087':
       spendJin(1);
@@ -386,17 +386,16 @@ function applySpecialCardEffect(
     case 'B089':
       if (state.jin > 0 && targets !== 'self') {
         spendJin(1);
-        for (const target of targets) dealDirect(target, upgraded ? 5 : 3);
+        for (const target of targets) dealDirect(target, 3);
       }
       break;
     case 'B097':
       state.bonusJinNextEnemyPhase = Math.max(state.bonusJinNextEnemyPhase, 1);
       break;
     case 'B102':
-      if (enemy && enemy.vulnerableTurns > 0) dealDirect(enemy, upgraded ? 3 : 2);
+      if (enemy && enemy.vulnerableTurns > 0) dealDirect(enemy, 2);
       break;
     case 'B107':
-      if (enemy) enemy.vulnerableTurns += upgraded ? 2 : 1;
       {
         const next = state.hand.find((candidate) => {
           const nextDef = getResolved(candidate);
@@ -409,10 +408,10 @@ function applySpecialCardEffect(
       state.freeBasicsRemaining = Math.max(state.freeBasicsRemaining, upgraded ? 3 : 2);
       break;
     case 'B108':
-      if (tempo) drawCards(state, upgraded ? 2 : 1);
+      if (tempo) drawCards(state, 1);
       break;
     case 'B113':
-      if (tempo) state.training += upgraded ? 2 : 1;
+      if (tempo) state.training += 1;
       break;
     case 'B115':
       if (tempo && (def.basicAttack || card?.basicOverride)) {
@@ -442,14 +441,14 @@ function applySpecialCardEffect(
     case 'B120':
       if (state.jin > 0 && enemy) {
         spendJin(1);
-        enemy.vulnerableTurns += upgraded ? 3 : 2;
+        enemy.vulnerableTurns += 2;
       }
       break;
     case 'B122':
       if (enemy) {
         const attacks = state.hand.slice(-2)
           .filter((candidate) => getResolved(candidate).type === 'attack').length;
-        if (attacks === 1) enemy.vulnerableTurns += upgraded ? 2 : 1;
+        if (attacks === 1) enemy.vulnerableTurns += 1;
       }
       break;
     case 'B123':
@@ -466,10 +465,10 @@ function applySpecialCardEffect(
       state.flawlessTrainingPending = true;
       break;
     case 'B144':
-      if (enemy && enemy.vulnerableTurns > 0) state.block += upgraded ? 7 : 5;
+      if (enemy && enemy.vulnerableTurns > 0) state.block += 5;
       break;
     case 'B149':
-      if (enemy && state.gainedJinLastEnemyPhase) dealDirect(enemy, upgraded ? 10 : 8);
+      if (enemy && state.gainedJinLastEnemyPhase) dealDirect(enemy, 8);
       break;
     default:
       break;
@@ -504,6 +503,7 @@ function applyPowerTriggers(
   card?: CombatCard | null,
 ): void {
   const has = (id: string) => state.activePowerIds.includes(id);
+  const upgradedPower = (id: string) => state.activePowerLevels[id] === 1;
   const triggers = (id: string) => state.powerTriggersThisTurn[id] ?? 0;
   const trigger = (id: string) => {
     state.powerTriggersThisTurn[id] = triggers(id) + 1;
@@ -518,7 +518,7 @@ function applyPowerTriggers(
   const basic = !!(def.basicAttack || card?.basicOverride);
 
   if (appliedVulnerable && has('B024') && triggers('B024') === 0) {
-    drawCards(state, 1);
+    drawCards(state, upgradedPower('B024') ? 2 : 1);
     trigger('B024');
   }
   if (attackedVulnerable && has('B030') && triggers('B030') === 0) {
@@ -529,7 +529,7 @@ function applyPowerTriggers(
     state.basicTrainingCounter += 1;
     if (state.basicTrainingCounter >= 3) {
       state.basicTrainingCounter = 0;
-      state.training += 1;
+      state.training += upgradedPower('B040') ? 2 : 1;
     }
   }
   if (basic && attackedVulnerable && has('B114')) {
@@ -539,11 +539,11 @@ function applyPowerTriggers(
     const damage = effects.find((effect) => effect.kind === 'damage');
     if (damage) {
       for (const enemy of enemies) dealDirect(enemy, damage.amount * (damage.hits ?? 1));
-      drawCards(state, 1);
+      drawCards(state, upgradedPower('B127') ? 2 : 1);
     }
   }
   if (tempo && has('B059') && triggers('B059') === 0) {
-    drawCards(state, 1);
+    drawCards(state, upgradedPower('B059') ? 2 : 1);
     trigger('B059');
   }
   if (tempo && has('B060') && state.tempoCount === 2 && triggers('B060') === 0) {
@@ -557,12 +557,12 @@ function applyPowerTriggers(
     trigger('B070');
   }
   if (tempo && has('B131')) {
-    if (state.tempoCount === 1) state.training += 1;
+    if (state.tempoCount === 1) state.training += upgradedPower('B131') ? 2 : 1;
     if (state.tempoCount === 2) state.jin = Math.min(9, state.jin + 1);
   }
   if (state.jin < jinBefore && has('B093')) {
     state.block += 2;
-    drawCards(state, 1);
+    drawCards(state, upgradedPower('B093') ? 2 : 1);
   }
 }
 

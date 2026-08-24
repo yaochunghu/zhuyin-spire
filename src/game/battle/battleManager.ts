@@ -62,6 +62,7 @@ export function createCombat(
     bonusJinNextEnemyPhase: 0,
     flawlessTrainingPending: false,
     activePowerIds: [],
+    activePowerLevels: {},
     powerTriggersThisTurn: {},
     exhaustPile: [],
     drawPile,

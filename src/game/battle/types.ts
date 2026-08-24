@@ -104,6 +104,7 @@ export interface CombatState {
   bonusJinNextEnemyPhase: number;
   flawlessTrainingPending: boolean;
   activePowerIds: string[];
+  activePowerLevels: Record<string, 0 | 1>;
   powerTriggersThisTurn: Record<string, number>;
   exhaustPile: CombatCard[];
   drawPile: CombatCard[];
