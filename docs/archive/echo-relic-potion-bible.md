@@ -7,6 +7,12 @@
 > turn. Universal timing, inventory, pool, feedback, and validation rules may
 > inform future work, but every Echo-specific relic or potion here stays frozen.
 
+> **Compatibility status:** this roster was authored for 回音法師. Universal
+> timing, inventory, pool, feedback, and validation rules remain useful, but
+> every Echo-specific relic or potion is frozen until it passes the
+> [design playbook](../DESIGN_PLAYBOOK.md) against 共鳴武者. Do not mechanically
+> replace “Echo” with 易傷, 練功, 轉拍, or 勁.
+
 This bible defines the complete first-character target of **40 original relics**
 and **20 original potions**. It follows the decision structure documented in
 [STS_DESIGN_REFERENCE.md](../STS_DESIGN_REFERENCE.md), but its names, feedback,
