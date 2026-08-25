@@ -225,7 +225,7 @@ export function renderCharacterPick(): HTMLElement {
       ? `下一批：${progress.score}/${progress.nextUnlockScore}`
       : '目前發布的卡牌全數可用';
     btn.innerHTML = `
-      <div class="character-status character-status-playable">✨ 第一波可遊玩</div>
+      <div class="character-status character-status-playable">✨ 可遊玩</div>
       <div class="relic-emoji character-emoji">${artImageHtml('heroMartialArtist', 'character-hero-art')}</div>
       <div class="character-name">${character.name}</div>
       <div class="adult-text character-title">${character.title}</div>

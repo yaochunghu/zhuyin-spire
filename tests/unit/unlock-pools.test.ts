@@ -1,9 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import {
-  REWARD_POOL_IDS,
-  RESONANCE_WAVE_ONE_IDS,
-  RESONANCE_WAVE_TWO_IDS,
-} from '../../src/data/cards';
+import { REWARD_POOL_IDS } from '../../src/data/cards';
+import { getCharacter } from '../../src/data/characters';
 import {
   filterObtainableCardsForProfile,
   getActiveProfile,
@@ -48,37 +45,43 @@ function scoredRun(score: number, actIndex: number) {
   return state;
 }
 
-describe('Wave 2 obtainability pools', () => {
+describe('score-based card obtainability', () => {
   it('keeps Act I rewards at the nine-card teaching wave', () => {
     const state = scoredRun(300, 0);
     const pool = rewardPoolFor(state, 'normal');
     expect(pool).toHaveLength(9);
-    expect(pool.sort()).toEqual([...REWARD_POOL_IDS].sort());
-    expect(pool.some((id) => (RESONANCE_WAVE_TWO_IDS as readonly string[]).includes(id))).toBe(false);
+    expect(pool).toEqual(REWARD_POOL_IDS);
   });
 
-  it('offers only Wave 1 in later acts before score 300', () => {
+  it('starts later acts with the 12-card teaching pool', () => {
     const state = scoredRun(0, 1);
     const pool = rewardPoolFor(state, 'normal');
-    expect(pool.sort()).toEqual([...RESONANCE_WAVE_ONE_IDS].sort());
     expect(pool).toHaveLength(12);
+    expect(pool).toContain('bo');
+    expect(pool).toContain('fo');
   });
 
-  it('adds the 13 reviewed Commons after score 300 in later acts', () => {
+  it('unlocks the first 21-card expansion at score 300', () => {
     const state = scoredRun(300, 1);
     const pool = rewardPoolFor(state, 'normal');
-    expect(pool).toHaveLength(25);
-    expect(new Set(pool)).toEqual(
-      new Set([...RESONANCE_WAVE_ONE_IDS, ...RESONANCE_WAVE_TWO_IDS]),
-    );
-    expect(pool).not.toContain('rw_b024');
-    expect(pool).not.toContain('o');
+    expect(pool).toHaveLength(33);
+    expect(pool).toContain('rw_b024');
+    expect(pool).toContain('o');
     expect(filterObtainableCardsForProfile(getActiveProfile(), 'echoMage', ['ji', 'rw_b024']))
-      .toEqual(['ji']);
+      .toEqual(['ji', 'rw_b024']);
   });
 
-  it('uses the same obtainable filter for elite later-act rewards', () => {
-    const state = scoredRun(300, 1);
+  it('unlocks 54 cards at 1000 and the complete 75 at 2000', () => {
+    expect(rewardPoolFor(scoredRun(1000, 1), 'normal')).toHaveLength(54);
+    const complete = rewardPoolFor(scoredRun(2000, 1), 'normal');
+    expect(complete).toHaveLength(75);
+    const character = getCharacter('echoMage');
+    if (character.status !== 'playable') throw new Error('Expected playable character');
+    expect(new Set(complete)).toEqual(new Set(character.cardPoolIds));
+  });
+
+  it('uses the same score filter for elite later-act rewards', () => {
+    const state = scoredRun(1000, 1);
     expect(rewardPoolFor(state, 'elite').sort()).toEqual(rewardPoolFor(state, 'normal').sort());
   });
 });

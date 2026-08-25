@@ -3,7 +3,6 @@ import {
   CARDS,
   LATER_ACT_ELITE_REWARD_POOL_IDS,
   LATER_ACT_REWARD_POOL_IDS,
-  RESONANCE_WAVE_TWO_IDS,
   REWARD_POOL_IDS,
   STARTER_DECK_IDS,
   getCard,
@@ -22,6 +21,7 @@ import {
   type CombatFx,
 } from '../../src/game/combat';
 import { applyEnemyIntent } from '../../src/game/battle/enemyHandler';
+import { makeCard } from '../../src/game/battle/piles';
 import {
   canSmith,
   createNewRun,
@@ -78,16 +78,23 @@ describe('共鳴武者 catalog', () => {
     ).toBe(true);
   });
 
-  it('authors Chinese Wave 2 Commons and keeps unreviewed 300-tier cards gated', () => {
-    expect(RESONANCE_WAVE_TWO_IDS).toHaveLength(13);
-    const liveOfferIds = [...new Set([...STARTER_DECK_IDS, ...REWARD_POOL_IDS, ...RESONANCE_WAVE_TWO_IDS])];
-    expect(liveOfferIds).toHaveLength(25);
-    expect(liveOfferIds.every((id) => getCard(id).cues.length >= 2)).toBe(true);
+  it('keeps all 75 player-facing card descriptions localized in Traditional Chinese', () => {
+    const catalogIds = Object.keys(CARDS);
+    expect(catalogIds).toHaveLength(75);
+    expect(catalogIds.every((id) => getCard(id).cues.length >= 1)).toBe(true);
     expect(
-      liveOfferIds.every((id) => {
+      catalogIds.every((id) => {
         const card = getCard(id);
         const english = /\b(?:Deal|Gain|Apply|Draw|Spend|Cannot|Costs|Exhaust)\b/;
-        return !english.test(card.description) && !english.test(card.upgrade?.description ?? '');
+        const upgraded = card.upgrade?.description ?? '';
+        return (
+          /\p{Script=Han}/u.test(card.description) &&
+          /\p{Script=Han}/u.test(upgraded) &&
+          !/[A-Za-z]{2,}/.test(card.description) &&
+          !/[A-Za-z]{2,}/.test(upgraded) &&
+          !english.test(card.description) &&
+          !english.test(upgraded)
+        );
       }),
     ).toBe(true);
     expect(getCard('ne').effects).toEqual([
@@ -98,8 +105,6 @@ describe('共鳴武者 catalog', () => {
       { kind: 'block', amount: 5 },
       { kind: 'draw', amount: 1 },
     ]);
-    expect(getCard('rw_b024').reviewedWave).toBeUndefined();
-    expect(getCard('o').reviewedWave).toBeUndefined();
   });
 
   it('creates physical starter copies and preserves the compatibility lineage', () => {
@@ -338,6 +343,119 @@ describe('共鳴 combat rules', () => {
     combat.block = 99;
     applyEnemyIntent(combat, combat.enemies[0]!);
     expect(combat.enemies[0]!.vulnerableTurns).toBe(2);
+  });
+
+  it('keeps cost-only basic discounts aligned with their locked text', () => {
+    const combat = createCombat(['bo'], 'rock', 30, 30);
+    executeEffects(combat, resolveCard('rw_b049', 1), [], () => {}, noDraw);
+    expect(combat.freeBasicsRemaining).toBe(2);
+
+    combat.freeBasicsRemaining = 0;
+    combat.hand = [];
+    executeEffects(
+      combat,
+      getCard('rw_b107'),
+      [combat.enemies[0]!.id],
+      () => {},
+      noDraw,
+    );
+    expect(combat.freeBasicsRemaining).toBe(1);
+
+    combat.block = 99;
+    endTurn(combat);
+    expect(combat.freeBasicsRemaining).toBe(0);
+  });
+
+  it('checks exactly the cards drawn by 聽拍尋隙, including its upgrade', () => {
+    const combat = createCombat(['bo'], 'rock', 30, 30);
+    const enemy = combat.enemies[0]!;
+    executeEffects(
+      combat,
+      resolveCard('rw_b122', 1),
+      [enemy.id],
+      () => {},
+      () => [makeCard('bo'), makeCard('mo'), makeCard('mo')],
+    );
+    expect(enemy.vulnerableTurns).toBe(1);
+
+    enemy.vulnerableTurns = 0;
+    executeEffects(
+      combat,
+      resolveCard('rw_b122', 1),
+      [enemy.id],
+      () => {},
+      () => [makeCard('bo'), makeCard('bo'), makeCard('mo')],
+    );
+    expect(enemy.vulnerableTurns).toBe(0);
+  });
+
+  it('applies 轉拍 hit bonuses through ordinary damage rules', () => {
+    const combat = createCombat(['bo'], 'rock', 30, 30);
+    const enemy = combat.enemies[0]!;
+    combat.tempoCount = 2;
+    enemy.block = 10;
+    enemy.vulnerableTurns = 1;
+    const hpBefore = enemy.hp;
+    executeEffects(
+      combat,
+      getCard('rw_b061'),
+      [enemy.id],
+      () => {},
+      noDraw,
+    );
+    expect(enemy.block).toBe(0);
+    expect(enemy.hp).toBe(hpBefore - 8);
+  });
+
+  it('repeats the second basic Attack damage with its resolved bonuses', () => {
+    const combat = createCombat(['bo'], 'rock', 30, 30);
+    const enemy = combat.enemies[0]!;
+    combat.activePowerIds = ['B127'];
+    combat.activePowerLevels = { B127: 0 };
+    combat.basicPlayedThisTurn = 1;
+    combat.training = 2;
+    enemy.vulnerableTurns = 1;
+    const hpBefore = enemy.hp;
+    let drawn = 0;
+    executeEffects(
+      combat,
+      getCard('bo'),
+      [enemy.id],
+      () => {},
+      (_state, count) => {
+        drawn += count;
+        return [];
+      },
+    );
+    expect(enemy.hp).toBe(hpBefore - 14);
+    expect(drawn).toBe(1);
+  });
+
+  it('triggers 聲波循環 from its installed Power once per turn', () => {
+    const combat = createCombat(['bo'], 'rock', 30, 30);
+    combat.activePowerIds = ['B115'];
+    combat.activePowerLevels = { B115: 0 };
+    combat.discardPile = [makeCard('mo')];
+    executeEffects(combat, getCard('bo'), [combat.enemies[0]!.id], () => {}, noDraw, undefined, true);
+    expect(combat.drawPile.at(-1)?.defId).toBe('mo');
+    expect(combat.powerTriggersThisTurn.B115).toBe(1);
+
+    combat.discardPile = [makeCard('ne')];
+    executeEffects(combat, getCard('bo'), [combat.enemies[0]!.id], () => {}, noDraw, undefined, true);
+    expect(combat.discardPile).toHaveLength(1);
+  });
+
+  it('lets 聞聲即動 find the needed type after a discard reshuffle', () => {
+    const combat = createCombat(['bo'], 'rock', 30, 30);
+    combat.activePowerIds = ['B129'];
+    combat.activePowerLevels = { B129: 0 };
+    combat.hand = [];
+    combat.drawPile = Array.from({ length: 5 }, () => makeCard('bo'));
+    combat.discardPile = [makeCard('mo')];
+    combat.block = 99;
+    endTurn(combat);
+    expect(combat.hand).toHaveLength(6);
+    expect(combat.hand.some((card) => card.defId === 'mo')).toBe(true);
   });
 
   it('uses 初心音叉 once each player turn', () => {

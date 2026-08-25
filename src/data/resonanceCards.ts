@@ -1,4 +1,4 @@
-/* Generated implementation draft from the locked Final 75 table. Obtainability is wave-gated in cards.ts. */
+/* Generated implementation from the locked Final 75 table. Obtainability follows unlockScore. */
 import type { CardDef } from './cards';
 
 export const RESONANCE_CARDS: Record<string, CardDef> = {

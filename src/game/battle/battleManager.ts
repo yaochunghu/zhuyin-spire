@@ -2,7 +2,7 @@
  * Battle lifecycle: create combat, end turn, phase transitions, win/loss.
  */
 
-import { DRAW_PER_TURN } from '../../data/balance';
+import { DRAW_PER_TURN, MAX_HAND_SIZE } from '../../data/balance';
 import { resolveEnemyDefIds } from '../../data/encounters';
 import { ENEMIES } from '../../data/enemies';
 import { resolveCard } from '../../data/cards';
@@ -17,6 +17,7 @@ import {
 } from './enemyHandler';
 import { discardHandEndTurn } from './playerHandler';
 import { drawCards, makeCard, shuffle } from './piles';
+import { pushFx } from './fx';
 import type { CombatState } from './types';
 
 export function createCombat(
@@ -129,21 +130,15 @@ export function endTurn(state: CombatState): CombatState['status'] {
   state.basicPlayedThisTurn = 0;
   state.powerTriggersThisTurn = {};
   state.nextAttackBonus = 0;
+  state.freeBasicsRemaining = 0;
   state.phase = 'playerStart';
   drawCards(state, DRAW_PER_TURN);
-  if (state.activePowerIds.includes('B129') && state.hand.length < 10) {
+  if (state.activePowerIds.includes('B129') && state.hand.length < MAX_HAND_SIZE) {
     const wantsSkill = state.enemies
       .filter((enemy) => enemy.alive)
       .some((enemy) => intentForUnit(enemy).kind === 'attack');
     const wantedType = wantsSkill ? 'skill' : 'attack';
-    const index = lastIndexWhere(
-      state.drawPile,
-      (card) => resolveCard(card.defId, card.upgradeLevel).type === wantedType,
-    );
-    if (index >= 0) {
-      const [card] = state.drawPile.splice(index, 1);
-      state.hand.push(card!);
-    }
+    drawCardOfType(state, wantedType);
   }
   if (state.bonusDrawNextTurn > 0) {
     drawCards(state, state.bonusDrawNextTurn);
@@ -153,6 +148,24 @@ export function endTurn(state: CombatState): CombatState['status'] {
   state.log.push(`—— 第 ${state.turn} 回合 ——`);
   syncPrimaryEnemy(state);
   return state.status;
+}
+
+function drawCardOfType(state: CombatState, wantedType: 'attack' | 'skill'): void {
+  const matches = (card: CombatState['drawPile'][number]) =>
+    resolveCard(card.defId, card.upgradeLevel).type === wantedType;
+  let index = lastIndexWhere(state.drawPile, matches);
+  if (index < 0 && state.discardPile.some(matches)) {
+    const count = state.discardPile.length;
+    state.drawPile = shuffle(state.discardPile);
+    state.discardPile = [];
+    state.log.push('洗牌！');
+    pushFx(state, { type: 'shuffle', count });
+    index = lastIndexWhere(state.drawPile, matches);
+  }
+  if (index < 0) return;
+  const [card] = state.drawPile.splice(index, 1);
+  state.hand.push(card!);
+  pushFx(state, { type: 'draw', cards: [card!] });
 }
 
 function lastIndexWhere<T>(items: T[], predicate: (item: T) => boolean): number {

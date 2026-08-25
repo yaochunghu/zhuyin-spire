@@ -6,14 +6,13 @@ How to add playable content without reverse-engineering the whole repo.
 
 ## Cards — `src/data/cards.ts`
 
-The live 共鳴武者 release is the ten-card starter plus nine Act I reward designs
-(12 unique designs). After character score 300, later-act fights, shops, and
-treasure may also offer the 13 reviewed Wave 2 Commons. `resonanceCards.ts`
-still contains the generated 75-card catalog for the designer and score UI;
-cards without `reviewedWave <= LIVE_REVIEWED_WAVE` are not obtainable. Review
+共鳴武者 begins with 12 unique designs: three starter designs plus nine Act I
+teaching rewards. Cumulative character score expands the Acts II–III fight,
+shop, and treasure pool to 33 cards at 300, 54 at 1,000, and all 75 at 2,000.
+Act I keeps its small teaching pool at every score. Review
 [DESIGN_PLAYBOOK.md](./DESIGN_PLAYBOOK.md) and
 [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md)
-before promoting another wave.
+before changing tier assignments.
 
 The target type system is `Attack | Skill | Power`: any direct Attack card
 remains Attack even with secondary effects; one-use defense/draw/Energy/status
@@ -40,14 +39,13 @@ type. Status and Curse are separate pollution types.
 | `cues` | Fallback teaching phrases on the card |
 | `description` | Exact readable effect text |
 | `upgrade` | Live `+` face applied to one physical card copy |
-| `unlockScore` | Catalog / 🃏 progress threshold (300 / 1000 / 2000) |
-| `reviewedWave` | Human-reviewed obtainability wave; live offers use `LIVE_REVIEWED_WAVE` |
+| `unlockScore` | Obtainability / 🃏 progress threshold (300 / 1000 / 2000; unset means score 0) |
 | `designId` / `mechanics` / `direction` | Design-audit metadata |
 
-Also maintain **pools**: `STARTER_DECK_IDS`, `REWARD_POOL_IDS` (Act I, exactly 9),
-`RESONANCE_WAVE_TWO_IDS`, and `LIVE_REVIEWED_WAVE`. Later-act / shop / treasure
-offers come from `character.cardPoolIds` filtered by score **and** reviewed wave.
-Do not grow the Act I reward table until playtesting asks for it.
+Also maintain **pools**: `STARTER_DECK_IDS`, `REWARD_POOL_IDS` (Act I, exactly
+9), and `character.cardPoolIds` (all 75). Later-act fights, shops, and treasure
+filter the full character pool by score. Do not grow the Act I reward table
+until playtesting asks for it.
 
 ### Teaching rules for cues / phrases
 
@@ -140,12 +138,11 @@ unrelated starter relic. Keep starter relics always useful, small, and thematic.
 Existing v1 saves may retain a legacy relic so an in-progress run is not
 destroyed.
 
-Draft character cards may declare a cumulative `unlockScore`, but progress
-counts derive only from the character's published `cardPoolIds`. Promoting a
-reviewed wave requires adding those ids to the published pool; upgrades never
-increase the count. Practice remains unfiltered because progression must not
-hide phonetic material. Never remove an existing card from a saved deck or
-offer.
+Character cards may declare a cumulative `unlockScore`, but progress counts
+derive only from the character's published `cardPoolIds`. Score is the sole
+offer gate; upgrades never increase the count. Practice remains unfiltered
+because progression must not hide phonetic material. Never remove an existing
+card from a saved deck or offer.
 
 The live 共鳴武者 catalog has 75 designs: 12 at score 0, then three 21-card
 waves at scores 300, 1000, and 2000. Profiles saved before character

@@ -22,8 +22,10 @@ import {
 import { resetTutorialCompletion, updateGameSettings } from '../game/settings';
 import type { CastMode } from '../game/casting/types';
 import {
+  type CharacterCardUnlockTier,
   getActiveProfile,
   getCastingPreferences,
+  getCharacterCardProgress,
   saveCastingPreferences,
   updateActiveProfile,
 } from '../game/profiles';
@@ -31,9 +33,11 @@ import { getDebugSkipCast } from './debugFlags';
 
 export function debugInspect(state: RunState): string {
   const profile = getActiveProfile();
+  const cardProgress = getCharacterCardProgress(profile, 'echoMage');
   const lines: string[] = [
     `profile: ${profile.avatar} ${profile.name}`,
     `cast lessons: ${Object.keys(profile.castingHistory.lessons).length}`,
+    `meta: ${cardProgress.score} · cards ${cardProgress.unlockedCards}/${cardProgress.totalCards}`,
     `screen: ${state.screen}`,
     `act: ${state.actIndex + 1}`,
     `hp: ${state.heroHp}/${state.heroMaxHp}`,
@@ -180,6 +184,17 @@ export function debugSetCastingMode(mode: CastMode): void {
       listenHard: mode === 'listenHard' ? 100 : 0,
     },
   });
+}
+
+/** Set the active learner's persisted card-unlock milestone for QA. */
+export function debugSetMetaProgress(score: CharacterCardUnlockTier): void {
+  updateActiveProfile((profile) => ({
+    ...profile,
+    characterProgress: {
+      ...profile.characterProgress,
+      echoMage: { score },
+    },
+  }));
 }
 
 /** Refill all shuffle bags without deleting accuracy or response-time history. */

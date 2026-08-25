@@ -1,12 +1,9 @@
 # Archived: 共鳴武者 brainstorm and cull ledger
 
-> **Historical evidence, not a backlog.** Rejected names and effects in this
-> file must not be restored to live code. The locked roster and release gates
-> are in
+> **Frozen historical evidence — not a backlog and not for implementation.**
+> Rejected names and effects in this file must not be restored to live code.
+> The locked roster and release gates are in
 > [RESONANCE_WARRIOR_DESIGN_PROCESS.md](../RESONANCE_WARRIOR_DESIGN_PROCESS.md).
-
-> Status: active design funnel. This document deliberately preserves rejected
-> ideas so later decisions can be audited instead of reconstructed from memory.
 
 ## Step 1 — Character foundation (locked)
 

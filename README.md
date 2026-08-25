@@ -88,9 +88,8 @@ The first character starts with exactly 10 cards: 5 one-energy 基礎攻擊,
 focused nine-card reward pool. 共鳴武者 learns four linked ideas: 易傷、
 基礎攻擊／練功、攻守轉拍、and fully blocking an enemy action to gain 勁.
 See [docs/DECK_DESIGN.md](docs/DECK_DESIGN.md) for the live 12-design Act I wave
-and the 13 Wave 2 Commons that later acts can offer after character score 300.
-The remaining generated catalog stays a review draft until later waves pass the
-playbook's human release gates.
+and the score progression that expands later-act fights, shops, and treasure
+from 12 to 33, 54, and finally all 75 designs.
 
 On a fresh installation, the first Act I battle is a one-monster guided lesson:
 shield → End Turn → attack → finish normally. The ⚙️ button is available on every
@@ -134,14 +133,14 @@ CHANGELOG.md        version history
 | [docs/CASTING_GATES.md](docs/CASTING_GATES.md) | Casting metaphor, anti-repeat pools, profiles, future subjects |
 | [docs/DESIGN_PLAYBOOK.md](docs/DESIGN_PLAYBOOK.md) | Character design funnel, evidence ladder, and release gates |
 | [docs/DECK_DESIGN.md](docs/DECK_DESIGN.md) | Live 共鳴武者 wave, four mechanics, and expansion boundary |
-| [docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md](docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md) | Locked 共鳴武者 75-card roster, simulation, and release gates |
+| [docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md](docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md) | Locked 共鳴武者 75-card roster, meta progression, simulation, and review checks |
 | [docs/STS_DESIGN_REFERENCE.md](docs/STS_DESIGN_REFERENCE.md) | StS systems reference and what to copy, adapt, or defer |
-| [docs/UPGRADE_BIBLE.md](docs/UPGRADE_BIBLE.md) | Physical-copy migration contract and gated upgrade draft |
+| [docs/UPGRADE_BIBLE.md](docs/UPGRADE_BIBLE.md) | Physical-copy migration contract and live 75-card upgrades |
 | [docs/EVENT_ENCOUNTER_BIBLE.md](docs/EVENT_ENCOUNTER_BIBLE.md) | Proposed events, encounters, difficulty variants, keys, and Act IV |
 | [docs/BALANCE.md](docs/BALANCE.md) | HP, gold, rest, hand rules |
 | [docs/DEBUG.md](docs/DEBUG.md) | Skip cast, jump fights, cheats for testing |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | What’s done / next |
-| [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) | Live version, obtainability rules, next slice after Wave 2 |
+| [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) | Live version, complete card progression, and next feature slice |
 
 ---
 
