@@ -4,7 +4,7 @@
 
 | Piece | Choice |
 |-------|--------|
-| Build | Vite 6 + TypeScript |
+| Build | Vite 8 + TypeScript 7 |
 | UI | Imperative DOM (no React/Vue) |
 | Persist | `localStorage` only |
 | Audio | Procedural Web Audio (`game/audio.ts`) + Web Speech `zh-TW` (`game/speech.ts`) |
@@ -156,3 +156,7 @@ Full contract and future-provider checklist: [CASTING_GATES.md](./CASTING_GATES.
 - Map generation: [MAP.md](./MAP.md)
 - Balance constants: [BALANCE.md](./BALANCE.md)
 - Content authoring: [CONTENT.md](./CONTENT.md)
+
+## Browser lifecycle and transient card choices
+
+See [BROWSER_SUPPORT.md](BROWSER_SUPPORT.md) for native modal and pause ownership, speech fallback, and stable checkpoint limits. B041 passes an optional physical hand UID through the play API; it is cleared on success/fizzle and does not change save schemas.

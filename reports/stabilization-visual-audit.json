@@ -1,0 +1,339 @@
+{
+  "provenance": {
+    "status": "historical earlier checkout; not integrated validation",
+    "baseline": "f4beb8b",
+    "snapshot": "e58284c"
+  },
+  "observations": [
+    {
+      "viewport": "tablet-1024x768",
+      "state": "01-title",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "tablet-1024x768",
+      "state": "02-character",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "tablet-1024x768",
+      "state": "03-map",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "tablet-1024x768",
+      "state": "04-rest",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "tablet-1024x768",
+      "state": "05-smith",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "tablet-1024x768",
+      "state": "06-remove-card",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "tablet-1024x768",
+      "state": "07-shop",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "tablet-1024x768",
+      "state": "08-shop-remove",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "tablet-1024x768",
+      "state": "09-combat",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "tablet-1024x768",
+      "state": "10-cast-check",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "tablet-1024x768",
+      "state": "11-practice",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "tablet-1024x768",
+      "state": "12-reward",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "tablet-1024x768",
+      "state": "13-act-clear",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "tablet-1024x768",
+      "state": "14-defeat",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "tablet-1024x768",
+      "state": "15-victory",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "tablet-1024x768",
+      "state": "console",
+      "consoleErrors": []
+    },
+    {
+      "viewport": "phone-portrait-390x844",
+      "state": "01-title",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-portrait-390x844",
+      "state": "02-character",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-portrait-390x844",
+      "state": "03-map",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-portrait-390x844",
+      "state": "04-rest",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-portrait-390x844",
+      "state": "05-smith",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-portrait-390x844",
+      "state": "06-remove-card",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-portrait-390x844",
+      "state": "07-shop",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-portrait-390x844",
+      "state": "08-shop-remove",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-portrait-390x844",
+      "state": "09-combat",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-portrait-390x844",
+      "state": "10-cast-check",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-portrait-390x844",
+      "state": "11-practice",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-portrait-390x844",
+      "state": "12-reward",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-portrait-390x844",
+      "state": "13-act-clear",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-portrait-390x844",
+      "state": "14-defeat",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-portrait-390x844",
+      "state": "15-victory",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-portrait-390x844",
+      "state": "console",
+      "consoleErrors": []
+    },
+    {
+      "viewport": "phone-landscape-844x390",
+      "state": "01-title",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-landscape-844x390",
+      "state": "02-character",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-landscape-844x390",
+      "state": "03-map",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-landscape-844x390",
+      "state": "04-rest",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-landscape-844x390",
+      "state": "05-smith",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-landscape-844x390",
+      "state": "06-remove-card",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-landscape-844x390",
+      "state": "07-shop",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-landscape-844x390",
+      "state": "08-shop-remove",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-landscape-844x390",
+      "state": "09-combat",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-landscape-844x390",
+      "state": "10-cast-check",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-landscape-844x390",
+      "state": "11-practice",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-landscape-844x390",
+      "state": "12-reward",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-landscape-844x390",
+      "state": "13-act-clear",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-landscape-844x390",
+      "state": "14-defeat",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-landscape-844x390",
+      "state": "15-victory",
+      "pageOverflowX": 0,
+      "missingImages": [],
+      "clippedControls": []
+    },
+    {
+      "viewport": "phone-landscape-844x390",
+      "state": "console",
+      "consoleErrors": []
+    }
+  ]
+}

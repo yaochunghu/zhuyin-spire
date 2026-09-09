@@ -56,3 +56,5 @@ rotation, large text/pinch zoom, hand scrolling, and VoiceOver/TalkBack focus.
 Record device, OS/browser version, and observed result. Desktop emulation cannot
 supply this evidence. No new network speech service, recorded media, or service
 worker is introduced. CSP remains unchanged.
+
+Use the [device and family checklist](PLAYTEST_GATE.md) to record human evidence; simulated browser coverage does not mark those steps complete.

@@ -20,8 +20,9 @@ async function solve(page: Page) {
     await page.locator('.spell-key:not(:disabled)').filter({ hasText: new RegExp(`^${escaped}$`) }).first().click();
   }
   await expect(page.locator('.spell-reveal-overlay')).toBeVisible();
-  await expect(page.locator('.spell-reveal-continue')).toBeVisible();
-  await page.locator('.spell-reveal-continue').click({ force: true });
+  await expect(page.locator('.spell-reveal-spell')).toHaveText(answer);
+  // Verify the normal automatic advance; clicking a disappearing Continue button
+  // races the reveal timer under slower browser startup or CI load.
   await expect(page.locator('.cast-screen')).toHaveCount(0);
   await expect(page.locator('.hand-card-hidden')).toHaveCount(0);
 }

@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — browser stabilization on 0.4.0
+
+- Keep the 75-card score progression and current catalog while repairing dependencies and checking three browser engines.
+- Add native menus/inspection, overlapping pause ownership, speech fallback, visible save failures, and animation cancellation recovery.
+- Make B041 choose its physical Attack before casting; retain upstream B144 and B051 corrections with regression coverage.
+- Preserve save/profile compatibility and separate historical audit results from integrated validation.
+
 All notable changes to **注音之塔 / Zhuyin Spire** are documented here.
 
 Format: human-readable summary per version. For code archaeology use `git log` and tags.
