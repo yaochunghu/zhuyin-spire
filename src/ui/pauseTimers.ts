@@ -16,7 +16,7 @@ interface TimerEntry {
 export class PauseAwareTimerGroup {
   private readonly timers = new Map<number, TimerEntry>();
   private nextId = 1;
-  private paused = false;
+  private readonly pauseReasons = new Set<string>();
 
   constructor(private readonly now: () => number = () => performance.now()) {}
 
@@ -29,7 +29,7 @@ export class PauseAwareTimerGroup {
       startedAt: this.now(),
     };
     this.timers.set(id, entry);
-    if (!this.paused) this.arm(id, entry);
+    if (!this.isPaused()) this.arm(id, entry);
     return id;
   }
 
@@ -41,9 +41,10 @@ export class PauseAwareTimerGroup {
     this.timers.delete(id);
   }
 
-  pause(): void {
-    if (this.paused) return;
-    this.paused = true;
+  pause(reason = 'manual'): void {
+    const alreadyPaused = this.isPaused();
+    this.pauseReasons.add(reason);
+    if (alreadyPaused) return;
     const at = this.now();
     for (const entry of this.timers.values()) {
       if (entry.handle == null) continue;
@@ -53,14 +54,13 @@ export class PauseAwareTimerGroup {
     }
   }
 
-  resume(): void {
-    if (!this.paused) return;
-    this.paused = false;
+  resume(reason = 'manual'): void {
+    if (!this.pauseReasons.delete(reason) || this.isPaused()) return;
     for (const [id, entry] of this.timers) this.arm(id, entry);
   }
 
   isPaused(): boolean {
-    return this.paused;
+    return this.pauseReasons.size > 0;
   }
 
   private arm(id: number, entry: TimerEntry): void {

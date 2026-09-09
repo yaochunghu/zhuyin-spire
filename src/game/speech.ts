@@ -1,7 +1,11 @@
+import { teachingTimers } from '../ui/pauseTimers';
+
 /** Web Speech API helpers for cue-word listening (zh-TW). */
 
 /** Bumps on cancel so pending auto-replays abort. */
 let speakGen = 0;
+let speechRequest = 0;
+let speechWatchdog: number | undefined;
 
 export function isSpeechAvailable(): boolean {
   return typeof window !== 'undefined' && 'speechSynthesis' in window;
@@ -49,13 +53,13 @@ function pickVoice(): SpeechSynthesisVoice | null {
 export function warmSpeech(): void {
   if (!isSpeechAvailable()) return;
   window.speechSynthesis.getVoices();
-  window.speechSynthesis.onvoiceschanged = () => {
-    window.speechSynthesis.getVoices();
-  };
+  // Voice loading is asynchronous; speakCue checks the actual list each time.
 }
 
 export function cancelSpeech(): void {
   speakGen += 1;
+  speechRequest += 1;
+  globalThis.clearTimeout(speechWatchdog);
   if (!isSpeechAvailable()) return;
   window.speechSynthesis.cancel();
 }
@@ -66,30 +70,55 @@ export interface SpeakOpts {
   onEnd?: () => void;
 }
 
+function reportSpeechFallback(text: string): void {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('zhuyin-speech-fallback', { detail: { text } }));
+  }
+}
+
 export function speakCue(text: string, opts?: SpeakOpts): void {
+  if (typeof document !== 'undefined' && (document.hidden || teachingTimers.isPaused())) return;
   if (!isSpeechAvailable()) {
-    opts?.onEnd?.();
+    reportSpeechFallback(text);
     return;
   }
+  const request = ++speechRequest;
   try {
-    // Soft cancel without bumping gen (inner replay uses same gen)
+    window.clearTimeout(speechWatchdog);
     window.speechSynthesis.cancel();
+    const voice = pickVoice();
+    // Never silently substitute a non-Mandarin default voice for a lesson.
+    if (!voice) {
+      reportSpeechFallback(text);
+      return;
+    }
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'zh-TW';
+    u.lang = voice.lang;
     u.rate = opts?.rate ?? 0.82;
     u.pitch = 1.08;
-    const voice = pickVoice();
-    if (voice) {
-      u.voice = voice;
-      if (voice.lang) u.lang = voice.lang;
-    }
-    if (opts?.onEnd) {
-      u.onend = () => opts.onEnd?.();
-      u.onerror = () => opts.onEnd?.();
-    }
+    u.voice = voice;
+    const gen = speakGen;
+    u.onstart = () => {
+      if (request === speechRequest) window.clearTimeout(speechWatchdog);
+    };
+    u.onend = () => {
+      if (request !== speechRequest) return;
+      window.clearTimeout(speechWatchdog);
+      if (gen === speakGen) opts?.onEnd?.();
+    };
+    u.onerror = (event) => {
+      if (request !== speechRequest) return;
+      window.clearTimeout(speechWatchdog);
+      if (gen === speakGen && event.error !== 'canceled' && event.error !== 'interrupted') {
+        reportSpeechFallback(text);
+      }
+    };
+    speechWatchdog = window.setTimeout(() => {
+      if (gen === speakGen && request === speechRequest) reportSpeechFallback(text);
+    }, 2_000);
     window.speechSynthesis.speak(u);
   } catch {
-    opts?.onEnd?.();
+    reportSpeechFallback(text);
   }
 }
 

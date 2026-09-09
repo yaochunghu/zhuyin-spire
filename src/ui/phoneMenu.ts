@@ -1,7 +1,8 @@
+import { getSaveStatus } from '../game/save';
 import { getVolume, setVolume, sfx, type VolLevel } from '../game/audio';
 import type { Screen } from '../game/state';
 import { isDebugEnabled } from '../debug/debugFlags';
-import { lockPageScroll, trapModalFocus } from './modal';
+import { lockPageScroll, trapModalFocus, createModalShell, showModalShell, dismissModalShell } from './modal';
 
 export interface PhoneMenuOptions {
   screen: Screen;
@@ -12,7 +13,7 @@ export interface PhoneMenuOptions {
   onOpenDeck: () => void;
 }
 
-let root: HTMLElement | null = null;
+let root: HTMLDialogElement | null = null;
 
 function screenLabel(screen: Screen): string {
   if (screen === 'combat') return '戰鬥暫停';
@@ -27,7 +28,7 @@ export function openPhoneMenu(options: PhoneMenuOptions): void {
   const releaseScroll = lockPageScroll();
   options.onPause();
 
-  root = document.createElement('div');
+  root = createModalShell(screenLabel(options.screen));
   root.id = 'zhuyin-phone-menu-root';
   let resumed = false;
   const resume = (): void => {
@@ -36,7 +37,7 @@ export function openPhoneMenu(options: PhoneMenuOptions): void {
     options.onResume();
   };
   const close = (shouldResume = true): void => {
-    root?.remove();
+    dismissModalShell(root);
     root = null;
     releaseScroll();
     if (shouldResume) resume();
@@ -51,8 +52,6 @@ export function openPhoneMenu(options: PhoneMenuOptions): void {
 
   const dialog = document.createElement('div');
   dialog.className = 'phone-menu-dialog';
-  dialog.setAttribute('role', 'dialog');
-  dialog.setAttribute('aria-modal', 'true');
   dialog.setAttribute('aria-label', screenLabel(options.screen));
   dialog.innerHTML = `
     <div class="phone-menu-head">
@@ -62,6 +61,14 @@ export function openPhoneMenu(options: PhoneMenuOptions): void {
       </div>
     </div>
   `;
+
+  const checkpointNote = document.createElement('p');
+  checkpointNote.className = 'adult-text checkpoint-status';
+  checkpointNote.setAttribute('role', 'status');
+  checkpointNote.textContent = getSaveStatus() === 'unavailable'
+    ? '⚠️ 這次進度無法儲存。請先不要關閉遊戲，確認瀏覽器允許儲存資料。'
+    : '進度在房間之間儲存；關閉或重新整理會回到上次存檔，戰鬥與作答中不存檔。';
+  dialog.appendChild(checkpointNote);
 
   const resumeButton = document.createElement('button');
   resumeButton.type = 'button';
@@ -155,6 +162,6 @@ export function openPhoneMenu(options: PhoneMenuOptions): void {
     }
     trapModalFocus(root!, event);
   });
-  document.body.appendChild(root);
+  showModalShell(root, close);
   resumeButton.focus();
 }

@@ -1,3 +1,6 @@
+import { teachingTimers } from './pauseTimers';
+import { cancelSpeech } from '../game/speech';
+
 let scrollLocks = 0;
 
 export function lockPageScroll(): () => void {
@@ -29,4 +32,37 @@ export function trapModalFocus(root: HTMLElement, event: KeyboardEvent): void {
     event.preventDefault();
     first.focus();
   }
+}
+
+/** Full-viewport top-layer shell; existing responsive panels keep their layout. */
+export function createModalShell(label: string): HTMLDialogElement {
+  const dialog = document.createElement('dialog');
+  dialog.className = 'native-modal-shell';
+  dialog.setAttribute('aria-label', label);
+  return dialog;
+}
+
+const modalPauseReasons = new WeakMap<HTMLDialogElement, string>();
+let modalSerial = 0;
+
+export function showModalShell(dialog: HTMLDialogElement, onCancel: () => void): void {
+  const reason = `modal-${++modalSerial}`;
+  modalPauseReasons.set(dialog, reason);
+  teachingTimers.pause(reason);
+  cancelSpeech();
+  dialog.addEventListener('cancel', (event) => {
+    event.preventDefault();
+    onCancel();
+  });
+  if (!dialog.isConnected) document.body.appendChild(dialog);
+  dialog.showModal();
+}
+
+export function dismissModalShell(dialog: HTMLDialogElement | null): void {
+  if (!dialog) return;
+  const reason = modalPauseReasons.get(dialog);
+  if (reason) teachingTimers.resume(reason);
+  modalPauseReasons.delete(dialog);
+  dialog.close();
+  dialog.remove();
 }

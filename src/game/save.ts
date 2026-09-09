@@ -148,6 +148,17 @@ export function snapshotRun(state: RunState): RunSnapshotV1 | null {
   };
 }
 
+export type SaveStatus = 'idle' | 'saved' | 'unavailable';
+let saveStatus: SaveStatus = 'idle';
+export function getSaveStatus(): SaveStatus { return saveStatus; }
+function publishSaveStatus(status: SaveStatus): void {
+  if (saveStatus === status) return;
+  saveStatus = status;
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('zhuyin-save-status', { detail: status }));
+  }
+}
+
 export function saveRunCheckpoint(state: RunState): void {
   const snap = snapshotRun(state);
   if (!snap) return;
@@ -156,8 +167,9 @@ export function saveRunCheckpoint(state: RunState): void {
     localStorage.setItem(activeRunSaveKey(), serialized);
     // Keep the original key as a migration mirror for the first profile only.
     if (isLegacyOwnerProfile()) localStorage.setItem(LEGACY_SAVE_KEY, serialized);
+    publishSaveStatus('saved');
   } catch {
-    /* quota / private mode */
+    publishSaveStatus('unavailable');
   }
 }
 

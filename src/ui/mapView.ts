@@ -10,7 +10,7 @@ import { actTransitionArtKeyFor, artImageHtml } from './assets';
 import type { MapNode } from '../data/map';
 import { sfx } from '../game/audio';
 import { gameplayMs } from '../game/settings';
-import { renderDeckViewer } from './deckViewer';
+import { openDeckViewer } from './deckViewer';
 import { appendCoach, render, run, session } from './runtime';
 
 const SELECT_FLASH_MS = 480;
@@ -213,8 +213,7 @@ export function renderMap(): HTMLElement {
   deckBtn.setAttribute('aria-label', '查看牌組');
   deckBtn.addEventListener('click', () => {
     sfx.click();
-    session.deckViewerOpen = !session.deckViewerOpen;
-    render();
+    openDeckViewer();
   });
   actions.appendChild(deckBtn);
   bottom.appendChild(actions);
@@ -230,15 +229,6 @@ export function renderMap(): HTMLElement {
 
   // Floating coach (collapsed by default — does not steal graph space)
   appendCoach(stage);
-
-  if (session.deckViewerOpen) {
-    stage.appendChild(
-      renderDeckViewer(() => {
-        session.deckViewerOpen = false;
-        render();
-      }),
-    );
-  }
 
   el.appendChild(stage);
 
