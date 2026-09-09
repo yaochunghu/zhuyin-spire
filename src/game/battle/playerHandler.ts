@@ -35,11 +35,22 @@ export function beginPlay(
   state: CombatState,
   uid: string,
   targetIds: string[] = [],
+  chosenHandUid?: string,
 ): CardDef {
   if (!canPlay(state, uid)) throw new Error('Cannot play card');
   const idx = state.hand.findIndex((c) => c.uid === uid);
+  const candidate = state.hand[idx]!;
+  const def = resolveCard(candidate.defId, candidate.upgradeLevel);
+  if (def.handChoice) {
+    const eligible = state.hand.filter((entry) => entry.uid !== uid &&
+      resolveCard(entry.defId, entry.upgradeLevel).type === def.handChoice);
+    if ((eligible.length > 0 || chosenHandUid !== undefined) &&
+        !eligible.some((entry) => entry.uid === chosenHandUid)) {
+      throw new Error('Choose a valid card before casting');
+    }
+  }
   const [card] = state.hand.splice(idx, 1);
-  const def = resolveCard(card.defId, card.upgradeLevel);
+  card!.chosenHandUid = def.handChoice ? chosenHandUid : undefined;
   state.energy -= effectiveCost(state, card, def);
   state.pending = card;
   if ((def.basicAttack || card.basicOverride) && state.freeBasicsRemaining > 0) {
@@ -95,6 +106,7 @@ export function resolveCastSuccess(state: CombatState, def: CardDef): void {
 
   executeEffects(state, def, targets, (fx) => pushFx(state, fx), drawCards, card, isTempo);
   if (card) {
+    delete card.chosenHandUid;
     if (def.type === 'power') {
       const powerId = def.designId ?? def.id;
       state.activePowerIds.push(powerId);
@@ -114,6 +126,7 @@ export function resolveCastFizzle(state: CombatState, def: CardDef): void {
   if (state.pending) {
     const card = state.pending;
     card.temporaryCostReduction = 0;
+    delete card.chosenHandUid;
     state.discardPile.push(card);
     state.pending = null;
     pushFx(state, { type: 'discard', cards: [card], reason: 'fizzle' });

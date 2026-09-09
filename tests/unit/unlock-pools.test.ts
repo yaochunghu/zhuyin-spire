@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { REWARD_POOL_IDS } from '../../src/data/cards';
+import { REWARD_POOL_IDS, getCard } from '../../src/data/cards';
 import { getCharacter } from '../../src/data/characters';
 import {
   filterObtainableCardsForProfile,
@@ -8,6 +8,10 @@ import {
 } from '../../src/game/profiles';
 import {
   createNewRun,
+  getAvailableMapNodes,
+  selectMapNode,
+  debugStartEncounter,
+  debugFinishFight,
   pickCharacter,
   rewardPoolFor,
   startRun,
@@ -84,4 +88,22 @@ describe('score-based card obtainability', () => {
     const state = scoredRun(1000, 1);
     expect(rewardPoolFor(state, 'elite').sort()).toEqual(rewardPoolFor(state, 'normal').sort());
   });
+
+  it.each([0, 300, 1000, 2000])('generated shops and rewards respect score %s', (score) => {
+    const state = scoredRun(score, 2);
+    const allowed = new Set(rewardPoolFor(state, 'normal'));
+    const node = getAvailableMapNodes(state)[0]!;
+    node.kind = 'shop';
+    selectMapNode(state, node.id);
+    expect(state.shopOffers).toHaveLength(3);
+    for (const offer of state.shopOffers) {
+      expect(allowed.has(offer.defId)).toBe(true);
+      expect(getCard(offer.defId).unlockScore ?? 0).toBeLessThanOrEqual(score);
+    }
+    debugStartEncounter(state, 'slime');
+    debugFinishFight(state);
+    expect(state.rewardOptions).toHaveLength(3);
+    expect(state.rewardOptions.every((offer) => allowed.has(offer.defId))).toBe(true);
+  });
+
 });

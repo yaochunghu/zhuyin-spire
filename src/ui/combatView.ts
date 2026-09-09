@@ -1,3 +1,4 @@
+import { createModalShell, showModalShell, dismissModalShell, lockPageScroll } from './modal';
 import { getCard, resolveCard } from '../data/cards';
 import {
   ENEMIES,
@@ -50,9 +51,15 @@ import { artImageHtml, enemyArtKeyFor } from './assets';
 function renderPileViewer(kind: 'draw' | 'discard', cards: CombatCard[]): HTMLElement {
   const overlay = document.createElement('div');
   overlay.className = 'deck-viewer pile-viewer';
-  overlay.setAttribute('role', 'dialog');
+
   const title = kind === 'draw' ? '📚 抽牌' : '🗑️ 棄牌';
   overlay.setAttribute('aria-label', title);
+  const shell = createModalShell(title);
+  const finish = () => {
+    session.pileViewer = null;
+    dismissModalShell(shell);
+    app().querySelector<HTMLButtonElement>('.combat-pile-btn')?.focus();
+  };
 
   const head = document.createElement('div');
   head.className = 'deck-viewer-head';
@@ -90,11 +97,14 @@ function renderPileViewer(kind: 'draw' | 'discard', cards: CombatCard[]): HTMLEl
   close.setAttribute('aria-label', '關閉');
   close.addEventListener('click', () => {
     sfx.click();
-    session.pileViewer = null;
-    render();
+    finish();
   });
   overlay.appendChild(close);
-  return overlay;
+  shell.appendChild(overlay);
+  queueMicrotask(() => {
+    if (shell.isConnected) { showModalShell(shell, finish); close.focus(); }
+  });
+  return shell;
 }
 
 export async function playPendingCombatFx(): Promise<void> {
@@ -157,12 +167,51 @@ function syncCombatInteractionState(): void {
   });
 }
 
-function playCardFromUi(uid: string, targetIds: string[] = []): void {
+function playCardFromUi(uid: string, targetIds: string[] = [], chosenHandUid?: string): void {
   if (session.combatFxPlaying || session.outcomeAnimPlaying) return;
+  const combat = run().combat;
+  const card = combat?.hand.find((entry) => entry.uid === uid);
+  if (!combat || !card) return;
+  const definition = resolveCard(card.defId, card.upgradeLevel);
+  const choices = definition.handChoice
+    ? combat.hand.filter((entry) => entry.uid !== uid &&
+      resolveCard(entry.defId, entry.upgradeLevel).type === definition.handChoice)
+    : [];
+  if (chosenHandUid === undefined && choices.length > 0) {
+    cleanupDragUi();
+    const dialog = createModalShell('選一張攻擊牌');
+    dialog.id = 'zhuyin-card-choice';
+    const releaseScroll = lockPageScroll();
+    const panel = document.createElement('div');
+    panel.className = 'card-choice-panel';
+    const title = document.createElement('h2');
+    title.textContent = '👆 選一張攻擊牌';
+    panel.appendChild(title);
+    const close = () => { dismissModalShell(dialog); releaseScroll(); };
+    for (const [index, choice] of choices.entries()) {
+      const button = document.createElement('button');
+      button.className = 'btn-secondary card-choice-button';
+      button.textContent = `${index + 1} · ${resolveCard(choice.defId, choice.upgradeLevel).name}`;
+      button.dataset.choiceUid = choice.uid;
+      button.addEventListener('click', () => {
+        close();
+        playCardFromUi(uid, targetIds, choice.uid);
+      });
+      panel.appendChild(button);
+    }
+    const cancel = document.createElement('button');
+    cancel.className = 'btn-secondary';
+    cancel.textContent = '取消';
+    cancel.addEventListener('click', close);
+    panel.appendChild(cancel);
+    dialog.appendChild(panel);
+    showModalShell(dialog, close);
+    return;
+  }
   // Always scrub drag ghosts before leaving combat UI
   cleanupDragUi();
   sfx.cardPlay();
-  tryPlayCard(run(), uid, targetIds);
+  tryPlayCard(run(), uid, targetIds, chosenHandUid);
   if (run().screen === 'castCheck') {
     session.hintSpell = null;
     session.spellAttempt = [];

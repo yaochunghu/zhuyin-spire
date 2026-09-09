@@ -853,6 +853,7 @@ export function tryPlayCard(
   state: RunState,
   uid: string,
   targetIds: string[] = [],
+  chosenHandUid?: string,
 ): void {
   if (!state.combat || state.combat.status !== 'playing') return;
   if (!canTutorialPlayCard(state, uid)) {
@@ -860,7 +861,7 @@ export function tryPlayCard(
     return;
   }
   try {
-    const def = beginPlay(state.combat, uid, targetIds);
+    const def = beginPlay(state.combat, uid, targetIds, chosenHandUid);
 
     if (getDebugSkipCast()) {
       const combat = state.combat;

@@ -86,7 +86,10 @@ export function executeEffects(
   const statusFx: CombatFx[] = [];
 
   for (const eff of effects) {
-    if (eff.kind === 'damage' && targets !== 'self') {
+    if (eff.kind === 'makeBasic') {
+      const chosen = state.hand.find((entry) => entry.uid === card?.chosenHandUid);
+      if (chosen && getResolved(chosen).type === 'attack') chosen.basicOverride = true;
+    } else if (eff.kind === 'damage' && targets !== 'self') {
       const priorTempo = Math.max(0, state.tempoCount - (triggeredTempo ? 1 : 0));
       const repeatHits = def.designId === 'B071' ? Math.min(2, priorTempo) : 0;
       const hits = (eff.hits ?? 1) + repeatHits;
@@ -303,11 +306,6 @@ function applySpecialCardEffect(
     case 'B038':
       if (state.basicPlayedThisTurn > 0) state.block += 2;
       break;
-    case 'B041': {
-      const attack = state.hand.find((candidate) => getResolved(candidate).type === 'attack');
-      if (attack) attack.basicOverride = true;
-      break;
-    }
     case 'B042': {
       if (!enemy) break;
       const basicCount = [...state.drawPile, ...state.hand, ...state.discardPile]

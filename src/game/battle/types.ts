@@ -6,6 +6,8 @@
 export interface CombatCard {
   uid: string;
   sourceUid: string;
+  /** Explicit physical hand target, chosen before the cast and cleared on resolution. */
+  chosenHandUid?: string;
   defId: string;
   upgradeLevel: 0 | 1;
   temporaryCostReduction: number;

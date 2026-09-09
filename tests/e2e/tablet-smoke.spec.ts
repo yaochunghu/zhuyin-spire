@@ -257,6 +257,8 @@ test('combat hand keeps cards separate when they fit and scrolls at ten cards', 
     .click();
   await page.locator('.debug-head .debug-btn-icon').click();
   await expect(page.locator('.hand-card-hidden')).toHaveCount(0);
+  // Wait until landing scale finishes before measuring the settled layout.
+  await expect(page.locator('.hand-card-land')).toHaveCount(0);
   await expect(page.locator('.hand-card-land')).toHaveCount(0);
   await expect(page.locator('.hand .card')).toHaveCount(5);
   await expect(page.locator('.combat-stage .adult-coach')).toHaveCount(0);
@@ -292,6 +294,8 @@ test('combat hand keeps cards separate when they fit and scrolls at ten cards', 
   await debugAction(page, 'Energy', 'Draw 5');
   await page.locator('.debug-head .debug-btn-icon').click();
   await expect(page.locator('.hand-card-hidden')).toHaveCount(0);
+  // Wait until landing scale finishes before measuring the settled layout.
+  await expect(page.locator('.hand-card-land')).toHaveCount(0);
   await expect(page.locator('.hand-card-land')).toHaveCount(0);
   await expect(page.locator('.hand .card')).toHaveCount(10);
   const tenCards = await handMetrics();
@@ -1056,4 +1060,40 @@ test('both act transformations and ambience honor reduced motion', async ({
   }));
   expect(ambienceStyle.pointerEvents).toBe('none');
   expect(ambienceStyle.particleAnimation).toBe('none');
+});
+
+test('B041 requires a physical Attack choice before its full cast', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'tablet-landscape');
+  await page.goto('/');
+  await page.evaluate(async () => {
+    const runtimePath = '/src/ui/runtime.ts';
+    const combatPath = '/src/game/combat.ts';
+    const { run, render } = await import(/* @vite-ignore */ runtimePath);
+    const { createCombat, makeCard } = await import(/* @vite-ignore */ combatPath);
+    const state = run();
+    state.screen = 'combat';
+    state.tutorial = null;
+    state.combat = createCombat(['bo', 'bo', 'mo', 'mo', 'ge'], 'slime', 40, 40);
+    state.combat.hand = ['rw_b041', 'ge', 'po'].map(makeCard);
+    state.combat.pendingFx = [];
+    render();
+  });
+  const card = page.locator('.hand .card').first();
+  await card.click();
+  await expect(page.getByRole('dialog', { name: '選一張攻擊牌' })).toBeVisible();
+  await page.getByRole('button', { name: '取消', exact: true }).click();
+  await expect(page.locator('.combat-action-energy')).toContainText('3/3');
+  await expect(page.locator('.hand .card')).toHaveCount(3);
+  await card.click();
+  await page.locator('[data-choice-uid]').nth(1).click();
+  await expect(page.locator('.cast-screen')).toBeVisible();
+  await solveCurrentCast(page);
+  await expect(page.locator('.combat-screen')).toBeVisible();
+  const converted = await page.evaluate(async () => {
+    const path = '/src/ui/runtime.ts';
+    const { run } = await import(/* @vite-ignore */ path);
+    return run().combat.hand.filter((entry: { basicOverride: boolean }) => entry.basicOverride)
+      .map((entry: { defId: string }) => entry.defId);
+  });
+  expect(converted).toEqual(['po']);
 });

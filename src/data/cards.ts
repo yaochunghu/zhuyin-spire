@@ -24,6 +24,7 @@ export type CardJob =
 
 export interface EffectDef {
   kind:
+    | 'makeBasic'
     | 'damage'
     | 'block'
     | 'draw'
@@ -60,6 +61,7 @@ export interface Cue {
 
 export interface CardDef {
   id: string;
+  handChoice?: 'attack';
   zhuyin: string;
   name: string;
   type: CardType;
