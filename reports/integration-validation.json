@@ -26,5 +26,11 @@
   "verifiedSignatures": 50,
   "verifiedAttestations": 26,
   "productionFilesVerified": 38,
-  "humanDeviceAndFamilyGate": "not run"
+  "humanDeviceAndFamilyGate": "not run",
+  "privacyNavigationRetest": {
+    "passed": 9,
+    "engines": 3,
+    "repeatsPerEngine": 3,
+    "reason": "First CI run exposed old-page waitForLoadState race; register DOMContentLoaded listener before reset action"
+  }
 }
