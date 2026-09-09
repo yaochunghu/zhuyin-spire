@@ -16,9 +16,14 @@
     "verify:dist": "node scripts/verify-dist.mjs"
   },
   "devDependencies": {
-    "@playwright/test": "^1.61.1",
+    "@playwright/test": "^1.63.0",
     "typescript": "~7.0.2",
-    "vite": "^8.1.5",
-    "vitest": "^4.1.10"
-  }
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": "^22.12.0 || >=24.0.0",
+    "npm": ">=11.19.1"
+  },
+  "packageManager": "npm@11.19.1"
 }

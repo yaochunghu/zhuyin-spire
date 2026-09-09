@@ -2,7 +2,9 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests/e2e',
+  outputDir: 'test-results/responsive',
   timeout: 30_000,
+  workers: 3,
   expect: { timeout: 6_000 },
   fullyParallel: false,
   reporter: 'line',
@@ -11,6 +13,11 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   projects: [
+    {
+      name: 'desktop-firefox',
+      testMatch: /tablet-smoke\.spec\.ts/,
+      use: { ...devices['Desktop Firefox'], viewport: { width: 1280, height: 720 } },
+    },
     {
       name: 'landscape-wide',
       testMatch: /tablet-smoke\.spec\.ts/,

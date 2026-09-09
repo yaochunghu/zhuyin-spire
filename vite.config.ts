@@ -16,6 +16,7 @@ const PRODUCTION_CSP = [
 ].join('; ');
 
 export default defineConfig(({ command, mode }) => ({
+  build: { target: ['chrome120', 'edge120', 'firefox121', 'safari17'] },
   base: command === 'build' || mode === 'production' ? '/zhuyin-spire/' : '/',
   plugins:
     command === 'build'
