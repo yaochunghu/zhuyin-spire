@@ -33,8 +33,9 @@ export function playSpellReveal(
 ): void {
   const overlay = document.createElement('div');
   overlay.className = `spell-reveal-overlay spell-reveal-${kind}`;
-  overlay.setAttribute('role', 'dialog');
-  overlay.setAttribute('aria-modal', 'true');
+  // Timed feedback is a live region, not a modal: the pause button stays reachable.
+  overlay.setAttribute('role', 'region');
+  overlay.setAttribute('aria-live', 'polite');
   overlay.setAttribute('aria-label', kind === 'success' ? '答對了' : '正確答案');
   const symbols = [...info.spell]
     .map(

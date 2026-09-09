@@ -1,0 +1,36 @@
+{
+  "baseline": "f673085",
+  "preservedSnapshot": "e58284c",
+  "unit": {
+    "passed": 114,
+    "files": 17
+  },
+  "responsive": {
+    "passed": 68,
+    "skipped": 64,
+    "failed": 0
+  },
+  "production": {
+    "passed": 18,
+    "failed": 0,
+    "initialFailure": "Firefox Continue click raced automatic reveal advance; final full suite passed after helper uses automatic advance"
+  },
+  "simulation": {
+    "seed": "0x5eed2026",
+    "runs": 60000,
+    "cards": 75,
+    "duplicateEffects": [],
+    "silentUpgradeIds": []
+  },
+  "auditVulnerabilities": 0,
+  "verifiedSignatures": 50,
+  "verifiedAttestations": 26,
+  "productionFilesVerified": 38,
+  "humanDeviceAndFamilyGate": "not run",
+  "privacyNavigationRetest": {
+    "passed": 9,
+    "engines": 3,
+    "repeatsPerEngine": 3,
+    "reason": "First CI run exposed old-page waitForLoadState race; register DOMContentLoaded listener before reset action"
+  }
+}

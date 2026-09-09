@@ -1,3 +1,4 @@
+import { createModalShell, showModalShell, dismissModalShell } from './modal';
 import { ALL_PHRASE_PACKS, type PhrasePack } from '../data/phrases';
 import { CHARACTER_IDS, getCharacter } from '../data/characters';
 import { getVolume, setVolume, sfx, type VolLevel } from '../game/audio';
@@ -53,7 +54,7 @@ interface OptionsContext {
   onClose?: () => void;
 }
 
-let root: HTMLElement | null = null;
+let root: HTMLDialogElement | null = null;
 let previousFocus: HTMLElement | null = null;
 let context: OptionsContext = {};
 let curriculumWarning = '';
@@ -471,7 +472,7 @@ function renderPrivacy(): HTMLElement {
 }
 
 function closeOptions(): void {
-  root?.remove();
+  dismissModalShell(root);
   root = null;
   previousFocus?.focus();
   previousFocus = null;
@@ -482,6 +483,9 @@ function closeOptions(): void {
 
 function paint(): void {
   if (!root) return;
+  const focused = document.activeElement;
+  const focusables = 'button, input, select, textarea, summary';
+  const focusIndex = [...root.querySelectorAll(focusables)].indexOf(focused!);
   const settings = loadGameSettings();
   const complete = isTutorialComplete();
   root.innerHTML = '';
@@ -494,8 +498,6 @@ function paint(): void {
 
   const dialog = document.createElement('div');
   dialog.className = 'options-dialog';
-  dialog.setAttribute('role', 'dialog');
-  dialog.setAttribute('aria-modal', 'true');
   dialog.setAttribute('aria-label', '遊戲選項');
 
   const head = document.createElement('div');
@@ -637,6 +639,8 @@ function paint(): void {
     } else {
       close.focus();
     }
+  } else if (focusIndex >= 0) {
+    root.querySelectorAll<HTMLElement>(focusables)[focusIndex]?.focus();
   }
 }
 
@@ -644,9 +648,9 @@ export function openOptions(nextContext: OptionsContext = {}): void {
   if (root) return;
   context = nextContext;
   previousFocus = document.activeElement as HTMLElement | null;
-  root = document.createElement('div');
+  root = createModalShell('遊戲選項');
   root.id = 'zhuyin-options-root';
-  document.body.appendChild(root);
+  showModalShell(root, closeOptions);
   initialFocusPending = true;
   root.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') closeOptions();

@@ -9,9 +9,12 @@ Recognize or **listen** for the correct 注音 to cast. **Wrong answer = fizzle*
 
 ---
 
+Browser reliability and verification: [docs/BROWSER_SUPPORT.md](docs/BROWSER_SUPPORT.md).
+Integration notes: [docs/STABILIZATION.md](docs/STABILIZATION.md).
+
 ## Quick start
 
-From this repo root:
+Use Node 22.23.1 (see `.node-version`) and npm 11.19.1. From this repo root:
 
 ```bash
 npm install

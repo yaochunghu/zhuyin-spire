@@ -21,6 +21,10 @@ at each score milestone while balancing the advanced tiers.
 - Smith and later-act `+` rolls for unlocked non-basic cards
 - No potions, no event rooms; treasure is gold + cards
 
+## Before expanding content
+
+Complete the integrated browser checks and physical-device/family gates in [STABILIZATION.md](STABILIZATION.md) and [BROWSER_SUPPORT.md](BROWSER_SUPPORT.md). The 75-card progression remains the baseline.
+
 ## Next feature: relic pool (0.5)
 
 Treasure currently duplicates the card-reward screen. Add a small 共鳴-safe

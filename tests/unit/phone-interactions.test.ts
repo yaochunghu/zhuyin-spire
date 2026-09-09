@@ -52,3 +52,19 @@ describe('pause-aware teaching timers', () => {
     expect(callback).not.toHaveBeenCalled();
   });
 });
+
+it('does not resume an unfinished cast until both menu and page are unpaused', () => {
+  vi.useFakeTimers();
+  const timers = new PauseAwareTimerGroup();
+  const submit = vi.fn();
+  timers.set(submit, 380);
+  timers.pause('menu');
+  timers.pause('hidden');
+  timers.resume('menu');
+  vi.advanceTimersByTime(10_000);
+  expect(submit).not.toHaveBeenCalled();
+  timers.resume('hidden');
+  vi.advanceTimersByTime(380);
+  expect(submit).toHaveBeenCalledTimes(1);
+  vi.useRealTimers();
+});

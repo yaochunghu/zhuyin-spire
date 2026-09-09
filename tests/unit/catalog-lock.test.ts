@@ -119,9 +119,11 @@ describe('locked 共鳴武者 catalog', () => {
       { kind: 'draw', amount: 1 },
     ]);
     expect(byDesignId.get('B041')?.effects).toEqual([
+      { kind: 'makeBasic', amount: 1 },
       { kind: 'draw', amount: 1 },
     ]);
     expect(byDesignId.get('B041')?.upgrade?.effects).toEqual([
+      { kind: 'makeBasic', amount: 1 },
       { kind: 'draw', amount: 2 },
     ]);
     expect(byDesignId.get('B144')?.upgrade?.effects).toEqual([

@@ -1,5 +1,10 @@
 import fs from 'node:fs';
 
+// Prose parsing cannot preserve authored combat semantics. Generate comparison drafts only.
+if (!process.argv.includes('--draft')) {
+  throw new Error('Use --draft for comparison output only; do not overwrite the authored runtime catalog.');
+}
+
 const memo = fs.readFileSync('docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md', 'utf8');
 const section = memo
   .split('## Final 75-card pool')[1]

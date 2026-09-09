@@ -1,5 +1,7 @@
+import { getSaveStatus, saveRunCheckpoint } from './game/save';
 import './styles/main.css';
 import './styles/toy-board.css';
+import './styles/browser.css';
 import { sfx } from './game/audio';
 import { coachForScreen, getCompletedRunCount, isEarlyLearningRuns } from './game/coach';
 import type { CastMode } from './game/castCheck';
@@ -54,6 +56,7 @@ function showFlash(msg: string): void {
   if (old) old.remove();
   const f = document.createElement('div');
   f.className = 'flash';
+  f.setAttribute('role', 'status');
   f.textContent = msg;
   appEl.appendChild(f);
 }
@@ -80,8 +83,9 @@ function globalControls(): HTMLElement {
   const menu = document.createElement('button');
   menu.type = 'button';
   menu.className = 'global-control-btn pause-global-control';
-  menu.textContent = '☰';
+  menu.textContent = getSaveStatus() === 'unavailable' ? '⚠️' : '☰';
   menu.setAttribute('aria-label', '開啟暫停選單');
+  if (getSaveStatus() === 'unavailable') menu.title = '進度無法儲存';
   menu.addEventListener('click', (event) => {
     event.stopPropagation();
     sfx.click();
@@ -100,13 +104,14 @@ function globalControls(): HTMLElement {
         !noDeckScreens.includes(runState.screen),
       onPause: () => {
         session.phoneMenuOpen = true;
-        teachingTimers.pause();
+        teachingTimers.pause('menu');
         cancelSpeech();
       },
       onResume: () => {
         session.phoneMenuOpen = false;
-        teachingTimers.resume();
+        teachingTimers.resume('menu');
         if (
+          !teachingTimers.isPaused() && !document.hidden &&
           (runState.screen === 'castCheck' || runState.screen === 'practice') &&
           runState.cast
         ) {
@@ -329,3 +334,41 @@ if (import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEBUG_TOOLS === 'true') {
     void syncDebugLayer();
   });
 }
+
+// Pause reasons compose: a hidden page and an open menu must both release.
+function pauseHiddenPage(): void {
+  teachingTimers.pause('hidden');
+  cancelSpeech();
+  saveRunCheckpoint(runState);
+}
+function syncPageVisibility(): void {
+  if (document.hidden) pauseHiddenPage();
+  else teachingTimers.resume('hidden');
+}
+document.addEventListener('visibilitychange', syncPageVisibility);
+window.addEventListener('pagehide', pauseHiddenPage);
+window.addEventListener('pageshow', syncPageVisibility);
+syncPageVisibility();
+window.addEventListener('zhuyin-save-status', () => {
+  const failed = getSaveStatus() === 'unavailable';
+  const menu = appEl.querySelector<HTMLButtonElement>('.pause-global-control');
+  if (menu) {
+    menu.textContent = failed ? '⚠️' : '☰';
+    menu.title = failed ? '進度無法儲存' : '';
+  }
+  if (failed) showFlash('⚠️ 進度無法儲存，請打開選單查看');
+});
+window.addEventListener('zhuyin-speech-fallback', (event) => {
+  const text = (event as CustomEvent<{ text: string }>).detail.text;
+  if (runState.cast?.prompt.cue.speechText !== text) return;
+  const pane = appEl.querySelector('.cast-cue-pane');
+  if (!pane) return;
+  let warning = pane.querySelector('.speech-fallback-note');
+  if (!warning) {
+    warning = document.createElement('p');
+    warning.className = 'speech-fallback-note warn-banner adult-text';
+    warning.setAttribute('role', 'status');
+    pane.appendChild(warning);
+  }
+  warning.textContent = `語音暫時無法播放，請大人念：「${runState.cast.prompt.cue.text}」。仍需拼出完整注音。`;
+});

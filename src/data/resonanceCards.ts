@@ -1,4 +1,4 @@
-/* Generated implementation from the locked Final 75 table. Obtainability follows unlockScore. */
+/* Authored implementation of the locked Final 75 table. Obtainability follows unlockScore. */
 import type { CardDef } from './cards';
 
 export const RESONANCE_CARDS: Record<string, CardDef> = {
@@ -845,6 +845,7 @@ export const RESONANCE_CARDS: Record<string, CardDef> = {
     zhuyin: 'ㄉ',
     name: '拆招重練',
     type: 'skill',
+    handChoice: 'attack',
     cost: 1,
     icon: '🐘',
     job: 'draw',
@@ -857,12 +858,12 @@ export const RESONANCE_CARDS: Record<string, CardDef> = {
     retain: false,
     target: 'self',
     cues: [{ word: '大象', emoji: '🐘', spell: 'ㄉㄚˋ' }],
-    effects: [{ kind: 'draw', amount: 1 }],
+    effects: [{ kind: 'makeBasic', amount: 1 }, { kind: 'draw', amount: 1 }],
     description: 'Choose an Attack in your hand. It becomes a 基礎攻擊 for this combat. Draw 1 card.',
     unlockScore: 300,
     upgrade: {
       
-      effects: [{ kind: 'draw', amount: 2 }],
+      effects: [{ kind: 'makeBasic', amount: 1 }, { kind: 'draw', amount: 2 }],
       description: 'Choose an Attack in your hand. It becomes a 基礎攻擊 for this combat. Draw 2 cards.',
     },
   },

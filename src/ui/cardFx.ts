@@ -76,6 +76,7 @@ function flyOne(
   durationMs: number,
   extraClass = '',
 ): Promise<void> {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return Promise.resolve();
   return new Promise((resolve) => {
     const el = document.createElement('div');
     el.className = `card-fly ${extraClass}`.trim();
@@ -101,6 +102,7 @@ function flyOne(
     const finish = (): void => {
       if (settled) return;
       settled = true;
+      window.clearTimeout(fallback);
       el.remove();
       resolve();
     };
@@ -130,7 +132,9 @@ function flyOne(
       },
     );
 
+    anim.oncancel = finish;
     anim.onfinish = () => {
+      if (settled) return;
       el.style.transform = `translate(${x1}px, ${y1}px) scale(1)`;
       const settle = el.animate(
         [
@@ -140,11 +144,11 @@ function flyOne(
         { duration: settleMs, easing: 'ease-out' },
       );
       settle.onfinish = finish;
-      window.setTimeout(finish, settleMs + 40);
+      settle.oncancel = finish;
     };
     // WebKit can skip WAAPI onfinish while the debug panel closes; never leave
     // the deal batch hanging with hand cards still hidden.
-    window.setTimeout(finish, flyMs + settleMs + 80);
+    const fallback = window.setTimeout(finish, flyMs + settleMs + 80);
   });
 }
 

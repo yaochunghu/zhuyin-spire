@@ -9,10 +9,10 @@ import {
 import type { DeckCard } from '../game/cardInstances';
 import { sfx } from '../game/audio';
 import { cardFaceHtml, jobLabel, typeLabel } from './cards';
-import { lockPageScroll, trapModalFocus } from './modal';
+import { lockPageScroll, trapModalFocus, createModalShell, showModalShell, dismissModalShell } from './modal';
 import { run } from './runtime';
 
-let bodyRoot: HTMLElement | null = null;
+let bodyRoot: HTMLDialogElement | null = null;
 
 type ViewerMode = 'deck' | 'catalog';
 type SortMode = 'deck' | 'zhuyin' | 'name' | 'cost';
@@ -53,6 +53,8 @@ function rarityLabel(rarity?: CardRarity): string {
 
 function effectText(effect: EffectDef): string {
   switch (effect.kind) {
+    case 'makeBasic':
+      return '選取的攻擊牌在本場戰鬥變成基礎攻擊';
     case 'damage':
       return `造成 ${effect.amount} 傷害${(effect.hits ?? 1) > 1 ? ` × ${effect.hits}` : ''}`;
     case 'block':
@@ -229,8 +231,6 @@ function detailPanel(entry: ViewerEntry): HTMLElement {
 export function renderDeckViewer(onClose: () => void): HTMLElement {
   const overlay = document.createElement('div');
   overlay.className = 'deck-viewer map-deck-viewer designer-viewer';
-  overlay.setAttribute('role', 'dialog');
-  overlay.setAttribute('aria-modal', 'true');
   overlay.setAttribute('aria-label', '牌組與卡牌設計檢視器');
 
   const state: ViewerState = {
@@ -383,10 +383,10 @@ export function openDeckViewer(): void {
   if (bodyRoot) return;
   const previousFocus = document.activeElement as HTMLElement | null;
   const releaseScroll = lockPageScroll();
-  bodyRoot = document.createElement('div');
+  bodyRoot = createModalShell('牌組與卡牌設計檢視器');
   bodyRoot.id = 'zhuyin-deck-viewer-root';
   const close = (): void => {
-    bodyRoot?.remove();
+    dismissModalShell(bodyRoot);
     bodyRoot = null;
     releaseScroll();
     previousFocus?.focus();
@@ -406,6 +406,6 @@ export function openDeckViewer(): void {
     }
     trapModalFocus(bodyRoot!, event);
   });
-  document.body.appendChild(bodyRoot);
+  showModalShell(bodyRoot, close);
   bodyRoot.querySelector<HTMLButtonElement>('.designer-tabs button')?.focus();
 }
