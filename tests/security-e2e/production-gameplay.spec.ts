@@ -12,19 +12,32 @@ async function enterTutorial(page: Page) {
   await expect(page.locator('.hand-card-hidden')).toHaveCount(0);
 }
 
-async function solve(page: Page) {
+async function enterHintedSpell(page: Page): Promise<string> {
   await page.locator('.hint-btn').click();
   const answer = (await page.locator('.spell-answer').textContent())!.trim();
   for (const symbol of answer) {
     const escaped = symbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     await page.locator('.spell-key:not(:disabled)').filter({ hasText: new RegExp(`^${escaped}$`) }).first().click();
   }
+  return answer;
+}
+
+async function solve(page: Page) {
+  const answer = await enterHintedSpell(page);
   await expect(page.locator('.spell-reveal-overlay')).toBeVisible();
   await expect(page.locator('.spell-reveal-spell')).toHaveText(answer);
   // Verify the normal automatic advance; clicking a disappearing Continue button
   // races the reveal timer under slower browser startup or CI load.
   await expect(page.locator('.cast-screen')).toHaveCount(0);
   await expect(page.locator('.hand-card-hidden')).toHaveCount(0);
+}
+
+async function defeatMonsterWithCast(page: Page) {
+  await enterHintedSpell(page);
+  await expect(page.locator('.combat-screen')).toBeVisible();
+  await expect(page.locator('.spell-reveal-overlay')).toHaveCount(0);
+  await expect(page.locator('.enemy-slot.enemy-just-defeated')).toBeVisible({ timeout: 8_000 });
+  await expect(page.locator('.outcome-overlay.outcome-kill')).toBeVisible({ timeout: 8_000 });
 }
 
 test('production tutorial requires full casts and reaches a saved reward', async ({ page }) => {
@@ -40,8 +53,8 @@ test('production tutorial requires full casts and reaches a saved reward', async
   await page.getByRole('button', { name: '注音 ㄅ', exact: true }).first().click();
   await solve(page);
   await page.getByRole('button', { name: '注音 ㄆ', exact: true }).click();
-  await solve(page);
-  await expect(page.locator('.reward-screen')).toBeVisible();
+  await defeatMonsterWithCast(page);
+  await expect(page.locator('.reward-screen')).toBeVisible({ timeout: 8_000 });
   await page.reload();
   await page.getByRole('button', { name: /繼續爬塔/ }).click();
   await expect(page.locator('.reward-screen')).toBeVisible();
