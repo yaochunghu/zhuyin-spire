@@ -89,9 +89,11 @@ provider selection, persistent anti-repeat bags, and future subject rules are in
 [CASTING_GATES.md](./CASTING_GATES.md). Combat must not special-case Zhuyin,
 English, or math.
 
-Correct casts hold the completed spelling for a two-second teaching beat. A Continue
-button appears at 1.2 seconds. This pause and speech are deliberately not affected by
-the 2× gameplay setting. Wrong casts still spend the card/energy and reveal the answer.
+In a fight, spelling does not replace the board. The hero and monsters stay up, and
+the cast controls take the hand's dock. Correct casts then hold the completed spelling
+for a two-second teaching beat in that same dock. A Continue button appears at 1.2
+seconds. This pause and speech are deliberately not affected by the 2× gameplay
+setting. Wrong casts still spend the card/energy and reveal the answer.
 A cast that ends the fight skips that spelling card. The battlefield stays up so the
 killing hit and the monster's poof play before the reward or defeat screen.
 

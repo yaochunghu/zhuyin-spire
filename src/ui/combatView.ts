@@ -615,7 +615,8 @@ export function renderCombat(): HTMLElement {
   stage.appendChild(log);
 
   // Adult co-play guidance is opt-in in Options and never baked into the stage art.
-  appendCoach(stage);
+  // In-fight spelling brings its own coach inside the dock.
+  if (run().screen !== 'castCheck') appendCoach(stage);
 
   // —— Bottom command deck: DOM piles + scrollable hand + compact End Turn ——
   const bottom = document.createElement('div');
@@ -646,7 +647,10 @@ export function renderCombat(): HTMLElement {
     // playCardFromUi still gates on combatFxPlaying.
     const energyPlayable = canPlay(c, card.uid);
     const tutorialPlayable = canTutorialPlayCard(run(), card.uid);
-    const locked = session.combatFxPlaying || session.outcomeAnimPlaying;
+    const locked =
+      run().screen === 'castCheck' ||
+      session.combatFxPlaying ||
+      session.outcomeAnimPlaying;
     if (!energyPlayable || !tutorialPlayable) btn.classList.add('unplayable');
     if (
       tutorial &&
@@ -701,7 +705,10 @@ export function renderCombat(): HTMLElement {
   end.title = '結束回合';
   const tutorialEndAllowed = canTutorialEndTurn(run());
   end.disabled =
-    session.combatFxPlaying || c.status !== 'playing' || !tutorialEndAllowed;
+    run().screen === 'castCheck' ||
+    session.combatFxPlaying ||
+    c.status !== 'playing' ||
+    !tutorialEndAllowed;
   if (tutorial && tutorialEndAllowed) end.classList.add('tutorial-focus');
   end.addEventListener('click', () => {
     if (session.outcomeAnimPlaying || session.combatFxPlaying) return;

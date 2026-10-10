@@ -200,14 +200,31 @@ function appendCoach(parent: HTMLElement, castMode?: CastMode): void {
   parent.appendChild(box);
 }
 
+function castingOnBoard(): boolean {
+  return runState.screen === 'castCheck' && !!runState.combat;
+}
+
+/** Symbol taps rebuild only the spelling dock, so the hero does not flash. */
+function patchCombatCastDock(): boolean {
+  if (!castingOnBoard()) return false;
+  const stage = appEl.querySelector('.combat-casting > .combat-stage');
+  const previous = stage?.querySelector(':scope > .cast-screen');
+  if (!stage || !previous) return false;
+  previous.replaceWith(renderCastCheck());
+  return true;
+}
+
 function render(): void {
+  if (patchCombatCastDock()) return;
+
   const battleOutro =
     session.battleOutro &&
     !!runState.combat &&
     (runState.screen === 'reward' ||
       runState.screen === 'victory' ||
       runState.screen === 'defeat');
-  document.documentElement.dataset.screen = battleOutro ? 'combat' : runState.screen;
+  const showBoard = battleOutro || castingOnBoard();
+  document.documentElement.dataset.screen = showBoard ? 'combat' : runState.screen;
   // Pile inspect only valid on combat screen
   if (runState.screen !== 'combat') {
     session.pileViewer = null;
@@ -216,7 +233,7 @@ function render(): void {
   appEl.innerHTML = '';
   const visualTheme = applyVisualTheme(
     appEl,
-    battleOutro ? 'combat' : runState.screen,
+    showBoard ? 'combat' : runState.screen,
     runState.actIndex,
   );
   appEl.appendChild(globalControls());
@@ -264,7 +281,14 @@ function render(): void {
       void playPendingCombatFx();
       break;
     case 'castCheck':
-      appEl.appendChild(renderCastCheck());
+      if (runState.combat) {
+        const board = renderCombat();
+        board.classList.add('combat-casting');
+        board.querySelector('.combat-stage')?.appendChild(renderCastCheck());
+        appEl.appendChild(board);
+      } else {
+        appEl.appendChild(renderCastCheck());
+      }
       break;
     case 'practice':
       appEl.appendChild(renderPractice());

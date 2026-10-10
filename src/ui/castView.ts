@@ -37,6 +37,12 @@ export function playSpellReveal(
   overlay.setAttribute('role', 'region');
   overlay.setAttribute('aria-live', 'polite');
   overlay.setAttribute('aria-label', kind === 'success' ? '答對了' : '正確答案');
+  // A fight is still on screen. Teach the spelling in the hand dock so the
+  // hero and monsters stay visible.
+  if (run().screen !== 'practice' && run().combat) {
+    overlay.classList.add('spell-reveal-docked');
+    document.querySelector('.combat-casting .cast-screen')?.classList.add('cast-answered');
+  }
   const symbols = [...info.spell]
     .map(
       (symbol, index) =>
@@ -223,7 +229,9 @@ export function renderCastCheck(isPractice = false): HTMLElement {
   const cast = run().cast!;
   const mode = cast.prompt.mode;
   const el = document.createElement('div');
-  el.className = `screen cast-screen mode-${mode}${isPractice ? ' practice-screen' : ''}`;
+  el.className = `screen cast-screen mode-${mode}${isPractice ? ' practice-screen' : ''}${
+    !isPractice && run().combat ? ' cast-dock' : ''
+  }`;
 
   const cueWord = cast.prompt.cue.text;
   const cueEmoji = cast.prompt.cue.emoji;

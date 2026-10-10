@@ -417,6 +417,25 @@ test('casting controls stay inside a short medium-width viewport', async ({
   await expect(page.locator('.hand-card-hidden')).toHaveCount(0);
   await page.getByRole('button', { name: '注音 ㄇ', exact: true }).click();
   await expect(page.locator('.cast-screen')).toBeVisible();
+  await expect(page.locator('.combat-screen')).toBeVisible();
+  await expect(page.locator('.hero-drop-zone')).toBeVisible();
+
+  const clearOfCast = await page.evaluate(() => {
+    const cast = document.querySelector('.cast-screen')!.getBoundingClientRect();
+    const hero = document.querySelector('.hero-actor')!.getBoundingClientRect();
+    const foe = document.querySelector('.enemy-row')!.getBoundingClientRect();
+    return {
+      heroBottom: hero.bottom,
+      heroHeight: hero.height,
+      foeBottom: foe.bottom,
+      foeHeight: foe.height,
+      castTop: cast.top,
+    };
+  });
+  expect(clearOfCast.heroHeight).toBeGreaterThan(40);
+  expect(clearOfCast.foeHeight).toBeGreaterThan(40);
+  expect(clearOfCast.heroBottom).toBeLessThanOrEqual(clearOfCast.castTop + 2);
+  expect(clearOfCast.foeBottom).toBeLessThanOrEqual(clearOfCast.castTop + 2);
 
   const layout = await page.locator('.cast-screen').evaluate((screen) => {
     const answer = screen.querySelector<HTMLElement>('.cast-answer-pane')!;
