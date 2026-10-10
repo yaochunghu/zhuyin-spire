@@ -15,7 +15,7 @@ import {
   nextPracticePrompt,
   useParentHint,
 } from '../game/state';
-import { playPendingCombatFx } from './combatView';
+import { playPendingCombatFx, presentBattleEnding } from './combatView';
 import { teachingTimers } from './pauseTimers';
 import {
   appendCoach,
@@ -171,6 +171,15 @@ export function submitSpell(): void {
   } else {
     sfx.fizzle();
     showFlash('💨');
+  }
+
+  if (
+    run().screen === 'reward' ||
+    run().screen === 'victory' ||
+    run().screen === 'defeat'
+  ) {
+    void presentBattleEnding();
+    return;
   }
 
   const afterReveal = (): void => {

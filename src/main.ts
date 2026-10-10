@@ -131,9 +131,10 @@ function globalControls(): HTMLElement {
 }
 
 function appendCoach(parent: HTMLElement, castMode?: CastMode): void {
-  if (runState.screen === 'combat' && !loadGameSettings().combatTipsEnabled) return;
+  const screen = session.battleOutro ? 'combat' : runState.screen;
+  if (screen === 'combat' && !loadGameSettings().combatTipsEnabled) return;
   const node = getActiveNode(runState) ?? getAvailableMapNodes(runState)[0] ?? undefined;
-  const tip = coachForScreen(runState.screen, {
+  const tip = coachForScreen(screen, {
     node,
     castMode,
     act: runState.actIndex + 1,
@@ -141,16 +142,16 @@ function appendCoach(parent: HTMLElement, castMode?: CastMode): void {
   if (!tip.body) return;
 
   const early = isEarlyLearningRuns();
-  const isCombat = runState.screen === 'combat';
+  const isCombat = screen === 'combat';
   // Screen entry decides the initial state. Once rendered, the player's toggle
   // must stay authoritative; otherwise early-run tips can never be collapsed.
-  if (isPhoneLayout() && session.coachPhoneScreen !== runState.screen) {
+  if (isPhoneLayout() && session.coachPhoneScreen !== screen) {
     // Combat has its own always-visible scripted guide. The cast screen does
     // not, so keep its tutorial co-play explanation open automatically.
     session.coachCollapsed = !(
-      runState.tutorial && runState.screen === 'castCheck'
+      runState.tutorial && screen === 'castCheck'
     );
-    session.coachPhoneScreen = runState.screen;
+    session.coachPhoneScreen = screen;
   }
   const collapsed = session.coachCollapsed;
 
@@ -200,14 +201,24 @@ function appendCoach(parent: HTMLElement, castMode?: CastMode): void {
 }
 
 function render(): void {
-  document.documentElement.dataset.screen = runState.screen;
+  const battleOutro =
+    session.battleOutro &&
+    !!runState.combat &&
+    (runState.screen === 'reward' ||
+      runState.screen === 'victory' ||
+      runState.screen === 'defeat');
+  document.documentElement.dataset.screen = battleOutro ? 'combat' : runState.screen;
   // Pile inspect only valid on combat screen
   if (runState.screen !== 'combat') {
     session.pileViewer = null;
   }
 
   appEl.innerHTML = '';
-  const visualTheme = applyVisualTheme(appEl, runState.screen, runState.actIndex);
+  const visualTheme = applyVisualTheme(
+    appEl,
+    battleOutro ? 'combat' : runState.screen,
+    runState.actIndex,
+  );
   appEl.appendChild(globalControls());
   appEl.appendChild(towerProgressElement(runState.screen, runState.actIndex));
   const ambience = actAmbienceElement(visualTheme);
@@ -220,7 +231,7 @@ function render(): void {
     appEl.appendChild(f);
   }
 
-  switch (runState.screen) {
+  switch (battleOutro ? 'combat' : runState.screen) {
     case 'title':
       appEl.appendChild(renderTitle());
       break;

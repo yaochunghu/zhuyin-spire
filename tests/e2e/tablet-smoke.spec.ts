@@ -29,7 +29,7 @@ async function openTutorial(page: Page) {
   ).toBeEnabled();
 }
 
-async function solveCurrentCast(page: Page) {
+async function enterHintedSpell(page: Page): Promise<string> {
   await page.locator('.hint-btn').click();
   const spell = (await page.locator('.spell-answer').textContent())!.trim();
   for (const symbol of [...spell]) {
@@ -40,6 +40,11 @@ async function solveCurrentCast(page: Page) {
       .first();
     await key.click();
   }
+  return spell;
+}
+
+async function solveCurrentCast(page: Page) {
+  const spell = await enterHintedSpell(page);
   // Completing the final symbol auto-submits after a short learning pause.
   // Waiting for that avoids racing a manual click against the reveal overlay.
   await expect(page.locator('.spell-reveal-overlay')).toBeVisible({ timeout: 1_500 });
@@ -49,6 +54,17 @@ async function solveCurrentCast(page: Page) {
   // button appears. Activate the already-visible control immediately instead
   // of spending that window waiting for animated pointer stability.
   await page.locator('.spell-reveal-continue').click({ force: true });
+}
+
+/** A killing cast stays on the battlefield: hit, poof, then the victory beat. */
+async function defeatMonsterWithCast(page: Page) {
+  await enterHintedSpell(page);
+  await expect(page.locator('.combat-screen')).toBeVisible({ timeout: 2_000 });
+  await expect(page.locator('.spell-reveal-overlay')).toHaveCount(0);
+  await expect(page.locator('.cast-screen')).toHaveCount(0);
+  await expect(page.locator('.enemy-slot.enemy-just-defeated')).toBeVisible({ timeout: 8_000 });
+  await expect(page.locator('.outcome-overlay.outcome-kill')).toBeVisible({ timeout: 8_000 });
+  await expect(page.locator('.outcome-overlay .outcome-caption')).toContainText('打倒了');
 }
 
 async function expectCommandDeckOnViewportBottom(page: Page, slack = 8) {
@@ -864,7 +880,7 @@ test('complete guided tutorial sequence', async ({ page }, testInfo) => {
   await solveCurrentCast(page);
   await expect(page.locator('.tutorial-step-free')).toBeVisible();
   await page.getByRole('button', { name: /^注音 ㄆ/ }).click();
-  await solveCurrentCast(page);
+  await defeatMonsterWithCast(page);
   await expect(page.locator('.reward-screen')).toBeVisible({ timeout: 8_000 });
   expect(await page.evaluate(() => localStorage.getItem('zhuyin-spire-tutorial-complete-v1'))).toBe(
     '1',
