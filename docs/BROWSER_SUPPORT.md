@@ -14,10 +14,10 @@ Vitest update; npm 11 resolved and verified the dependency graph successfully.
 
 ```sh
 npm ci --ignore-scripts
+npm run test:setup
 npm test
 npm run build
 npm run verify:dist
-npx playwright install chromium firefox webkit
 npm run test:e2e
 npm run test:security:e2e
 ```
