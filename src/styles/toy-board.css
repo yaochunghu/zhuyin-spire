@@ -2741,3 +2741,161 @@ html[data-screen='combat'] .global-control-btn {
     animation: none;
   }
 }
+
+/* In-fight spelling keeps the hero and monsters on the board.
+   The cast controls replace the hand dock; they do not cover the battlefield. */
+.combat-casting.combat-screen {
+  height: 100%;
+  max-height: 100%;
+  animation: none;
+}
+
+.combat-casting > .combat-stage {
+  grid-template-rows: auto minmax(168px, 1fr) minmax(0, auto);
+  overflow: hidden;
+}
+
+.combat-casting .combat-bottom-row {
+  display: none;
+}
+
+.combat-casting > .combat-stage > .cast-dock {
+  animation: none;
+  position: relative;
+  z-index: 12;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  min-height: 0;
+  max-height: min(46dvh, 440px);
+  margin: 0;
+  flex: 0 0 auto;
+  padding: 8px 10px max(8px, env(safe-area-inset-bottom));
+  gap: 6px;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  align-items: stretch;
+  justify-content: stretch;
+  text-align: center;
+  background:
+    linear-gradient(180deg, rgba(255, 247, 217, 0.1), transparent 18%),
+    #352e5a;
+  border-top: 7px solid var(--toy-walnut);
+  border-radius: 30px 30px 0 0;
+  box-shadow:
+    inset 0 3px 0 var(--toy-brass),
+    0 -10px 22px rgba(25, 11, 31, 0.34);
+}
+
+.combat-casting .cast-dock.cast-answered {
+  visibility: hidden;
+}
+
+.combat-casting .cast-dock .cast-header,
+.combat-casting .cast-dock .cast-layout,
+.combat-casting .cast-dock .cast-cue-pane,
+.combat-casting .cast-dock .cast-answer-pane {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+}
+
+.combat-casting .cast-dock .cast-header {
+  justify-content: center;
+}
+
+.combat-casting .cast-dock .cast-layout {
+  display: grid;
+  grid-template-columns: minmax(132px, 34%) minmax(0, 1fr);
+  gap: 8px;
+  overflow: hidden;
+}
+
+.combat-casting .cast-dock .cast-cue-pane,
+.combat-casting .cast-dock .cast-answer-pane {
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.combat-casting .cast-dock .cue-box {
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 8px 10px;
+}
+
+.combat-casting .cast-dock .cue-emoji {
+  font-size: 2.4rem;
+}
+
+.combat-casting .cast-dock .cue-word {
+  margin-top: 2px;
+  font-size: 1.45rem;
+}
+
+.combat-casting .cast-dock .cast-kid-prompt {
+  margin: 2px 0 0;
+  font-size: 1rem;
+}
+
+.combat-casting .cast-dock .adult-coach,
+.combat-casting .cast-dock .adult-coach-float {
+  position: static;
+  top: auto;
+  left: auto;
+  width: 100%;
+  max-width: 100%;
+  max-height: none;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.combat-casting .cast-dock .spell-slots {
+  min-height: 0;
+  gap: 6px;
+}
+
+.combat-casting .cast-dock .spell-slot {
+  width: 52px;
+  height: 56px;
+  font-size: 1.7rem;
+}
+
+.combat-casting .cast-dock .spell-key {
+  min-width: 56px;
+  min-height: 52px;
+  font-size: 1.6rem;
+}
+
+.combat-casting .cast-dock .spell-ctrl,
+.combat-casting .cast-dock .hint-btn,
+.combat-casting .cast-dock .replay-btn-big {
+  min-height: 48px;
+}
+
+.combat-casting .cast-dock .mana-condition {
+  width: 100%;
+  min-height: 40px;
+  padding: 4px 8px;
+  font-size: 0.82rem;
+}
+
+.spell-reveal-overlay.spell-reveal-docked {
+  background: none;
+  align-items: end;
+  justify-content: center;
+  pointer-events: none;
+  padding: 0 12px max(8px, env(safe-area-inset-bottom));
+}
+
+.spell-reveal-overlay.spell-reveal-docked .spell-reveal-card {
+  pointer-events: auto;
+  width: min(440px, 92vw);
+  max-height: min(40dvh, 320px);
+  overflow: auto;
+  margin-bottom: 4px;
+}

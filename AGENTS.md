@@ -17,6 +17,10 @@ npm install
 npm start         # opens http://localhost:5173
 npm run dev       # same server, no browser
 npm run build     # tsc && vite build
+npm run test:setup # once per machine: Chromium, Firefox, and WebKit
+npm test          # Vitest
+npm run test:e2e  # tablet and phone smoke tests
+npm run test:security:e2e # production build, then security smoke tests
 ```
 
 ## Where to change X

@@ -22,6 +22,12 @@ export const session = {
   enemyStatusHelpId: null as string | null,
   combatFxPlaying: false,
   outcomeAnimPlaying: false,
+  /** Keep the battlefield up after a fight-ending cast, before reward or defeat. */
+  battleOutro: false,
+  /** True once the slain monsters should play their poof, not hold their portrait. */
+  battleDeathCue: false,
+  /** Enemy instance ids killed by the blow that ended the fight. */
+  battleOutroHoldIds: [] as string[],
   hintSpell: null as string | null,
   castLocked: false,
   spellAttempt: [] as string[],

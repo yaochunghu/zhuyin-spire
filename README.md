@@ -28,11 +28,12 @@ listens only on your machine. To try a phone on your trusted LAN, opt in with
 `npm run dev -- --host 0.0.0.0`.
 
 ```bash
-npm run build    # typecheck + production bundle
-npm test         # Vitest unit suite
-npx playwright install chromium # once per machine
-npm run test:e2e # Playwright tablet smoke suite
-npm run preview  # serve dist/
+npm run build       # typecheck + production bundle
+npm run test:setup  # once per machine: Chromium, Firefox, and WebKit
+npm test            # Vitest unit suite
+npm run test:e2e    # tablet and phone smoke tests
+npm run test:security:e2e # production build, then security smoke tests
+npm run preview     # serve dist/
 ```
 
 The published GitHub Pages build uses `/zhuyin-spire/` as Vite's production

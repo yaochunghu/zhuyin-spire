@@ -29,6 +29,7 @@ import {
   tryPlayCard,
 } from '../game/state';
 import { sfx } from '../game/audio';
+import { gameplayMs } from '../game/settings';
 import { playCombatFxBatch, queryCombatAnchors } from './cardFx';
 import { cardFaceHtml } from './cards';
 import { bindCardDrag, cleanupDragUi, collectDropTargets } from './dragPlay';
@@ -137,6 +138,86 @@ export async function playPendingCombatFx(): Promise<void> {
   }
 }
 
+function slainThisBlow(): string[] {
+  const ids: string[] = [];
+  for (const fx of run().lastCombatFx) {
+    if (fx.type !== 'playerStrike') continue;
+    for (const impact of fx.impacts) {
+      if (impact.killed) ids.push(impact.enemyId);
+    }
+  }
+  return ids;
+}
+
+function endingFoe(): { emoji: string; isBoss: boolean; isElite: boolean } {
+  const combat = run().combat;
+  const held = session.battleOutroHoldIds;
+  const unit =
+    combat?.enemies.find((enemy) => held.includes(enemy.id)) ??
+    combat?.enemies.find((enemy) => !enemy.alive || enemy.hp <= 0) ??
+    combat?.enemies[0];
+  const def = unit ? ENEMIES[unit.defId] : undefined;
+  return {
+    emoji: def?.emoji ?? '🟢',
+    isBoss: !!def?.isBoss,
+    isElite: !!def?.isElite,
+  };
+}
+
+function waitForCombatFx(): Promise<void> {
+  const started = Date.now();
+  return new Promise((resolve) => {
+    const tick = (): void => {
+      if (!session.combatFxPlaying || Date.now() - started > 8000) {
+        resolve();
+        return;
+      }
+      window.setTimeout(tick, 40);
+    };
+    tick();
+  });
+}
+
+/**
+ * A fight-ending cast must not cover the battlefield with the spelling card.
+ * Hold the slain monster, play the hit, poof them, then the victory or faint beat.
+ */
+export async function presentBattleEnding(): Promise<void> {
+  if (session.battleOutro || session.outcomeAnimPlaying) return;
+  session.battleOutro = true;
+  session.battleDeathCue = false;
+  session.battleOutroHoldIds = slainThisBlow();
+  render();
+  await waitForCombatFx();
+  session.battleDeathCue = true;
+  render();
+  await new Promise((resolve) => {
+    window.setTimeout(resolve, gameplayMs(720));
+  });
+  const defeat = run().screen === 'defeat';
+  const foe = endingFoe();
+  playOutcomeOverlay(
+    defeat ? 'faint' : 'kill',
+    {
+      emoji: defeat ? '🥋' : foe.emoji,
+      isBoss: foe.isBoss,
+      isElite: foe.isElite,
+    },
+    () => {
+      session.battleOutro = false;
+      session.battleDeathCue = false;
+      session.battleOutroHoldIds = [];
+      session.castLocked = false;
+      render();
+    },
+  );
+}
+
+function battleHasEnded(): boolean {
+  const screen = run().screen;
+  return screen === 'reward' || screen === 'victory' || screen === 'defeat';
+}
+
 function syncCombatInteractionState(): void {
   const state = run();
   const combat = state.screen === 'combat' ? state.combat : null;
@@ -221,6 +302,10 @@ function playCardFromUi(uid: string, targetIds: string[] = [], chosenHandUid?: s
     teachingTimers.clear(session.autoSubmitTimer);
     cleanupDragUi();
     render();
+  } else if (battleHasEnded()) {
+    const flash = run().flash;
+    if (flash) showFlash(flash);
+    void presentBattleEnding();
   } else if (run().flash) {
     showFlash(run().flash as string);
     render();
@@ -240,6 +325,11 @@ function renderEnemySlot(
   const hpPct = Math.max(0, (unit.hp / unit.maxHp) * 100);
   const selected = combat.selectedEnemyId === unit.id && unit.alive;
   const dead = !unit.alive || unit.hp <= 0;
+  const justSlain =
+    dead &&
+    session.battleOutro &&
+    (session.battleOutroHoldIds.includes(unit.id));
+  const holdPortrait = justSlain && !session.battleDeathCue;
   const urgent = !dead && intentIsUrgent(intent, combat.heroHp, combat.block);
   const nextUrgent =
     !dead && intentIsUrgent(nextIntent, combat.heroHp, combat.block);
@@ -250,7 +340,8 @@ function renderEnemySlot(
   slot.className =
     'enemy-slot' +
     (selected ? ' enemy-selected' : '') +
-    (dead ? ' enemy-dead' : '') +
+    (dead && !holdPortrait ? ' enemy-dead' : '') +
+    (justSlain && session.battleDeathCue ? ' enemy-just-defeated' : '') +
     (opts.damaged && !dead ? ' enemy-hurt' : '') +
     (unit.block > 0 && !dead ? ' has-block' : '') +
     (urgent ? ' enemy-intent-urgent' : '');
@@ -266,6 +357,11 @@ function renderEnemySlot(
   }
 
   const enemyArtKey = enemyArtKeyFor(unit.defId);
+  const poofNow = dead && !holdPortrait;
+  const debutPoof = poofNow && justSlain;
+  const portrait = enemyArtKey
+    ? artImageHtml(enemyArtKey, 'enemy-miniature-art')
+    : def.emoji;
   slot.innerHTML = `
     <div class="enemy-intent-stack">
       ${
@@ -282,12 +378,12 @@ function renderEnemySlot(
       </div>`
       }
     </div>
-    <div class="enemy-emoji${opts.damaged && !dead ? ' enemy-flinch enemy-impact' : ''}${opts.castOk && !opts.damaged && !dead ? ' enemy-cast-ok' : ''}${dead ? ' enemy-poof' : ''}" data-enemy>${
-      dead
-        ? '💨'
-        : enemyArtKey
-          ? artImageHtml(enemyArtKey, 'enemy-miniature-art')
-          : def.emoji
+    <div class="enemy-emoji${opts.damaged && !dead ? ' enemy-flinch enemy-impact' : ''}${opts.castOk && !opts.damaged && !dead ? ' enemy-cast-ok' : ''}${poofNow && !debutPoof ? ' enemy-poof' : ''}${debutPoof ? ' enemy-defeat-burst' : ''}" data-enemy>${
+      debutPoof
+        ? `<span class="enemy-portrait enemy-poof">${portrait}</span><span class="enemy-defeat-cloud" aria-hidden="true">💨</span>`
+        : poofNow
+          ? '💨'
+          : portrait
     }</div>
     <div class="adult-text enemy-name-adult">${def.name}${def.isElite ? ' · 菁英' : ''}${def.isBoss ? ' · BOSS' : ''}</div>
     ${
@@ -302,7 +398,7 @@ function renderEnemySlot(
         <span style="width:${dead || !unit.block ? 0 : shieldPct}%"></span>
       </div>
     </div>
-    <div class="kid-hp-num">${dead ? '—' : `❤️ ${unit.hp}${unit.block > 0 ? ` · 🛡️${unit.block}` : ''}`}</div>
+    <div class="kid-hp-num">${dead && !holdPortrait ? '—' : `❤️ ${unit.hp}${unit.block > 0 ? ` · 🛡️${unit.block}` : ''}`}</div>
   `;
 
   if (!dead) {
@@ -519,7 +615,8 @@ export function renderCombat(): HTMLElement {
   stage.appendChild(log);
 
   // Adult co-play guidance is opt-in in Options and never baked into the stage art.
-  appendCoach(stage);
+  // In-fight spelling brings its own coach inside the dock.
+  if (run().screen !== 'castCheck') appendCoach(stage);
 
   // —— Bottom command deck: DOM piles + scrollable hand + compact End Turn ——
   const bottom = document.createElement('div');
@@ -550,7 +647,10 @@ export function renderCombat(): HTMLElement {
     // playCardFromUi still gates on combatFxPlaying.
     const energyPlayable = canPlay(c, card.uid);
     const tutorialPlayable = canTutorialPlayCard(run(), card.uid);
-    const locked = session.combatFxPlaying || session.outcomeAnimPlaying;
+    const locked =
+      run().screen === 'castCheck' ||
+      session.combatFxPlaying ||
+      session.outcomeAnimPlaying;
     if (!energyPlayable || !tutorialPlayable) btn.classList.add('unplayable');
     if (
       tutorial &&
@@ -605,7 +705,10 @@ export function renderCombat(): HTMLElement {
   end.title = '結束回合';
   const tutorialEndAllowed = canTutorialEndTurn(run());
   end.disabled =
-    session.combatFxPlaying || c.status !== 'playing' || !tutorialEndAllowed;
+    run().screen === 'castCheck' ||
+    session.combatFxPlaying ||
+    c.status !== 'playing' ||
+    !tutorialEndAllowed;
   if (tutorial && tutorialEndAllowed) end.classList.add('tutorial-focus');
   end.addEventListener('click', () => {
     if (session.outcomeAnimPlaying || session.combatFxPlaying) return;
