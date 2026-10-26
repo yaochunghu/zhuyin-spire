@@ -20,6 +20,10 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 |-----|---------|
 | [STABILIZATION.md](./STABILIZATION.md) | Integration boundary and preserved 75-card progression |
 | [BROWSER_SUPPORT.md](./BROWSER_SUPPORT.md) | Browser verification and physical-device release gates |
+| [PLAYTEST_GATE.md](./PLAYTEST_GATE.md) | Automated gate plus the two human release gates |
+| [playtest/DEVICE_CHECKLIST.md](./playtest/DEVICE_CHECKLIST.md) | Parent checklist for iPhone, iPad, and Android |
+| [playtest/FAMILY_SESSION.md](./playtest/FAMILY_SESSION.md) | Act I family script, observations, and read-aloud |
+| [playtest/sessions/TEMPLATE.md](./playtest/sessions/TEMPLATE.md) | Blank session record; do not commit filled copies |
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | Screens, `RunState`, layers, save, render loop |
 | [COMBAT.md](./COMBAT.md) | Battle modules, cast gate, drag play, FX pitfalls |
 | [MAP.md](./MAP.md) | Spire map gen (15×7), layout constraints |
