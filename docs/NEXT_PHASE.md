@@ -23,7 +23,7 @@ at each score milestone while balancing the advanced tiers.
 
 ## Before expanding content
 
-Complete the integrated browser checks and physical-device/family gates in [STABILIZATION.md](STABILIZATION.md) and [BROWSER_SUPPORT.md](BROWSER_SUPPORT.md). The 75-card progression remains the baseline.
+The 75-card progression remains the baseline. Browser checks stay in [BROWSER_SUPPORT.md](BROWSER_SUPPORT.md) and [STABILIZATION.md](STABILIZATION.md). The physical-device checklist and the Act I family session are still open; run them from the kit in [PLAYTEST_GATE.md](PLAYTEST_GATE.md#playtest-kit). Relic work may be developed in parallel. Merge that relic work only after both playtests pass. Potions, events, and later content stay deferred.
 
 ## Next feature: relic pool (0.5)
 

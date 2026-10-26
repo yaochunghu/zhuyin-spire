@@ -2,6 +2,16 @@
 
 Date: 2026-09-09. Baseline: integrated 0.4.0 with all 75 cards score-gated. Scope: approved stabilization changes and readiness for an Act I family playtest. Automated execution does not certify physical devices or learning outcomes.
 
+## Playtest kit
+
+Parents run the two human gates from these pages. The sections below stay the release rules.
+
+- Physical device, one phone or tablet at a time: [playtest/DEVICE_CHECKLIST.md](playtest/DEVICE_CHECKLIST.md)
+- Adult and learner, Act I or death: [playtest/FAMILY_SESSION.md](playtest/FAMILY_SESSION.md)
+- Blank record, copy per sitting: [playtest/sessions/TEMPLATE.md](playtest/sessions/TEMPLATE.md)
+
+Filled records stay out of git and contain no identifying child information. Relic work may proceed in parallel and merges only after both human gates pass.
+
 ## Automated gate (run now)
 
 1. Unit suite: card effects and upgrades, cast validation, release pools, profile/save compatibility, pause ownership, speech failure.
@@ -12,6 +22,8 @@ Date: 2026-09-09. Baseline: integrated 0.4.0 with all 75 cards score-gated. Scop
 Pass criterion: all active tests pass; investigate failures before accepting a retry. Preserve logs and traces for failures.
 
 ## Physical-device gate (human execution required)
+
+Parent steps, with pass and fail boxes: [playtest/DEVICE_CHECKLIST.md](playtest/DEVICE_CHECKLIST.md).
 
 Use an iPhone and iPad with Safari, and an Android phone with Chrome. Record exact device, OS, browser, installed Mandarin voice, date and tester. Use a new test learner profile, debug casting skip OFF. Do not clear personal browser data.
 
@@ -29,6 +41,8 @@ Any cast bypass, unintended card play, lost stable save, focus trap preventing p
 
 ## Adult-and-learner Act I session
 
+Script, what to observe, Traditional Chinese read-aloud, and a paper record: [playtest/FAMILY_SESSION.md](playtest/FAMILY_SESSION.md).
+
 Allow 30–45 minutes plus breaks; do not force completion if the learner is tired. Adult reads coaching text and helps with device operation without entering every answer. Continue another session if necessary until an entire Act I run or death has been observed.
 
 Record room reached, elapsed play time, incorrect casts, adult interventions, accidental taps, confusing card/enemy effects, speech failures, HP at room exits, and whether the learner wants another run. Use no identifying child information.
@@ -39,10 +53,4 @@ Exit decision: no blocking device issues; full run/death observed; adult can sup
 
 ## Session record template
 
-Device / OS / browser / voice:
-Build or git revision plus working-tree status:
-Scenario / steps:
-Expected / observed:
-Pass / fail / not run:
-Screenshot or reproduction evidence:
-Severity / follow-up / retest result:
+Copy [playtest/sessions/TEMPLATE.md](playtest/sessions/TEMPLATE.md) for each sitting. Record device, OS, browser, installed Mandarin voice, build or git revision and working-tree status, scenario, expected and observed behavior, pass / fail / not run, evidence, severity, and retest result. Use no identifying child information. Filled copies stay out of git.
