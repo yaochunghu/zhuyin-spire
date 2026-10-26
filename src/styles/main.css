@@ -2298,6 +2298,10 @@ button:disabled {
   line-height: 1.45;
 }
 
+.relic-inspect-adult {
+  color: #5c4636;
+}
+
 .relic-inspect-close {
   min-width: 48px;
   min-height: 48px;

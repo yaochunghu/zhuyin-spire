@@ -53,7 +53,7 @@ test('chests and elites drop relics, and a badge opens the inspect dialog', asyn
 
   await page.evaluate(async () => {
     const { run, render } = await import('/src/ui/runtime.ts');
-    const { debugFinishFight, debugStartEncounter } = await import('/src/debug/debugActions.ts');
+    const { debugFinishFight, debugStartEncounter } = await import('/src/game/state.ts');
     const state = run();
     const elite = state.runMap.acts[state.actIndex]!.nodes.find((node) => node.kind === 'elite');
     if (!elite) throw new Error('Missing elite');
