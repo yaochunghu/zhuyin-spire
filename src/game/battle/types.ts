@@ -37,6 +37,8 @@ export interface PlayerImpact {
   killed: boolean;
   /** Optional damage additions, kept separate so feedback can explain them. */
   relicBonus?: number;
+  basicRelicBonus?: number;
+  vulnerableRelicBonus?: number;
 }
 
 /** Visual / motion events for UI */

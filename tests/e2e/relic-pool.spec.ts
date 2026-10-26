@@ -81,9 +81,14 @@ test('chests, elites, and bosses drop relics, and a badge opens the inspect dial
   await starter.click();
   const dialog = page.getByRole('dialog', { name: '查看遺物：初心音叉' });
   await expect(dialog).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(starter).toBeFocused();
+  await starter.click();
+  await expect(dialog).toBeVisible();
   await expect(dialog.locator('.relic-inspect-name')).toHaveText('初心音叉');
   await page.screenshot({
-    path: '/opt/cursor/artifacts/relic-badge-desktop.png',
+    path: test.info().outputPath('relic-badge-desktop.png'),
     fullPage: true,
   });
 
@@ -94,11 +99,34 @@ test('chests, elites, and bosses drop relics, and a badge opens the inspect dial
   expect(phoneBox!.width).toBeGreaterThanOrEqual(48);
   expect(phoneBox!.height).toBeGreaterThanOrEqual(48);
   await page.screenshot({
-    path: '/opt/cursor/artifacts/relic-badge-phone.png',
+    path: test.info().outputPath('relic-badge-phone.png'),
     fullPage: true,
   });
   await page.getByRole('button', { name: '關閉遺物說明' }).click();
   await expect(dialog).toBeHidden();
+
+  const earnedRelicIds = await page.evaluate(async () => {
+    const { run, render } = await import('/src/ui/runtime.ts');
+    const state = run();
+    const earned = [...state.relicIds];
+    state.relicIds = ['tuningFork', 'gapThumb', 'trainingWrap', 'tempoWood', 'listeningHeart', 'trainingStance'];
+    render();
+    return earned;
+  });
+  const sixBadges = page.locator('.map-relic-badges .relic-badge');
+  await expect(sixBadges).toHaveCount(6);
+  const tops = await sixBadges.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().top));
+  expect(new Set(tops).size).toBe(1);
+  const rights = await sixBadges.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().right));
+  expect(Math.max(...rights)).toBeLessThanOrEqual(390);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+
+  await page.evaluate(async (earned) => {
+    const { run, render } = await import('/src/ui/runtime.ts');
+    run().relicIds = earned;
+    render();
+  }, earnedRelicIds);
+  await expect(badges).toHaveCount(3);
 
   await page.evaluate(async () => {
     const { run, render } = await import('/src/ui/runtime.ts');

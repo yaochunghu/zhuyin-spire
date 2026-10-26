@@ -135,6 +135,8 @@ export function executeEffects(
             hpDamage,
             killed,
             ...(relicBonus > 0 ? { relicBonus } : {}),
+            ...(basicRelicBonus > 0 ? { basicRelicBonus } : {}),
+            ...(vulnerableRelicBonus > 0 ? { vulnerableRelicBonus } : {}),
           });
         }
         totalDamage += dealt;

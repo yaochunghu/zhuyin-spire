@@ -1058,7 +1058,8 @@ button:active:not(:disabled) {
 
 .options-dialog .adult-text,
 .phone-menu-dialog .adult-text,
-.deck-viewer .adult-text {
+.deck-viewer .adult-text,
+.relic-inspect-panel .adult-text {
   color: #604c60;
 }
 

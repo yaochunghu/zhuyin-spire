@@ -8,8 +8,9 @@ import {
 } from './modal';
 
 let inspectDialog: HTMLDialogElement | null = null;
+let inspectOpener: HTMLElement | null = null;
 
-/** Plain touch target for one owned relic. Opens the inspect dialog. */
+/** Collectible token for one owned relic. Opens the inspect dialog. */
 export function relicBadgeButton(relic: RelicDef): HTMLButtonElement {
   const button = document.createElement('button');
   button.type = 'button';
@@ -20,7 +21,7 @@ export function relicBadgeButton(relic: RelicDef): HTMLButtonElement {
   button.addEventListener('click', (event) => {
     event.stopPropagation();
     sfx.click();
-    openRelicInspect(relic);
+    openRelicInspect(relic, button);
   });
   return button;
 }
@@ -35,19 +36,25 @@ export function renderRelicBadges(relics: readonly RelicDef[]): HTMLElement {
 }
 
 export function closeRelicInspect(): void {
+  if (!inspectDialog) return;
   dismissModalShell(inspectDialog);
   inspectDialog = null;
+  const opener = inspectOpener;
+  inspectOpener = null;
+  if (opener?.isConnected) opener.focus({ preventScroll: true });
 }
 
 /** Touch inspect. Mounted on document.body so combat is not remounted. */
-export function openRelicInspect(relic: RelicDef): void {
+export function openRelicInspect(relic: RelicDef, opener?: HTMLElement): void {
   closeRelicInspect();
+  inspectOpener = opener ?? null;
   const dialog = createModalShell(`查看遺物：${relic.name}`);
   dialog.classList.add('relic-inspect-dialog');
   const panel = document.createElement('div');
   panel.className = 'relic-inspect-panel';
   const emoji = document.createElement('p');
   emoji.className = 'relic-inspect-emoji';
+  emoji.setAttribute('aria-hidden', 'true');
   emoji.textContent = relic.emoji;
   const name = document.createElement('h2');
   name.className = 'relic-inspect-name';
@@ -57,7 +64,10 @@ export function openRelicInspect(relic: RelicDef): void {
   blurb.textContent = relic.blurb;
   const adult = document.createElement('p');
   adult.className = 'adult-text relic-inspect-adult';
-  adult.textContent = relic.adultNote;
+  const adultLabel = document.createElement('span');
+  adultLabel.className = 'relic-inspect-adult-label';
+  adultLabel.textContent = '家長提示';
+  adult.append(adultLabel, relic.adultNote);
   const close = document.createElement('button');
   close.type = 'button';
   close.className = 'relic-inspect-close';

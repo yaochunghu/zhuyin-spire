@@ -16,6 +16,7 @@ import {
   executeEffects,
   resolveCastFizzle,
   resolveCastSuccess,
+  type CombatFx,
   type CombatState,
 } from '../../src/game/combat';
 import { getDebugSkipCast } from '../../src/debug/debugFlags';
@@ -140,6 +141,25 @@ describe('relic effects', () => {
     combat.block = 99;
     endTurn(combat);
     expect(combat.basicHitBonusReady).toBe(true);
+  });
+
+  it('tags pool hit bonuses on the strike so combat can float them', () => {
+    const combat = createCombat(
+      ['po', 'te'],
+      'rock',
+      40,
+      40,
+      [getRelic('gapThumb'), getRelic('trainingWrap')],
+    );
+    combat.enemies[0]!.hp = 80;
+    combat.enemies[0]!.vulnerableTurns = 2;
+    const strikes: CombatFx[] = [];
+    executeEffects(combat, getCard('te'), [combat.enemies[0]!.id], (fx) => strikes.push(fx), () => []);
+    const strike = strikes.find((fx) => fx.type === 'playerStrike');
+    expect(strike?.type === 'playerStrike' && strike.impacts[0]).toMatchObject({
+      basicRelicBonus: 1,
+      vulnerableRelicBonus: 2,
+    });
   });
 
   it('adds 練功起勢 on turn 1 and takes only that 練功 back', () => {
