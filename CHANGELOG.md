@@ -1,13 +1,5 @@
 # Changelog
 
-## Unreleased — browser stabilization on 0.4.0
-
-- Correct Zhuyin readings and Traditional headwords in the card cues and phrase bank against 《重編國語辭典修訂本》, without changing the phrase schema or run-save format.
-- Keep the 75-card score progression and current catalog while repairing dependencies and checking three browser engines.
-- Add native menus/inspection, overlapping pause ownership, speech fallback, visible save failures, and animation cancellation recovery.
-- Make B041 choose its physical Attack before casting; retain upstream B144 and B051 corrections with regression coverage.
-- Preserve save/profile compatibility and separate historical audit results from integrated validation.
-
 All notable changes to **注音之塔 / Zhuyin Spire** are documented here.
 
 Format: human-readable summary per version. For code archaeology use `git log` and tags.
@@ -15,6 +7,30 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 ---
 
 ## [Unreleased]
+
+---
+
+## [0.4.1] — 2026-10-26
+
+### Zhuyin corrections
+
+- Correct Zhuyin readings and Traditional headwords in the card cues and phrase bank against 《重編國語辭典修訂本》, without changing the phrase schema or run-save format.
+
+### Playtest kit
+
+- Add the parent kit for the two open human gates: a physical-device checklist, an Act I family session with Traditional Chinese read-aloud lines, and a blank record that stays out of git.
+- Relic work may proceed in parallel and merges only after both playtests pass.
+
+### Browser stabilization
+
+- Keep the 75-card score progression and current catalog while repairing dependencies and checking three browser engines.
+- Add native menus/inspection, overlapping pause ownership, speech fallback, visible save failures, and animation cancellation recovery.
+- Make B041 choose its physical Attack before casting; retain upstream B144 and B051 corrections with regression coverage.
+- Preserve save/profile compatibility and separate historical audit results from integrated validation.
+
+### Fight stays on screen
+
+- Keep the hero on the board while a card is spelled, and play a monster's defeat before rewards when a cast ends the fight
 
 ### Complete card meta progression
 
@@ -222,6 +238,7 @@ Baseline snapshot of the preschool Spire + 注音 game, documented for long-term
 - Standalone git repository for the game folder (tag `v0.1.0`)
 
 [Unreleased]: #unreleased
+[0.4.1]: #041--2026-10-26
 [0.4.0]: #040--2026-08-21
 [0.3.1]: #031--2026-07-23
 [0.3.0]: #030--2026-07-22
