@@ -6,6 +6,7 @@
  * - First syllable starts with the given 注音
  * - spell = full first syllable including 聲調 (omit mark for 一聲; trailing ˙ for 輕聲)
  * - glyph and reading follow 《重編國語辭典修訂本》 headwords
+ * - a 破音字 uses the headword reading whose definition matches the picture
  * - emoji depicts the word
  */
 
@@ -422,7 +423,7 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
     p('該', '👉', 'ㄍㄞ', ['core']),
     p('改', '🔧', 'ㄍㄞˇ', ['core']),
     p('蓋', '🫙', 'ㄍㄞˋ', ['home']),
-    p('干', '🪵', 'ㄍㄢ', ['nature']),
+    p('幹', '🪵', 'ㄍㄢˋ', ['nature']),
     p('乾', '🏜️', 'ㄍㄢ', ['nature']),
     p('甘', '🍬', 'ㄍㄢ', ['food']),
     p('趕', '🏃', 'ㄍㄢˇ', ['park']),
@@ -443,7 +444,7 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
     p('給', '🎁', 'ㄍㄟˇ', ['core']),
     p('根', '🌱', 'ㄍㄣ', ['nature']),
     p('跟', '👣', 'ㄍㄣ', ['body']),
-    p('更', '📈', 'ㄍㄥ', ['core']),
+    p('更', '📈', 'ㄍㄥˋ', ['core']),
     p('工', '👷', 'ㄍㄨㄥ', ['core']),
     p('公', '🏢', 'ㄍㄨㄥ', ['core']),
     p('公園', '🏞️', 'ㄍㄨㄥ', ['park', 'core']),
@@ -528,7 +529,6 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
   ㄏ: [
     p('哈', '😄', 'ㄏㄚ', ['core']),
     p('孩', '🧒', 'ㄏㄞˊ', ['family']),
-    p('還', '↩️', 'ㄏㄞˊ', ['core']),
     p('海', '🌊', 'ㄏㄞˇ', ['nature']),
     p('害', '⚠️', 'ㄏㄞˋ', ['core']),
     p('含', '👄', 'ㄏㄢˊ', ['body']),
@@ -668,7 +668,7 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
     p('句', '💬', 'ㄐㄩˋ', ['school']),
     p('具', '🛠️', 'ㄐㄩˋ', ['home']),
     p('劇', '🎭', 'ㄐㄩˋ', ['core']),
-    p('卷', '📜', 'ㄐㄩㄢˇ', ['school']),
+    p('卷', '📜', 'ㄐㄩㄢˋ', ['school']),
     p('決', '⚔️', 'ㄐㄩㄝˊ', ['core']),
     p('覺', '💭', 'ㄐㄩㄝˊ', ['core']),
     p('絕', '🚫', 'ㄐㄩㄝˊ', ['core']),
@@ -677,7 +677,7 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
   ㄑ: [
     p('七', '7️⃣', 'ㄑㄧ', ['numbers', 'core']),
     p('妻', '👩', 'ㄑㄧ', ['family']),
-    p('期', '📅', 'ㄑㄧ', ['school']),
+    p('期', '📅', 'ㄑㄧˊ', ['school']),
     p('欺', '😈', 'ㄑㄧ', ['core']),
     p('漆', '🎨', 'ㄑㄧ', ['home']),
     p('其', '🧩', 'ㄑㄧˊ', ['core']),
@@ -876,16 +876,13 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
     p('專', '🎯', 'ㄓㄨㄢ', ['school']),
     p('磚', '🧱', 'ㄓㄨㄢ', ['home']),
     p('轉', '🔄', 'ㄓㄨㄢˇ', ['core']),
-    p('傳', '📣', 'ㄓㄨㄢˋ', ['core']),
     p('裝', '👕', 'ㄓㄨㄤ', ['home']),
     p('莊', '🏡', 'ㄓㄨㄤ', ['home']),
     p('壯', '💪', 'ㄓㄨㄤˋ', ['body']),
     p('狀', '📊', 'ㄓㄨㄤˋ', ['core']),
     p('追', '🏃', 'ㄓㄨㄟ', ['park']),
     p('準', '🎯', 'ㄓㄨㄣˇ', ['core']),
-    p('桌', '🪑', 'ㄓㄨㄛ', ['home']),
     p('捉', '🤲', 'ㄓㄨㄛ', ['park']),
-    p('桌', '🪵', 'ㄓㄨㄛ', ['home']),
     p('蜘蛛', '🕷️', 'ㄓ', ['animals', 'core']),
   ],
   ㄔ: [
@@ -1022,7 +1019,7 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
     p('伸', '🙆', 'ㄕㄣ', ['body']),
     p('神', '✨', 'ㄕㄣˊ', ['core']),
     p('審', '🔍', 'ㄕㄣˇ', ['core']),
-    p('甚', '❓', 'ㄕㄣˋ', ['core']),
+    p('甚', '❓', 'ㄕㄣˊ', ['core']),
     p('腎', '🫀', 'ㄕㄣˋ', ['body']),
     p('生', '🌱', 'ㄕㄥ', ['nature']),
     p('聲', '🔊', 'ㄕㄥ', ['core']),
@@ -1083,7 +1080,7 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
     p('阻', '🚧', 'ㄗㄨˇ', ['core']),
     p('組', '🧩', 'ㄗㄨˇ', ['school']),
     p('祖', '👴', 'ㄗㄨˇ', ['family']),
-    p('鑽', '💎', 'ㄗㄨㄢ', ['core']),
+    p('鑽', '💎', 'ㄗㄨㄢˋ', ['core']),
     p('嘴', '👄', 'ㄗㄨㄟˇ', ['body']),
     p('最', '🏆', 'ㄗㄨㄟˋ', ['core']),
     p('罪', '⚖️', 'ㄗㄨㄟˋ', ['core']),
@@ -1156,7 +1153,7 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
     p('錯', '❌', 'ㄘㄨㄛˋ', ['school']),
   ],
   ㄙ: [
-    p('撒', '🌱', 'ㄙㄚ', ['nature']),
+    p('撒', '🌱', 'ㄙㄚˇ', ['nature']),
     p('灑', '💧', 'ㄙㄚˇ', ['home']),
     p('塞', '🧱', 'ㄙㄞ', ['core']),
     p('賽', '🏆', 'ㄙㄞˋ', ['park']),
@@ -1317,7 +1314,7 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
     p('忘', '💭', 'ㄨㄤˋ', ['core']),
     p('望', '👀', 'ㄨㄤˋ', ['body']),
     p('威', '💪', 'ㄨㄟ', ['core']),
-    p('微', '🔬', 'ㄨㄟ', ['school']),
+    p('微', '🔬', 'ㄨㄟˊ', ['school']),
     p('危', '⚠️', 'ㄨㄟˊ', ['core']),
     p('為', '👉', 'ㄨㄟˊ', ['core']),
     p('圍', '⭕', 'ㄨㄟˊ', ['core']),

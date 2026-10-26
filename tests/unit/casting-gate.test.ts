@@ -126,6 +126,32 @@ describe('Zhuyin casting provider', () => {
     expect(chooseZhuyinMode('initial:ㄇ', () => 0.97)).toBe('listen');
   });
 
+  it('locks pictured phrases to the revised-dictionary headword', () => {
+    const rows = Object.values(PHRASES_BY_INITIAL).flat();
+    const spells = (word: string, emoji: string) =>
+      rows
+        .filter((phrase) => phrase.word === word && phrase.emoji === emoji)
+        .map((phrase) => phrase.spell);
+
+    expect(spells('幹', '🪵')).toEqual(['ㄍㄢˋ']);
+    expect(spells('干', '🪵')).toEqual([]);
+    expect(spells('更', '📈')).toEqual(['ㄍㄥˋ']);
+    expect(spells('還', '↩️')).toEqual(['ㄏㄨㄢˊ']);
+    expect(spells('卷', '📜')).toEqual(['ㄐㄩㄢˋ']);
+    expect(spells('期', '📅')).toEqual(['ㄑㄧˊ']);
+    expect(spells('傳', '📣')).toEqual(['ㄔㄨㄢˊ']);
+    expect(spells('甚', '❓')).toEqual(['ㄕㄣˊ']);
+    expect(spells('鑽', '💎')).toEqual(['ㄗㄨㄢˋ']);
+    expect(spells('撒', '🌱')).toEqual(['ㄙㄚˇ']);
+    expect(spells('微', '🔬')).toEqual(['ㄨㄟˊ']);
+    expect(rows.filter((phrase) => phrase.word === '桌')).toEqual([
+      expect.objectContaining({ emoji: '🍽️', spell: 'ㄓㄨㄛ' }),
+    ]);
+    // 余 already means 剩下、多餘 in 《重編國語辭典修訂本》, so the surplus picture stays 余.
+    expect(spells('余', '➕')).toEqual(['ㄩˊ']);
+    expect(spells('餘', '➕')).toEqual([]);
+  });
+
   it('reports filters that would remove all prompts from obtainable cards', () => {
     const preferences = {
       ...defaultCastingPreferences(),
