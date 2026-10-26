@@ -3,12 +3,15 @@ import { sfx } from '../game/audio';
 import {
   createModalShell,
   dismissModalShell,
+  lockPageScroll,
   showModalShell,
   trapModalFocus,
 } from './modal';
 
 let inspectDialog: HTMLDialogElement | null = null;
 let inspectOpener: HTMLElement | null = null;
+let inspectScreen: string | null = null;
+let releaseScroll: (() => void) | null = null;
 
 /** Collectible token for one owned relic. Opens the inspect dialog. */
 export function relicBadgeButton(relic: RelicDef): HTMLButtonElement {
@@ -39,15 +42,25 @@ export function closeRelicInspect(): void {
   if (!inspectDialog) return;
   dismissModalShell(inspectDialog);
   inspectDialog = null;
+  inspectScreen = null;
+  releaseScroll?.();
+  releaseScroll = null;
   const opener = inspectOpener;
   inspectOpener = null;
   if (opener?.isConnected) opener.focus({ preventScroll: true });
+}
+
+/** Close the inspect dialog when the visible screen changes. Same-screen renders keep it open. */
+export function closeRelicInspectIfScreenChanged(screen: string): void {
+  if (inspectDialog && inspectScreen !== screen) closeRelicInspect();
 }
 
 /** Touch inspect. Mounted on document.body so combat is not remounted. */
 export function openRelicInspect(relic: RelicDef, opener?: HTMLElement): void {
   closeRelicInspect();
   inspectOpener = opener ?? null;
+  inspectScreen = document.documentElement.dataset.screen ?? '';
+  releaseScroll = lockPageScroll();
   const dialog = createModalShell(`查看遺物：${relic.name}`);
   dialog.classList.add('relic-inspect-dialog');
   const panel = document.createElement('div');

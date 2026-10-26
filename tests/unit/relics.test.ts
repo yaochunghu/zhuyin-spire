@@ -7,7 +7,6 @@ import {
   getRelic,
   rollRelicDrop,
 } from '../../src/data/relics';
-import { runEnemyTurn } from '../../src/game/battle/enemyHandler';
 import { makeCard } from '../../src/game/battle/piles';
 import {
   beginPlay,
@@ -19,11 +18,15 @@ import {
   type CombatFx,
   type CombatState,
 } from '../../src/game/combat';
+import { coachForScreen } from '../../src/game/coach';
+import { debugEnterAvailable } from '../../src/debug/debugActions';
 import { getDebugSkipCast } from '../../src/debug/debugFlags';
 import {
   acquireRelic,
   createNewRun,
   debugFinishFight,
+  debugOpenActTreasure,
+  debugStartEncounter,
   getCurrentActNodes,
   getOwnedRelics,
   pickCharacter,
@@ -223,17 +226,33 @@ describe('relic effects', () => {
     expect(again.tempoCount).toBe(2);
   });
 
-  it('gives 聽勁護心 block once, only after a full block actually grants 勁', () => {
-    const combat = createCombat(['mo'], ['slime', 'slime'], 40, 40, getRelic('listeningHeart'));
-    combat.block = 8;
-    runEnemyTurn(combat);
-    expect(combat.jin).toBe(2);
-    expect(combat.block).toBe(3);
-    expect(combat.jinGuardReady).toBe(false);
+  it('gives 聽勁護心 its shield after the enemy phase, without creating extra 勁', () => {
+    const single = createCombat(['mo'], 'slime', 40, 40, getRelic('listeningHeart'));
+    single.block = 4;
+    endTurn(single);
+    expect(single.heroHp).toBe(40);
+    expect(single.jin).toBe(1);
+    expect(single.jinGuardReady).toBe(false);
+    expect(single.block).toBe(3);
+
+    const several = createCombat(['mo'], ['slime', 'slime'], 40, 40, getRelic('listeningHeart'));
+    several.block = 5;
+    endTurn(several);
+    expect(several.jin).toBe(1);
+    expect(several.heroHp).toBe(37);
+    expect(several.block).toBe(3);
+    expect(several.jinGuardReady).toBe(false);
+
+    const ownBlock = createCombat(['mo'], ['slime', 'slime'], 40, 40, getRelic('listeningHeart'));
+    ownBlock.block = 8;
+    endTurn(ownBlock);
+    expect(ownBlock.jin).toBe(2);
+    expect(ownBlock.heroHp).toBe(40);
+    expect(ownBlock.block).toBe(3);
 
     const leaked = createCombat(['mo'], 'slime', 40, 40, getRelic('listeningHeart'));
     leaked.block = 2;
-    runEnemyTurn(leaked);
+    endTurn(leaked);
     expect(leaked.heroHp).toBe(38);
     expect(leaked.jin).toBe(0);
     expect(leaked.block).toBe(0);
@@ -242,10 +261,24 @@ describe('relic effects', () => {
     const capped = createCombat(['mo'], 'slime', 40, 40, getRelic('listeningHeart'));
     capped.jin = 9;
     capped.block = 10;
-    runEnemyTurn(capped);
+    endTurn(capped);
     expect(capped.jin).toBe(9);
-    expect(capped.block).toBe(6);
+    expect(capped.block).toBe(0);
     expect(capped.jinGuardReady).toBe(true);
+  });
+
+  it('gives 聽勁護心 its shield when a card grants the first 勁', () => {
+    const combat = createCombat(['rw_b124'], 'rock', 40, 40, getRelic('listeningHeart'));
+    const enemy = combat.enemies[0]!;
+    enemy.vulnerableTurns = 2;
+    executeEffects(combat, getCard('rw_b124'), [enemy.id], () => {}, () => []);
+    expect(combat.jin).toBe(2);
+    expect(combat.block).toBe(3);
+    expect(combat.jinGuardReady).toBe(false);
+    enemy.vulnerableTurns = 2;
+    executeEffects(combat, getCard('rw_b124'), [enemy.id], () => {}, () => []);
+    expect(combat.jin).toBe(4);
+    expect(combat.block).toBe(3);
   });
 
   it('still applies the four legacy relics for old saves', () => {
@@ -369,5 +402,41 @@ describe('relic drops', () => {
     const gain = state.gold - before;
     expect(gain).toBeGreaterThanOrEqual(GOLD_ELITE_BASE + RELIC_POOL_EXHAUST_GOLD);
     expect(gain).toBeLessThan(GOLD_ELITE_BASE + GOLD_JITTER + RELIC_POOL_EXHAUST_GOLD);
+  });
+});
+
+describe('relic copy and debug chests', () => {
+  it('tells adults that chests and bosses give a relic', () => {
+    expect(coachForScreen('map', { act: 1 }).body).toContain('寶箱給金幣＋一件遺物');
+    expect(coachForScreen('map', { act: 1 }).body).not.toContain('選牌');
+    const chest = coachForScreen('reward', { rewardSource: 'treasure' });
+    expect(chest.body).toContain('一件遺物');
+    expect(chest.body).toContain('20 金幣');
+    expect(chest.body).toContain('沒有選牌');
+    const fight = coachForScreen('reward', { rewardSource: 'fight' });
+    expect(fight.body).toContain('Boss');
+    expect(fight.body).not.toContain('都是三選一');
+  });
+
+  it('opens a reachable unvisited chest and clears a stale fight node', () => {
+    const state = freshRun();
+    const nodes = getCurrentActNodes(state);
+    const treasures = nodes.filter((node) => node.kind === 'treasure');
+    const first = treasures[0]!;
+    const later = treasures.find((node) => node.id !== first.id)!;
+    const parent = nodes.find((node) => node.nextIds.includes(later.id))!;
+    state.currentNodeId = parent.id;
+    state.visitedIds = [first.id];
+    state.pathIds = [parent.id];
+    debugEnterAvailable(state, 'treasure');
+    expect(parent.nextIds).toContain(state.activeNodeId);
+    expect(state.visitedIds).not.toContain(state.activeNodeId);
+    expect(state.rewardSource).toBe('treasure');
+
+    state.activeNodeId = first.id;
+    debugStartEncounter(state, 'slime');
+    expect(state.activeNodeId).toBeNull();
+    expect(debugOpenActTreasure(state)).toBe(true);
+    expect(state.visitedIds).not.toContain(state.activeNodeId);
   });
 });

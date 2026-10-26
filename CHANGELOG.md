@@ -20,6 +20,7 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - Added five 共鳴 relics for chests, elites, and bosses: 尋隙指套, 練功護腕, 換拍木魚, 聽勁護心, and 練功起勢
 - Chests give gold and one relic. Elites and bosses still offer a card and also drop a relic. A repeated drop pays 20 gold
 - 練功起勢 adds 練功 only for the first player turn, then that point is removed
+- 聽勁護心 gives 3 Block the first time the run gains 勁. Block from a full defense arrives on the next player turn, so it cannot create another 勁. Block from a card arrives with that card.
 - Kept 初心音叉 as the starter. The four legacy relics still load for old saves and are not offered
 - Moved saves to version 3. A v1 or v2 `relicId` becomes the ordered `relicIds` list
 - Added tappable relic badges that show the Chinese name and effect. No relic skips casting

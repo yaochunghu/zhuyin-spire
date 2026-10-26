@@ -145,8 +145,8 @@ describe('boss recovery', () => {
     const boss = state.runMap.acts[0]!.nodes.find((node) => node.kind === 'boss')!;
 
     state.heroHp = 7;
-    state.activeNodeId = boss.id;
     debugStartEncounter(state, boss.enemyId!);
+    state.activeNodeId = boss.id;
     debugFinishFight(state);
 
     expect(state.screen).toBe('reward');

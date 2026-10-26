@@ -105,6 +105,10 @@ export interface CombatState {
   /** Block the first time this combat a full block grants 勁. Not reset each turn. */
   jinGuardBlock: number;
   jinGuardReady: boolean;
+  /** 聽勁護心 shield earned during the enemy phase, applied after block expires. */
+  jinGuardBlockPending: number;
+  /** 聽勁護心 shield earned by a card, applied at the end of that card. */
+  jinGuardBlockImmediate: number;
   training: number;
   /** 練功起勢 still to remove when the second player turn begins. */
   firstTurnTraining: number;

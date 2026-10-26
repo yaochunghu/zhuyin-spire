@@ -1,9 +1,9 @@
 /**
  * Relics.
  *
- * The starter is always 初心音叉. Chests and elites roll the small 0.5 pool.
- * The four legacy relics stay defined so v1 and v2 saves still load; they are
- * not offered. Nothing here skips or refunds a cast.
+ * The starter is always 初心音叉. Chests, elites, and bosses roll the small
+ * 0.5 pool. The four legacy relics stay defined so v1 and v2 saves still load;
+ * they are not offered. Nothing here skips or refunds a cast.
  */
 
 export type RelicSource = 'starter' | 'pool' | 'legacy';
@@ -29,7 +29,7 @@ export interface RelicDef {
   firstVulnerableHitBonus?: number;
   /** Block gained the first 轉拍 of each player turn. */
   firstTempoBlock?: number;
-  /** Block gained the first time this combat a full block grants 勁. */
+  /** Block gained the first time this combat the player gains 勁. */
   firstJinBlock?: number;
   /** 練功 gained at combat start and removed when the second player turn begins. */
   firstTurnTraining?: number;
@@ -95,7 +95,7 @@ export const RELICS: Record<string, RelicDef> = {
     emoji: '🛡️',
     name: '小盾符',
     blurb: '每場戰鬥開始 +2 護盾',
-    adultNote: '舊存檔遺物。新的寶箱和菁英不會再掉這一件。',
+    adultNote: '舊存檔遺物。新的寶箱、菁英和 Boss 不會再掉這一件。',
     source: 'legacy',
     startBlock: 2,
   },
@@ -113,7 +113,7 @@ export const RELICS: Record<string, RelicDef> = {
     emoji: '🌅',
     name: '晨光火花',
     blurb: '每場只有第 1 回合有 4 能量，之後仍是 3',
-    adultNote: '舊存檔遺物。新的寶箱和菁英不會再掉這一件。',
+    adultNote: '舊存檔遺物。新的寶箱、菁英和 Boss 不會再掉這一件。',
     source: 'legacy',
     firstTurnEnergy: 4,
   },
@@ -122,13 +122,13 @@ export const RELICS: Record<string, RelicDef> = {
     emoji: '🎴',
     name: '幸運抽',
     blurb: '每場戰鬥開始多抽 1 張牌',
-    adultNote: '舊存檔遺物。新的寶箱和菁英不會再掉這一件。',
+    adultNote: '舊存檔遺物。新的寶箱、菁英和 Boss 不會再掉這一件。',
     source: 'legacy',
     startDraw: 1,
   },
 };
 
-/** Chest and elite drops, in roll order. The starter and legacy relics are excluded. */
+/** Chest, elite, and boss drops, in roll order. The starter and legacy relics are excluded. */
 export const RELIC_POOL_IDS = ['gapThumb', 'trainingWrap', 'tempoWood', 'listeningHeart', 'trainingStance'] as const;
 
 export type RelicPoolId = (typeof RELIC_POOL_IDS)[number];

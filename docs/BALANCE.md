@@ -37,7 +37,7 @@ reasons for adapting them to this shorter, cast-gated game are in
 | `GOLD_DANGER_BONUS` | **8** | Hard path bonus |
 | `GOLD_TREASURE_BASE` | **32** | + treasure jitter |
 | `GOLD_TREASURE_JITTER` | **8** | |
-| `RELIC_POOL_EXHAUST_GOLD` | **20** | Chest or elite drop when all five pool relics are owned |
+| `RELIC_POOL_EXHAUST_GOLD` | **20** | Chest, elite, or boss drop when all five pool relics are owned |
 | `SHOP_CARD_PRICES` | **22, 34, 46** | Three shop slots |
 | `SHOP_REMOVE_PRICE` | **38** | Once per shop visit |
 

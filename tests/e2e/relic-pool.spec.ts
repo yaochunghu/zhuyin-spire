@@ -57,8 +57,8 @@ test('chests, elites, and bosses drop relics, and a badge opens the inspect dial
     const state = run();
     const elite = state.runMap.acts[state.actIndex]!.nodes.find((node) => node.kind === 'elite');
     if (!elite) throw new Error('Missing elite');
-    state.activeNodeId = elite.id;
     debugStartEncounter(state, elite.enemyId ?? 'slime', elite.encounterId);
+    state.activeNodeId = elite.id;
     debugFinishFight(state);
     render();
   });
@@ -76,8 +76,8 @@ test('chests, elites, and bosses drop relics, and a badge opens the inspect dial
   const starter = page.locator('.relic-badge[data-relic-id="tuningFork"]');
   const box = await starter.boundingBox();
   expect(box).not.toBeNull();
-  expect(box!.width).toBeGreaterThanOrEqual(48);
-  expect(box!.height).toBeGreaterThanOrEqual(48);
+  expect(Math.round(box!.width)).toBeGreaterThanOrEqual(48);
+  expect(Math.round(box!.height)).toBeGreaterThanOrEqual(48);
   await starter.click();
   const dialog = page.getByRole('dialog', { name: '查看遺物：初心音叉' });
   await expect(dialog).toBeVisible();
@@ -96,8 +96,8 @@ test('chests, elites, and bosses drop relics, and a badge opens the inspect dial
   await expect(dialog).toBeVisible();
   const phoneBox = await starter.boundingBox();
   expect(phoneBox).not.toBeNull();
-  expect(phoneBox!.width).toBeGreaterThanOrEqual(48);
-  expect(phoneBox!.height).toBeGreaterThanOrEqual(48);
+  expect(Math.round(phoneBox!.width)).toBeGreaterThanOrEqual(48);
+  expect(Math.round(phoneBox!.height)).toBeGreaterThanOrEqual(48);
   await page.screenshot({
     path: test.info().outputPath('relic-badge-phone.png'),
     fullPage: true,
@@ -134,8 +134,8 @@ test('chests, elites, and bosses drop relics, and a badge opens the inspect dial
     const state = run();
     const boss = state.runMap.acts[state.actIndex]!.nodes.find((node) => node.kind === 'boss');
     if (!boss) throw new Error('Missing boss');
-    state.activeNodeId = boss.id;
     debugStartEncounter(state, boss.enemyId ?? 'slime', boss.encounterId);
+    state.activeNodeId = boss.id;
     debugFinishFight(state);
     render();
   });

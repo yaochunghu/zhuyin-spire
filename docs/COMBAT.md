@@ -60,8 +60,10 @@ Energy is per-combat; end turn discards remaining hand then enemy acts then redr
 - **練功護腕:** the first 基礎攻擊 hit each turn gains +1 before 易傷.
 - **換拍木魚:** the first successful 轉拍 each turn gains 2 Block. A failed
   cast does not count as 轉拍 and does not grant the Block.
-- **聽勁護心:** the first time a full block grants 勁 in a combat, gain 3
-  Block after that attack has already resolved.
+- **聽勁護心:** the first time 勁 increases in a combat, gain 3 Block. A full block's
+  shield arrives at the start of the next player turn, after leftover Block
+  expires, so it cannot fully block a later enemy in the same enemy phase.
+  勁 from a card grants the shield with that card.
 - **練功起勢:** +1 練功 during the first player turn. It is removed when turn 2
   starts, and card-granted 練功 stays.
   None of these skip the cast. Numbers live on `RelicDef` in `data/relics.ts`.

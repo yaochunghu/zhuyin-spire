@@ -695,9 +695,10 @@ function openTreasure(state: RunState): void {
   saveRunCheckpoint(state);
 }
 
-/** Debug: open this act's chest even when it is not the next room. */
+/** Debug: open an unvisited chest in this act, even when it is not the next room. */
 export function debugOpenActTreasure(state: RunState): boolean {
-  const treasure = getCurrentActNodes(state).find((node) => node.kind === 'treasure');
+  const treasures = getCurrentActNodes(state).filter((node) => node.kind === 'treasure');
+  const treasure = treasures.find((node) => !state.visitedIds.includes(node.id)) ?? treasures[0];
   if (!treasure) return false;
   state.combat = null;
   state.cast = null;
@@ -966,6 +967,7 @@ export function debugStartEncounter(
 ): void {
   state.cast = null;
   state.tutorial = null;
+  state.activeNodeId = null;
   state.combat = createCombat(
     state.deck,
     enemyId,

@@ -54,8 +54,8 @@ export const GOLD_TREASURE_BASE = 32;
 export const GOLD_TREASURE_JITTER = 8;
 
 /**
- * Paid when a chest or elite would drop a relic but every pool relic is
- * already owned. About one normal fight's gold, not a second relic.
+ * Paid when a chest, elite, or boss would drop a relic but every pool relic
+ * is already owned. About one normal fight's gold, not a second relic.
  */
 export const RELIC_POOL_EXHAUST_GOLD = 20;
 

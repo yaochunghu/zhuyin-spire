@@ -19,7 +19,7 @@ at each score milestone while balancing the advanced tiers.
   0 / 300 / 1,000 / 2,000
 - Debug Meta controls can set every score milestone on the active profile
 - Smith and later-act `+` rolls for unlocked non-basic cards
-- No potions, no event rooms; treasure is gold + cards
+- No potions, no event rooms; a chest gives gold and one relic. Elites and bosses still offer a card and also drop one relic. When the five relics are already owned, that drop pays 20 gold.
 
 ## Before expanding content
 
@@ -36,7 +36,7 @@ fights do not drop relics. The drop pool is five 共鳴 relics:
 | `gapThumb` | 尋隙指套 | First Attack hit each turn against an enemy that already has 易傷: +2 before the multiplier |
 | `trainingWrap` | 練功護腕 | First 基礎攻擊 hit each turn: +1 before 易傷 |
 | `tempoWood` | 換拍木魚 | First successful 轉拍 each turn: +2 Block |
-| `listeningHeart` | 聽勁護心 | First time this combat a full block grants 勁: +3 Block after that block |
+| `listeningHeart` | 聽勁護心 | First 勁 gained in a combat: +3 Block. A full block's shield waits until the next player turn; a card's 勁 grants it immediately |
 | `trainingStance` | 練功起勢 | Turn 1 only: 練功 +1, removed when turn 2 starts |
 
 The starter remains 🎵 初心音叉. Each relic can be owned once. When the pool is

@@ -149,7 +149,14 @@ export function debugEnterAvailable(
   state.combat = null;
   state.cast = null;
   state.screen = 'map';
-  if (kind === 'treasure' && debugOpenActTreasure(state)) return;
+  if (kind === 'treasure') {
+    const nextTreasure = getAvailableMapNodes(state).find((node) => node.kind === 'treasure');
+    if (nextTreasure) {
+      selectMapNode(state, nextTreasure.id);
+      return;
+    }
+    if (debugOpenActTreasure(state)) return;
+  }
   const avail = getAvailableMapNodes(state);
   const node = kind ? avail.find((n) => n.kind === kind) ?? avail[0] : avail[0];
   if (node) selectMapNode(state, node.id);

@@ -17,6 +17,7 @@ import {
 } from './enemyHandler';
 import { discardHandEndTurn } from './playerHandler';
 import { drawCards, makeCard, shuffle } from './piles';
+import { applyPendingListeningHeart } from './resources';
 import { pushFx } from './fx';
 import type { CombatState } from './types';
 
@@ -57,6 +58,8 @@ export function createCombat(
     tempoRelicReady: mods.firstTempoBlock > 0,
     jinGuardBlock: mods.firstJinBlock,
     jinGuardReady: mods.firstJinBlock > 0,
+    jinGuardBlockPending: 0,
+    jinGuardBlockImmediate: 0,
     training: 0,
     firstTurnTraining: 0,
     jin: 0,
@@ -144,8 +147,10 @@ export function endTurn(state: CombatState): CombatState['status'] {
     return state.status;
   }
 
-  // Player turn start: leftover block expires (STS-style)
+  // Player turn start: leftover block expires (STS-style).
+  // 聽勁護心's shield was withheld until after every enemy acted.
   state.block = 0;
+  applyPendingListeningHeart(state);
   advanceEnemyStatuses(state);
   state.turn += 1;
   if (state.firstTurnTraining > 0) {

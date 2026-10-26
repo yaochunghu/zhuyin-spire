@@ -11,6 +11,7 @@ import type {
   EnemyUnit,
   PlayerImpact,
 } from './types';
+import { gainJin, applyImmediateListeningHeart } from './resources';
 
 export type { TargetType, EffectDef };
 
@@ -175,7 +176,7 @@ export function executeEffects(
     } else if (eff.kind === 'training') {
       state.training += eff.amount;
     } else if (eff.kind === 'jin') {
-      state.jin = Math.max(0, Math.min(9, state.jin + eff.amount));
+      gainJin(state, eff.amount);
     }
   }
 
@@ -195,6 +196,7 @@ export function executeEffects(
     triggeredTempo,
     card,
   );
+  applyImmediateListeningHeart(state);
   totalBlock += Math.max(0, state.block - blockBeforeSpecial);
   totalEnergy += Math.max(0, state.energy - energyBeforeSpecial);
 
@@ -442,7 +444,7 @@ function applySpecialCardEffect(
       if (enemy) {
         const removed = Math.min(enemy.vulnerableTurns, upgraded ? 3 : 2);
         enemy.vulnerableTurns -= removed;
-        state.jin = Math.min(9, state.jin + removed);
+        gainJin(state, removed);
       }
       break;
     case 'B128':
@@ -571,7 +573,7 @@ function applyPowerTriggers(
   }
   if (tempo && has('B131')) {
     if (state.tempoCount === 1) state.training += upgradedPower('B131') ? 2 : 1;
-    if (state.tempoCount === 2) state.jin = Math.min(9, state.jin + 1);
+    if (state.tempoCount === 2) gainJin(state, 1);
   }
   if (state.jin < jinBefore && has('B093')) {
     state.block += 2;
