@@ -12,6 +12,15 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [0.4.1] — 2026-10-26
 
+### Zhuyin corrections
+
+- Correct Zhuyin readings and Traditional headwords in the card cues and phrase bank against 《重編國語辭典修訂本》, without changing the phrase schema or run-save format.
+
+### Playtest kit
+
+- Add the parent kit for the two open human gates: a physical-device checklist, an Act I family session with Traditional Chinese read-aloud lines, and a blank record that stays out of git.
+- Relic work may proceed in parallel and merges only after both playtests pass.
+
 ### Browser stabilization
 
 - Keep the 75-card score progression and current catalog while repairing dependencies and checking three browser engines.
