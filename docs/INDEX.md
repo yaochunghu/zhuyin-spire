@@ -19,6 +19,10 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | Doc | Purpose |
 |-----|---------|
 | [STABILIZATION.md](./STABILIZATION.md) | Integration boundary and preserved 75-card progression |
+| [PLAYTEST_GATE.md](./PLAYTEST_GATE.md) | Automated release gate and the two open human gates |
+| [playtest/DEVICE_CHECKLIST.md](./playtest/DEVICE_CHECKLIST.md) | Parent checklist for iPhone, iPad, and Android |
+| [playtest/FAMILY_SESSION.md](./playtest/FAMILY_SESSION.md) | Act I family script, read-aloud, and record form |
+| [playtest/sessions/TEMPLATE.md](./playtest/sessions/TEMPLATE.md) | Blank session record; no identifying child information |
 | [BROWSER_SUPPORT.md](./BROWSER_SUPPORT.md) | Browser verification and physical-device release gates |
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | Screens, `RunState`, layers, save, render loop |
 | [COMBAT.md](./COMBAT.md) | Battle modules, cast gate, drag play, FX pitfalls |

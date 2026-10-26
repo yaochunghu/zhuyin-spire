@@ -13,6 +13,8 @@ Pass criterion: all active tests pass; investigate failures before accepting a r
 
 ## Physical-device gate (human execution required)
 
+Parent steps, one device at a time: [playtest/DEVICE_CHECKLIST.md](playtest/DEVICE_CHECKLIST.md). Copy [playtest/sessions/TEMPLATE.md](playtest/sessions/TEMPLATE.md) for the record. The checklist does not change the pass criteria below.
+
 Use an iPhone and iPad with Safari, and an Android phone with Chrome. Record exact device, OS, browser, installed Mandarin voice, date and tester. Use a new test learner profile, debug casting skip OFF. Do not clear personal browser data.
 
 | Test | Steps | Pass criterion |
@@ -29,6 +31,8 @@ Any cast bypass, unintended card play, lost stable save, focus trap preventing p
 
 ## Adult-and-learner Act I session
 
+Script, what to observe, the Traditional Chinese read-aloud, and a fill-in record: [playtest/FAMILY_SESSION.md](playtest/FAMILY_SESSION.md).
+
 Allow 30–45 minutes plus breaks; do not force completion if the learner is tired. Adult reads coaching text and helps with device operation without entering every answer. Continue another session if necessary until an entire Act I run or death has been observed.
 
 Record room reached, elapsed play time, incorrect casts, adult interventions, accidental taps, confusing card/enemy effects, speech failures, HP at room exits, and whether the learner wants another run. Use no identifying child information.
@@ -38,6 +42,8 @@ Observe tutorial -> map -> battles -> rewards -> available shop/rest/Smith -> bo
 Exit decision: no blocking device issues; full run/death observed; adult can support casting; learner can operate primary controls with age-appropriate help. Turn repeated confusion into small fixes before expanding the released content roster. Balance findings require more than one run before broad tuning.
 
 ## Session record template
+
+Copy [playtest/sessions/TEMPLATE.md](playtest/sessions/TEMPLATE.md). Keep filled copies free of identifying child information, and do not commit them to the public repository by default.
 
 Device / OS / browser / voice:
 Build or git revision plus working-tree status:

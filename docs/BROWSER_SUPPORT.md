@@ -57,4 +57,4 @@ Record device, OS/browser version, and observed result. Desktop emulation cannot
 supply this evidence. No new network speech service, recorded media, or service
 worker is introduced. CSP remains unchanged.
 
-Use the [device and family checklist](PLAYTEST_GATE.md) to record human evidence; simulated browser coverage does not mark those steps complete.
+Use the [device checklist](playtest/DEVICE_CHECKLIST.md) and [family session](playtest/FAMILY_SESSION.md) to record human evidence. Pass criteria stay in [PLAYTEST_GATE.md](PLAYTEST_GATE.md). Simulated browser coverage does not mark those steps complete.
