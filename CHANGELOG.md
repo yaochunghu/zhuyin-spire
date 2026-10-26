@@ -2,6 +2,7 @@
 
 ## Unreleased — browser stabilization on 0.4.0
 
+- Correct Zhuyin readings and Traditional headwords in the card cues and phrase bank against 《重編國語辭典修訂本》, without changing the phrase schema or run-save format.
 - Keep the 75-card score progression and current catalog while repairing dependencies and checking three browser engines.
 - Add native menus/inspection, overlapping pause ownership, speech fallback, visible save failures, and animation cancellation recovery.
 - Make B041 choose its physical Attack before casting; retain upstream B144 and B051 corrections with regression coverage.
