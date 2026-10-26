@@ -2405,7 +2405,27 @@ html[data-screen='combat'] .global-control-btn {
     font-size: 1rem;
   }
 
-  .combat-hud-relics,
+  .combat-hud-strip {
+    grid-template-areas:
+      'location resources'
+      'relics relics';
+  }
+
+  .combat-hud-location {
+    grid-area: location;
+  }
+
+  .combat-hud-relics {
+    display: flex;
+    grid-area: relics;
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+
+  .combat-hud-resources {
+    grid-area: resources;
+  }
+
   .combat-hud-incoming,
   .combat-hud-resources .combat-hud-counter:last-child {
     display: none;

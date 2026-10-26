@@ -102,10 +102,19 @@ export function executeEffects(
             ? state.firstAttackBonusDamage
             : 0;
           if (state.firstAttackBonusReady) state.firstAttackBonusReady = false;
-          const basicBonus = (def.basicAttack || card?.basicOverride) ? state.training : 0;
+          const isBasicHit = def.basicAttack || card?.basicOverride;
+          const basicRelicBonus = isBasicHit && state.basicHitBonusReady
+            ? state.basicHitBonus
+            : 0;
+          if (basicRelicBonus > 0) state.basicHitBonusReady = false;
+          const vulnerableRelicBonus = enemy.vulnerableTurns > 0 && state.vulnerableHitBonusReady
+            ? state.vulnerableHitBonus
+            : 0;
+          if (vulnerableRelicBonus > 0) state.vulnerableHitBonusReady = false;
+          const basicBonus = isBasicHit ? state.training : 0;
           const attackBonus = state.nextAttackBonus;
           const tempoBonus = def.designId === 'B061' ? state.tempoCount : 0;
-          const rawAmount = eff.amount + basicBonus + attackBonus + relicBonus + tempoBonus;
+          const rawAmount = eff.amount + basicBonus + attackBonus + relicBonus + basicRelicBonus + vulnerableRelicBonus + tempoBonus;
           const hitAmount = Math.floor(rawAmount * (enemy.vulnerableTurns > 0 ? 1.5 : 1));
           const blockBefore = enemy.block;
           const blocked = Math.min(blockBefore, hitAmount);

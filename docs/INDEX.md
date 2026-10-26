@@ -56,6 +56,8 @@ Root companions:
   detailed curriculum controls, and a provider boundary for future subjects
 - **Cards:** Act I uses the 12-design teaching pool. Later acts expand by
   cumulative character score: 12 → 33 → 54 → all 75.
+- **Relics:** starter 初心音叉, plus five chest/elite 共鳴 relics. Legacy four
+  remain loadable only. See [NEXT_PHASE.md](./NEXT_PHASE.md).
 - **Debug:** body-mounted panel for testing (not for kids in normal play)
 
 共鳴武者 Smith and all 75 physical-copy upgrades are live through score unlocks.

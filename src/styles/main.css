@@ -2225,6 +2225,89 @@ button:disabled {
   border-color: var(--accent2) !important;
 }
 
+.relic-badge-row,
+.map-relic-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.relic-badge {
+  display: inline-grid;
+  place-items: center;
+  width: 48px;
+  min-width: 48px;
+  height: 48px;
+  min-height: 48px;
+  padding: 0;
+  border: 2px solid var(--accent2, #d8b45c);
+  border-radius: 14px;
+  background: var(--bg2, #2a2038);
+  color: inherit;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.relic-reward {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(100%, 440px);
+  text-align: left;
+}
+
+.relic-reward-name {
+  display: block;
+  font-size: 1.2rem;
+}
+
+.relic-reward-blurb {
+  margin: 4px 0 0;
+}
+
+.relic-inspect-dialog {
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.relic-inspect-panel {
+  width: min(92vw, 420px);
+  padding: 20px;
+  border-radius: 18px;
+  background: #f7e7be;
+  color: #271c2d;
+  text-align: center;
+}
+
+.relic-inspect-emoji {
+  margin: 0;
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.relic-inspect-name {
+  margin: 8px 0;
+  font-size: 1.6rem;
+}
+
+.relic-inspect-blurb,
+.relic-inspect-adult {
+  margin: 8px 0;
+  line-height: 1.45;
+}
+
+.relic-inspect-close {
+  min-width: 48px;
+  min-height: 48px;
+  margin-top: 8px;
+  padding: 8px 18px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
 .shop-row {
   display: flex;
   flex-wrap: wrap;
@@ -5336,7 +5419,7 @@ body.modal-open {
   }
 
   .map-stage-top .map-status-bar {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: 4px;
     font-size: 0.92rem;
   }

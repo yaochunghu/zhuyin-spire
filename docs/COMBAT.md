@@ -54,7 +54,16 @@ Energy is per-combat; end turn discards remaining hand then enemy acts then redr
 - 🥋 **勁:** fully blocking one enemy attack action grants 1 勁, capped at 9.
   Authored spenders consume fixed or bounded amounts.
 - 🎵 **初心音叉:** the first resolved Attack hit each player turn gains +1
-  before 易傷. `PlayerImpact.relicBonus` keeps the feedback explainable.
+  before 易傷. `PlayerImpact.relicBonus` keeps that fork bonus explainable.
+- **尋隙指套:** the first Attack hit each turn against an enemy that already
+  has 易傷 gains +2 before the multiplier.
+- **練功護腕:** the first 基礎攻擊 hit each turn gains +1 before 易傷.
+- **換拍木魚:** the first successful 轉拍 each turn gains 2 Block. A failed
+  cast does not count as 轉拍 and does not grant the Block.
+- **聽勁護心:** the first time a full block grants 勁 in a combat, gain 3
+  Block after that attack has already resolved.
+- **練功起勢:** +1 練功 at the start of combat.
+  None of these skip the cast. Numbers live on `RelicDef` in `data/relics.ts`.
 - Powers leave draw/discard circulation and remain active for the combat.
 
 ---

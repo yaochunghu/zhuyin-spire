@@ -15,6 +15,14 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+### Relic pool
+
+- Added five 共鳴 relics for chests and elites: 尋隙指套, 練功護腕, 換拍木魚, 聽勁護心, and 練功起勢
+- Chests now give gold and one relic. Elites still offer a card and also drop a relic. A repeated drop pays 20 gold
+- Kept 初心音叉 as the starter. The four legacy relics still load for old saves and are not offered
+- Moved saves to version 3. A v1 or v2 `relicId` becomes the ordered `relicIds` list
+- Added tappable relic badges that show the Chinese name and effect. No relic skips casting
+
 ### Complete card meta progression
 
 - Replaced the temporary reviewed-wave offer gate with the designed cumulative

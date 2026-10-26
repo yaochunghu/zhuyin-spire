@@ -54,6 +54,12 @@ export const GOLD_TREASURE_BASE = 32;
 export const GOLD_TREASURE_JITTER = 8;
 
 /**
+ * Paid when a chest or elite would drop a relic but every pool relic is
+ * already owned. About one normal fight's gold, not a second relic.
+ */
+export const RELIC_POOL_EXHAUST_GOLD = 20;
+
+/**
  * Shop prices — still buyable after a few fights + treasure.
  */
 export const SHOP_CARD_PRICES = [22, 34, 46] as const;

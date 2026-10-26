@@ -6,7 +6,7 @@ The integration starts from GitHub main `f673085` and preserves its 75-card cata
 
 - Character scores 0 / 300 / 1,000 / 2,000 unlock 12 / 33 / 54 / 75 cards. Act I rewards retain the nine-card teaching pool. Later-act rewards, shops and treasure follow score eligibility.
 - The earlier proposed blanket 12-card release allowlist is superseded and is not part of this integration. No card IDs or existing owned copies are removed.
-- Current Smith and upgraded offer behavior remain available. Existing learner histories and V1/V2 save handling are preserved; no new migration or exact combat autosave is introduced.
+- Current Smith and upgraded offer behavior remain available. Existing learner histories and V1/V2 save handling are preserved. The 0.4.0 integration did not add a migration or exact combat autosave.
 - Full syllable and tone casting remains required outside debug; HP zero ends a run.
 
 ## Integrated fixes
@@ -25,4 +25,4 @@ The catalog generator requires --draft because its prose parser cannot preserve 
 
 The integration PR is intentionally not merged; main pushes trigger Pages deployment. Historical audit and stabilization reports are retained with explicit earlier-checkout labels. See the integration HTML report for current validation results.
 
-Physical iPhone/iPad/Android speech, screen-reader focus and family Act I playtesting remain human release gates. After they pass, the next feature remains the small relic pool in [NEXT_PHASE.md](NEXT_PHASE.md); potions/events and later expansions are deferred.
+Physical iPhone/iPad/Android speech, screen-reader focus and family Act I playtesting remain human release gates. The small relic pool from [NEXT_PHASE.md](NEXT_PHASE.md) is now implemented on a draft branch and adds save version 3. v1 and v2 checkpoints still load: one `relicId` becomes `relicIds`, and legacy relic ids keep their old effects. Potions, events, and later expansions stay deferred until Yao accepts the device and family playtests.

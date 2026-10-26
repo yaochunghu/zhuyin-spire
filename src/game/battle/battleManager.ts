@@ -6,7 +6,7 @@ import { DRAW_PER_TURN, MAX_HAND_SIZE } from '../../data/balance';
 import { resolveEnemyDefIds } from '../../data/encounters';
 import { ENEMIES } from '../../data/enemies';
 import { resolveCard } from '../../data/cards';
-import type { RelicDef } from '../../data/relics';
+import { combatModsFor, listRelics, type RelicDef } from '../../data/relics';
 import type { DeckCard } from '../cardInstances';
 import {
   advanceEnemyStatuses,
@@ -25,16 +25,17 @@ export function createCombat(
   enemyIdOrIds: string | string[],
   heroHp: number,
   heroMaxHp: number,
-  relic?: RelicDef | null,
+  relics?: RelicDef | readonly RelicDef[] | null,
   encounterId?: string,
 ): CombatState {
   const defIds = Array.isArray(enemyIdOrIds)
     ? enemyIdOrIds
     : resolveEnemyDefIds(enemyIdOrIds, encounterId);
 
-  const maxEnergy = relic?.maxEnergy ?? 3;
-  const startBlock = relic?.startBlock ?? 0;
-  const turn1Energy = relic?.firstTurnEnergy ?? maxEnergy;
+  const mods = combatModsFor(listRelics(relics));
+  const maxEnergy = mods.maxEnergy;
+  const startBlock = mods.startBlock;
+  const turn1Energy = mods.firstTurnEnergy;
 
   const enemies = spawnEnemies(defIds);
   const names = enemies.map((e) => ENEMIES[e.defId]?.name ?? e.defId).join('、');
@@ -46,8 +47,16 @@ export function createCombat(
     block: startBlock,
     energy: turn1Energy,
     maxEnergy,
-    firstAttackBonusDamage: relic?.firstAttackBonusDamage ?? 0,
-    firstAttackBonusReady: (relic?.firstAttackBonusDamage ?? 0) > 0,
+    firstAttackBonusDamage: mods.firstAttackBonusDamage,
+    firstAttackBonusReady: mods.firstAttackBonusDamage > 0,
+    basicHitBonus: mods.firstBasicHitBonus,
+    basicHitBonusReady: mods.firstBasicHitBonus > 0,
+    vulnerableHitBonus: mods.firstVulnerableHitBonus,
+    vulnerableHitBonusReady: mods.firstVulnerableHitBonus > 0,
+    tempoRelicBlock: mods.firstTempoBlock,
+    tempoRelicReady: mods.firstTempoBlock > 0,
+    jinGuardBlock: mods.firstJinBlock,
+    jinGuardReady: mods.firstJinBlock > 0,
     training: 0,
     jin: 0,
     gainedJinLastEnemyPhase: false,
@@ -86,17 +95,33 @@ export function createCombat(
   };
   syncPrimaryEnemy(state);
 
-  if (startBlock > 0) state.log.push(`遺物護盾 +${startBlock}`);
-  if (relic?.firstTurnEnergy && relic.firstTurnEnergy > maxEnergy) {
-    state.log.push(`晨光：第 1 回合 ⚡${relic.firstTurnEnergy}`);
+  if (mods.startTraining > 0) {
+    state.training += mods.startTraining;
+    state.log.push(`練功起勢：練功 +${mods.startTraining}`);
   }
-  if (relic?.firstAttackBonusDamage) {
-    state.log.push(`初心音叉：首次攻擊 +${relic.firstAttackBonusDamage}`);
+  if (startBlock > 0) state.log.push(`遺物護盾 +${startBlock}`);
+  if (turn1Energy > maxEnergy) {
+    state.log.push(`晨光：第 1 回合 ⚡${turn1Energy}`);
+  }
+  if (mods.firstAttackBonusDamage > 0) {
+    state.log.push(`初心音叉：首次攻擊 +${mods.firstAttackBonusDamage}`);
+  }
+  if (mods.firstVulnerableHitBonus > 0) {
+    state.log.push(`尋隙指套：易傷目標的第一下 +${mods.firstVulnerableHitBonus}`);
+  }
+  if (mods.firstBasicHitBonus > 0) {
+    state.log.push(`練功護腕：基礎攻擊第一下 +${mods.firstBasicHitBonus}`);
+  }
+  if (mods.firstTempoBlock > 0) {
+    state.log.push(`換拍木魚：第一次換拍護盾 +${mods.firstTempoBlock}`);
+  }
+  if (mods.firstJinBlock > 0) {
+    state.log.push(`聽勁護心：第一次得勁護盾 +${mods.firstJinBlock}`);
   }
   drawCards(state, DRAW_PER_TURN);
-  if (relic?.startDraw && relic.startDraw > 0) {
-    drawCards(state, relic.startDraw);
-    state.log.push(`多抽 ${relic.startDraw} 張`);
+  if (mods.startDraw > 0) {
+    drawCards(state, mods.startDraw);
+    state.log.push(`多抽 ${mods.startDraw} 張`);
   }
   return state;
 }
@@ -123,6 +148,9 @@ export function endTurn(state: CombatState): CombatState['status'] {
   state.turn += 1;
   state.energy = state.maxEnergy;
   state.firstAttackBonusReady = state.firstAttackBonusDamage > 0;
+  state.basicHitBonusReady = state.basicHitBonus > 0;
+  state.vulnerableHitBonusReady = state.vulnerableHitBonus > 0;
+  state.tempoRelicReady = state.tempoRelicBlock > 0;
   state.gainedJinLastEnemyPhase = state.gainedJinThisEnemyPhase;
   state.gainedJinThisEnemyPhase = false;
   state.lastPlayedType = null;

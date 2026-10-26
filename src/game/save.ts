@@ -21,7 +21,7 @@ import {
   type RewardTier,
   type RunMap,
 } from '../data/map';
-import { RELICS } from '../data/relics';
+import { isKnownRelicId } from '../data/relics';
 import type { RunState, Screen, ShopOffer } from './state';
 import {
   isDeckCard,
@@ -33,7 +33,8 @@ import { createRunScoreStats, type RunScoreStats } from './progression';
 import { getActiveProfileId, isLegacyOwnerProfile } from './profiles';
 
 const LEGACY_SAVE_KEY = 'zhuyin-spire-run-v1';
-const SAVE_VERSION = 2 as const;
+const SAVE_VERSION_V2 = 2 as const;
+const SAVE_VERSION = 3 as const;
 const MAX_SAVE_BYTES = 1_000_000;
 const LEGACY_BOSS_ROW = CLIMB_ROWS - 1;
 
@@ -60,7 +61,7 @@ const STABLE_SCREENS: Screen[] = [
   'actClear',
 ];
 
-export interface RunSnapshotV1 {
+export interface RunSnapshot {
   v: typeof SAVE_VERSION;
   screen: Screen;
   heroHp: number;
@@ -70,7 +71,10 @@ export interface RunSnapshotV1 {
   gold: number;
   /** Optional so v1 saves made before characters still load. */
   characterId?: string | null;
-  relicId: string | null;
+  /** Acquisition order. v1 and v2 stored this as a single relicId. */
+  relicIds: string[];
+  pendingRelicId?: string | null;
+  rewardSource?: 'fight' | 'treasure' | null;
   runMap: RunMap;
   actIndex: number;
   currentNodeId: string | null;
@@ -116,7 +120,7 @@ export function clearSavedRun(): void {
 }
 
 /** Build a checkpoint from current run (ephemeral combat/cast stripped). */
-export function snapshotRun(state: RunState): RunSnapshotV1 | null {
+export function snapshotRun(state: RunState): RunSnapshot | null {
   if (!isStableScreen(state.screen)) return null;
   return {
     v: SAVE_VERSION,
@@ -127,7 +131,9 @@ export function snapshotRun(state: RunState): RunSnapshotV1 | null {
     nextCardUid: state.nextCardUid,
     gold: state.gold,
     characterId: state.characterId,
-    relicId: state.relicId,
+    relicIds: [...state.relicIds],
+    pendingRelicId: state.pendingRelicId,
+    rewardSource: state.rewardSource,
     runMap: JSON.parse(JSON.stringify(state.runMap)) as RunMap,
     actIndex: state.actIndex,
     currentNodeId: state.currentNodeId,
@@ -295,7 +301,16 @@ function isValidRunScoreStats(value: unknown): value is RunScoreStats {
   );
 }
 
-function isValidSnapshot(data: unknown): data is RunSnapshotV1 {
+function isValidRelicIdList(value: unknown): value is string[] {
+  return (
+    Array.isArray(value) &&
+    value.length <= 12 &&
+    value.every((id) => typeof id === 'string' && isKnownRelicId(id)) &&
+    new Set(value).size === value.length
+  );
+}
+
+function isValidSnapshot(data: unknown): data is RunSnapshot {
   if (!isPlainObject(data)) return false;
   if (data.v !== SAVE_VERSION || typeof data.screen !== 'string' || !isStableScreen(data.screen as Screen)) return false;
   if (!isIntIn(data.heroMaxHp, 1, 999) || !isIntIn(data.heroHp, 0, data.heroMaxHp)) return false;
@@ -304,7 +319,20 @@ function isValidSnapshot(data: unknown): data is RunSnapshotV1 {
   if (!isIntIn(data.nextCardUid, 1, 1_000_000)) return false;
   if (!isIntIn(data.gold, 0, 999_999)) return false;
   if (data.characterId !== undefined && data.characterId !== null && !isPlayableCharacterId(data.characterId)) return false;
-  if (data.relicId !== null && (typeof data.relicId !== 'string' || !(data.relicId in RELICS))) return false;
+  if (!isValidRelicIdList(data.relicIds)) return false;
+  if (
+    data.pendingRelicId !== undefined &&
+    data.pendingRelicId !== null &&
+    (typeof data.pendingRelicId !== 'string' ||
+      !isKnownRelicId(data.pendingRelicId) ||
+      !data.relicIds.includes(data.pendingRelicId))
+  ) return false;
+  if (
+    data.rewardSource !== undefined &&
+    data.rewardSource !== null &&
+    data.rewardSource !== 'fight' &&
+    data.rewardSource !== 'treasure'
+  ) return false;
   if (!isValidRunMap(data.runMap)) return false;
   if (!isIntIn(data.actIndex, 0, 2)) return false;
   const mapIds = new Set(data.runMap.acts.flatMap((act) => act.nodes.map((node) => node.id)));
@@ -354,7 +382,7 @@ function migrateLegacySnapshot(data: unknown): unknown {
     : data.shopOffers;
   return {
     ...data,
-    v: SAVE_VERSION,
+    v: SAVE_VERSION_V2,
     screen: data.screen === 'removeCard' ? 'rest' : data.screen,
     deck,
     nextCardUid: counter,
@@ -368,7 +396,11 @@ function migrateLegacySnapshot(data: unknown): unknown {
  * inserting the guaranteed pre-boss Rest layer and moving the boss upward.
  */
 function migrateLegacyMapFloors(data: unknown): unknown {
-  if (!isPlainObject(data) || data.v !== SAVE_VERSION || !isPlainObject(data.runMap)) {
+  if (
+    !isPlainObject(data) ||
+    (data.v !== SAVE_VERSION_V2 && data.v !== SAVE_VERSION) ||
+    !isPlainObject(data.runMap)
+  ) {
     return data;
   }
   const acts = data.runMap.acts;
@@ -431,12 +463,35 @@ function migrateLegacyMapFloors(data: unknown): unknown {
   return migrated;
 }
 
-export function parseSnapshot(data: unknown): RunSnapshotV1 | null {
-  const migrated = migrateLegacyMapFloors(migrateLegacySnapshot(data));
+/** v2 stored one relicId. v3 stores that relic, if any, as the owned list. */
+function migrateRelicCollection(data: unknown): unknown {
+  if (!isPlainObject(data) || data.v !== SAVE_VERSION_V2) return data;
+  let relicIds: string[];
+  if (Array.isArray(data.relicIds)) {
+    if (!data.relicIds.every((id) => typeof id === 'string')) return null;
+    relicIds = [...data.relicIds];
+  } else if (typeof data.relicId === 'string') {
+    relicIds = [data.relicId];
+  } else if (data.relicId === null || data.relicId === undefined) {
+    relicIds = [];
+  } else {
+    return null;
+  }
+  return {
+    ...data,
+    v: SAVE_VERSION,
+    relicIds,
+  };
+}
+
+export function parseSnapshot(data: unknown): RunSnapshot | null {
+  const withCards = migrateLegacySnapshot(data);
+  const withMap = migrateLegacyMapFloors(withCards);
+  const migrated = migrateRelicCollection(withMap);
   return isValidSnapshot(migrated) ? migrated : null;
 }
 
-export function loadSnapshot(): RunSnapshotV1 | null {
+export function loadSnapshot(): RunSnapshot | null {
   try {
     const raw = readActiveRaw();
     if (!raw) return null;
@@ -457,7 +512,7 @@ export function loadSnapshot(): RunSnapshotV1 | null {
 }
 
 /** Apply a validated snapshot onto an existing RunState (mutates). */
-export function applySnapshot(state: RunState, snap: RunSnapshotV1): void {
+export function applySnapshot(state: RunState, snap: RunSnapshot): void {
   state.screen = snap.screen;
   state.heroHp = snap.heroHp;
   state.heroMaxHp = snap.heroMaxHp;
@@ -475,7 +530,9 @@ export function applySnapshot(state: RunState, snap: RunSnapshotV1): void {
   ) {
     state.screen = 'rest';
   }
-  state.relicId = snap.relicId;
+  state.relicIds = [...snap.relicIds];
+  state.pendingRelicId = snap.pendingRelicId ?? null;
+  state.rewardSource = snap.rewardSource ?? null;
   state.runMap = JSON.parse(JSON.stringify(snap.runMap)) as RunMap;
   state.actIndex = snap.actIndex;
   state.currentNodeId = snap.currentNodeId;

@@ -28,7 +28,7 @@ import {
   pickCharacter,
   startRun,
 } from '../../src/game/state';
-import { applySnapshot, snapshotRun, type RunSnapshotV1 } from '../../src/game/save';
+import { applySnapshot, snapshotRun } from '../../src/game/save';
 
 class MemoryStorage {
   private values = new Map<string, string>();
@@ -116,7 +116,7 @@ describe('共鳴武者 catalog', () => {
     expect(state.deck.map((card) => card.defId)).toEqual(character.starterDeckIds);
     expect(new Set(state.deck.map((card) => card.uid)).size).toBe(10);
     expect(state.deck.every((card) => card.upgradeLevel === 0)).toBe(true);
-    expect(getRelic(state.relicId!).firstAttackBonusDamage).toBe(1);
+    expect(getRelic(state.relicIds[0]!).firstAttackBonusDamage).toBe(1);
   });
 
   it('makes Smith available for an unupgraded deck', () => {
@@ -134,13 +134,13 @@ describe('共鳴武者 catalog', () => {
     const source = createNewRun();
     startRun(source);
     pickCharacter(source, 'echoMage');
-    source.relicId = 'coinPouch';
+    source.relicIds = ['coinPouch'];
     const snapshot = snapshotRun(source)!;
-    delete (snapshot as Partial<RunSnapshotV1>).characterId;
+    delete (snapshot as { characterId?: string | null }).characterId;
     const restored = createNewRun();
     applySnapshot(restored, snapshot);
     expect(restored.characterId).toBe('echoMage');
-    expect(restored.relicId).toBe('coinPouch');
+    expect(restored.relicIds).toEqual(['coinPouch']);
   });
 });
 

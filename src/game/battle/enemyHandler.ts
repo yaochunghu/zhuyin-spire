@@ -195,6 +195,12 @@ export function applyEnemyIntent(state: CombatState, unit: EnemyUnit): void {
       state.jin += 1;
       state.gainedJinThisEnemyPhase = true;
       state.log.push(`完整化解攻擊：勁 +1（${state.jin}/9）`);
+      if (state.jinGuardReady && state.jinGuardBlock > 0) {
+        state.jinGuardReady = false;
+        state.block += state.jinGuardBlock;
+        pushFx(state, { type: 'playerBlock', amount: state.jinGuardBlock });
+        state.log.push(`聽勁護心：護盾 +${state.jinGuardBlock}`);
+      }
       if (state.drawIfJinPending) {
         state.bonusDrawNextTurn += 1;
         state.drawIfJinPending = false;
