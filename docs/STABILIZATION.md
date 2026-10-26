@@ -25,4 +25,4 @@ The catalog generator requires --draft because its prose parser cannot preserve 
 
 The integration PR is intentionally not merged; main pushes trigger Pages deployment. Historical audit and stabilization reports are retained with explicit earlier-checkout labels. See the integration HTML report for current validation results.
 
-Physical iPhone/iPad/Android speech, screen-reader focus and family Act I playtesting remain human release gates. After they pass, the next feature remains the small relic pool in [NEXT_PHASE.md](NEXT_PHASE.md); potions/events and later expansions are deferred.
+Physical iPhone/iPad/Android speech, screen-reader focus, and the family Act I session remain human release gates. Run them from the playtest kit linked in [PLAYTEST_GATE.md](PLAYTEST_GATE.md#playtest-kit). Relic work may proceed in parallel and merges only after both of those playtests pass. Potions, events, and later expansions stay deferred. See [NEXT_PHASE.md](NEXT_PHASE.md).

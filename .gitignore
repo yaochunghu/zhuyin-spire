@@ -13,3 +13,8 @@ dist/
 .superdesign/tmp/
 test-results/
 playwright-report/
+
+# Filled playtest sittings stay private. The blank template and this note remain.
+docs/playtest/sessions/*
+!docs/playtest/sessions/TEMPLATE.md
+!docs/playtest/sessions/README.md
