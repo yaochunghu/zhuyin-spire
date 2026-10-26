@@ -37,10 +37,11 @@ Ordered by “resume playtest” value — not a binding schedule. Detail:
 
 1. **Playtest all score milestones** — cast-on / debug-skip matrix in
    [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md)
-2. **Relic pool is in the tree** — five 共鳴 chest/elite relics, starter
-   初心音叉 kept, legacy four loadable but not dropped. Yao still decides the
-   device and family playtests before this content merges. Next content slice
-   is a small potion belt. Do not import the Echo-era 40/20 bible wholesale
+2. **Relic pool is in the tree** — five 共鳴 relics from chests, elites, and
+   bosses. The starter 初心音叉 stays. 練功起勢 lasts the first player turn.
+   Legacy four stay loadable but are not dropped. Yao still decides the device
+   and family playtests before this content merges. Next content slice is a
+   small potion belt. Do not import the Echo-era 40/20 bible wholesale
 3. **Act I events, then encounter rewrites one act at a time**
 4. **Keys, Act IV, and a 20-level track last**
 5. Optional later: second character using a reviewed English or math provider,

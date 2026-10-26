@@ -28,7 +28,7 @@ test.afterEach(async ({ page }) => {
   expect(consoleErrors.get(page) ?? []).toEqual([]);
 });
 
-test('chests and elites drop relics, and a badge opens the inspect dialog', async ({ page }) => {
+test('chests, elites, and bosses drop relics, and a badge opens the inspect dialog', async ({ page }) => {
   await page.goto('/?debug=1');
   await page.getByRole('button', { name: '開始爬塔' }).click();
   await page.getByRole('button', { name: /選擇共鳴武者/ }).click();
@@ -99,4 +99,23 @@ test('chests and elites drop relics, and a badge opens the inspect dialog', asyn
   });
   await page.getByRole('button', { name: '關閉遺物說明' }).click();
   await expect(dialog).toBeHidden();
+
+  await page.evaluate(async () => {
+    const { run, render } = await import('/src/ui/runtime.ts');
+    const { debugFinishFight, debugStartEncounter } = await import('/src/game/state.ts');
+    const state = run();
+    const boss = state.runMap.acts[state.actIndex]!.nodes.find((node) => node.kind === 'boss');
+    if (!boss) throw new Error('Missing boss');
+    state.activeNodeId = boss.id;
+    debugStartEncounter(state, boss.enemyId ?? 'slime', boss.encounterId);
+    debugFinishFight(state);
+    render();
+  });
+  await expect(page.locator('.reward-cards .card')).toHaveCount(3);
+  const bossBadge = page.locator('.relic-reward .relic-badge');
+  await expect(bossBadge).toBeVisible();
+  const bossId = await bossBadge.getAttribute('data-relic-id');
+  expect(POOL_IDS).toContain(bossId);
+  expect(bossId).not.toBe(chestId);
+  expect(bossId).not.toBe(eliteId);
 });

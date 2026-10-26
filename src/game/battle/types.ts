@@ -104,6 +104,8 @@ export interface CombatState {
   jinGuardBlock: number;
   jinGuardReady: boolean;
   training: number;
+  /** 練功起勢 still to remove when the second player turn begins. */
+  firstTurnTraining: number;
   jin: number;
   gainedJinLastEnemyPhase: boolean;
   gainedJinThisEnemyPhase: boolean;

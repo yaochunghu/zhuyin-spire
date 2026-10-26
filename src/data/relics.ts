@@ -31,8 +31,8 @@ export interface RelicDef {
   firstTempoBlock?: number;
   /** Block gained the first time this combat a full block grants 勁. */
   firstJinBlock?: number;
-  /** 練功 gained when combat starts. */
-  startTraining?: number;
+  /** 練功 gained at combat start and removed when the second player turn begins. */
+  firstTurnTraining?: number;
 }
 
 export const RELICS: Record<string, RelicDef> = {
@@ -85,10 +85,10 @@ export const RELICS: Record<string, RelicDef> = {
     id: 'trainingStance',
     emoji: '🥋',
     name: '練功起勢',
-    blurb: '戰鬥開始時，練功 +1',
-    adultNote: '這一點練功會加在每一記基礎攻擊上，直到這場戰鬥結束。',
+    blurb: '第 1 回合，練功 +1',
+    adultNote: '這一點練功只留在第一回合。第二回合開始就收回。牌自己給的練功不會被收回。',
     source: 'pool',
-    startTraining: 1,
+    firstTurnTraining: 1,
   },
   shieldCharm: {
     id: 'shieldCharm',
@@ -165,7 +165,7 @@ export interface RelicCombatMods {
   firstVulnerableHitBonus: number;
   firstTempoBlock: number;
   firstJinBlock: number;
-  startTraining: number;
+  firstTurnTraining: number;
 }
 
 export function combatModsFor(relics: readonly RelicDef[]): RelicCombatMods {
@@ -179,7 +179,7 @@ export function combatModsFor(relics: readonly RelicDef[]): RelicCombatMods {
     firstVulnerableHitBonus: 0,
     firstTempoBlock: 0,
     firstJinBlock: 0,
-    startTraining: 0,
+    firstTurnTraining: 0,
   };
   for (const relic of relics) {
     mods.startBlock += relic.startBlock ?? 0;
@@ -189,7 +189,7 @@ export function combatModsFor(relics: readonly RelicDef[]): RelicCombatMods {
     mods.firstVulnerableHitBonus += relic.firstVulnerableHitBonus ?? 0;
     mods.firstTempoBlock += relic.firstTempoBlock ?? 0;
     mods.firstJinBlock += relic.firstJinBlock ?? 0;
-    mods.startTraining += relic.startTraining ?? 0;
+    mods.firstTurnTraining += relic.firstTurnTraining ?? 0;
     if (relic.maxEnergy) mods.maxEnergy = Math.max(mods.maxEnergy, relic.maxEnergy);
     if (relic.firstTurnEnergy) {
       mods.firstTurnEnergy = Math.max(mods.firstTurnEnergy, relic.firstTurnEnergy);

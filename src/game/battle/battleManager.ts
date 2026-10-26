@@ -58,6 +58,7 @@ export function createCombat(
     jinGuardBlock: mods.firstJinBlock,
     jinGuardReady: mods.firstJinBlock > 0,
     training: 0,
+    firstTurnTraining: 0,
     jin: 0,
     gainedJinLastEnemyPhase: false,
     gainedJinThisEnemyPhase: false,
@@ -95,9 +96,10 @@ export function createCombat(
   };
   syncPrimaryEnemy(state);
 
-  if (mods.startTraining > 0) {
-    state.training += mods.startTraining;
-    state.log.push(`練功起勢：練功 +${mods.startTraining}`);
+  if (mods.firstTurnTraining > 0) {
+    state.training += mods.firstTurnTraining;
+    state.firstTurnTraining = mods.firstTurnTraining;
+    state.log.push(`練功起勢：第 1 回合練功 +${mods.firstTurnTraining}`);
   }
   if (startBlock > 0) state.log.push(`遺物護盾 +${startBlock}`);
   if (turn1Energy > maxEnergy) {
@@ -146,6 +148,12 @@ export function endTurn(state: CombatState): CombatState['status'] {
   state.block = 0;
   advanceEnemyStatuses(state);
   state.turn += 1;
+  if (state.firstTurnTraining > 0) {
+    const removed = Math.min(state.training, state.firstTurnTraining);
+    state.training -= removed;
+    state.firstTurnTraining = 0;
+    if (removed > 0) state.log.push('練功起勢結束');
+  }
   state.energy = state.maxEnergy;
   state.firstAttackBonusReady = state.firstAttackBonusDamage > 0;
   state.basicHitBonusReady = state.basicHitBonus > 0;

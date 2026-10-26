@@ -62,7 +62,8 @@ Energy is per-combat; end turn discards remaining hand then enemy acts then redr
   cast does not count as 轉拍 and does not grant the Block.
 - **聽勁護心:** the first time a full block grants 勁 in a combat, gain 3
   Block after that attack has already resolved.
-- **練功起勢:** +1 練功 at the start of combat.
+- **練功起勢:** +1 練功 during the first player turn. It is removed when turn 2
+  starts, and card-granted 練功 stays.
   None of these skip the cast. Numbers live on `RelicDef` in `data/relics.ts`.
 - Powers leave draw/discard circulation and remain active for the combat.
 

@@ -28,8 +28,8 @@ Complete the integrated browser checks and physical-device/family gates in [STAB
 ## Relic pool (0.5) — implemented, waiting on playtest
 
 Chests no longer repeat the card-reward screen. A chest pays its gold and one
-relic. An elite still offers a card and also drops one relic. Bosses and
-normal fights do not drop relics. The drop pool is five 共鳴 relics:
+relic. An elite or a boss still offers a card and also drops one relic. Normal
+fights do not drop relics. The drop pool is five 共鳴 relics:
 
 | Id | Name | Effect |
 |----|------|--------|
@@ -37,7 +37,7 @@ normal fights do not drop relics. The drop pool is five 共鳴 relics:
 | `trainingWrap` | 練功護腕 | First 基礎攻擊 hit each turn: +1 before 易傷 |
 | `tempoWood` | 換拍木魚 | First successful 轉拍 each turn: +2 Block |
 | `listeningHeart` | 聽勁護心 | First time this combat a full block grants 勁: +3 Block after that block |
-| `trainingStance` | 練功起勢 | Combat start: 練功 +1 |
+| `trainingStance` | 練功起勢 | Turn 1 only: 練功 +1, removed when turn 2 starts |
 
 The starter remains 🎵 初心音叉. Each relic can be owned once. When the pool is
 exhausted, that drop pays `RELIC_POOL_EXHAUST_GOLD` (20) instead. Owned relics
@@ -48,13 +48,11 @@ The four legacy relics (小盾符, 零錢袋, 晨光火花, 幸運抽) stay in
 `src/data/relics.ts` so old saves keep their effects. They are not in the drop
 pool. Saves move to version 3: a v1 or v2 `relicId` becomes `relicIds`.
 
-### Open questions for Yao
+Yao kept the chest-for-relic trade and the 20-gold fallback. 練功起勢 lasts
+one player turn so it sits with the other limited relics. Boss victories use
+the same drop.
 
-- Is 練功起勢 too strong, because +1 練功 lasts the whole fight on every basic hit?
-- Should any legacy relic enter the drop pool?
-- Is replacing the chest's card choice with a relic the right trade?
-- Is 20 gold the right payment once the five relics are all owned?
-- Device and family playtests are still required before this content merges.
+Device and family playtests are still required before this content merges.
 
 After that playtest: a 3-slot potion belt with 4–6 potions, then Act I events only.
 

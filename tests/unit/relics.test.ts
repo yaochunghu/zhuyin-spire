@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { GOLD_TREASURE_BASE, GOLD_TREASURE_JITTER, RELIC_POOL_EXHAUST_GOLD } from '../../src/data/balance';
+import { GOLD_ELITE_BASE, GOLD_JITTER, GOLD_TREASURE_BASE, GOLD_TREASURE_JITTER, RELIC_POOL_EXHAUST_GOLD } from '../../src/data/balance';
 import { getCard } from '../../src/data/cards';
 import {
   RELICS,
@@ -142,15 +142,24 @@ describe('relic effects', () => {
     expect(combat.basicHitBonusReady).toBe(true);
   });
 
-  it('adds 練功起勢 to every basic hit for the whole combat', () => {
-    const combat = createCombat(['bo', 'bo'], 'rock', 40, 40, getRelic('trainingStance'));
+  it('adds 練功起勢 on turn 1 and takes only that 練功 back', () => {
+    const combat = createCombat(['bo', 'bo', 'shi'], 'rock', 40, 40, getRelic('trainingStance'));
     combat.enemies[0]!.hp = 40;
     expect(combat.training).toBe(1);
     expect(damageFrom(combat, 'bo')).toBe(4);
     expect(damageFrom(combat, 'bo')).toBe(4);
+    executeEffects(combat, getCard('shi'), [], () => {}, () => []);
+    expect(combat.training).toBe(3);
+    combat.block = 99;
+    endTurn(combat);
+    expect(combat.turn).toBe(2);
+    expect(combat.training).toBe(2);
+    expect(combat.firstTurnTraining).toBe(0);
+    combat.enemies[0]!.block = 0;
+    expect(damageFrom(combat, 'bo')).toBe(5);
   });
 
-  it('lets 練功起勢 and 練功護腕 stack on the first basic hit', () => {
+  it('lets 練功起勢 and 練功護腕 stack on turn 1 only', () => {
     const combat = createCombat(
       ['bo', 'bo'],
       'rock',
@@ -161,6 +170,12 @@ describe('relic effects', () => {
     combat.enemies[0]!.hp = 40;
     expect(damageFrom(combat, 'bo')).toBe(5);
     expect(damageFrom(combat, 'bo')).toBe(4);
+    combat.block = 99;
+    endTurn(combat);
+    combat.enemies[0]!.block = 0;
+    expect(combat.training).toBe(0);
+    expect(damageFrom(combat, 'bo')).toBe(4);
+    expect(damageFrom(combat, 'bo')).toBe(3);
   });
 
   it('gives 換拍木魚 block only for a successful 轉拍, once per turn', () => {
@@ -297,7 +312,7 @@ describe('relic drops', () => {
     expect(gain).toBeLessThan(GOLD_TREASURE_BASE + GOLD_TREASURE_JITTER + RELIC_POOL_EXHAUST_GOLD);
   });
 
-  it('does not drop a relic for a normal fight or a boss', () => {
+  it('does not drop a relic for a normal fight', () => {
     const fightRun = freshRun();
     const fight = approach(fightRun, 'fight');
     selectMapNode(fightRun, fight.id);
@@ -305,13 +320,34 @@ describe('relic drops', () => {
     expect(fightRun.pendingRelicId).toBeNull();
     expect(fightRun.relicIds).toEqual(['tuningFork']);
     expect(fightRun.rewardOptions).toHaveLength(3);
+  });
 
-    const bossRun = freshRun();
-    const boss = approach(bossRun, 'boss');
-    selectMapNode(bossRun, boss.id);
-    debugFinishFight(bossRun);
-    expect(bossRun.pendingRelicId).toBeNull();
-    expect(bossRun.relicIds).toEqual(['tuningFork']);
-    expect(bossRun.rewardOptions).toHaveLength(3);
+  it('gives a boss a relic in addition to the card reward and full heal', () => {
+    const state = freshRun();
+    state.heroHp = 7;
+    const boss = approach(state, 'boss');
+    selectMapNode(state, boss.id);
+    debugFinishFight(state);
+    expect(state.screen).toBe('reward');
+    expect(state.rewardSource).toBe('fight');
+    expect(state.heroHp).toBe(state.heroMaxHp);
+    expect(state.rewardOptions).toHaveLength(3);
+    expect(RELIC_POOL_IDS as readonly string[]).toContain(state.pendingRelicId);
+    expect(state.relicIds).toEqual(['tuningFork', state.pendingRelicId]);
+  });
+
+  it('pays exhaust gold on a boss when the pool is already owned', () => {
+    const state = freshRun();
+    state.relicIds = ['tuningFork', ...RELIC_POOL_IDS];
+    const before = state.gold;
+    const boss = approach(state, 'boss');
+    selectMapNode(state, boss.id);
+    debugFinishFight(state);
+    expect(state.pendingRelicId).toBeNull();
+    expect(state.relicIds).toEqual(['tuningFork', ...RELIC_POOL_IDS]);
+    expect(state.rewardOptions).toHaveLength(3);
+    const gain = state.gold - before;
+    expect(gain).toBeGreaterThanOrEqual(GOLD_ELITE_BASE + RELIC_POOL_EXHAUST_GOLD);
+    expect(gain).toBeLessThan(GOLD_ELITE_BASE + GOLD_JITTER + RELIC_POOL_EXHAUST_GOLD);
   });
 });

@@ -1120,6 +1120,7 @@ function finishFight(state: RunState): void {
     state.rewardTier = 'elite';
     state.rewardOptions = pickRewardIds(rewardPoolFor(state, 'elite'), 3)
       .map((id) => makeOffer(state, id, 'reward'));
+    grantRelicReward(state);
     state.screen = 'reward';
     saveRunCheckpoint(state);
     return;
