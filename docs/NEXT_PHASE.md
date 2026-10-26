@@ -8,8 +8,8 @@ at each score milestone while balancing the advanced tiers.
 
 | Source | Says |
 |--------|------|
-| `package.json` / `CHANGELOG.md` | **0.4.0** |
-| GitHub Releases | Latest published tag may still be **v0.2.2** until an owner cuts a release |
+| `package.json` / `CHANGELOG.md` | **0.4.1** |
+| GitHub Releases | Latest published tag is **v0.4.0** (`535af22`). Publish **v0.4.1** from `main` after this version lands. |
 
 ## What is live
 
