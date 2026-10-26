@@ -19,6 +19,7 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | Doc | Purpose |
 |-----|---------|
 | [STABILIZATION.md](./STABILIZATION.md) | Integration boundary and preserved 75-card progression |
+| [playtest/README.md](./playtest/README.md) | Device checklist, family Act I script, and session record |
 | [BROWSER_SUPPORT.md](./BROWSER_SUPPORT.md) | Browser verification and physical-device release gates |
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | Screens, `RunState`, layers, save, render loop |
 | [COMBAT.md](./COMBAT.md) | Battle modules, cast gate, drag play, FX pitfalls |

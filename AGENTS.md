@@ -73,11 +73,11 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Docs map
 
-[docs/INDEX.md](docs/INDEX.md) · Architecture · Combat · Map · Content · Design bibles · Balance · Debug · [Roadmap](docs/ROADMAP.md)
+[docs/INDEX.md](docs/INDEX.md) · [Playtest kit](docs/playtest/README.md) · Architecture · Combat · Map · Content · Design bibles · Balance · Debug · [Roadmap](docs/ROADMAP.md)
 
 ## Suggested first tasks when resuming
 
-1. Act I playtest (debug skip cast on, then off)  
+1. Human release gates: [docs/playtest/README.md](docs/playtest/README.md) (devices, then family; debug skip off). Balance playtests still use debug skip separately.  
 2. Balance tweaks in `balance.ts` / enemy HP  
 3. Content (cards/enemies/phrases)  
 4. Cast/map polish per roadmap  

@@ -23,7 +23,7 @@ at each score milestone while balancing the advanced tiers.
 
 ## Before expanding content
 
-Complete the integrated browser checks and physical-device/family gates in [STABILIZATION.md](STABILIZATION.md) and [BROWSER_SUPPORT.md](BROWSER_SUPPORT.md). The 75-card progression remains the baseline.
+Complete the integrated browser checks and the two human gates in the [playtest kit](PLAYTEST_GATE.md). The relic-content pull request merges only after both the device checklist and the family Act I session pass. The 75-card progression remains the baseline.
 
 ## Next feature: relic pool (0.5)
 

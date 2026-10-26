@@ -2,6 +2,18 @@
 
 Date: 2026-09-09. Baseline: integrated 0.4.0 with all 75 cards score-gated. Scope: approved stabilization changes and readiness for an Act I family playtest. Automated execution does not certify physical devices or learning outcomes.
 
+## Playtest kit
+
+Human gates are run from the kit. Yao's decision, 2026-10-26: the relic-content pull request merges only after both gates pass. Automated results do not check either box.
+
+| Gate | Who | Sheet |
+|------|-----|--------|
+| 1. Physical devices | Adult, no child required | [playtest/DEVICE_CHECKLIST.md](playtest/DEVICE_CHECKLIST.md) |
+| 2. Family Act I | One adult and the learner | [playtest/FAMILY_SESSION.md](playtest/FAMILY_SESSION.md) |
+| Record | One copy per device or family sitting | [playtest/sessions/SESSION_RECORD.md](playtest/sessions/SESSION_RECORD.md) |
+
+Start at [playtest/README.md](playtest/README.md). Use the public site with debug cast skip off. Leave personal browser data in place. The steps below stay the pass criteria; the kit is the phone-ready procedure.
+
 ## Automated gate (run now)
 
 1. Unit suite: card effects and upgrades, cast validation, release pools, profile/save compatibility, pause ownership, speech failure.
@@ -12,6 +24,8 @@ Date: 2026-09-09. Baseline: integrated 0.4.0 with all 75 cards score-gated. Scop
 Pass criterion: all active tests pass; investigate failures before accepting a retry. Preserve logs and traces for failures.
 
 ## Physical-device gate (human execution required)
+
+Follow [playtest/DEVICE_CHECKLIST.md](playtest/DEVICE_CHECKLIST.md) on the phone.
 
 Use an iPhone and iPad with Safari, and an Android phone with Chrome. Record exact device, OS, browser, installed Mandarin voice, date and tester. Use a new test learner profile, debug casting skip OFF. Do not clear personal browser data.
 
@@ -29,6 +43,8 @@ Any cast bypass, unintended card play, lost stable save, focus trap preventing p
 
 ## Adult-and-learner Act I session
 
+Follow [playtest/FAMILY_SESSION.md](playtest/FAMILY_SESSION.md).
+
 Allow 30–45 minutes plus breaks; do not force completion if the learner is tired. Adult reads coaching text and helps with device operation without entering every answer. Continue another session if necessary until an entire Act I run or death has been observed.
 
 Record room reached, elapsed play time, incorrect casts, adult interventions, accidental taps, confusing card/enemy effects, speech failures, HP at room exits, and whether the learner wants another run. Use no identifying child information.
@@ -38,6 +54,10 @@ Observe tutorial -> map -> battles -> rewards -> available shop/rest/Smith -> bo
 Exit decision: no blocking device issues; full run/death observed; adult can support casting; learner can operate primary controls with age-appropriate help. Turn repeated confusion into small fixes before expanding the released content roster. Balance findings require more than one run before broad tuning.
 
 ## Session record template
+
+Copy [playtest/sessions/SESSION_RECORD.md](playtest/sessions/SESSION_RECORD.md) once per device and once per family sitting. Send the copy to Yao. Do not commit filled records.
+
+The filed record still covers:
 
 Device / OS / browser / voice:
 Build or git revision plus working-tree status:

@@ -1,0 +1,4 @@
+# Filled records stay on the tester's device. Commit the blank template only.
+*
+!SESSION_RECORD.md
+!.gitignore
