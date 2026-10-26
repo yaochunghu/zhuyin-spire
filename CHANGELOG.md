@@ -8,6 +8,13 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+### Zhuyin corrections
+
+- Point pictured phrases at the 《重編國語辭典修訂本》 headword for that picture: 幹 ㄍㄢˋ, 更 ㄍㄥˋ, 卷 ㄐㄩㄢˋ, 期 ㄑㄧˊ, 甚 ㄕㄣˊ, 鑽 ㄗㄨㄢˋ, 撒 ㄙㄚˇ, and 微 ㄨㄟˊ.
+- Remove the 還 ↩️ and 傳 📣 rows whose readings did not match the picture, because 歸還 ㄏㄨㄢˊ and 傳播 ㄔㄨㄢˊ were already in the bank.
+- Remove the extra 桌 rows that repeated the same word and spelling.
+- Keep 余 for the surplus picture. The revised dictionary defines 剩下、多餘 on 余, so it is not rewritten as 餘.
+
 ---
 
 ## [0.4.1] — 2026-10-26
