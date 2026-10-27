@@ -67,13 +67,11 @@ The canonical 75-row catalog and reusable migration rules live in
 
 ## Second character
 
-珠算武者 is not a deck. #51 added engine seams for a first-grade math caster:
-a casting-task registry that installs 注音 only, a math binding that no shipped
-card sets, one score bucket per character id, and an attempt model for
-sequence, three-choice, number pad, and build. The cast screen still draws
-sequence and single choice. `math` and `english` throw if the game asks for
-them. No 珠算武者 row, starter, or card pool is in the catalog. The playable
-build is the next character slice in [NEXT_PHASE.md](./NEXT_PHASE.md).
+珠算武者 is playable. The 27 cards live in `src/data/abacusCards.ts`. The
+starter is 撥珠拳 ×5, 算珠盾 ×4, and 十全掌 ×1, with 木珠串. Score gates match
+共鳴武者: 0 / 300 / 1,000 / 2,000. Math answers are three choices. The number
+pad, build tray, and math tutorial are still later. `english` stays reserved.
+See [NEXT_PHASE.md](./NEXT_PHASE.md).
 
 ## Evidence gate
 

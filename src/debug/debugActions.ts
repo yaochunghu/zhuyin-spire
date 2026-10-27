@@ -2,7 +2,7 @@
  * Debug mutations on RunState — no DOM.
  */
 
-import { FIRST_CHARACTER_ID, type PlayableCharacterId } from '../data/characters';
+import { FIRST_CHARACTER_ID, getPlayableCharacter, type PlayableCharacterId } from '../data/characters';
 import { ENCOUNTERS } from '../data/encounters';
 import { ENEMIES } from '../data/enemies';
 import { getEvent } from '../data/events';
@@ -10,6 +10,7 @@ import { openEvent } from '../game/eventEngine';
 import { saveRunCheckpoint } from '../game/save';
 import { drawCards, livingEnemies } from '../game/combat';
 import { createCombat } from '../game/battle/battleManager';
+import { combatRulesForGate } from '../game/battle/types';
 import {
   createNewRun,
   debugFinishFight,
@@ -350,6 +351,8 @@ export function debugPrepareVisualReview(
         state.heroHp,
         state.heroMaxHp,
         getOwnedRelics(state),
+        undefined,
+        combatRulesForGate(getPlayableCharacter(debugCharacterId(state)).castingGateId),
       );
       for (
         let index = state.combat.enemies.length;
@@ -384,6 +387,8 @@ export function debugPrepareVisualReview(
         state.heroHp,
         state.heroMaxHp,
         getOwnedRelics(state),
+        undefined,
+        combatRulesForGate(getPlayableCharacter(debugCharacterId(state)).castingGateId),
       );
       state.cast = reviewCast;
       state.screen = 'castCheck';

@@ -4535,6 +4535,15 @@ body {
   min-height: 88px;
 }
 
+.cast-choice-grid.cast-choice-lg {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.cast-choice-key.cast-choice-lg {
+  min-height: 96px;
+  font-size: 1.75rem;
+}
+
 @media (max-width: 620px) {
   .profile-create {
     grid-template-columns: 1fr 76px;

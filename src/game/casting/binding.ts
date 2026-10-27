@@ -13,8 +13,8 @@ export const RARITY_TIER: Record<CastCardRarity, 1 | 2 | 3 | 4> = {
 };
 
 /**
- * Future math-card binding. No shipped card sets `cast`.
- * `family` stays an open string until the math curriculum lands.
+ * Math-card binding. 珠算武者 cards set `cast`.
+ * `family` is a curriculum cell such as `add10` or `g2Times`.
  */
 export interface CardMathCast {
   gateId: 'math';
@@ -72,5 +72,9 @@ function mathBinding(def: CastCardSource, mathPrefs?: MathGatePrefs): CastBindin
     lessonFamilyId: `${family}@${tier}`,
     displayGlyph: def.zhuyin,
     tier,
+    adaptiveFamily: family,
+    ...(def.cast.gradeTwoFallbackFamily
+      ? { fallbackFamily: def.cast.gradeTwoFallbackFamily }
+      : {}),
   };
 }

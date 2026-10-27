@@ -48,7 +48,7 @@ import {
 import { sfx } from '../game/audio';
 import { gameplayMs } from '../game/settings';
 import { playCombatFxBatch, queryCombatAnchors } from './cardFx';
-import { cardFaceHtml } from './cards';
+import { cardAriaLabel, cardFaceHtml } from './cards';
 import { bindCardDrag, cleanupDragUi, collectDropTargets } from './dragPlay';
 import { teachingTimers } from './pauseTimers';
 import { isPhoneLayout } from './responsive';
@@ -705,6 +705,9 @@ export function renderCombat(): HTMLElement {
       <div class="hero-combat-powers">
         ${c.firstAttackBonusDamage > 0 ? `<span class="combat-power relic-ready${c.firstAttackBonusReady ? '' : ' status-used'}" title="初心音叉：每回合第一次攻擊 +${c.firstAttackBonusDamage}">🎵 首擊 +${c.firstAttackBonusDamage}${c.firstAttackBonusReady ? '' : ' ✓'}</span>` : ''}
         ${c.training > 0 ? `<span class="combat-power" title="練功：基礎攻擊每一下追加傷害">🥋 基礎攻擊 +${c.training}</span>` : ''}
+        ${c.rules?.beadsEnabled ? `<span class="combat-power" title="算珠">🧮 算珠 ${c.beads}</span>` : ''}
+        ${c.rules?.beadsEnabled ? `<span class="combat-power" title="十串">🔟 十串 ${c.tens}</span>` : ''}
+        ${c.rules?.beadsEnabled ? `<span class="combat-power" title="第幾招">🏅 第 ${c.castsThisTurn} 招</span>` : ''}
         ${c.jin > 0 ? `<span class="combat-power" title="勁">💪 勁 ${c.jin}</span>` : ''}
         ${c.tempoCount > 0 ? `<span class="combat-power" title="轉拍">🥁 轉拍 ${c.tempoCount}</span>` : ''}
         ${c.activePowerIds.length > 0 ? `<span class="combat-power" title="能力">${activePowerLabels(c.activePowerIds)}</span>` : ''}
@@ -778,7 +781,7 @@ export function renderCombat(): HTMLElement {
     btn.innerHTML = cardFaceHtml(def, effectiveCost(c, card, def));
     btn.disabled = !energyPlayable || !tutorialPlayable || locked;
     btn.dataset.uid = card.uid;
-    btn.setAttribute('aria-label', `注音 ${def.zhuyin}`);
+    btn.setAttribute('aria-label', cardAriaLabel(def));
     const scrollableHand = isPhoneLayout();
     btn.style.touchAction = scrollableHand ? 'pan-x' : 'none';
 

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { isCardId } from '../../src/data/cards';
 import { POTION_POOL_IDS } from '../../src/data/potions';
 import { RELIC_POOL_IDS } from '../../src/data/relics';
-import { EVENTS, effectsNeedConfirm, eventsForAct, getEvent } from '../../src/data/events';
+import { EVENTS, effectChips, effectsNeedConfirm, eventsForAct, getEvent, sharedEvents } from '../../src/data/events';
 import {
   TREASURE_FLOOR,
   allStartsReachBoss,
@@ -13,6 +13,7 @@ import { debugSetMetaProgress } from '../../src/debug/debugActions';
 import { getActiveProfile, updateActiveProfile } from '../../src/game/profiles';
 import { canPlay, createCombat } from '../../src/game/combat';
 import {
+  choiceChips,
   choiceReason,
   createEventTrack,
   ensureUnknownResolution,
@@ -23,6 +24,7 @@ import {
 } from '../../src/game/eventEngine';
 import { applySnapshot, parseSnapshot, snapshotRun } from '../../src/game/save';
 import {
+  answerEventShrine,
   chooseEventChoice,
   confirmEventCard,
   confirmEventChoice,
@@ -455,6 +457,65 @@ describe('event saves', () => {
     for (const event of actTwo) {
       expect(eventIsEligible(state, event, node.row, 1)).toBe(false);
     }
+  });
+});
+
+describe('珠算武者 shared events', () => {
+  function abacus(): RunState {
+    const state = prepare();
+    pickCharacter(state, 'abacusFist');
+    state.heroHp = 40;
+    state.heroMaxHp = 70;
+    state.gold = 80;
+    return state;
+  }
+
+  it('does not offer 注音神龕, and no other shared event is a quiz', () => {
+    const shrine = getEvent('event_shared_phonetic_shrine');
+    const echo = prepare();
+    const math = abacus();
+    expect(eventIsEligible(echo, shrine, 4, 2)).toBe(true);
+    expect(eventIsEligible(math, shrine, 4, 2)).toBe(false);
+    for (const act of [1, 2, 3] as const) {
+      expect(eventIsEligible(math, shrine, 4, act)).toBe(false);
+    }
+
+    const quizIds = sharedEvents().filter((event) =>
+      event.choices.some((choice) =>
+        [...choice.effects, ...choice.a15].some((effect) => effect.op === 'shrine'),
+      ),
+    ).map((event) => event.id);
+    expect(quizIds).toEqual(['event_shared_phonetic_shrine']);
+
+    const well = getEvent('event_shared_humming_well');
+    expect(eventIsEligible(math, well, 4, 2)).toBe(true);
+  });
+
+  it('says 算 on a math quiz chip and does not charge 珠算武者 HP if the shrine is already open', () => {
+    const shrine = getEvent('event_shared_phonetic_shrine');
+    const practice = shrine.choices.find((choice) => choice.id === 'practice');
+    expect(practice).toBeTruthy();
+    expect(effectChips(practice!.effects)).toContain('拼 3 題');
+    expect(effectChips(practice!.effects, '算')).toContain('算 3 題');
+    expect(effectChips(practice!.effects, '算').join(' ')).not.toContain('拼 ');
+
+    const math = abacus();
+    expect(choiceChips(math, practice!).join(' ')).toContain('算 3 題');
+    expect(choiceChips(prepare(), practice!).join(' ')).toContain('拼 3 題');
+
+    const state = abacus();
+    const before = state.heroHp;
+    state.activeNodeId = room(state).id;
+    openEvent(state, state.activeNodeId, 'event_shared_phonetic_shrine');
+    state.screen = 'event';
+    chooseEventChoice(state, 'practice');
+    confirmEventChoice(state);
+    expect(state.screen).toBe('eventCast');
+    expect(state.cast?.prompt.gateId).toBe('math');
+    expect(state.cast?.prompt.cue.text).not.toBe('+');
+    answerEventShrine(state, false);
+    expect(state.heroHp).toBe(before);
+    expect(state.flash).not.toContain('❤️');
   });
 });
 

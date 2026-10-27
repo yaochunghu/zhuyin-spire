@@ -723,7 +723,7 @@ function rarityLabel(rarity: EventRelicRarity): string {
   return '稀有';
 }
 
-export function effectChips(effects: readonly EventEffect[]): string[] {
+export function effectChips(effects: readonly EventEffect[], quizVerb: '拼' | '算' = '拼'): string[] {
   const chips: string[] = [];
   for (const effect of effects) {
     switch (effect.op) {
@@ -789,7 +789,7 @@ export function effectChips(effects: readonly EventEffect[]): string[] {
         break;
       case 'fight':
         chips.push('打一場');
-        chips.push(...effectChips(effect.reward).map((chip) => `贏了${chip}`));
+        chips.push(...effectChips(effect.reward, quizVerb).map((chip) => `贏了${chip}`));
         break;
       case 'bossEnergy':
         chips.push(`Boss 第1回合 +${effect.amount}⚡`);
@@ -798,9 +798,9 @@ export function effectChips(effects: readonly EventEffect[]): string[] {
         chips.push(`接下來 ${effect.fights} 場怪 +${effect.percent}% 血`);
         break;
       case 'shrine':
-        chips.push(`拼 ${effect.questions} 題`);
+        chips.push(`${quizVerb} ${effect.questions} 題`);
         chips.push(`錯一題 -${effect.hpPerMiss}❤️`);
-        chips.push(...effectChips(effect.then));
+        chips.push(...effectChips(effect.then, quizVerb));
         break;
       case 'library':
         chips.push('三張牌選 1 張');

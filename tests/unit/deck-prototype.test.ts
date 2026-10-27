@@ -47,14 +47,15 @@ beforeEach(() => {
 describe('共鳴武者 catalog', () => {
   it('publishes the complete 75-card catalog with authored upgrades', () => {
     const character = getCharacter('echoMage');
-    expect(Object.keys(CARDS)).toHaveLength(75);
-    expect(new Set(Object.values(CARDS).map((card) => card.designId)).size).toBe(75);
+    expect(character.cardPoolIds.every((id) => CARDS[id])).toBe(true);
+    expect(new Set(character.cardPoolIds).size).toBe(75);
+    expect(new Set(Object.values(CARDS).map((card) => card.designId)).size).toBe(Object.keys(CARDS).length);
     expect(Object.values(CARDS).every((card) => card.type !== 'block')).toBe(true);
     expect(character.status).toBe('playable');
     if (character.status !== 'playable') throw new Error('Expected playable character');
     expect(character.cardPoolIds).toHaveLength(75);
     expect(character.upgradesEnabled).toBe(true);
-    expect(Object.values(CARDS).every((card) => !!card.upgrade)).toBe(true);
+    expect(character.cardPoolIds.every((id) => !!CARDS[id]?.upgrade)).toBe(true);
   });
 
   it('keeps the simple 5/4/1 starter and nine-card first reward wave', () => {
@@ -78,10 +79,10 @@ describe('共鳴武者 catalog', () => {
     ).toBe(true);
   });
 
-  it('keeps all 75 player-facing card descriptions localized in Traditional Chinese', () => {
+  it('keeps all player-facing card descriptions localized in Traditional Chinese', () => {
     const catalogIds = Object.keys(CARDS);
-    expect(catalogIds).toHaveLength(75);
-    expect(catalogIds.every((id) => getCard(id).cues.length >= 1)).toBe(true);
+    expect(catalogIds.filter((id) => !getCard(id).cast || getCard(id).cast?.gateId === 'zhuyin')).toHaveLength(75);
+    expect(catalogIds.filter((id) => !getCard(id).cast || getCard(id).cast?.gateId === 'zhuyin').every((id) => getCard(id).cues.length >= 1)).toBe(true);
     expect(
       catalogIds.every((id) => {
         const card = getCard(id);

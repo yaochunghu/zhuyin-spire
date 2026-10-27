@@ -4,6 +4,7 @@ import type {
   CastingPrompt,
   CastingPromptContext,
 } from './types';
+import { mathProvider } from './math/provider';
 import { zhuyinProvider } from './zhuyinProvider';
 
 export interface CastingGateRegistry {
@@ -33,8 +34,8 @@ export function createCastingGateRegistry(
   };
 }
 
-/** The game installs 注音 only. Tests build their own registry for a stub task. */
-const gameRegistry = createCastingGateRegistry([zhuyinProvider]);
+/** The game installs 注音 and 珠算. Tests build their own registry for a stub task. */
+const gameRegistry = createCastingGateRegistry([zhuyinProvider, mathProvider]);
 
 export function getGameCastingRegistry(): CastingGateRegistry {
   return gameRegistry;

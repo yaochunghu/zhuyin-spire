@@ -1,4 +1,5 @@
-import type { RelicDef } from '../data/relics';
+import { relicPlayerCopy, type RelicDef } from '../data/relics';
+import { getActiveCharacter } from '../game/state';
 import { sfx } from '../game/audio';
 import {
   createModalShell,
@@ -7,6 +8,7 @@ import {
   showModalShell,
   trapModalFocus,
 } from './modal';
+import { run } from './runtime';
 
 let inspectDialog: HTMLDialogElement | null = null;
 let inspectOpener: HTMLElement | null = null;
@@ -74,13 +76,14 @@ export function openRelicInspect(relic: RelicDef, opener?: HTMLElement): void {
   name.textContent = relic.name;
   const blurb = document.createElement('p');
   blurb.className = 'relic-inspect-blurb';
-  blurb.textContent = relic.blurb;
+  const copy = relicPlayerCopy(relic, getActiveCharacter(run())?.castingGateId);
+  blurb.textContent = copy.blurb;
   const adult = document.createElement('p');
   adult.className = 'adult-text relic-inspect-adult';
   const adultLabel = document.createElement('span');
   adultLabel.className = 'relic-inspect-adult-label';
   adultLabel.textContent = '家長提示';
-  adult.append(adultLabel, relic.adultNote);
+  adult.append(adultLabel, copy.adultNote);
   const close = document.createElement('button');
   close.type = 'button';
   close.className = 'relic-inspect-close';

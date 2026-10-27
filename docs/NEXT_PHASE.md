@@ -16,14 +16,13 @@ each score milestone while balancing the advanced tiers.
 
 ## What is live
 
-- One playable character: 共鳴武者 (`echoMage`). Character select lists that row only.
-- Engine seams for 珠算武者 (first-grade math casting) from #51. `math` and `english` stay reserved ids. The game registry installs 注音 only. No second character, deck, card, or math provider is registered. Practice still builds Zhuyin prompts.
+- Two playable characters. 共鳴武者 (`echoMage`) keeps the 注音 gate. 珠算武者 (`abacusFist`) is playable with a 27-card pool, starter 木珠串, and the math provider. `english` stays reserved. Practice still builds Zhuyin prompts. 珠算武者 skips the 注音 tutorial.
 - Act I: 12 teaching designs (starter 5/4/1 + 9 rewards)
 - Later acts / shop / treasure: 12 → 33 → 54 → 75 cards at character scores
   0 / 300 / 1,000 / 2,000
 - Debug Meta controls can set every score milestone on the active profile
 - Smith and later-act `+` rolls for unlocked non-basic cards
-- A chest gives gold and one relic. Elites and bosses still offer a card and also drop one relic. When the five relics are already owned, that drop pays 20 gold
+- A chest gives gold and one relic from the current character's pool. Elites and bosses still offer a card and also drop one relic. When that character's pool is already owned, the drop pays 20 gold
 - A 3-slot potion belt with six bottles. Event choices that ask for a bottle fill empty slots from that pool
 - Act I–III ? rooms and all 30 bible events. A random relic reward draws the relic pool and never replaces 初心音叉. Named event relics are granted by id
 - Act-native fights from #52. Each act has a listener, a buffer or scaler, and a summoner. Act II and Act III elites are not recycled Act I fights. Bosses brace, then one heavier hit, then a shield calls one friend that does not act on the turn it appears. The Act III boss gains one point during the brace. A correct cast softens a listener's later attack; the current intent number stays; a fizzle is not punished. Easy-opening quotas and the two-fight anti-repeat are chosen when the map is built. Event moth fights use the act-native 鐘粉蛾. Patterns are in [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md)
@@ -41,7 +40,7 @@ The 75-card progression remains the baseline. Browser checks stay in [BROWSER_SU
 
 Chests no longer repeat the card-reward screen. A chest pays its gold and one
 relic. An elite or a boss still offers a card and also drops one relic. Normal
-fights do not drop relics. The drop pool is five 共鳴 relics:
+fights do not drop relics. 共鳴武者 rolls these five:
 
 | Id | Name | Effect |
 |----|------|--------|
@@ -51,11 +50,17 @@ fights do not drop relics. The drop pool is five 共鳴 relics:
 | `listeningHeart` | 聽勁護心 | First 勁 gained in a combat: +3 Block. A full block's shield waits until the next player turn; a card's 勁 grants it immediately |
 | `trainingStance` | 練功起勢 | Turn 1 only: 練功 +1, removed when turn 2 starts |
 
-The starter remains 🎵 初心音叉. Each relic can be owned once. When the pool is
-exhausted, a chest, elite, or boss drop pays `RELIC_POOL_EXHAUST_GOLD` (20)
-instead. An event choice that wants a random relic stays visible and says
-沒有新的遺物 once those five are owned. Owned relics show as tappable badges
-on the map, in combat, and on the reward screen. No relic skips casting.
+The 共鳴 starter remains 🎵 初心音叉. 珠算武者 starts with 📿 木珠串 and rolls
+four relics: 🫘 算珠袋 (4 beads at combat start), 📏 小尺子 (3 Block on the
+third successful cast of the turn), 🔔 十響鈴 (1 energy on the first 湊十),
+and 🧽 橡皮擦 (2 beads on the first final fizzle). None of them grant 勁 or
+skip casting. 木珠串 is not in the drop pool.
+
+Each relic can be owned once. When the current character's pool is exhausted,
+a chest, elite, or boss drop pays `RELIC_POOL_EXHAUST_GOLD` (20) instead. An
+event choice that wants a random relic stays visible and says 沒有新的遺物
+once that character's pool is owned. Owned relics show as tappable badges on
+the map, in combat, and on the reward screen. No relic skips casting.
 
 The four legacy relics (小盾符, 零錢袋, 晨光火花, 幸運抽) stay in
 `src/data/relics.ts` so old saves keep their effects. They are not in the drop
@@ -63,7 +68,7 @@ pool.
 
 Event choices that name 口袋節拍器, 月光音樂盒, 雨聲筒, or 合唱緞帶 grant that
 relic by id. Choices that ask for a random common, uncommon, or rare relic all
-draw one unowned relic from the five-relic pool above.
+draw one unowned relic from the current character's pool.
 
 ## Potion belt — first six bottles
 
@@ -113,6 +118,6 @@ Yao decided the nine questions in [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md#ques
 
 These three are the current slice. Keys, Act IV, and a second boss per act stay later. The second boss revisits the one-boss decision above, after the v0.4.2 playtest.
 
-1. **珠算武者 playable build.** In progress. First-grade math casting. #51 landed the engine seams only: a casting-task registry, a math binding that no shipped card sets, per-character score buckets, and an attempt model for sequence, three-choice, number pad, and build. The cast screen still draws sequence and single choice. The catalog, deck, cards, and math provider are still to build. 珠算武者-specific relics, with a relic pool per character, are in progress with this build.
-2. **Claude design pass for 珠算武者.** Character select and the answer pad. This page does not do that UI work.
-3. **Full-run v0.4.2 playtest.** Play the published build at `027961c` through a full run. The device checklist and the Act I family session stay in [PLAYTEST_GATE.md](PLAYTEST_GATE.md#playtest-kit). Saves stay on version 4.
+1. **Claude design pass for 珠算武者.** Character select, the answer pad, and the remaining layout bugs from the #61 playtest (cast-question legibility, choice overlap at 640×360, character-select scroll). This page does not do that UI work.
+2. **珠算武者 follow-ups.** The character, 27-card pool, math provider, three-choice answers, and per-character relic pool are in this tree. Still later: the number pad and build tray, per-cell shuffle bags, the math tutorial, practice tabs, analytics, and the character-select art pass.
+3. **The v0.4.2 release.** `package.json` is 0.4.2. `[0.4.2] — 2026-10-27` in [CHANGELOG.md](../CHANGELOG.md) covers #44 and #50–#58. The published GitHub Release is still `v0.4.1` at `46f6486` (#49). Tagging and the GitHub Release are still open. Saves stay on version 4.

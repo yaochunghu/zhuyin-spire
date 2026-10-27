@@ -377,6 +377,8 @@ the card bible:
 
 ### Shared and shrine events: 9
 
+注音神龕 is a 共鳴武者 quiz, so it is not offered to 珠算武者. A wrong answer there charges HP. The other eight shared events do not quiz. They stay available to both characters. A resumed 珠算武者 shrine, if a save was already inside it, asks math and does not charge HP.
+
 | Stable id | Title | Eligibility | Exact choices | Difficulty 15 result | Preschool presentation and rationale |
 |---|---|---|---|---|---|
 | `event_shared_phonetic_shrine` | 注音神龕 🔤 | Practice requires one upgradeable card and at least 10 HP; wish requires missing HP | **練習三題:** complete three full casts; each wrong answer loses 2 HP; after all three, upgrade one card. **安靜許願:** heal 6 HP. **離開.** | Each mistake costs 3 HP; wishing heals 4. | One large symbol appears at a time and mistakes reveal the answer normally. Learning is the explicit risk, never a hidden shortcut. |

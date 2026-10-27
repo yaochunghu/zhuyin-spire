@@ -42,8 +42,8 @@ The live version, obtainability rules, and next implementation slice live in
   become fights use the same easy and hard pools
 - `castSeed` and `castCounter` on the run. Saves stay version 4. `eventTrack`,
   `castSeed`, and `castCounter` are optional
-- Engine seams for 珠算武者. The character, deck, and math provider are not
-  registered. 共鳴武者 is still the only playable character
+- 珠算武者 is playable: 27-card pool, math casting with three choices, and
+  its own relic pool. 共鳴武者 stays the 注音 character. `english` is reserved
 - Phone shop offers keep the card, price, and remove-card button on screen
 
 ---
@@ -52,12 +52,14 @@ The live version, obtainability rules, and next implementation slice live in
 
 Detail: [NEXT_PHASE.md](./NEXT_PHASE.md).
 
-1. **珠算武者 playable build** — in progress. First-grade math casting. Engine
-   seams are in. The character, deck, and math provider are not.
-   珠算武者-specific relics, with a relic pool per character, are in progress
-   with this build
-2. **Claude design pass for 珠算武者** — character select and the answer pad
-3. **Full-run v0.4.2 playtest** of the published build at `027961c`. Saves stay
+1. **Claude design pass for 珠算武者** — character select, the answer pad, and
+   the remaining #61 layout bugs (cast-question legibility, choice overlap at
+   640×360, character-select scroll). Do not start that UI work here
+2. **珠算武者 follow-ups** — number pad, math tutorial, and the character-select
+   art pass. The playable deck, three-choice cast, and relic pool are in this tree
+3. **The v0.4.2 release** — `package.json` is 0.4.2 and `[0.4.2]` covers #44
+   and #50–#58. The published tag is still `v0.4.1` at #49. Tagging and the
+   GitHub Release are still open. Saves stay
    on version 4
 
 Yao decided the #52 questions. See

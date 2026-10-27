@@ -27,7 +27,8 @@ correct: card effects resolve | wrong: card fizzles
 | File | Responsibility |
 |------|----------------|
 | `game/casting/types.ts` | Provider-neutral prompt, binding, preferences, and history contracts |
-| `game/casting/registry.ts` | Game registry (注音 only) and `createCastingGateRegistry` for a test or future task |
+| `game/casting/registry.ts` | Game registry (注音 and 珠算) and `createCastingGateRegistry` for a test or future task |
+| `game/casting/math/` | Grade-1 and opt-in grade-2 prompt generation, parent band, and adaptive drop |
 | `game/casting/binding.ts` | `getCardCastBinding` target. Zhuyin families stay `initial:` / `vowel:`. Math bindings are `family@tier` and require `CardDef.cast` |
 | `game/casting/input.ts` | Attempt model for `sequence`, `singleChoice`, `numberPad`, and `build` |
 | `game/casting/zhuyinProvider.ts` | Phrase filtering, modes, token bank, shuffle bags, validation, coverage audit |
@@ -165,26 +166,61 @@ it yet, so 共鳴武者 play is unchanged.
 | Mode | Commit | Attempt passed to `validate` | Screen today |
 |------|--------|------------------------------|--------------|
 | `sequence` | Ready when every slot is filled; the view submits, including its short pause | One token per slot, in order | Rendered |
-| `singleChoice` | The tapped choice submits immediately | `[choice]` | Rendered. The future math default is three choices (`THREE_CHOICE_COUNT`) |
+| `singleChoice` | The tapped choice submits immediately | `[choice]` | Rendered. Every live math prompt uses three choices (`MATH_CHOICE_COUNT`) |
 | `numberPad` | Explicit submit. Empty entry cannot submit. A second digit replaces a lone `0`. A fourth digit is ignored | One element per digit, such as `['1','3']` for 13 | Not rendered |
 | `build` | Explicit submit. Empty tray cannot submit. Tray cap is 20 | Token ids in tap order. Removing one index drops that token | Not rendered |
 
 Backspace updates the attempt before submit and never appears in the list
 `validate` sees. `prompt.presentation` is an optional data-only picture
 (ten-frame, coins, clock, and the other closed kinds). Zhuyin prompts leave
-`presentation`, `tier`, and `retry` unset. `retry` is reserved for a future
-once-per-combat second try and no engine path reads it.
+`presentation` and `tier` unset. Math prompts set `tier` and may set `retry`.
 
-Zhuyin bindings now include `tier` from card rarity (`basic` 1, `common` 2,
-`uncommon` 3, `rare` 4). Prompt creation ignores that field. A math binding
-uses `family@tier` and tier 5 only when the card is marked grade-two and the
-caller passes `{ gradeTwo: true }`. No shipped card sets `cast`.
+Zhuyin bindings include `tier` from card rarity (`basic` 1, `common` 2,
+`uncommon` 3, `rare` 4). Zhuyin prompt creation ignores that field. A math
+binding uses `family@tier`. 珠算武者 cards set `cast`. Tier 5 is used only for
+倍數連拳 when Options has 二年級 on. With it off, that card asks its grade-1
+fallback (`add100`).
 
-## Adding a future English or math character
+## 珠算 provider
 
-English and math are reserved ids, not live providers. The game registry
-throws for both. A unit test fills `math` with a stub task that is not imported
-by `src/`. To ship a real subject:
+`mathProvider` is registered next to 注音. `english` is still reserved and the
+registry throws for it. Practice stays on 注音. 珠算武者 does not enter the
+注音 tutorial.
+
+This slice answers every tier with three buttons. `numberPad` and `build` stay
+unrendered. Prompts come from the run cast stream plus the parent band and the
+card family's adaptive drop. Shuffle bags stay on the learner for 注音 and are
+not used for math.
+
+A wrong answer fizzles the card. Energy is already spent. One scaffolded
+「再算一次」 is available per combat while `scaffoldedRetry` is on, which is
+the default. The retry does not record a result and does not reveal the
+correction. The second miss fizzles and then shows it. 💡 is still once per
+combat. It blocks the retry only on the card whose answer it revealed before
+the first attempt. A hint on an earlier card leaves the retry available. A
+hint during the retry reveals the answer. The coach names whichever of those
+states is actually open, and it does not promise a retry when
+`scaffoldedRetry` is off.
+
+Rarity sets the nominal tier inside the parent floor and ceiling (defaults 1
+and 4). Adaptivity only lowers that tier, by card family, at most 4 steps.
+Two misses in the last five results of the cell just asked, with the newest
+a miss, drop the family one step. Six hits in the last eight, with the newest
+a hit, raise it one step back toward the nominal tier. Three misses in a row
+this combat force the next prompt to tier 1 of that family, still inside the
+parent floor. Ordinal has no tier 1, so that warm-up asks 湊十 at tier 1.
+Grade-2 tier 5 ignores the grade-1 ceiling until a drop pulls it back inside.
+That ceiling question is still open for Yao. What is built is option A: a
+tier-5 prompt stays at tier 5 until an adaptive drop pulls it into the band.
+The child never sees a grade label.
+
+`mathCasting` and `mathInsights` are optional profile fields. A profile that
+omits them keeps the defaults and does not get the fields written back.
+Lesson history is still `math:<family>@<tier>`.
+
+## Adding a future English character
+
+Math is live. English is still a reserved id. To ship another subject:
 
 1. Add and register a `CastingGateProvider`; do not add subject logic to combat.
 2. Give every card in that character a stable `CastBinding` and lesson family.
@@ -198,8 +234,8 @@ by `src/`. To ship a real subject:
    migration; do not reinterpret Zhuyin settings. Score for the new character
    goes in its own `characterProgress` key.
 5. Keep the same wrong-answer card/Energy cost and the same unscaled teaching
-   reveal unless the product rule is explicitly changed. A later math rule may
-   allow one scaffolded retry per combat. That exception is not implemented.
+   reveal unless the product rule is explicitly changed. Math's one scaffolded
+   retry per combat is the exception above.
 6. Add per-family coverage validation, shuffle-bag tests, answer-cost tests, and
    a complete tablet smoke path. Zhuyin coverage already ignores cards whose
    `cast.gateId` is not `zhuyin`.

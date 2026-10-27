@@ -2996,6 +2996,362 @@ html[data-screen='combat'] .global-control-btn {
   font-size: 0.82rem;
 }
 
+/*
+ * 珠算武者 math dock: question strip on top, three big answers below, adult
+ * help last (CHARACTER2_DESIGN §2.2). The panes dissolve so one grid can
+ * order the question, choices, and hint whatever pane they were built in.
+ * The 注音 dock keeps the side-by-side layout above.
+ */
+.combat-casting .cast-dock.cast-math .cast-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: none;
+  grid-auto-rows: max-content;
+  align-content: start;
+  gap: 8px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.combat-casting .cast-dock.cast-math .cast-cue-pane,
+.combat-casting .cast-dock.cast-math .cast-answer-pane {
+  display: contents;
+}
+
+.combat-casting .cast-dock.cast-math .cast-layout > * > * {
+  grid-column: 1 / -1;
+  min-width: 0;
+  min-height: min-content;
+}
+
+.combat-casting .cast-dock.cast-math .cue-box {
+  order: 1;
+  flex: none;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 10px;
+  min-height: min-content;
+  height: auto;
+  padding: 6px 14px;
+  border-width: 5px;
+  border-radius: 20px;
+  text-align: center;
+}
+
+.combat-casting .cast-dock.cast-math .cue-emoji {
+  grid-row: 1 / span 2;
+  font-size: 2.2rem;
+}
+
+.combat-casting .cast-dock.cast-math .cue-word {
+  margin: 0;
+  color: var(--toy-walnut-dark);
+  font-size: clamp(1.6rem, 5.5vmin, 2.8rem);
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  text-shadow: none;
+  opacity: 1;
+  overflow-wrap: anywhere;
+}
+
+.combat-casting .cast-dock.cast-math .cast-kid-prompt {
+  margin: 0;
+  color: var(--toy-walnut);
+  font-size: 0.95rem;
+}
+
+.combat-casting .cast-dock.cast-math .spell-hint-reveal {
+  order: 2;
+}
+
+.combat-casting .cast-dock.cast-math .cast-choice-grid {
+  order: 3;
+  width: 100%;
+  gap: 10px;
+}
+
+.combat-casting .cast-dock.cast-math .cast-choice-key.cast-choice-lg {
+  min-width: 48px;
+  min-height: 64px;
+  padding: 0;
+  font-size: 2.2rem;
+  font-weight: 900;
+}
+
+.combat-casting .cast-dock.cast-math .hint-btn {
+  order: 4;
+  grid-column: 1;
+  align-self: start;
+  width: 100%;
+  margin: 0;
+}
+
+.combat-casting .cast-dock.cast-math .adult-coach {
+  order: 5;
+  grid-column: 2;
+  align-self: start;
+}
+
+.combat-casting .cast-dock.cast-math .speech-fallback-note {
+  order: 6;
+  margin: 0;
+}
+
+@media (min-height: 501px) {
+  .combat-casting .cast-dock.cast-math .cast-choice-key.cast-choice-lg {
+    min-height: 96px;
+    font-size: 2.6rem;
+  }
+}
+
+/* Short landscape phones: the dock takes the whole right column instead of
+   a 46dvh slice, and the duplicate kid line yields to the coach header. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .combat-casting > .combat-stage:has(> .cast-math) {
+    grid-template-columns: minmax(0, 1fr) minmax(250px, 50%);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .combat-casting > .combat-stage > .cast-dock.cast-math {
+    grid-row: 2;
+    height: 100%;
+    max-height: none;
+    padding: 6px 8px max(6px, env(safe-area-inset-bottom));
+    border-radius: 22px 0 0 0;
+  }
+
+  .combat-casting .cast-dock.cast-math .mana-condition {
+    min-height: 30px;
+    padding: 2px 8px;
+  }
+
+  .combat-casting .cast-dock.cast-math .cast-kid-prompt {
+    display: none;
+  }
+
+  .combat-casting .cast-dock.cast-math .cue-emoji {
+    display: none;
+  }
+
+  .combat-casting .cast-dock.cast-math .cast-layout {
+    gap: 6px 8px;
+  }
+
+  .combat-casting .cast-dock.cast-math .cue-box {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 2px 8px;
+  }
+
+  .combat-casting .cast-dock.cast-math .cue-word {
+    font-size: 1.5rem;
+    line-height: 1.1;
+    letter-spacing: 0;
+  }
+
+  .combat-casting .cast-dock.cast-math .cast-choice-grid {
+    gap: 8px;
+  }
+
+  .combat-casting .cast-dock.cast-math .cast-choice-key.cast-choice-lg {
+    min-height: 54px;
+  }
+
+  .combat-casting .cast-dock.cast-math .adult-coach {
+    padding-block: 0;
+  }
+
+  .combat-casting .cast-dock.cast-math .hint-btn,
+  .combat-casting .cast-dock.cast-math .adult-coach-head {
+    min-height: 44px;
+    padding-block: 2px;
+  }
+}
+
+/*
+ * Character select on short landscape phones: both heroes side by side on
+ * one screen, each card trimmed to figure, name, theme, starter pills,
+ * starting relic, and the pick button. Card progress stays on the profile
+ * screen; the tower rail and menu keep their gutter on the right.
+ */
+@media (max-height: 500px) and (orientation: landscape) {
+  #app > .screen.character-screen {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+    align-items: center;
+    gap: 2px 12px;
+    height: calc(100dvh - max(12px, env(safe-area-inset-top)) - max(12px, env(safe-area-inset-bottom)));
+    min-height: 0;
+    padding: 2px max(128px, calc(env(safe-area-inset-right) + 124px)) 2px 4px;
+    overflow-y: auto;
+  }
+
+  .character-screen > .kid-prompt {
+    grid-column: 1;
+    grid-row: 1;
+    font-size: 1.35rem;
+  }
+
+  .character-screen > .adult-text {
+    grid-column: 1;
+    grid-row: 2;
+    max-width: 220px;
+    font-size: 0.72rem;
+    line-height: 1.3;
+  }
+
+  .character-screen > .adult-coach {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+
+  .character-screen > .character-choices {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-self: stretch;
+    gap: 10px;
+    width: 100%;
+    max-width: none;
+    margin: 4px 0 0;
+  }
+
+  .character-screen .character-card {
+    display: grid;
+    grid-template-columns: clamp(64px, 11vw, 96px) minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto 1fr auto;
+    align-content: start;
+    gap: 4px 8px;
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 8px 10px 10px;
+    border-width: 4px;
+    border-radius: 18px;
+    text-align: left;
+  }
+
+  .character-screen .character-card .character-status,
+  .character-screen .character-card .character-progress,
+  .character-screen .character-card .character-progress-unreleased {
+    display: none;
+  }
+
+  .character-screen .character-card .character-emoji {
+    grid-column: 1;
+    grid-row: 1 / 4;
+    align-self: center;
+    justify-self: center;
+    width: clamp(64px, 11vw, 96px);
+    height: clamp(64px, 11vw, 96px);
+    margin: 0;
+    font-size: 2.8rem;
+  }
+
+  .character-screen .character-card .character-name,
+  .character-screen .character-card .character-title,
+  .character-screen .character-card .character-theme {
+    grid-column: 2;
+    margin: 0;
+  }
+
+  .character-screen .character-card .character-name {
+    grid-row: 1;
+    font-size: 1.3rem;
+    line-height: 1.15;
+  }
+
+  .character-screen .character-card .character-title {
+    grid-row: 2;
+    font-size: 0.8rem !important;
+  }
+
+  .character-screen .character-card .character-theme,
+  .character-screen .character-card .character-teaching-note {
+    grid-row: 3;
+    font-size: 0.8rem;
+    line-height: 1.3;
+  }
+
+  .character-screen .character-card .character-teaching-note {
+    grid-column: 1 / -1;
+    grid-row: 4;
+  }
+
+  .character-screen .character-card .starter-deck-summary {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    justify-content: flex-start;
+    gap: 4px;
+    font-size: 0.8rem;
+  }
+
+  .character-screen .character-card .starter-deck-summary span {
+    padding: 2px 7px;
+  }
+
+  .character-screen .character-card .starting-relic {
+    grid-column: 1 / -1;
+    grid-row: 5;
+    align-self: start;
+    gap: 6px;
+    width: 100%;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.74rem;
+    line-height: 1.3;
+  }
+
+  .character-screen .character-card .starting-relic-emoji {
+    font-size: 1.4rem;
+  }
+
+  .character-screen .character-card .character-pick-cta {
+    grid-column: 1 / -1;
+    grid-row: 6;
+    min-height: 44px;
+    padding: 4px 10px;
+    font-size: 1rem;
+  }
+}
+
+/* Phone portrait still scrolls, but a smaller figure and tighter rows put
+   the first pick button nearer the fold. */
+@media (max-width: 600px) and (orientation: portrait) {
+  .character-screen .character-card {
+    gap: 6px;
+  }
+
+  .character-screen .character-card .character-emoji {
+    width: 116px;
+    height: 116px;
+  }
+
+  .character-screen .character-card .starting-relic {
+    padding: 8px 12px;
+    line-height: 1.35;
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) and (max-width: 760px) {
+  #app > .screen.character-screen {
+    padding-right: max(74px, calc(env(safe-area-inset-right) + 70px));
+  }
+
+  /* The sideways tower rail sits at the top right, beside the menu. */
+  .character-screen > .adult-coach {
+    width: auto;
+    margin-right: 122px;
+  }
+}
+
 .spell-reveal-overlay.spell-reveal-docked {
   background: none;
   align-items: end;

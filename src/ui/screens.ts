@@ -1,7 +1,7 @@
 import { getCard, resolveCard } from '../data/cards';
 import { CHARACTER_IDS, getCharacter } from '../data/characters';
 import { getPotion } from '../data/potions';
-import { getRelic } from '../data/relics';
+import { getRelic, relicPlayerCopy } from '../data/relics';
 import { sfx, startMusic, warmAudio } from '../game/audio';
 import { getActiveProfile, getCharacterCardProgress } from '../game/profiles';
 import { warmSpeech } from '../game/speech';
@@ -27,6 +27,7 @@ import {
   hasSavedRun,
   declinePendingPotion,
   leaveShop,
+  getActiveCharacter,
   pickCharacter,
   pickReward,
   potionOfferBlocksReward,
@@ -37,7 +38,7 @@ import {
   resumeSavedRun,
   startRun,
 } from '../game/state';
-import { cardFaceHtml } from './cards';
+import { cardAriaLabel, cardFaceHtml } from './cards';
 import { openOptions } from './options';
 import { createConfettiLayer } from './outcome';
 import { appendCoach, render, run, session, showFlash } from './runtime';
@@ -224,6 +225,12 @@ export function renderCharacterPick(): HTMLElement {
       continue;
     }
     const relic = getRelic(character.startingRelicId);
+    const portrait = character.id === 'echoMage'
+      ? artImageHtml('heroMartialArtist', 'character-hero-art')
+      : character.emoji;
+    const starterAria = character.id === 'echoMage'
+      ? '起始牌組：五張基礎攻擊、四張防守、一張易傷攻擊'
+      : '起始牌組';
     const starterSummary = character.starterSummary
       .map((item) => `<span>${item.icon} ${item.label}</span>`)
       .join('');
@@ -234,11 +241,11 @@ export function renderCharacterPick(): HTMLElement {
       : '目前發布的卡牌全數可用';
     btn.innerHTML = `
       <div class="character-status character-status-playable">✨ 可遊玩</div>
-      <div class="relic-emoji character-emoji">${artImageHtml('heroMartialArtist', 'character-hero-art')}</div>
+      <div class="relic-emoji character-emoji">${portrait}</div>
       <div class="character-name">${character.name}</div>
       <div class="adult-text character-title">${character.title}</div>
-      <div class="character-theme">🥋 ${character.theme}</div>
-      <div class="starter-deck-summary" aria-label="起始牌組：五張基礎攻擊、四張防守、一張易傷攻擊">
+      <div class="character-theme">${character.emoji} ${character.theme}</div>
+      <div class="starter-deck-summary" aria-label="${starterAria}">
         ${starterSummary}
       </div>
       <div class="starting-relic">
@@ -633,7 +640,10 @@ export function renderReward(): HTMLElement {
     const copy = document.createElement('div');
     copy.innerHTML = `<strong class="relic-reward-name"></strong><p class="relic-reward-blurb"></p>`;
     copy.querySelector('.relic-reward-name')!.textContent = pendingRelic.name;
-    copy.querySelector('.relic-reward-blurb')!.textContent = pendingRelic.blurb;
+    copy.querySelector('.relic-reward-blurb')!.textContent = relicPlayerCopy(
+      pendingRelic,
+      getActiveCharacter(run())?.castingGateId,
+    ).blurb;
     found.append(relicBadgeButton(pendingRelic), copy);
     el.appendChild(found);
   } else if (isTreasure) {
@@ -709,7 +719,7 @@ export function renderReward(): HTMLElement {
     btn.className = `card ${def.type}`;
     btn.disabled = rewardBlocked;
     btn.innerHTML = cardFaceHtml(def);
-    btn.setAttribute('aria-label', `注音 ${def.zhuyin}`);
+    btn.setAttribute('aria-label', cardAriaLabel(def));
     btn.addEventListener('click', () => {
       sfx.click();
       pickReward(run(), offer.uid);

@@ -1,0 +1,423 @@
+import { beforeEach, describe, expect, it } from 'vitest';
+import { ABACUS_CARDS } from '../../src/data/abacusCards';
+import { getCard, getCardCastBinding } from '../../src/data/cards';
+import { castStreamRng, type CastStream } from '../../src/game/castRng';
+import { buildCastPrompt, recordCastResult } from '../../src/game/castCheck';
+import { mathProvider } from '../../src/game/casting/math/provider';
+import {
+  generateMathQuestion,
+  redirectMathFamily,
+  resolveMathTask,
+  type MathQuestion,
+} from '../../src/game/casting/math/generate';
+import { coachForScreen } from '../../src/game/coach';
+import { cardAriaLabel } from '../../src/ui/cards';
+import {
+  DEFAULT_MATH_PREFS,
+  effectiveMathTier,
+  nextAdaptiveDrop,
+  type MathCastingPreferences,
+} from '../../src/game/casting/math/prefs';
+import {
+  getActiveProfile,
+  getMathAdaptiveDrop,
+  getMathCastingPreferences,
+  saveMathCastingPreferences,
+  setMathAdaptiveDrop,
+} from '../../src/game/profiles';
+import {
+  createNewRun,
+  debugStartEncounter,
+  pickCharacter,
+  startRun,
+  tryPlayCard,
+} from '../../src/game/state';
+import type { CastingTier } from '../../src/game/casting/types';
+
+class MemoryStorage implements Storage {
+  private values = new Map<string, string>();
+  get length(): number { return this.values.size; }
+  clear(): void { this.values.clear(); }
+  getItem(key: string): string | null { return this.values.get(key) ?? null; }
+  key(index: number): string | null { return [...this.values.keys()][index] ?? null; }
+  removeItem(key: string): void { this.values.delete(key); }
+  setItem(key: string, value: string): void { this.values.set(key, value); }
+}
+
+beforeEach(() => {
+  Object.defineProperty(globalThis, 'localStorage', {
+    value: new MemoryStorage(),
+    configurable: true,
+  });
+});
+
+function stream(seed: number): CastStream {
+  return { castSeed: seed, castCounter: 0 };
+}
+
+function ask(family: string, tier: CastingTier, seed: number): MathQuestion {
+  return generateMathQuestion(family, tier, castStreamRng(stream(seed)));
+}
+
+function equation(question: string): { left: number; op: '+' | '-'; right: number } | null {
+  const match = question.match(/(\d+)\s*([+-])\s*(\d+)/);
+  if (!match) return null;
+  return { left: Number(match[1]), op: match[2] as '+' | '-', right: Number(match[3]) };
+}
+
+const GRADE_ONE: Array<[string, CastingTier]> = [
+  ['count', 1], ['count', 2], ['count', 3],
+  ['make10', 1], ['make10', 2], ['make10', 3],
+  ['add10', 1], ['sub10', 1],
+  ['add20', 2], ['add20', 3],
+  ['sub20', 2], ['sub20', 3],
+  ['placeValue', 2], ['placeValue', 3],
+  ['compare', 1], ['compare', 2], ['compare', 3],
+  ['ordinal', 2], ['ordinal', 3],
+  ['add100', 3], ['add100', 4],
+  ['clock', 2], ['clock', 3],
+  ['calendar', 2],
+  ['money', 3], ['money', 4],
+  ['length', 2], ['length', 3],
+  ['shapes', 2],
+  ['sort', 1], ['sort', 2],
+  ['word', 2], ['word', 3], ['word', 4],
+];
+
+function expectChoice(question: MathQuestion): void {
+  expect(question.choices).toHaveLength(3);
+  expect(new Set(question.choices).size).toBe(3);
+  expect(question.choices).toContain(question.answer);
+  expect(question.answer).not.toMatch(/^0\d/);
+  expect(question.question).not.toMatch(/[?？]\s*[+-]/);
+}
+
+function expectBand(family: string, tier: CastingTier, draft: MathQuestion): void {
+  const { question, answer } = draft;
+  const value = Number(answer);
+  const parts = equation(question);
+  if (family === 'add10' || family === 'sub10' || family === 'add20' || family === 'sub20' || family === 'add100' || family === 'word' || family.startsWith('g2')) {
+    if (parts && family !== 'g2Missing') {
+      const expected = parts.op === '+' ? parts.left + parts.right : parts.left - parts.right;
+      expect(value).toBe(expected);
+    }
+  }
+  if (family === 'add10' && parts) {
+    expect(parts.left + parts.right).toBeLessThanOrEqual(10);
+    expect(parts.left).toBeGreaterThanOrEqual(0);
+    expect(parts.right).toBeGreaterThanOrEqual(0);
+  }
+  if (family === 'sub10' && parts) {
+    expect(parts.left).toBeGreaterThanOrEqual(2);
+    expect(parts.left).toBeLessThanOrEqual(10);
+    expect(parts.right).toBeGreaterThanOrEqual(1);
+    expect(parts.right).toBeLessThan(parts.left);
+  }
+  if (family === 'add20' && tier === 2 && parts) {
+    expect(parts.left).toBeGreaterThanOrEqual(10);
+    expect(parts.left).toBeLessThanOrEqual(18);
+    expect((parts.left % 10) + parts.right).toBeLessThanOrEqual(9);
+  }
+  if (family === 'add20' && tier === 3 && parts) {
+    expect(parts.left + parts.right).toBeGreaterThanOrEqual(11);
+    expect(parts.left + parts.right).toBeLessThanOrEqual(18);
+  }
+  if (family === 'sub20' && tier === 2 && parts) {
+    expect(parts.right).toBeLessThanOrEqual(parts.left % 10);
+    expect(parts.left).toBeGreaterThanOrEqual(11);
+  }
+  if (family === 'sub20' && tier === 3 && parts) {
+    expect(parts.right).toBeGreaterThan(parts.left % 10);
+    expect(value).toBeGreaterThanOrEqual(2);
+  }
+  if (family === 'add100' && tier === 4 && parts) {
+    expect(value).toBeLessThanOrEqual(99);
+    expect(value).toBeGreaterThanOrEqual(0);
+    if (parts.op === '+') expect((parts.left % 10) + (parts.right % 10)).toBeLessThan(10);
+  }
+  if (family === 'count' && tier === 1) {
+    expect(value).toBeGreaterThanOrEqual(3);
+    expect(value).toBeLessThanOrEqual(10);
+    expect(question.split('🍎').length - 1).toBe(value);
+  }
+  if (family === 'compare' && tier === 1) expect(['左邊', '右邊', '一樣']).toContain(answer);
+  if (family === 'compare' && tier > 1) expect(['>', '<', '=']).toContain(answer);
+  if (family === 'shapes') {
+    expect(['圓形', '三角形', '正方形', '長方形']).toContain(answer);
+    expect(question.includes(answer)).toBe(false);
+  }
+  if (family === 'clock') expect(answer).toMatch(/點/);
+  if (family === 'g2Missing') {
+    expect(question).toContain('□');
+    const match = question.match(/□ \+ (\d+) = (\d+)/);
+    expect(match).not.toBeNull();
+    expect(value).toBe(Number(match![2]) - Number(match![1]));
+    expect(value).toBeGreaterThanOrEqual(1);
+    expect(value).toBeLessThanOrEqual(9);
+  }
+  if (family === 'g2Times') expect([2, 5, 10].some((size) => value % size === 0)).toBe(true);
+  if (family === 'g2Column' && parts) expect(value).toBeLessThanOrEqual(200);
+  if (family !== 'g2Missing') expect(question).not.toContain('□');
+}
+
+describe('math prompt generation', () => {
+  it('keeps grade-1 cells inside their bands, with three choices and no unknown addend', () => {
+    for (const [family, tier] of GRADE_ONE) {
+      for (let seed = 1; seed <= 24; seed += 1) {
+        const draft = ask(family, tier, seed * 17 + tier);
+        expectChoice(draft);
+        expectBand(family, tier, draft);
+      }
+    }
+  });
+
+  it('asks grade 2 only at tier 5, and only 倍數連拳 uses the blank', () => {
+    for (const family of ['g2Column', 'g2Times', 'g2Cm', 'g2ClockMin', 'g2Money1000', 'g2Missing']) {
+      for (let seed = 1; seed <= 12; seed += 1) {
+        const draft = ask(family, 5, seed * 31);
+        expectChoice(draft);
+        expectBand(family, 5, draft);
+      }
+    }
+  });
+
+  it('draws the same question from the same cast stream', () => {
+    const batch = (seed: number) =>
+      [1, 2, 3, 4, 5].map((step) => ask('add20', 3, seed + step));
+    expect(batch(100)).toEqual(batch(100));
+    expect(batch(100)).not.toEqual(batch(900));
+  });
+
+  it('lowers a family that cannot ask the requested tier', () => {
+    const prefs = { ...DEFAULT_MATH_PREFS };
+    const dropped = resolveMathTask(
+      { gateId: 'math', lessonFamilyId: 'add20@1', displayGlyph: '+', tier: 1, adaptiveFamily: 'add20' },
+      prefs,
+    );
+    expect(dropped).toMatchObject({ family: 'add10', tier: 1, cardFamily: 'add20' });
+    const gradeTwoOff = resolveMathTask(
+      {
+        gateId: 'math',
+        lessonFamilyId: 'add100@4',
+        displayGlyph: '×',
+        tier: 4,
+        adaptiveFamily: 'add100',
+        fallbackFamily: 'add100',
+      },
+      prefs,
+    );
+    expect(gradeTwoOff.family).not.toMatch(/^g2/);
+    expect(gradeTwoOff.tier).toBeLessThanOrEqual(4);
+  });
+});
+
+describe('math difficulty only moves down', () => {
+  const prefs: MathCastingPreferences = { ...DEFAULT_MATH_PREFS, tierFloor: 1, tierCeiling: 4 };
+
+  it('lets a grade-2 card sit at tier 5 until a drop pulls it into the band', () => {
+    expect(effectiveMathTier(5, prefs, 0)).toBe(5);
+    expect(effectiveMathTier(5, prefs, 1)).toBe(4);
+    expect(effectiveMathTier(4, prefs, 2)).toBe(2);
+    expect(effectiveMathTier(2, prefs, 0)).toBe(2);
+    expect(effectiveMathTier(2, { ...prefs, raritySetsDifficulty: false, fixedTier: 1 }, 0)).toBe(1);
+    expect(effectiveMathTier(4, prefs, 0, 1)).toBe(1);
+    expect(effectiveMathTier(4, { ...prefs, tierFloor: 2 }, 0, 1)).toBe(2);
+  });
+
+  it('raises the drop after two recent misses and lowers it after a recovery run', () => {
+    expect(nextAdaptiveDrop(0, [false, false])).toBe(1);
+    expect(nextAdaptiveDrop(0, [false, true])).toBe(0);
+    expect(nextAdaptiveDrop(1, [true, true, true, true, true, true])).toBe(0);
+    expect(nextAdaptiveDrop(2, [false, false, true, true, true, true, true, true])).toBe(1);
+    expect(nextAdaptiveDrop(1, [true, true, true, true, true, true, false, false])).toBe(2);
+  });
+
+  it('stores the drop on the card family and leaves it off a profile that never set one', () => {
+    expect(getActiveProfile().mathCasting).toBeUndefined();
+    expect(getMathCastingPreferences()).toEqual(DEFAULT_MATH_PREFS);
+    saveMathCastingPreferences({ ...DEFAULT_MATH_PREFS, gradeTwo: true });
+    setMathAdaptiveDrop('add20', 2);
+    expect(getMathCastingPreferences().gradeTwo).toBe(true);
+    expect(getMathAdaptiveDrop('add20')).toBe(2);
+    expect(getActiveProfile().mathCasting?.gradeTwo).toBe(true);
+  });
+
+  it('moves the stored drop only when the math result closes', () => {
+    const binding = getCardCastBinding(getCard('ab_m005'), 'math', DEFAULT_MATH_PREFS);
+    const prompt = mathProvider.createPrompt({
+      binding,
+      mode: 'recognize',
+      fallbackCues: [],
+      rng: castStreamRng(stream(4)),
+    });
+    expect(prompt.adaptiveFamily).toBe('add20');
+    recordCastResult({ ...prompt, createdAt: 1 }, false, 2);
+    recordCastResult({ ...prompt, createdAt: 1 }, false, 3);
+    expect(getMathAdaptiveDrop('add20')).toBe(1);
+    for (let index = 0; index < 6; index += 1) {
+      recordCastResult({ ...prompt, createdAt: 1 }, true, 4 + index);
+    }
+    expect(getMathAdaptiveDrop('add20')).toBe(0);
+  });
+});
+
+describe('math provider', () => {
+  it('answers every live card with three choices and does not spend the stream on the mode', () => {
+    expect(mathProvider.chooseMode?.('add10@1', () => {
+      throw new Error('mode roll must not read the cast stream');
+    })).toBe('recognize');
+    for (const card of Object.values(ABACUS_CARDS)) {
+      const binding = getCardCastBinding(card, 'math', DEFAULT_MATH_PREFS);
+      const prompt = buildCastPrompt(card, 'recognize', castStreamRng(stream(9)), 'mid', 'math');
+      expect(prompt.inputMode).toBe('singleChoice');
+      expect(prompt.mode).toBe('recognize');
+      expect(prompt.choiceTokens).toHaveLength(3);
+      expect(prompt.choiceTokens).toContain(prompt.correctSpell);
+      expect(mathProvider.validate(prompt, [prompt.correctSpell])).toBe(true);
+      expect(mathProvider.validate(prompt, ['nope'])).toBe(false);
+      expect(prompt.cue.text).not.toContain('□');
+      expect(binding.tier).toBeLessThanOrEqual(4);
+    }
+  });
+
+  it('lifts 倍數連拳 to tier 5 only when 二年級 is on', () => {
+    const card = getCard('ab_m025');
+    const off = getCardCastBinding(card, 'math', DEFAULT_MATH_PREFS);
+    expect(off.lessonFamilyId).toBe('add100@4');
+    expect(off.adaptiveFamily).toBe('add100');
+    const on = getCardCastBinding(card, 'math', { ...DEFAULT_MATH_PREFS, gradeTwo: true });
+    expect(on).toMatchObject({ lessonFamilyId: 'g2Times@5', tier: 5, adaptiveFamily: 'g2Times' });
+    saveMathCastingPreferences({ ...DEFAULT_MATH_PREFS, gradeTwo: true });
+    const prompt = buildCastPrompt(card, 'recognize', castStreamRng(stream(11)), 'mid', 'math');
+    expect(prompt.tier).toBe(5);
+    expect(prompt.lessonFamilyId.startsWith('g2')).toBe(true);
+    expect(prompt.adaptiveFamily).toBe('g2Times');
+  });
+
+  it('forces the next prompt to tier 1 after three misses this combat', () => {
+    const state = createNewRun();
+    startRun(state);
+    pickCharacter(state, 'abacusFist');
+    debugStartEncounter(state, 'rock');
+    const card = state.combat!.hand[0]!;
+    card.defId = 'ab_m021';
+    state.combat!.mathMissStreak = 3;
+    tryPlayCard(state, card.uid);
+    expect(state.cast?.prompt.tier).toBe(1);
+    expect(state.cast?.prompt.lessonFamilyId).toBe('add10@1');
+    expect(state.cast?.prompt.adaptiveFamily).toBe('placeValue');
+  });
+
+  it('drops an ordinal warm-up to 湊十 tier 1 after three misses', () => {
+    expect(redirectMathFamily('ordinal', 1)).toEqual({ family: 'make10', tier: 1 });
+    expect(redirectMathFamily('ordinal', 2)).toEqual({ family: 'ordinal', tier: 2 });
+    const state = createNewRun();
+    startRun(state);
+    pickCharacter(state, 'abacusFist');
+    debugStartEncounter(state, 'rock');
+    const card = state.combat!.hand[0]!;
+    card.defId = 'ab_m010';
+    state.combat!.mathMissStreak = 3;
+    tryPlayCard(state, card.uid);
+    expect(state.cast?.prompt.tier).toBe(1);
+    expect(state.cast?.prompt.lessonFamilyId).toBe('make10@1');
+    expect(state.cast?.prompt.adaptiveFamily).toBe('ordinal');
+  });
+});
+
+describe('math prompt seed sweep', () => {
+  const SEEDS = 2000;
+
+  function sweep(family: string, tier: CastingTier): MathQuestion[] {
+    const questions: MathQuestion[] = [];
+    for (let seed = 1; seed <= SEEDS; seed += 1) {
+      questions.push(generateMathQuestion(family, tier, castStreamRng({ castSeed: seed, castCounter: 0 })));
+    }
+    return questions;
+  }
+
+  it('never borrows, subtracts zero, or asks a grade-1 count outside 1–9', () => {
+    const subtracts = sweep('add100', 4).filter((question) => question.question.includes(' - '));
+    expect(subtracts.length).toBeGreaterThan(100);
+    for (const question of subtracts) {
+      expect(question.question).not.toMatch(/ - 0 /);
+      const match = /^(\d+) - (\d+) = ？$/.exec(question.question);
+      expect(match).not.toBeNull();
+      const left = Number(match![1]);
+      const right = Number(match![2]);
+      expect(right).toBeGreaterThanOrEqual(1);
+      expect(right).toBeLessThanOrEqual(left % 10);
+      expect(Number(question.answer)).toBe(left - right);
+    }
+
+    for (const question of sweep('count', 3)) {
+      const answer = Number(question.answer);
+      if (question.question.includes('有幾個一')) {
+        expect(answer).toBeGreaterThanOrEqual(1);
+        expect(answer).toBeLessThanOrEqual(9);
+      }
+      if (question.question.includes('有幾個十')) {
+        expect(answer).toBeGreaterThanOrEqual(1);
+        expect(answer).toBeLessThanOrEqual(9);
+        expect(question.question.startsWith('100 ')).toBe(false);
+      }
+    }
+  });
+
+  it('never offers 第0個 and does not make every times distractor ±1', () => {
+    for (const question of sweep('ordinal', 2)) {
+      expect(question.choices).not.toContain('0');
+      expect(question.choices.join(' ')).not.toContain('第0');
+      expect(Number(question.answer)).toBeGreaterThanOrEqual(1);
+      expect(question.choices).toContain(question.answer);
+      expect(new Set(question.choices).size).toBe(3);
+    }
+
+    const times = sweep('g2Times', 5);
+    let offByOne = 0;
+    for (const question of times) {
+      const answer = Number(question.answer);
+      const choices = question.choices.map(Number).sort((left, right) => left - right);
+      expect(new Set(question.choices).size).toBe(3);
+      expect(question.choices).toContain(question.answer);
+      const plusMinus = choices[0] === answer - 1 && choices[1] === answer && choices[2] === answer + 1;
+      if (plusMinus) offByOne += 1;
+    }
+    expect(offByOne).toBe(0);
+    expect(times.length).toBe(SEEDS);
+  });
+});
+
+describe('math cast copy', () => {
+  it('names the retry state and the card, and keeps 注音 labels for 共鳴武者', () => {
+    expect(coachForScreen('castCheck', {
+      castingGateId: 'math',
+      scaffoldedRetry: true,
+    }).body).toContain('可以再算一次');
+    expect(coachForScreen('castCheck', {
+      castingGateId: 'math',
+      mathRetryUsed: true,
+      scaffoldedRetry: true,
+    }).body).toContain('已經用過了');
+    expect(coachForScreen('castCheck', {
+      castingGateId: 'math',
+      mathRetryUsed: true,
+      scaffoldedRetry: true,
+    }).body).not.toContain('可以再算一次');
+    expect(coachForScreen('castCheck', {
+      castingGateId: 'math',
+      mathRetryOpen: true,
+      mathRetryUsed: true,
+    }).body).toContain('讓孩子自己按答案');
+    expect(coachForScreen('castCheck', {
+      castingGateId: 'math',
+      scaffoldedRetry: false,
+    }).body).not.toContain('再算一次');
+    expect(coachForScreen('castCheck').body).toContain('拼出整個音');
+
+    expect(cardAriaLabel(getCard('ab_m001'))).toBe('撥珠拳');
+    expect(cardAriaLabel(getCard('ab_m002'))).toBe('算珠盾');
+    expect(cardAriaLabel(getCard('ab_m003'))).toBe('十全掌');
+    expect(cardAriaLabel(getCard('bo'))).toBe('注音 ㄅ');
+  });
+});

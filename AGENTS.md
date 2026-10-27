@@ -28,7 +28,8 @@ npm run test:security:e2e # production build, then security smoke tests
 | Want to… | Look here |
 |----------|-----------|
 | HP / gold / rest / hand size | `src/data/balance.ts` → [docs/BALANCE.md](docs/BALANCE.md) |
-| Cards / starter / rewards | `src/data/cards.ts` → [docs/CONTENT.md](docs/CONTENT.md); locked roster in [docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md](docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md) |
+| Cards / starter / rewards | `src/data/cards.ts` → [docs/CONTENT.md](docs/CONTENT.md); locked roster in [docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md](docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md). 珠算武者 cards: `src/data/abacusCards.ts` |
+| Math prompts / parent band | `src/game/casting/math/` → [docs/CASTING_GATES.md](docs/CASTING_GATES.md) |
 | Card instances / upgrades / Smith | `src/game/cardInstances.ts`, `game/save.ts` → [docs/UPGRADE_BIBLE.md](docs/UPGRADE_BIBLE.md) |
 | Relics / keys | `src/data/relics.ts` → [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) |
 | Potions | `src/data/potions.ts`, `src/game/battle/potions.ts`, `src/ui/potionBelt.ts` → [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) |

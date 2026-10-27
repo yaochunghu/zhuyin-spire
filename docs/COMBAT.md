@@ -69,6 +69,31 @@ Energy is per-combat; end turn discards remaining hand then enemy acts then redr
   None of these skip the cast. Numbers live on `RelicDef` in `data/relics.ts`.
 - Powers leave draw/discard circulation and remain active for the combat.
 
+## 珠算武者 combat rules
+
+`combatRulesForGate('math')` turns 勁 off and 算珠 on. A missing rules object
+keeps the 共鳴武者 behavior, so older call sites are unchanged.
+
+- **算珠** stack on the combat. Every 10 beads is one 湊十: beads drop by 10,
+  十串 increases by 1 up to 9, and the 湊十 still fires at the cap.
+- **第 N 招** is the number of successful casts this turn, including the card
+  that just resolved. A fizzle does not count. The count resets at turn start.
+- **直傷** (`dealTrueDamage`) hits HP only. Block stays, and 易傷 does not
+  multiply it. 木珠串 deals 2 direct damage to the card's target on each 湊十.
+  If that target is gone, the selected living enemy, then the first living
+  enemy, is used. No living enemy skips the damage.
+- **算珠袋** adds 4 beads once at combat start, as its own add.
+- **小尺子** grants 3 Block when the third successful cast of the turn
+  resolves, once per turn.
+- **十響鈴** grants 1 energy on the first 湊十 of the combat.
+- **橡皮擦** adds 2 beads on the first final fizzle of the combat. Opening
+  「再算一次」 is not that fizzle.
+- Named powers: 珠串陣 grants Block on 湊十, 珠落玉盤 deals direct damage to
+  every living enemy, and 撥算如飛 adds 2 beads at the start of the next
+  player turn. Amounts are in `balance.ts`.
+- A full block does not grant 勁. Cards do not spend 勁. None of the relics
+  skip the cast.
+
 ---
 
 ## Multi-enemy model
@@ -112,7 +137,9 @@ Normal path:
 1. `beginPlay` spends energy, holds pending card
 2. Screen → `castCheck` with prompt from `buildCastPrompt`
 3. Correct → `resolveCastSuccess` → effects + discard FX
-4. Wrong → `resolveCastFizzle` (card still consumed / energy spent)
+4. Wrong → `resolveCastFizzle` (card still consumed / energy spent). A 珠算
+   combat may instead reopen the same prompt once as 「再算一次」; see
+   [CASTING_GATES.md](./CASTING_GATES.md).
 
 **Debug only:** `getDebugSkipCast()` in `tryPlayCard` may resolve success without opening cast. Never enable this for real kid play. See [DEBUG.md](./DEBUG.md).
 

@@ -13,6 +13,8 @@ import {
   getActiveProfile,
   getCastingPreferences,
   getCharacterCardProgress,
+  getMathCastingPreferences,
+  saveMathCastingPreferences,
   getProfiles,
   learnerAvatars,
   MAX_NICKNAME_LENGTH,
@@ -625,6 +627,27 @@ function paint(): void {
   });
   tutorial.appendChild(replay);
   dialog.appendChild(tutorial);
+
+  const math = section('數學');
+  const mathPrefs = getMathCastingPreferences();
+  const mathRow = document.createElement('div');
+  mathRow.className = 'option-choice-row';
+  mathRow.appendChild(
+    optionButton('二年級 開', mathPrefs.gradeTwo, () => {
+      saveMathCastingPreferences({ ...getMathCastingPreferences(), gradeTwo: true });
+    }),
+  );
+  mathRow.appendChild(
+    optionButton('二年級 關', !mathPrefs.gradeTwo, () => {
+      saveMathCastingPreferences({ ...getMathCastingPreferences(), gradeTwo: false });
+    }),
+  );
+  math.appendChild(mathRow);
+  const mathNote = document.createElement('p');
+  mathNote.className = 'adult-text';
+  mathNote.textContent = '只影響稀有牌。孩子不會看到年級。關掉時，那些牌改問一年級的題。';
+  math.appendChild(mathNote);
+  dialog.appendChild(math);
 
   dialog.appendChild(renderCurriculum());
   dialog.appendChild(renderPrivacy());

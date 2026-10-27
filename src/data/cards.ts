@@ -6,6 +6,7 @@ import {
   type MathGatePrefs,
 } from '../game/casting/binding';
 import type { CastBinding, CastingGateId } from '../game/casting/types';
+import { ABACUS_CARDS } from './abacusCards';
 import { CURSES } from './curses';
 import {
   RESONANCE_CARD_IDS,
@@ -15,8 +16,16 @@ import {
 
 export type CardType = 'attack' | 'block' | 'skill' | 'power';
 export type CardRarity = 'basic' | 'common' | 'uncommon' | 'rare' | 'special';
-export type SignatureMechanic = 'vulnerable' | 'basic' | 'tempo' | 'jin';
-export type CardDirection = 'tingxi' | 'bailian' | 'tingjin' | 'hybrid' | 'general';
+export type SignatureMechanic = 'vulnerable' | 'basic' | 'tempo' | 'jin' | 'beads' | 'tens' | 'ordinal';
+export type CardDirection =
+  | 'tingxi'
+  | 'bailian'
+  | 'tingjin'
+  | 'hybrid'
+  | 'general'
+  | 'couShi'
+  | 'cunChuan'
+  | 'xuZhao';
 
 /** Who the card may target in multi-enemy combat */
 export type TargetType = 'self' | 'singleEnemy' | 'allEnemies';
@@ -40,7 +49,9 @@ export interface EffectDef {
     | 'vulnerable'
     | 'weak'
     | 'training'
-    | 'jin';
+    | 'jin'
+    | 'beads'
+    | 'tens';
   amount: number;
   hits?: number;
 }
@@ -683,7 +694,7 @@ const RESONANCE_LIVE_PRESENTATION: Record<string, Partial<CardDef>> = {
 };
 
 export const CARDS: Record<string, CardDef> = Object.fromEntries(
-  Object.entries(RESONANCE_CARDS).map(([id, def]) => {
+  [...Object.entries(RESONANCE_CARDS), ...Object.entries(ABACUS_CARDS)].map(([id, def]) => {
     const cueOverride = CARD_CUE_OVERRIDES[id];
     const presentation = RESONANCE_LIVE_PRESENTATION[id];
     const { upgrade: presentationUpgrade, ...presentationRest } = presentation ?? {};

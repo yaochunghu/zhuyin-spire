@@ -9,11 +9,13 @@ import type { CastMode } from './game/castCheck';
 import {
   createNewRun,
   ensureEventCast,
+  getActiveCharacter,
   getActiveNode,
   getAvailableMapNodes,
   type RunState,
 } from './game/state';
 import { getEvent } from './data/events';
+import { getMathCastingPreferences } from './game/profiles';
 import { closePotionInspectIfScreenChanged } from './ui/potionBelt';
 import { closeRelicInspectIfScreenChanged } from './ui/relicBadges';
 import { playPendingCombatFx, presentBattleEnding, renderCombat } from './ui/combatView';
@@ -154,6 +156,10 @@ function appendCoach(parent: HTMLElement, castMode?: CastMode): void {
     eventBody: event?.rationale,
     combatTip: screen === 'combat' ? coachBodyForEnemies(livingTeachers) : null,
     rewardSource: runState.rewardSource,
+    castingGateId: runState.cast?.prompt.gateId ?? getActiveCharacter(runState)?.castingGateId,
+    mathRetryUsed: runState.combat?.mathRetryUsed,
+    mathRetryOpen: runState.cast?.prompt.retry === true,
+    scaffoldedRetry: getMathCastingPreferences().scaffoldedRetry,
   });
   if (!tip.body) return;
 
@@ -432,5 +438,6 @@ window.addEventListener('zhuyin-speech-fallback', (event) => {
     warning.setAttribute('role', 'status');
     pane.appendChild(warning);
   }
-  warning.textContent = `語音暫時無法播放，請大人念：「${runState.cast.prompt.cue.text}」。仍需拼出完整注音。`;
+  const still = runState.cast.prompt.gateId === 'math' ? '仍需選出答案。' : '仍需拼出完整注音。';
+  warning.textContent = `語音暫時無法播放，請大人念：「${runState.cast.prompt.cue.text}」。${still}`;
 });

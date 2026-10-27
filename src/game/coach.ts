@@ -4,6 +4,7 @@
  */
 
 import type { CastMode } from './castCheck';
+import type { CastingGateId } from './casting/types';
 import type { MapNode } from '../data/map';
 import type { Screen } from './state';
 import { getActiveProfile, updateActiveProfile } from './profiles';
@@ -34,6 +35,13 @@ export function coachForScreen(
     /** Mechanic line for the enemy teaching this fight. */
     combatTip?: string | null;
     rewardSource?: 'fight' | 'treasure' | null;
+    castingGateId?: CastingGateId;
+    /** Combat already spent its one scaffolded retry. */
+    mathRetryUsed?: boolean;
+    /** The open prompt is the second attempt. */
+    mathRetryOpen?: boolean;
+    /** Parent preference. Absent means the default, which is on. */
+    scaffoldedRetry?: boolean;
   },
 ): { title: string; body: string } {
   switch (screen) {
@@ -50,7 +58,7 @@ export function coachForScreen(
     case 'relicPick':
       return {
         title: '選角色',
-        body: '共鳴武者有 75 種牌，會依分數慢慢解鎖。先用易傷找空隙，完整防守累積勁，再練習攻守換拍；初心音叉每回合幫第一次攻擊 +1。',
+        body: '共鳴武者有 75 種牌，會依分數慢慢解鎖。先用易傷找空隙，完整防守累積勁，再練習攻守換拍；初心音叉每回合幫第一次攻擊 +1。珠算武者靠答數學題出招。每張牌會撥算珠，湊滿十顆變成一串十串，可以拿去放大招。木珠串每次湊十會多打 2 點。',
       };
     case 'map':
       return {
@@ -90,11 +98,38 @@ export function coachForScreen(
     case 'combat':
       return {
         title: '戰鬥',
-        body: opts?.combatTip
-          ? `${opts.combatTip} 攻擊拖到怪，技能拖到角色，✋ 結束回合。藥水在上方腰帶，不用能量、不用注音。要選怪物的藥水，先點使用再點怪物。教學戰鬥先把藥水鎖住。`
-          : '先看意圖。完整擋住一次敵方攻擊會得到 1 勁；易傷讓攻擊變成 1.5 倍；技能與攻擊交替成功會轉拍。攻擊拖到怪，技能拖到角色，✋ 結束回合。藥水在上方腰帶，不用能量、不用注音。要選怪物的藥水，先點使用再點怪物。教學戰鬥先把藥水鎖住。',
+        body: opts?.castingGateId === 'math'
+          ? `${opts?.combatTip ? `${opts.combatTip} ` : '先看意圖。'}打出牌要答對數學。算珠湊滿十變成十串。攻擊拖到怪，技能拖到角色，✋ 結束回合。藥水不用能量，也不用答題。`
+          : opts?.combatTip
+            ? `${opts.combatTip} 攻擊拖到怪，技能拖到角色，✋ 結束回合。藥水在上方腰帶，不用能量、不用注音。要選怪物的藥水，先點使用再點怪物。教學戰鬥先把藥水鎖住。`
+            : '先看意圖。完整擋住一次敵方攻擊會得到 1 勁；易傷讓攻擊變成 1.5 倍；技能與攻擊交替成功會轉拍。攻擊拖到怪，技能拖到角色，✋ 結束回合。藥水在上方腰帶，不用能量、不用注音。要選怪物的藥水，先點使用再點怪物。教學戰鬥先把藥水鎖住。',
       };
     case 'castCheck': {
+      if (opts?.castingGateId === 'math') {
+        if (opts.mathRetryOpen) {
+          return {
+            title: '再算一次',
+            body: '再算一次：可以一起數十格框上的點，但讓孩子自己按答案。',
+          };
+        }
+        const retryAvailable = opts.scaffoldedRetry !== false && !opts.mathRetryUsed;
+        if (retryAvailable) {
+          return {
+            title: '選一個答案',
+            body: '請不要直接說答案。可以說『我們一起數』，或指著十格框。這場戰鬥第一次答錯，可以再算一次。',
+          };
+        }
+        if (opts.mathRetryUsed) {
+          return {
+            title: '選一個答案',
+            body: '請不要直接說答案。這場的『再算一次』已經用過了，答錯這張牌會失效，可以先按 👀 看看。',
+          };
+        }
+        return {
+          title: '選一個答案',
+          body: '請不要直接說答案。可以說『我們一起數』，或指著十格框。答錯這張牌會失效，可以先按 👀 看看。',
+        };
+      }
       if (opts?.castMode === 'listen' || opts?.castMode === 'listenHard') {
         return {
           title: '聽一聽 → 拼注音',
@@ -106,12 +141,23 @@ export function coachForScreen(
         body: '請您念出國字。孩子拼出整個音（例：爸爸→ㄅㄚˋ）。填滿自動送出。💡 本場可亮答案一次。',
       };
     }
-    case 'event':
+    case 'event': {
+      let body = opts?.eventBody ?? '按鈕上的數字就是代價。可以離開。';
+      if (opts?.castingGateId === 'math') {
+        body = body.replace(/拼對/g, '算對').replace(/念錯/g, '算錯').replace(/拼錯/g, '算錯');
+      }
       return {
         title: opts?.eventTitle ?? '奇遇',
-        body: opts?.eventBody ?? '按鈕上的數字就是代價。可以離開。',
+        body,
       };
+    }
     case 'eventCast':
+      if (opts?.castingGateId === 'math') {
+        return {
+          title: opts?.eventTitle ?? '數學神龕',
+          body: `${opts?.eventBody ?? ''} 請把題目念出來，讓孩子自己選答案。答錯不會少心。`.trim(),
+        };
+      }
       return {
         title: opts?.eventTitle ?? '注音神龕',
         body: `${opts?.eventBody ?? ''} 請念出國字，孩子拼出整個音。拼錯會少一點心。`.trim(),

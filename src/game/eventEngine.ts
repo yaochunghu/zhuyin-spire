@@ -20,7 +20,7 @@ import {
 } from '../data/events';
 import type { MapNode, RunMap } from '../data/map';
 import { getPlayableCharacter, type PlayableCharacterId } from '../data/characters';
-import { getRelic, RELIC_POOL_IDS, rollRelicDrop } from '../data/relics';
+import { getRelic, relicPoolIdsFor, rollRelicDrop } from '../data/relics';
 import { nextCardUid, type DeckCard } from './cardInstances';
 import { getActiveProfile, filterObtainableCardsForProfile } from './profiles';
 import { grantPotions, potionBlockReason } from './potions';
@@ -233,7 +233,7 @@ function conditionReason(state: EventRun, condition: EventCondition): string | n
     case 'notOwned':
       return ownedRelicIds(state).includes(condition.relicId) ? '已經有了' : null;
     case 'relicAvailable':
-      return RELIC_POOL_IDS.some((id) => !ownedRelicIds(state).includes(id))
+      return relicPoolIdsFor(state.characterId).some((id) => !ownedRelicIds(state).includes(id))
         ? null
         : '沒有新的遺物';
     case 'potionSlots':
@@ -295,7 +295,7 @@ function effectReason(state: EventRun, effect: EventEffect): string | null {
     case 'gainRelic':
       return ownedRelicIds(state).includes(effect.relicId) ? '已經有了' : null;
     case 'gainRandomRelic':
-      return RELIC_POOL_IDS.some((id) => !ownedRelicIds(state).includes(id))
+      return relicPoolIdsFor(state.characterId).some((id) => !ownedRelicIds(state).includes(id))
         ? null
         : '沒有新的遺物';
     case 'gainCard': {
@@ -356,6 +356,9 @@ export function choiceIsHidden(state: EventRun, choice: EventChoiceDef): boolean
 }
 
 export function eventIsEligible(state: EventRun, event: EventDef, row: number, act: 1 | 2 | 3): boolean {
+  // 注音神龕 quizzes with a 注音 gate and charges HP for a miss. 珠算武者 cannot
+  // answer that, so the event is not offered. The other shared events do not quiz.
+  if (event.id === 'event_shared_phonetic_shrine' && state.characterId === 'abacusFist') return false;
   if (event.act !== 'shared' && event.act !== act) return false;
   if (event.act === 1 && row === 0) return false;
   if (state.eventTrack.seenEventIds.includes(event.id)) return false;
@@ -495,7 +498,7 @@ function prepareRolls(state: EventRun, event: EventDef): EventRolls {
   const relics: EventRolls['relics'] = {};
   // The bible still names a rarity. The live pool has no tiers, so one roll
   // is stored for every rarity word and the event cursor only advances once.
-  const rolled = rollRelicDrop(owned, (max) => rollIndex(state.eventTrack, max));
+  const rolled = rollRelicDrop(owned, (max) => rollIndex(state.eventTrack, max), state.characterId);
   if (rolled) {
     relics.common = rolled;
     relics.uncommon = rolled;
@@ -892,7 +895,7 @@ function applyEffect(state: EventRun, effect: EventEffect): void {
       const owned = ownedRelicIds(state);
       const id = rolled && !owned.includes(rolled)
         ? rolled
-        : rollRelicDrop(owned, () => 0);
+        : rollRelicDrop(owned, () => 0, state.characterId);
       if (id && acquireRelic(state, id)) lines.push(`得到 ${getRelic(id).name}`);
       break;
     }
@@ -1004,15 +1007,20 @@ export function noteShrineAnswer(state: EventRun, correct: boolean): EventStep {
   const active = state.eventTrack.active;
   if (!active || active.phase !== 'shrine') return active?.phase ?? 'choose';
   if (!correct) {
-    state.heroHp = Math.max(0, state.heroHp - active.shrineHpPerMiss);
-    state.flash = `-${active.shrineHpPerMiss}❤️`;
-    if (state.heroHp <= 0) return 'defeat';
+    // A resumed 珠算武者 shrine must not charge HP for a quiz that character cannot take.
+    if (state.characterId === 'abacusFist') {
+      state.flash = '再想想';
+    } else {
+      state.heroHp = Math.max(0, state.heroHp - active.shrineHpPerMiss);
+      state.flash = `-${active.shrineHpPerMiss}❤️`;
+      if (state.heroHp <= 0) return 'defeat';
+    }
   } else {
     state.flash = '✨';
   }
   active.shrineLeft -= 1;
   if (active.shrineLeft > 0) return 'shrine';
-  active.resultLines.push('三題都拼完了');
+  active.resultLines.push(state.characterId === 'abacusFist' ? '三題都算完了' : '三題都拼完了');
   return resumeAfterShrine(state);
 }
 
@@ -1044,7 +1052,11 @@ export function isEventFight(state: EventRun): boolean {
 }
 
 export function choiceChips(state: EventRun, choice: EventChoiceDef): string[] {
-  return effectChips(activeEffects(state, choice));
+  const verb = state.characterId
+    && getPlayableCharacter(state.characterId).castingGateId === 'math'
+    ? '算'
+    : '拼';
+  return effectChips(activeEffects(state, choice), verb);
 }
 
 export function decorateCombat(

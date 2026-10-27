@@ -1,3 +1,8 @@
+import {
+  ABACUS_CARD_IDS,
+  ABACUS_INITIAL_REWARD_IDS,
+  ABACUS_STARTER_DECK_IDS,
+} from './abacusCards';
 import type { CardJob } from './cards';
 import {
   RESONANCE_CARD_IDS,
@@ -63,6 +68,27 @@ export const CHARACTERS = {
     cardPoolIds: [...RESONANCE_CARD_IDS],
     upgradesEnabled: true,
     featuredJobs: ['frontload', 'defense', 'scaling', 'draw'],
+  },
+  abacusFist: {
+    id: 'abacusFist',
+    status: 'playable',
+    emoji: '🧮',
+    name: '珠算武者',
+    title: '數清來招，湊十出拳',
+    theme: '每一招都撥動算珠；湊滿十顆變成「十串」，再一口氣放出去。',
+    teachingNote: '一年級數學：數數、十的合成與分解、二十以內加減、比大小、第幾、時鐘、日期與錢幣。答題沒有時間限制。',
+    starterDeckIds: [...ABACUS_STARTER_DECK_IDS],
+    starterSummary: [
+      { icon: '⚔️', label: '1⚡ ×5' },
+      { icon: '🛡️', label: '1⚡ ×4' },
+      { icon: '🖐️', label: '2⚡ ×1' },
+    ],
+    startingRelicId: 'woodBeads',
+    castingGateId: 'math',
+    actIRewardIds: [...ABACUS_INITIAL_REWARD_IDS],
+    cardPoolIds: [...ABACUS_CARD_IDS],
+    upgradesEnabled: true,
+    featuredJobs: ['frontload', 'defense', 'scaling', 'area'],
   },
 } as const satisfies Record<string, CharacterDef>;
 

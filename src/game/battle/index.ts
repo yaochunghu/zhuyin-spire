@@ -6,6 +6,7 @@ export type {
   BattlePhase,
   CombatCard,
   CombatFx,
+  CombatRules,
   CombatState,
   EnemyUnit,
   PlayerImpact,
@@ -39,6 +40,7 @@ export { createCombat, endTurn } from './battleManager';
 export {
   cardNeedsEnemyTarget,
   cardTargetType,
+  addBeads,
   dealBlockedDamage,
   dealTrueDamage,
   executeEffects,

@@ -3,6 +3,15 @@
  * Legacy cards without effects[] are derived from type/value.
  */
 
+import {
+  BEAD_ARRAY_BLOCK,
+  BEAD_ARRAY_BLOCK_PLUS,
+  BEAD_BURST_DAMAGE,
+  BEAD_BURST_DAMAGE_PLUS,
+  BEAD_FILL_CAP,
+  MAKE_TEN_SIZE,
+  TENS_CAP,
+} from '../../data/balance';
 import { resolveCard, type CardDef, type CardType, type EffectDef, type TargetType } from '../../data/cards';
 import type {
   CombatCard,
@@ -155,6 +164,20 @@ export function executeEffects(
   const statusFx: CombatFx[] = [];
   let deferredDraw = 0;
   let spentJinBonus = 0;
+  state.beadsMadeLastAdd = 0;
+  let sameHitBonus = 0;
+  if (def.designId === 'M021') {
+    const spent = Math.min(2, state.tens);
+    state.tens -= spent;
+    sameHitBonus += spent * 5;
+  }
+  if (def.designId === 'M022') {
+    sameHitBonus += Math.min(10, 2 * Math.max(0, state.castsThisTurn - 1));
+  }
+  if (def.designId === 'M015' && state.compareExtraDamage > 0) {
+    sameHitBonus += state.compareExtraDamage;
+    state.compareExtraDamage = 0;
+  }
   if (def.designId === 'B082' && targets !== 'self' && targets.some((enemy) => enemy.alive)) {
     const spent = Math.min(state.jin, 3);
     state.jin -= spent;
@@ -170,7 +193,9 @@ export function executeEffects(
       const repeatHits = def.designId === 'B071' ? Math.min(2, priorTempo) : 0;
       const hits = def.designId === 'B042'
         ? Math.min(6, countBasicAttacks(state))
-        : (eff.hits ?? 1) + repeatHits;
+        : def.designId === 'M025'
+          ? Math.max(1, Math.min(5, state.tens))
+          : (eff.hits ?? 1) + repeatHits;
       for (const enemy of targets) {
         if (!enemy.alive) continue;
         let dealt = 0;
@@ -189,7 +214,8 @@ export function executeEffects(
           if (fright > 0) state.stageFrightUsed = true;
           const rawAmount = Math.max(
             0,
-            eff.amount + basicBonus + attackBonus + tempoBonus + trainingEcho + jinBonus - fright,
+            eff.amount + basicBonus + attackBonus + tempoBonus + trainingEcho + jinBonus
+              + (i === 0 ? sameHitBonus : 0) - fright,
           );
           dealt += dealAttackHit(state, enemy, rawAmount, impacts, i, isBasicHit);
         }
@@ -234,6 +260,13 @@ export function executeEffects(
       state.training += eff.amount;
     } else if (eff.kind === 'jin') {
       gainJin(state, eff.amount);
+    } else if (eff.kind === 'beads') {
+      const preferred = targets !== 'self' && cardTargetType(def) !== 'allEnemies'
+        ? targets[0]?.id
+        : undefined;
+      addBeads(state, eff.amount, preferred);
+    } else if (eff.kind === 'tens') {
+      state.tens = Math.min(TENS_CAP, state.tens + eff.amount);
     }
   }
 
@@ -518,6 +551,51 @@ function applySpecialCardEffect(
     case 'B149':
       if (enemy && state.gainedJinLastEnemyPhase) riderHp += rider(enemy, 8);
       break;
+    case 'M003':
+      if (state.tens > 0 && enemy) {
+        state.tens -= 1;
+        riderHp += rider(enemy, 5);
+      }
+      break;
+    case 'M004': {
+      const room = Math.max(0, MAKE_TEN_SIZE - state.beads);
+      const gain = Math.min(def.value > 0 ? def.value : BEAD_FILL_CAP, room);
+      if (gain > 0) addBeads(state, gain);
+      break;
+    }
+    case 'M010':
+      if (state.castsThisTurn >= 3 && enemy) riderHp += rider(enemy, 4);
+      break;
+    case 'M013':
+      if (state.beadsMadeLastAdd > 0 && enemy) riderHp += rider(enemy, 4);
+      break;
+    case 'M014':
+      if (state.tens > 0) {
+        state.tens -= 1;
+        state.block += 6;
+      }
+      break;
+    case 'M016':
+      drawCards(state, state.castsThisTurn === 1 ? 2 : 1);
+      break;
+    case 'M020':
+      if (state.tens >= 1) addBeads(state, 2);
+      break;
+    case 'M024': {
+      const spent = Math.min(2, state.tens);
+      state.tens -= spent;
+      state.energy += spent;
+      break;
+    }
+    case 'M026':
+      if (state.tens > 0) {
+        state.tens -= 1;
+        state.block += 6;
+      }
+      break;
+    case 'M027':
+      if (state.castsThisTurn >= 2) state.block += 3;
+      break;
     default:
       break;
   }
@@ -570,6 +648,66 @@ export function dealTrueDamage(enemy: EnemyUnit, amount: number): number {
 
 function dealDirect(enemy: EnemyUnit, amount: number): void {
   dealTrueDamage(enemy, amount);
+}
+
+function makeTenEnemy(state: CombatState, preferredId?: string): EnemyUnit | null {
+  const living = livingEnemies(state);
+  if (preferredId) {
+    const preferred = living.find((enemy) => enemy.id === preferredId);
+    if (preferred) return preferred;
+  }
+  if (state.selectedEnemyId) {
+    const selected = living.find((enemy) => enemy.id === state.selectedEnemyId);
+    if (selected) return selected;
+  }
+  return living[0] ?? null;
+}
+
+function fireMakeTen(state: CombatState, preferredId?: string): void {
+  if (state.tens < TENS_CAP) state.tens += 1;
+  state.makeTenCount += 1;
+  state.makeTenThisTurn += 1;
+  const target = makeTenEnemy(state, preferredId);
+  if (target && state.makeTenDirectDamage > 0) {
+    const dealt = dealTrueDamage(target, state.makeTenDirectDamage);
+    if (dealt > 0) state.log.push(`木珠串：直傷 ${dealt}`);
+  }
+  if (state.tenBellReady && state.tenBellEnergy > 0) {
+    state.tenBellReady = false;
+    state.energy += state.tenBellEnergy;
+    state.log.push(`十響鈴：能量 +${state.tenBellEnergy}`);
+  }
+  for (const powerId of state.activePowerIds) {
+    if (powerId === 'M018') {
+      const block = state.activePowerLevels.M018 === 1 ? BEAD_ARRAY_BLOCK_PLUS : BEAD_ARRAY_BLOCK;
+      state.block += block;
+      state.log.push(`珠串陣：護盾 +${block}`);
+    } else if (powerId === 'M023') {
+      const amount = state.activePowerLevels.M023 === 1 ? BEAD_BURST_DAMAGE_PLUS : BEAD_BURST_DAMAGE;
+      for (const enemy of livingEnemies(state)) {
+        const dealt = dealTrueDamage(enemy, amount);
+        if (dealt > 0) state.log.push(`珠落玉盤：直傷 ${dealt}`);
+      }
+    }
+  }
+}
+
+/** Add beads and fire every 湊十. No-op unless this combat uses the bead rules. */
+export function addBeads(state: CombatState, amount: number, preferredEnemyId?: string): number {
+  if (state.rules?.beadsEnabled !== true || amount <= 0) {
+    state.beadsMadeLastAdd = 0;
+    return 0;
+  }
+  let fired = 0;
+  state.beads += amount;
+  while (state.beads >= MAKE_TEN_SIZE) {
+    state.beads -= MAKE_TEN_SIZE;
+    fireMakeTen(state, preferredEnemyId);
+    fired += 1;
+  }
+  state.beadsMadeLastAdd = fired;
+  if (fired > 0) state.log.push(`湊十 ×${fired}（算珠 ${state.beads}，十串 ${state.tens}）`);
+  return fired;
 }
 
 function lastIndexWhere<T>(items: T[], predicate: (item: T) => boolean): number {
