@@ -25,6 +25,21 @@ export type ArtAssetKey =
   | 'enemyEliteBoom'
   | 'enemyEliteStorm'
   | 'enemyEliteShadow'
+  | 'enemyEchoBug'
+  | 'enemyDrumlet'
+  | 'enemyBellMoth'
+  | 'enemyDustDrum'
+  | 'enemyNoteWisp'
+  | 'enemyLittleConductor'
+  | 'enemyBellWisp'
+  | 'enemyMirrorNote'
+  | 'enemyCrownBell'
+  | 'enemyStarWisp'
+  | 'enemyEliteChorus'
+  | 'enemyEliteConductor'
+  | 'enemyEliteMuteDrum'
+  | 'enemyElitePrism'
+  | 'enemyEliteStarCaller'
   | 'enemyBoss1'
   | 'enemyBoss2'
   | 'enemyBoss3'
@@ -172,6 +187,81 @@ export const ART_ASSETS = {
     fallback: '🌑',
     alt: '月蝕盔甲暗影菁英玩具',
   },
+  enemyEchoBug: {
+    src: new URL('../assets/art/enemies/echo-bug.webp', import.meta.url).href,
+    fallback: '🐛',
+    alt: '頂著葉子的綠色跟讀蟲玩具',
+  },
+  enemyDrumlet: {
+    src: new URL('../assets/art/enemies/drumlet.webp', import.meta.url).href,
+    fallback: '🥁',
+    alt: '抱著小鼓的橡實鼓手玩具',
+  },
+  enemyBellMoth: {
+    src: new URL('../assets/art/enemies/bell-moth.webp', import.meta.url).href,
+    fallback: '🦋',
+    alt: '翅膀上有鈴鐺花紋的鐘粉蛾玩具',
+  },
+  enemyDustDrum: {
+    src: new URL('../assets/art/enemies/dust-drum.webp', import.meta.url).href,
+    fallback: '🪘',
+    alt: '飄著灰塵的塵鼓玩具',
+  },
+  enemyNoteWisp: {
+    src: new URL('../assets/art/enemies/note-wisp.webp', import.meta.url).href,
+    fallback: '🎵',
+    alt: '會跳的小音符精靈玩具',
+  },
+  enemyLittleConductor: {
+    src: new URL('../assets/art/enemies/little-conductor.webp', import.meta.url).href,
+    fallback: '🎼',
+    alt: '拿指揮棒的小指揮鳥玩具',
+  },
+  enemyBellWisp: {
+    src: new URL('../assets/art/enemies/bell-wisp.webp', import.meta.url).href,
+    fallback: '🔔',
+    alt: '長翅膀的金色鐘音符玩具',
+  },
+  enemyMirrorNote: {
+    src: new URL('../assets/art/enemies/mirror-note.webp', import.meta.url).href,
+    fallback: '🪞',
+    alt: '鏡子水晶做的鏡音玩具',
+  },
+  enemyCrownBell: {
+    src: new URL('../assets/art/enemies/crown-bell.webp', import.meta.url).href,
+    fallback: '🛎️',
+    alt: '戴皇冠的深藍冠鐘玩具',
+  },
+  enemyStarWisp: {
+    src: new URL('../assets/art/enemies/star-wisp.webp', import.meta.url).href,
+    fallback: '⭐',
+    alt: '愛睏的小星螢玩具',
+  },
+  enemyEliteChorus: {
+    src: new URL('../assets/art/enemies/elite-chorus.webp', import.meta.url).href,
+    fallback: '🐛',
+    alt: '掛在樹枝上的和聲蛹菁英玩具',
+  },
+  enemyEliteConductor: {
+    src: new URL('../assets/art/enemies/elite-conductor.webp', import.meta.url).href,
+    fallback: '🦉',
+    alt: '揮著指揮棒的樂團指揮菁英玩具',
+  },
+  enemyEliteMuteDrum: {
+    src: new URL('../assets/art/enemies/elite-mute-drum.webp', import.meta.url).href,
+    fallback: '🥁',
+    alt: '愛睏的重甲慢拍鼓菁英玩具',
+  },
+  enemyElitePrism: {
+    src: new URL('../assets/art/enemies/elite-prism.webp', import.meta.url).href,
+    fallback: '💎',
+    alt: '頭上有七色水晶的七音晶菁英玩具',
+  },
+  enemyEliteStarCaller: {
+    src: new URL('../assets/art/enemies/elite-star-caller.webp', import.meta.url).href,
+    fallback: '🌟',
+    alt: '拿星星法杖的喚星使菁英玩具',
+  },
   enemyBoss1: {
     src: new URL('../assets/art/enemies/boss-1.webp', import.meta.url).href,
     fallback: '🐉',
@@ -290,26 +380,26 @@ export const ENEMY_ART_BY_DEF_ID = {
   wraith: 'enemyWraith',
   owl: 'enemyOwl',
   crystal: 'enemyCrystal',
-  echoBug: 'enemyBat',
-  drumlet: 'enemyRock',
-  bellMoth: 'enemyBat',
-  dustDrum: 'enemyArmor',
-  noteWisp: 'enemyEmber',
-  littleConductor: 'enemySpike',
-  bellWisp: 'enemyEmber',
-  mirrorNote: 'enemyCrystal',
-  crownBell: 'enemyOwl',
-  starWisp: 'enemyWraith',
+  echoBug: 'enemyEchoBug',
+  drumlet: 'enemyDrumlet',
+  bellMoth: 'enemyBellMoth',
+  dustDrum: 'enemyDustDrum',
+  noteWisp: 'enemyNoteWisp',
+  littleConductor: 'enemyLittleConductor',
+  bellWisp: 'enemyBellWisp',
+  mirrorNote: 'enemyMirrorNote',
+  crownBell: 'enemyCrownBell',
+  starWisp: 'enemyStarWisp',
   eliteArmor: 'enemyEliteArmor',
   eliteBee: 'enemyEliteBee',
   eliteBoom: 'enemyEliteBoom',
   eliteStorm: 'enemyEliteStorm',
   eliteShadow: 'enemyEliteShadow',
-  eliteChorus: 'enemyEliteBee',
-  eliteConductor: 'enemyEliteStorm',
-  eliteMuteDrum: 'enemyEliteArmor',
-  elitePrism: 'enemyCrystal',
-  eliteStarCaller: 'enemyEliteShadow',
+  eliteChorus: 'enemyEliteChorus',
+  eliteConductor: 'enemyEliteConductor',
+  eliteMuteDrum: 'enemyEliteMuteDrum',
+  elitePrism: 'enemyElitePrism',
+  eliteStarCaller: 'enemyEliteStarCaller',
   boss1: 'enemyBoss1',
   boss2: 'enemyBoss2',
   boss3: 'enemyBoss3',
