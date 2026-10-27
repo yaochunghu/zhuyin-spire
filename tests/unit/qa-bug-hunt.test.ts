@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { PHRASES_BY_INITIAL } from '../../src/data/phrases';
-import { intentTotalDamage } from '../../src/data/enemies';
+import { intentTotalDamage, intentTotalLabel } from '../../src/data/enemies';
 import { getCard, resolveCard } from '../../src/data/cards';
 import {
   beginPlay,
@@ -9,8 +9,11 @@ import {
   effectiveCost,
   endTurn,
   executeEffects,
+  intentForUnit,
   makeCard,
+  nextIntentForUnit,
   resolveCastSuccess,
+  weakTurnsAfterEnemyAction,
   type CombatState,
 } from '../../src/game/combat';
 import { coachForScreen } from '../../src/game/coach';
@@ -405,6 +408,61 @@ describe('QA bug hunt regressions', () => {
     expect(intentTotalDamage({ kind: 'attack', value: 8 }, true)).toBe(6);
     expect(intentTotalDamage({ kind: 'multi', value: 3, hits: 2 }, true)).toBe(4);
     expect(intentTotalDamage({ kind: 'attack', value: 8 })).toBe(8);
+  });
+
+  it('previews the next attack without Weak when this action ticks the last turn off', () => {
+    const fading = createCombat(['mo'], 'slimeWeak', 40, 40);
+    const unit = fading.enemies[0]!;
+    unit.weakTurns = 1;
+    expect(intentTotalLabel(intentForUnit(unit), unit.weakTurns > 0)).toBe('⚔️ 2');
+    expect(
+      intentTotalLabel(
+        nextIntentForUnit(unit),
+        weakTurnsAfterEnemyAction(unit.weakTurns) > 0,
+      ),
+    ).toBe('⚔️ 3');
+
+    fading.block = 0;
+    const hp = fading.heroHp;
+    endTurn(fading);
+    expect(fading.heroHp).toBe(hp - 2);
+    expect(unit.weakTurns).toBe(0);
+    expect(intentTotalLabel(intentForUnit(unit), unit.weakTurns > 0)).toBe('⚔️ 3');
+
+    const lasting = createCombat(['mo'], 'slimeWeak', 40, 40);
+    const lastingUnit = lasting.enemies[0]!;
+    lastingUnit.weakTurns = 2;
+    expect(
+      intentTotalLabel(
+        nextIntentForUnit(lastingUnit),
+        weakTurnsAfterEnemyAction(lastingUnit.weakTurns) > 0,
+      ),
+    ).toBe('⚔️ 2');
+    lasting.block = 0;
+    const lastingHp = lasting.heroHp;
+    endTurn(lasting);
+    expect(lasting.heroHp).toBe(lastingHp - 2);
+    expect(lastingUnit.weakTurns).toBe(1);
+    expect(intentTotalLabel(intentForUnit(lastingUnit), lastingUnit.weakTurns > 0)).toBe(
+      '⚔️ 2',
+    );
+
+    const multi = createCombat(['mo'], 'slimeWeak', 40, 40);
+    const multiUnit = multi.enemies[0]!;
+    multiUnit.intentIndex = 1;
+    multiUnit.weakTurns = 1;
+    expect(
+      intentTotalLabel(
+        nextIntentForUnit(multiUnit),
+        weakTurnsAfterEnemyAction(multiUnit.weakTurns) > 0,
+      ),
+    ).toBe('⚔️ 4');
+    multi.block = 0;
+    const multiHp = multi.heroHp;
+    endTurn(multi);
+    expect(multi.heroHp).toBe(multiHp - 2);
+    expect(multiUnit.weakTurns).toBe(weakTurnsAfterEnemyAction(1));
+    expect(intentTotalDamage(intentForUnit(multiUnit), multiUnit.weakTurns > 0)).toBe(4);
   });
 
   it('BUG-13 reveals practice mistakes and plays a fatal end-turn outro', () => {

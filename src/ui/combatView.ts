@@ -17,6 +17,7 @@ import {
   isEligibleHandChoice,
   livingEnemies,
   nextIntentForUnit,
+  weakTurnsAfterEnemyAction,
   type CombatCard,
   type CombatState,
   type EnemyUnit,
@@ -334,6 +335,9 @@ function renderEnemySlot(
   const intent = intentForUnit(unit);
   const nextIntent = nextIntentForUnit(unit);
   const weak = unit.weakTurns > 0;
+  // This action uses the current duration. The 下回合 pill uses whatever
+  // remains after that action ticks Weak.
+  const nextWeak = weakTurnsAfterEnemyAction(unit.weakTurns) > 0;
   const multiHint = intentMultiHint(intent, weak);
   const intentTitle = intentLabel(intent, weak);
   const hpPct = Math.max(0, (unit.hp / unit.maxHp) * 100);
@@ -346,7 +350,7 @@ function renderEnemySlot(
   const holdPortrait = justSlain && !session.battleDeathCue;
   const urgent = !dead && intentIsUrgent(intent, combat.heroHp, combat.block, weak);
   const nextUrgent =
-    !dead && intentIsUrgent(nextIntent, combat.heroHp, combat.block, weak);
+    !dead && intentIsUrgent(nextIntent, combat.heroHp, combat.block, nextWeak);
   // Cap shield bar display relative to maxHp for readability
   const shieldPct = Math.min(100, (unit.block / Math.max(unit.maxHp, 1)) * 100);
 
@@ -386,9 +390,9 @@ function renderEnemySlot(
         <span class="intent-total">${intentTotalLabel(intent, weak)}</span>
         ${multiHint ? `<span class="intent-multi-hint adult-text">${multiHint}</span>` : ''}
       </div>
-      <div class="intent intent-next intent-${nextIntent.kind}${nextUrgent ? ' intent-urgent-soft' : ''}" title="${intentNextHint(nextIntent, weak)}">
+      <div class="intent intent-next intent-${nextIntent.kind}${nextUrgent ? ' intent-urgent-soft' : ''}" title="${intentNextHint(nextIntent, nextWeak)}">
         <span class="intent-badge adult-text">下回合</span>
-        <span class="intent-total intent-next-total">${intentTotalLabel(nextIntent, weak)}</span>
+        <span class="intent-total intent-next-total">${intentTotalLabel(nextIntent, nextWeak)}</span>
       </div>`
       }
     </div>
