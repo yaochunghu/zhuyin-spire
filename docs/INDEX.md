@@ -49,14 +49,15 @@ Root companions:
 | [../README.md](../README.md) | Play, quick start, version control |
 | [../AGENTS.md](../AGENTS.md) | AI/human resume guide |
 | [../CHANGELOG.md](../CHANGELOG.md) | Human-readable version history |
+| [../RELEASE_NOTES_v0.4.2.md](../RELEASE_NOTES_v0.4.2.md) | Player-facing notes for the v0.4.2 release in progress |
 
 ---
 
 ## Snapshot (main, after the Oct 27 merges)
 
-`package.json` is **0.4.1**. The published GitHub Release `v0.4.1` is
-`46f6486` (#49) and does not include #44 or #50–#56. Those commits are
-`[Unreleased]` in [CHANGELOG.md](../CHANGELOG.md).
+`package.json` is **0.4.2**. The published GitHub Release is still `v0.4.1`
+at `46f6486` (#49). **v0.4.2** is the release in progress: #44 and #50–#58
+are `[0.4.2]` in [CHANGELOG.md](../CHANGELOG.md). That release is not tagged yet.
 
 - **Stack:** Vite + TypeScript SPA, no backend; localStorage save. Saves stay
   on version 4. `eventTrack`, `castSeed`, and `castCounter` are optional.

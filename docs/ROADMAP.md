@@ -5,9 +5,10 @@ The live version, obtainability rules, and next implementation slice live in
 
 ## Shipped on main
 
-`package.json` is 0.4.1. The published GitHub Release `v0.4.1` is `46f6486`
-(#49). Bullets from the #50 combat fixes downward are `[Unreleased]` in
-[CHANGELOG.md](../CHANGELOG.md). Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
+`package.json` is 0.4.2. The published GitHub Release is still `v0.4.1` at
+`46f6486` (#49). **v0.4.2** is the release in progress (`[0.4.2]` in
+[CHANGELOG.md](../CHANGELOG.md), #44 and #50–#58). It is not tagged yet.
+Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
 
 - Vite + TypeScript SPA; touch-first preschool UI; adult coach strip  
 - Full first-syllable 注音 cast (including 聲調); listen mode (Web Speech zh-TW)  
@@ -57,9 +58,10 @@ Detail: [NEXT_PHASE.md](./NEXT_PHASE.md).
    The character, deck, and math provider are not
 3. **#52's nine open questions** in
    [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md#questions-for-yao)
-4. **The v0.4.1 release** — `package.json` is already 0.4.1. The published tag
-   stops at #49. Publishing a release that includes `[Unreleased]` is still
-   open. This page does not choose a new version number
+4. **The v0.4.2 release** — this is the release in progress. `package.json`
+   is 0.4.2 and `[0.4.2]` covers #44 and #50–#58. The published tag is still
+   `v0.4.1` at #49. Tagging and the GitHub Release are still open. Saves stay
+   on version 4
 
 Keys, Act IV, and a 20-level track stay later. Cast-on / debug-skip passes at
 each score milestone stay in

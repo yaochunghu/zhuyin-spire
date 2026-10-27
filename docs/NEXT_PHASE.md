@@ -10,9 +10,9 @@ each score milestone while balancing the advanced tiers.
 
 | Source | Says |
 |--------|------|
-| `package.json` | **0.4.1** |
-| `CHANGELOG.md` | **[0.4.1]** is the published release. **[Unreleased]** is #44 and #50–#56. |
-| GitHub Releases | **v0.4.1** is published at `46f6486` (#49). That tag stops before #44 and #50–#56. |
+| `package.json` | **0.4.2** |
+| `CHANGELOG.md` | **[0.4.2] — 2026-10-27** is the release in progress (#44 and #50–#58). **[0.4.1]** is the last published section. |
+| GitHub Releases | **v0.4.1** is still the published tag, at `46f6486` (#49). **v0.4.2** is the release in progress and is not tagged yet. |
 
 ## What is live
 
@@ -112,4 +112,4 @@ These four are the current slice. Keys and Act IV stay later. They are not this 
    - Keep the enemy-block expiry shipped in #50.
    - Act I has four elites after 和聲蛹. Keep four unless the pool must stay at three.
    - 塔守護獸's friend is the shared 軟軟史萊姆. The first heavy is alone; a later heavy can share a turn with the slime if it is still alive.
-4. **The v0.4.1 release.** `package.json` is already 0.4.1. The published GitHub Release `v0.4.1` is `46f6486` (#49) and does not include #44 or #50–#56. Those commits are `[Unreleased]` in [CHANGELOG.md](../CHANGELOG.md). Publishing a release that includes them is still open. This page does not choose a new version number.
+4. **The v0.4.2 release.** This is the release in progress. `package.json` is 0.4.2. `[0.4.2] — 2026-10-27` in [CHANGELOG.md](../CHANGELOG.md) covers #44 and #50–#58. The published GitHub Release is still `v0.4.1` at `46f6486` (#49). Tagging and the GitHub Release are still open. Saves stay on version 4.
