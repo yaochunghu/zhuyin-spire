@@ -79,6 +79,8 @@ export interface RunSnapshotV1 {
   pathIds: string[];
   rewardOptions: CardOffer[];
   rewardTier: RewardTier;
+  /** Optional so checkpoints saved before treasure headers still load. */
+  rewardSource?: 'fight' | 'treasure' | null;
   pendingGold: number;
   pendingHeal?: number;
   shopOffers: ShopOffer[];
@@ -136,6 +138,7 @@ export function snapshotRun(state: RunState): RunSnapshotV1 | null {
     pathIds: [...state.pathIds],
     rewardOptions: state.rewardOptions.map((card) => ({ ...card })),
     rewardTier: state.rewardTier,
+    rewardSource: state.rewardSource,
     pendingGold: state.pendingGold,
     pendingHeal: state.pendingHeal,
     shopOffers: state.shopOffers.map((o) => ({ ...o })),
@@ -314,6 +317,12 @@ function isValidSnapshot(data: unknown): data is RunSnapshotV1 {
   if (!isBoundedStringArray(data.pathIds, 100, (id) => mapIds.has(id))) return false;
   if (!Array.isArray(data.rewardOptions) || data.rewardOptions.length > 3 || !data.rewardOptions.every(isValidCardOffer)) return false;
   if (data.rewardTier !== 'normal' && data.rewardTier !== 'elite') return false;
+  if (
+    data.rewardSource !== undefined &&
+    data.rewardSource !== null &&
+    data.rewardSource !== 'fight' &&
+    data.rewardSource !== 'treasure'
+  ) return false;
   if (!isIntIn(data.pendingGold, 0, 999_999)) return false;
   if (data.pendingHeal !== undefined && !isIntIn(data.pendingHeal, 0, data.heroMaxHp)) return false;
   if (!Array.isArray(data.shopOffers) || data.shopOffers.length > 10 || !data.shopOffers.every(isValidShopOffer)) return false;
@@ -484,6 +493,7 @@ export function applySnapshot(state: RunState, snap: RunSnapshotV1): void {
   state.pathIds = [...snap.pathIds];
   state.rewardOptions = snap.rewardOptions.map((card) => ({ ...card }));
   state.rewardTier = snap.rewardTier;
+  state.rewardSource = snap.rewardSource ?? null;
   state.pendingGold = snap.pendingGold;
   state.pendingHeal = snap.pendingHeal ?? 0;
   state.shopOffers = snap.shopOffers.map((o) => ({ ...o }));

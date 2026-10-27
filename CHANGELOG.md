@@ -8,6 +8,13 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+### Combat and campfire fixes
+
+- Searching the discard for a card type no longer deletes the cards still in the draw pile.
+- The campfire remove-card screen can return to rest without deleting a card.
+- Attack damage that is not marked 直傷 respects block and 易傷. Enemy block expires at that enemy's next action. This-turn cost discounts expire, and next-enemy-phase riders stack and expire with their text.
+- Ambiguous single-character prompts for 了, 覺, and 樂 are removed. Pictured 還 and 傳 readings from the dictionary cleanup stay as they are.
+
 ### Zhuyin corrections
 
 - Point pictured phrases at the 《重編國語辭典修訂本》 headword for that picture: 幹 ㄍㄢˋ, 更 ㄍㄥˋ, 卷 ㄐㄩㄢˋ, 期 ㄑㄧˊ, 甚 ㄕㄣˊ, 鑽 ㄗㄨㄢˋ, 撒 ㄙㄚˇ, and 微 ㄨㄟˊ.

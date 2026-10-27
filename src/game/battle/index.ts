@@ -29,6 +29,7 @@ export {
   beginPlay,
   canPlay,
   discardHandEndTurn,
+  effectiveCost,
   resolveCastFizzle,
   resolveCastSuccess,
 } from './playerHandler';
@@ -37,5 +38,6 @@ export {
   cardNeedsEnemyTarget,
   cardTargetType,
   executeEffects,
+  isEligibleHandChoice,
   livingEnemies,
 } from './effects';

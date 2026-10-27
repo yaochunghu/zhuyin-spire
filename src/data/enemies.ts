@@ -406,10 +406,11 @@ export function intentAt(enemy: EnemyDef, turnIndex: number): Intent {
   };
 }
 
-/** Damage this intent deals to the hero (0 for pure block). */
-export function intentTotalDamage(intent: Intent): number {
+/** Damage this intent deals to the hero (0 for pure block). Weak floors each hit to 75%. */
+export function intentTotalDamage(intent: Intent, weak = false): number {
   if (intent.kind === 'block') return 0;
-  return intent.value * (intent.hits ?? 1);
+  const perHit = weak ? Math.max(0, Math.floor(intent.value * 0.75)) : intent.value;
+  return perHit * (intent.hits ?? 1);
 }
 
 export function intentHitCount(intent: Intent): number {
@@ -422,11 +423,11 @@ export function intentHitCount(intent: Intent): number {
  * Kid-first intent: total damage is the big number.
  * Multi shows total first, hits as a small hint for adults.
  */
-export function intentLabel(intent: Intent): string {
+export function intentLabel(intent: Intent, weak = false): string {
   if (intent.kind === 'block') {
     return `🛡️ +${intent.value}`;
   }
-  const total = intentTotalDamage(intent);
+  const total = intentTotalDamage(intent, weak);
   if (intent.kind === 'multi') {
     const hits = intent.hits ?? 1;
     return `⚔️ ${total} · ${hits}×${intent.value}`;
@@ -438,18 +439,19 @@ export function intentLabel(intent: Intent): string {
 }
 
 /** Compact kid pill — total only (used when we split detail into HTML). */
-export function intentTotalLabel(intent: Intent): string {
+export function intentTotalLabel(intent: Intent, weak = false): string {
   if (intent.kind === 'block') return `🛡️ +${intent.value}`;
-  const total = intentTotalDamage(intent);
+  const total = intentTotalDamage(intent, weak);
   if (intent.kind === 'heavy') return `💥 ${total}`;
   if (intent.kind === 'multi') return `⚔️ ${total}`;
   return `⚔️ ${total}`;
 }
 
-export function intentMultiHint(intent: Intent): string | null {
+export function intentMultiHint(intent: Intent, weak = false): string | null {
   if (intent.kind === 'multi') {
     const hits = intent.hits ?? 1;
-    return `${hits}下 ×${intent.value}`;
+    const perHit = weak ? Math.max(0, Math.floor(intent.value * 0.75)) : intent.value;
+    return `${hits}下 ×${perHit}`;
   }
   if (intent.kind === 'block') {
     return '防禦';
@@ -461,9 +463,9 @@ export function intentMultiHint(intent: Intent): string | null {
 }
 
 /** Short adult label for “next turn” strip. */
-export function intentNextHint(intent: Intent): string {
+export function intentNextHint(intent: Intent, weak = false): string {
   if (intent.kind === 'block') return `下回合 🛡️+${intent.value}`;
-  const total = intentTotalDamage(intent);
+  const total = intentTotalDamage(intent, weak);
   if (intent.kind === 'multi') {
     return `下回合 ⚔️${total}（${intent.hits ?? 1}下）`;
   }
@@ -472,8 +474,13 @@ export function intentNextHint(intent: Intent): string {
 }
 
 /** True if this intent is scary enough that kids should strongly consider block. */
-export function intentIsUrgent(intent: Intent, heroHp: number, heroBlock: number): boolean {
-  const dmg = intentTotalDamage(intent);
+export function intentIsUrgent(
+  intent: Intent,
+  heroHp: number,
+  heroBlock: number,
+  weak = false,
+): boolean {
+  const dmg = intentTotalDamage(intent, weak);
   if (dmg <= 0) return false;
   if (intent.kind === 'heavy') return true;
   if (dmg >= 7) return true;

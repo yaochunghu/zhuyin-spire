@@ -18,6 +18,8 @@ export {
   canPlay,
   cardNeedsEnemyTarget,
   cardTargetType,
+  effectiveCost,
+  isEligibleHandChoice,
   createCombat,
   currentIntent,
   drawCards,

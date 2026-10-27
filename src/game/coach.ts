@@ -40,12 +40,12 @@ export function coachForScreen(
     case 'practice':
       return {
         title: '練習室',
-        body: '沒有怪、沒有血量。拼對會顯示完整注音再出下一題。💡 可一直看答案。🏠 回標題。',
+        body: '沒有怪、沒有血量。拼對或拼錯都會顯示完整注音再出下一題。💡 可一直看答案。🏠 回標題。',
       };
     case 'relicPick':
       return {
         title: '選角色',
-        body: '共鳴武者第一波有 12 種牌。先用易傷找空隙，完整防守累積勁，再練習攻守換拍；初心音叉每回合幫第一次攻擊 +1。',
+        body: '共鳴武者有 75 種牌，會依分數慢慢解鎖。先用易傷找空隙，完整防守累積勁，再練習攻守換拍；初心音叉每回合幫第一次攻擊 +1。',
       };
     case 'map':
       return {
@@ -55,12 +55,12 @@ export function coachForScreen(
     case 'actClear':
       return {
         title: '幕間休息',
-        body: '這一幕的 Boss 打倒了！生命會補一些，然後進入下一幕新地圖（仍由下往上）。',
+        body: '這一幕的 Boss 打倒了！生命會回滿，然後進入下一幕新地圖（仍由下往上）。',
       };
     case 'rest':
       return {
-        title: '營火二選一',
-        body: '❤️ 回復約四成最大生命（戰鬥後不自動回血），或 🗑️ 刪一張弱牌。牌的升級層已準備好，但要等共鳴武者的升級設計通過後才開放。',
+        title: '營火三選一',
+        body: '❤️ 回復約四成最大生命（戰鬥後不自動回血）、🗑️ 刪一張弱牌，或 🔨 升級一張牌。',
       };
     case 'smith':
       return {
@@ -70,7 +70,7 @@ export function coachForScreen(
     case 'removeCard':
       return {
         title: '刪牌',
-        body: '點一張要丟掉的牌（本場營火只能做一次）。↩️ 回營火可改選補血。',
+        body: '點一張要丟掉的牌（本場營火只能做一次）。↩️ 回營火可改選休息或升級。',
       };
     case 'shop':
       return {
@@ -91,7 +91,7 @@ export function coachForScreen(
       if (opts?.castMode === 'listen' || opts?.castMode === 'listenHard') {
         return {
           title: '聽一聽 → 拼注音',
-          body: '先按 🔊 再聽。依序點完整注音（含聲調）。填滿會自動送出。',
+          body: '會自動念一次，也可以按 🔊 再聽。依序點完整注音（含聲調）。填滿會自動送出。',
         };
       }
       return {
@@ -107,7 +107,7 @@ export function coachForScreen(
     case 'defeat':
       return {
         title: '失敗了',
-        body: '生命歸零。鼓勵再試。可換不同遺物。三幕較長，記得休息營火。',
+        body: '生命歸零。鼓勵再試。三幕較長，記得休息營火。',
       };
     case 'victory':
       return {

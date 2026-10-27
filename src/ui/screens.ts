@@ -27,6 +27,7 @@ import {
   pickCharacter,
   pickReward,
   removeCardFromDeck,
+  skipRemoveCard,
   smithCard,
   resumeSavedRun,
   startRun,
@@ -458,6 +459,7 @@ function renderRemovePicker(mode: 'rest' | 'shop'): HTMLElement {
   skip.addEventListener('click', () => {
     sfx.click();
     if (isShop) cancelShopRemove(run());
+    else skipRemoveCard(run());
     render();
   });
   el.appendChild(skip);
