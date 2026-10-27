@@ -16,6 +16,7 @@ import {
   debugInspect,
   debugLoseCombat,
   debugNewRun,
+  debugOpenEvent,
   debugPractice,
   debugResetTutorial,
   debugSetAnimationSpeed,
@@ -29,6 +30,7 @@ import {
   listEncounterOptions,
   listEnemyOptions,
 } from './debugActions';
+import { EVENTS } from '../data/events';
 import {
   getDebugSkipCast,
   isDebugEnabled,
@@ -248,6 +250,23 @@ function buildPanel(opts: DebugMountOpts): HTMLElement {
       btn('Shop', () => runAction(opts, (s) => debugEnterAvailable(s, 'shop'))),
       btn('💎', () => runAction(opts, (s) => debugEnterAvailable(s, 'treasure'))),
       btn('Fight', () => runAction(opts, (s) => debugEnterAvailable(s, 'fight'))),
+    ]),
+  );
+
+  const eventSelect = document.createElement('select');
+  eventSelect.className = 'debug-select debug-event-select';
+  for (const event of EVENTS) {
+    const opt = document.createElement('option');
+    opt.value = event.id;
+    opt.textContent = event.title;
+    eventSelect.appendChild(opt);
+  }
+  panel.appendChild(
+    row('Event', [
+      eventSelect,
+      btn('Open event', () => {
+        runAction(opts, (s) => debugOpenEvent(s, eventSelect.value));
+      }),
     ]),
   );
 

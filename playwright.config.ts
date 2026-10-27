@@ -14,6 +14,11 @@ export default defineConfig({
   },
   projects: [
     {
+      name: 'events-desktop',
+      testMatch: /events\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 720 } },
+    },
+    {
       name: 'desktop-firefox',
       testMatch: /tablet-smoke\.spec\.ts/,
       use: { ...devices['Desktop Firefox'], viewport: { width: 1280, height: 720 } },

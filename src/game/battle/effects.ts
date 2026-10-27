@@ -182,7 +182,15 @@ export function executeEffects(
           const tempoBonus = def.designId === 'B061' ? state.tempoCount : 0;
           const trainingEcho = def.designId === 'B123' && triggeredTempo ? state.training : 0;
           const jinBonus = def.designId === 'B082' ? spentJinBonus : 0;
-          const rawAmount = eff.amount + basicBonus + attackBonus + tempoBonus + trainingEcho + jinBonus;
+          const fright = !state.stageFrightUsed
+            && state.hand.some((held) => held.defId === 'cu_stage_fright')
+            ? 2
+            : 0;
+          if (fright > 0) state.stageFrightUsed = true;
+          const rawAmount = Math.max(
+            0,
+            eff.amount + basicBonus + attackBonus + tempoBonus + trainingEcho + jinBonus - fright,
+          );
           dealt += dealAttackHit(state, enemy, rawAmount, impacts, i, isBasicHit);
         }
         totalDamage += dealt;

@@ -2,11 +2,12 @@
  * Relics.
  *
  * The starter is always 初心音叉. Chests, elites, and bosses roll the small
- * 0.5 pool. The four legacy relics stay defined so v1 and v2 saves still load;
- * they are not offered. Nothing here skips or refunds a cast.
+ * 0.5 pool. Named event relics are granted by id and are not in that roll.
+ * The four legacy relics stay defined so v1 and v2 saves still load; they are
+ * not offered. Nothing here skips or refunds a cast.
  */
 
-export type RelicSource = 'starter' | 'pool' | 'legacy';
+export type RelicSource = 'starter' | 'pool' | 'legacy' | 'event';
 
 export interface RelicDef {
   id: string;
@@ -126,12 +127,52 @@ export const RELICS: Record<string, RelicDef> = {
     source: 'legacy',
     startDraw: 1,
   },
+  pocketMetronome: {
+    id: 'pocketMetronome',
+    emoji: '⏱️',
+    name: '口袋節拍器',
+    blurb: '一回合成功打出第 3 張牌時，抽 1 張',
+    adultNote: '要這一回合成功打出第三張牌才抽。念錯的牌不算。',
+    source: 'event',
+  },
+  moonMusicBox: {
+    id: 'moonMusicBox',
+    emoji: '🌙',
+    name: '月光音樂盒',
+    blurb: '綁定的那張牌，每場第一次拼對時抽 1 張',
+    adultNote: '只認綁定的那一張牌。每場第一次拼對才抽。拿掉那張牌之後就不會再抽。',
+    source: 'event',
+  },
+  rainSoundTube: {
+    id: 'rainSoundTube',
+    emoji: '🌧️',
+    name: '雨聲筒',
+    blurb: '怪物行動前，如果沒有護盾，先獲得 2 點護盾',
+    adultNote: '怪物行動前，身上沒有護盾才先給 2 點。已經有護盾就不會再加。',
+    source: 'event',
+  },
+  choirRibbon: {
+    id: 'choirRibbon',
+    emoji: '🎀',
+    name: '合唱緞帶',
+    blurb: '每贏 3 場戰鬥，回復 5 點生命',
+    adultNote: '每贏三場戰鬥回 5 點心。沒打完的戰鬥不算。',
+    source: 'event',
+  },
 };
 
-/** Chest, elite, and boss drops, in roll order. The starter and legacy relics are excluded. */
+/** Chest, elite, boss, and random event rewards, in roll order. */
 export const RELIC_POOL_IDS = ['gapThumb', 'trainingWrap', 'tempoWood', 'listeningHeart', 'trainingStance'] as const;
 
 export type RelicPoolId = (typeof RELIC_POOL_IDS)[number];
+
+/** Granted by a named event choice. Never offered by the chest roll. */
+export const EVENT_RELIC_IDS = [
+  'pocketMetronome',
+  'moonMusicBox',
+  'rainSoundTube',
+  'choirRibbon',
+] as const;
 
 export function getRelic(id: string): RelicDef {
   const relic = RELICS[id];

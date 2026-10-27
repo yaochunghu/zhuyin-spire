@@ -27,6 +27,8 @@ The live version, obtainability rules, and next implementation slice live in
 - 共鳴武者 meta progression: later-act fights, shops, and treasure expand from
   12 → 33 → 54 → 75 cards at scores 0 / 300 / 1,000 / 2,000; debug can set
   every milestone
+- Act I–III ? rooms: 30 bible events, once each per run, with act pools and
+  shared events. Encounter quotas and Act IV are still spec.
 
 ---
 
@@ -38,10 +40,12 @@ Ordered by “resume playtest” value — not a binding schedule. Detail:
 1. **Playtest all score milestones** — cast-on / debug-skip matrix in
    [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md)
 2. **Relic pool and the first potion belt are in the tree.** Five 共鳴 relics
-   come from chests, elites, and bosses. The starter 初心音叉 stays. The belt
-   has 3 slots and 6 bottles (護盾泡泡, 音波小石, 蜂蜜暖茶, 火花汽水, 翻頁果汁,
-   合唱爆泡). Do not import the Echo-era 40/20 bible wholesale
-3. **Act I events, then encounter rewrites one act at a time**
+   come from chests, elites, bosses, and random event rewards. The starter
+   初心音叉 stays. The belt has 3 slots and 6 bottles, and event potion choices
+   fill empty slots. Do not import the Echo-era 40/20 bible wholesale
+3. **Act-native fights are in the tree** — ? rooms that become fights use the
+   same easy and hard pools. Event moth fights use that 鐘粉蛾. Keys and Act IV
+   are still later
 4. **Keys, Act IV, and a 20-level track last**
 5. Optional later: second character using a reviewed English or math provider,
    plus recorded audio

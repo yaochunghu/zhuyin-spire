@@ -159,6 +159,21 @@ export const ENCOUNTERS: Record<string, EncounterDef> = {
     recipe: 'tank + listener',
     act: 3,
   },
+  // Event fights. Kept out of the map pools so a climb never rolls them.
+  eventBellPair: {
+    id: 'eventBellPair',
+    enemyDefIds: ['bellMoth', 'bellMoth'],
+    label: '鐘粉蛾二重奏',
+    recipe: 'event moth pair',
+    act: 2,
+  },
+  eventBellTrio: {
+    id: 'eventBellTrio',
+    enemyDefIds: ['bellMoth', 'bellMoth', 'bellMoth'],
+    label: '鐘粉蛾三重奏',
+    recipe: 'event moth trio',
+    act: 2,
+  },
 };
 
 /** Easy multis. Act I's first fight stays a solo; the pair can appear after that. */

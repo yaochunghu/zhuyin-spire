@@ -73,7 +73,7 @@ already taken, and stable checkpoints store both numbers. Loading that
 checkpoint together with the learner profile from the same moment replays the
 following prompts. Bags stay on the learner, one map keyed by
 `gateId:lessonFamilyId`. A save written before these fields loads with a new
-seed and a counter of 0. Practice draws from the same stream.
+seed and a counter of 0. Practice and event casts, including 注音神龕, draw from the same stream. The live shrine prompt is not stored, so reloading that question takes the next draw.
 
 ### Curriculum controls
 

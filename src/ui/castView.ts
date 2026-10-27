@@ -9,6 +9,7 @@ import {
 } from '../game/settings';
 import {
   answerCast,
+  answerEventShrine,
   answerPractice,
   getPracticeLifetimeCorrect,
   leavePractice,
@@ -144,6 +145,25 @@ export function submitSpell(): void {
       afterPractice,
       practiceRevealKind(correct),
     );
+    return;
+  }
+
+  if (run().screen === 'eventCast') {
+    answerEventShrine(run(), correct);
+    session.spellAttempt = [];
+    session.spellUsedBankIdx = [];
+    session.hintSpell = null;
+    session.castSpeechPlayedForOpen = false;
+    session.castLocked = false;
+    if (correct) sfx.castOk();
+    else sfx.fizzle();
+    const afterShrine = (): void => render();
+    if (run().screen === 'defeat') {
+      afterShrine();
+      return;
+    }
+    if (correct) playSpellReveal({ word: cue.text, emoji: cue.emoji, spell }, afterShrine);
+    else afterShrine();
     return;
   }
 

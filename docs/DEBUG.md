@@ -67,6 +67,7 @@ Turn **off** when testing teaching / cast UX.
 | Casting | Skip gate, force See/Hear/Hard for the next prompts, refill persistent bags without deleting accuracy |
 | Tutorial / motion | Reset completion, start the scripted fight immediately, set 1×/2× |
 | Map | Jump act 1/2/3, enter available room kinds when present |
+| Event | Open any bible event on a ? room without marking it seen. Sets score 2000, gold, and a little missing HP. Shared events stay on the current act. |
 | Inspect | Readonly summary: learner, learned families, screen, act, HP, gold, hand, enemies |
 
 Exact buttons live in `debugPanel.ts`; helpers in `debugActions.ts`.

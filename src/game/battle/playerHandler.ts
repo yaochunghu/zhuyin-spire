@@ -21,6 +21,7 @@ export function canPlay(state: CombatState, uid: string): boolean {
   const card = state.hand.find((c) => c.uid === uid);
   if (!card) return false;
   const def = resolveCard(card.defId, card.upgradeLevel);
+  if (def.curse) return false;
   const cost = effectiveCost(state, card, def);
   const requiredJin = def.designId === 'B077' || def.designId === 'B084' || def.designId === 'B087'
     ? 1
@@ -113,6 +114,21 @@ export function resolveCastSuccess(state: CombatState, def: CardDef): void {
   state.pendingTargetIds = [];
 
   executeEffects(state, def, targets, (fx) => pushFx(state, fx), drawCards, card, isTempo);
+  state.metronomePlayed = (state.metronomePlayed ?? 0) + 1;
+  if (state.relicMetronome && !state.metronomeUsed && state.metronomePlayed === 3) {
+    state.metronomeUsed = true;
+    drawCards(state, 1);
+    state.log.push('口袋節拍器：抽 1 張');
+  }
+  if (
+    state.musicBoxSourceUid
+    && card?.sourceUid === state.musicBoxSourceUid
+    && !state.musicBoxUsed
+  ) {
+    state.musicBoxUsed = true;
+    drawCards(state, 1);
+    state.log.push('月光音樂盒：抽 1 張');
+  }
   if (card) {
     delete card.chosenHandUid;
     if (def.type === 'power') {

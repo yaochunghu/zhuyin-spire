@@ -77,9 +77,17 @@ export function renderMap(): HTMLElement {
     `目前第 ${currentFloor}/${totalFloors} 層`;
   top.querySelector<HTMLElement>('.map-phone-progress')!.textContent =
     `第${run().actIndex + 1}幕 · 第 ${currentFloor}/${totalFloors} 層`;
+  const statusBar = top.querySelector('.map-status-bar')!;
   const relicBadges = renderRelicBadges(getOwnedRelics(run()));
   relicBadges.classList.add('map-relic-badges');
-  top.querySelector('.map-status-bar')!.appendChild(relicBadges);
+  statusBar.appendChild(relicBadges);
+  if (run().relicIds.includes('choirRibbon')) {
+    const ribbon = document.createElement('span');
+    ribbon.className = 'kid-stat';
+    ribbon.title = '合唱緞帶';
+    ribbon.textContent = `🎀${run().eventTrack.ribbonVictories}/3`;
+    statusBar.appendChild(ribbon);
+  }
   const potionRow = document.createElement('div');
   potionRow.className = 'map-potion-row';
   potionRow.appendChild(renderPotionBelt());
@@ -195,7 +203,7 @@ export function renderMap(): HTMLElement {
   const legend = document.createElement('div');
   legend.className = 'map-legend adult-text';
   legend.textContent =
-    '⚔️戰鬥  💀菁英  🔥休息  🏪商店  💎寶箱  🐉Boss · 亮圈＝可點';
+    '⚔️戰鬥  ❓奇遇  💀菁英  🔥休息  🏪商店  💎寶箱  🐉Boss · 亮圈＝可點';
   bottom.appendChild(legend);
 
   const actions = document.createElement('div');

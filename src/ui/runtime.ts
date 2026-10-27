@@ -34,6 +34,10 @@ export const session = {
   spellUsedBankIdx: [] as number[],
   castSpeechPlayedForOpen: false,
   goldSfxForPending: -1,
+  /** Event id already read aloud this session, so rerenders stay quiet. */
+  eventSpokenId: null as string | null,
+  /** Event id whose heading already took focus. */
+  eventFocusId: null as string | null,
   autoSubmitTimer: undefined as number | undefined,
   floatTimer: undefined as number | undefined,
   flashTimer: undefined as number | undefined,

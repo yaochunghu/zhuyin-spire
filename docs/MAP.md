@@ -23,7 +23,20 @@ Render: `src/ui/mapView.ts`
 5. **Prune** isolates  
 6. Assign **room kinds** + encounters  
 
-Kinds: `fight` | `elite` | `rest` | `shop` | `treasure` | `boss`
+Kinds: `fight` | `unknown` | `elite` | `rest` | `shop` | `treasure` | `boss`
+
+`unknown` (❓ 奇遇) is rolled into the climb like any other room, with at least two
+per act. Row 0 stays a fight, floor 8 stays treasure, and floor 15 stays rest.
+The room stays a ? on the map. Entering it rolls once — event, fight, shop, or
+treasure — and stores that result on the run, so a reload cannot reroll it.
+The event chance starts at 65% and rises by 10% after each non-event ?, up to
+95%. The rest of the chance splits fight:shop:treasure 4:2:1. Shops are skipped
+when fewer than two floors remain before the boss, and treasure is skipped on
+the pre-boss floor. Act events only appear in their act. Each event appears
+once per run. Shared events can appear in any act. A ? that becomes a fight
+uses `pickNormalFight` with the normal fights already visited in that act, so
+it draws the same easy and hard pools as the map. The result is stored with
+the resolution.
 
 Content hooks:
 

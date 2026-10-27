@@ -27,6 +27,7 @@ export type NodeKind =
   | 'rest'
   | 'shop'
   | 'treasure'
+  | 'unknown'
   | 'boss';
 export type RewardTier = 'normal' | 'elite';
 export type CastStage = 'early' | 'mid' | 'elite' | 'boss';
@@ -71,6 +72,7 @@ const KIND_EMOJI: Record<NodeKind, string> = {
   rest: '🔥',
   shop: '🏪',
   treasure: '💎',
+  unknown: '❓',
   boss: '🐉',
 };
 
@@ -80,6 +82,7 @@ export const MAP_COLS = 7;
 export const TREASURE_FLOOR = 8;
 
 const WEIGHT_FIGHT = 10;
+const WEIGHT_UNKNOWN = 6;
 const WEIGHT_REST = 3.5;
 const WEIGHT_SHOP = 2.2;
 const WEIGHT_ELITE = 1.4;
@@ -152,6 +155,7 @@ function labelFor(kind: NodeKind, row: number): string {
   if (kind === 'shop') return '商店';
   if (kind === 'elite') return '菁英';
   if (kind === 'treasure') return '寶箱';
+  if (kind === 'unknown') return '奇遇';
   if (kind === 'boss') return 'Boss';
   return `戰鬥 ${row + 1}`;
 }
@@ -428,7 +432,10 @@ function weightedKind(
   const noEarlyRest = row < 3;
 
   type Opt = { kind: NodeKind; w: number };
-  const opts: Opt[] = [{ kind: 'fight', w: WEIGHT_FIGHT }];
+  const opts: Opt[] = [
+    { kind: 'fight', w: WEIGHT_FIGHT },
+    { kind: 'unknown', w: WEIGHT_UNKNOWN },
+  ];
 
   if (!noEarlyRest && !parentKinds.has('rest')) {
     opts.push({ kind: 'rest', w: WEIGHT_REST });
@@ -500,6 +507,20 @@ function assignKinds(
         rowNodes.find((n) => !parentsOf(mapNodes, n).some((p) => p.kind === 'rest')) ??
         rowNodes[0];
       if (c && c.row !== TREASURE_FLOOR) c.kind = 'rest';
+    }
+  }
+
+  // Every act keeps at least two ? rooms. Row 0, the treasure floor, and the
+  // pre-boss rest stay fixed, so only spare fights are converted.
+  const unknownCount = (): number => mapNodes.filter((n) => n.kind === 'unknown').length;
+  if (unknownCount() < 2) {
+    const candidates = mapNodes.filter(
+      (n) => n.kind === 'fight' && n.row > 0 && n.row !== TREASURE_FLOOR && n.row !== last,
+    );
+    shuffleInPlace(candidates, rng);
+    for (const n of candidates) {
+      if (unknownCount() >= 2) break;
+      n.kind = 'unknown';
     }
   }
 

@@ -1,0 +1,228 @@
+/**
+ * Minimal event screen. A later design pass replaces the emoji objects.
+ */
+
+import { getCard } from '../data/cards';
+import { ENCOUNTERS } from '../data/encounters';
+import { ENEMIES } from '../data/enemies';
+import { getEvent } from '../data/events';
+import { sfx } from '../game/audio';
+import {
+  choiceChips,
+  choiceIsHidden,
+  choiceReason,
+  currentPickCards,
+  currentPickPrompt,
+} from '../game/eventEngine';
+import { speakCue } from '../game/speech';
+import {
+  cancelEventChoice,
+  chooseEventChoice,
+  confirmEventCard,
+  confirmEventChoice,
+  continueEventResult,
+  startEventCombat,
+  takeEventOfferCard,
+  toggleEventCard,
+} from '../game/state';
+import { cardFaceHtml } from './cards';
+import { appendCoach, render, run, session } from './runtime';
+
+function cardButton(defId: string, selected: boolean, onClick: () => void): HTMLButtonElement {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'event-card' + (selected ? ' is-selected' : '');
+  button.innerHTML = cardFaceHtml(getCard(defId));
+  button.addEventListener('click', () => {
+    sfx.click();
+    onClick();
+    render();
+  });
+  return button;
+}
+
+export function renderEvent(): HTMLElement {
+  const state = run();
+  const active = state.eventTrack.active;
+  const event = active ? getEvent(active.eventId) : null;
+  const el = document.createElement('div');
+  el.className = 'screen event-screen';
+  if (!event || !active) {
+    el.textContent = '奇遇走丟了';
+    return el;
+  }
+  el.dataset.eventId = event.id;
+  el.dataset.act = String(state.actIndex + 1);
+
+  if (session.eventSpokenId !== event.id) {
+    session.eventSpokenId = event.id;
+    speakCue(event.presentation);
+  }
+
+  const icon = document.createElement('div');
+  icon.className = 'event-icon';
+  icon.textContent = event.icon;
+  const title = document.createElement('h2');
+  title.tabIndex = -1;
+  title.textContent = event.title;
+  const line = document.createElement('p');
+  line.className = 'event-presentation';
+  line.textContent = event.presentation;
+  const status = document.createElement('div');
+  status.className = 'kid-status';
+  const hp = document.createElement('span');
+  hp.className = 'kid-stat';
+  hp.textContent = `❤️${state.heroHp}/${state.heroMaxHp}`;
+  const gold = document.createElement('span');
+  gold.className = 'kid-stat';
+  gold.textContent = `🪙${state.gold}`;
+  status.append(hp, gold);
+  el.append(icon, title, line, status);
+  appendCoach(el);
+
+  if (session.eventFocusId !== event.id) {
+    session.eventFocusId = event.id;
+    queueMicrotask(() => title.focus());
+  }
+
+  if (active.phase === 'choose') {
+    const choices = document.createElement('div');
+    choices.className = 'event-choices';
+    for (const choice of event.choices) {
+      if (choiceIsHidden(state, choice)) continue;
+      const reason = choiceReason(state, choice);
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'event-choice';
+      button.disabled = reason !== null;
+      const label = document.createElement('span');
+      label.className = 'event-choice-label';
+      label.textContent = choice.label;
+      button.appendChild(label);
+      for (const chip of choiceChips(state, choice)) {
+        const chipEl = document.createElement('span');
+        chipEl.className = 'event-chip';
+        chipEl.textContent = chip;
+        button.appendChild(chipEl);
+      }
+      if (reason) {
+        const reasonEl = document.createElement('span');
+        reasonEl.className = 'event-choice-reason';
+        reasonEl.textContent = reason;
+        button.appendChild(reasonEl);
+      }
+      button.addEventListener('click', () => {
+        if (button.disabled) return;
+        sfx.click();
+        chooseEventChoice(run(), choice.id);
+        render();
+      });
+      choices.appendChild(button);
+    }
+    el.appendChild(choices);
+    return el;
+  }
+
+  if (active.phase === 'confirm') {
+    const note = document.createElement('p');
+    note.className = 'kid-prompt';
+    note.textContent = '確定要這樣嗎？';
+    const chips = document.createElement('div');
+    chips.className = 'event-chips';
+    const choice = event.choices.find((item) => item.id === active.choiceId);
+    for (const chip of choice ? choiceChips(state, choice) : []) {
+      const chipEl = document.createElement('span');
+      chipEl.className = 'event-chip';
+      chipEl.textContent = chip;
+      chips.appendChild(chipEl);
+    }
+    const names = document.createElement('p');
+    names.className = 'adult-text';
+    names.textContent = active.chosenUids
+      .map((uid) => state.deck.find((card) => card.uid === uid))
+      .filter((card) => card)
+      .map((card) => getCard(card!.defId).name)
+      .join('、');
+    const actions = document.createElement('div');
+    actions.className = 'event-choices';
+    actions.append(
+      actionButton('確定', () => confirmEventChoice(run())),
+      actionButton('回去', () => cancelEventChoice(run())),
+    );
+    el.append(note, chips, names, actions);
+    return el;
+  }
+
+  if (active.phase === 'pick') {
+    const prompt = document.createElement('p');
+    prompt.className = 'kid-prompt';
+    prompt.textContent = currentPickPrompt(state);
+    const grid = document.createElement('div');
+    grid.className = 'event-card-grid';
+    for (const card of currentPickCards(state)) {
+      grid.appendChild(cardButton(
+        card.defId,
+        active.draftUids.includes(card.uid),
+        () => toggleEventCard(run(), card.uid),
+      ));
+    }
+    const actions = document.createElement('div');
+    actions.className = 'event-choices';
+    const confirm = actionButton('確定', () => confirmEventCard(run()));
+    const stepNeed = active.pickSteps[active.pickIndex]?.need ?? 1;
+    confirm.disabled = active.draftUids.length < stepNeed;
+    actions.append(confirm, actionButton('回去', () => cancelEventChoice(run())));
+    el.append(prompt, grid, actions);
+    return el;
+  }
+
+  if (active.phase === 'offer') {
+    const prompt = document.createElement('p');
+    prompt.className = 'kid-prompt';
+    prompt.textContent = '選一本，或不拿';
+    const grid = document.createElement('div');
+    grid.className = 'event-card-grid';
+    for (const defId of active.offerIds) {
+      grid.appendChild(cardButton(defId, false, () => takeEventOfferCard(run(), defId)));
+    }
+    const skip = actionButton('不拿也很好', () => takeEventOfferCard(run(), null));
+    el.append(prompt, grid, skip);
+    return el;
+  }
+
+  if (active.phase === 'fight') {
+    const encounter = active.fightEncounterId ? ENCOUNTERS[active.fightEncounterId] : null;
+    const names = (encounter?.enemyDefIds ?? [])
+      .map((id) => ENEMIES[id]?.name ?? id)
+      .join('、');
+    const prompt = document.createElement('p');
+    prompt.className = 'kid-prompt';
+    prompt.textContent = names ? `要跟${names}打招呼` : '要開始了';
+    el.append(prompt, actionButton('開始', () => startEventCombat(run())));
+    return el;
+  }
+
+  const results = document.createElement('div');
+  results.className = 'event-results';
+  for (const result of active.resultLines) {
+    const row = document.createElement('p');
+    row.className = 'event-result';
+    row.textContent = result;
+    results.appendChild(row);
+  }
+  el.append(results, actionButton('繼續', () => continueEventResult(run())));
+  return el;
+}
+
+function actionButton(label: string, onClick: () => void): HTMLButtonElement {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'event-choice';
+  button.textContent = label;
+  button.addEventListener('click', () => {
+    sfx.click();
+    onClick();
+    render();
+  });
+  return button;
+}

@@ -5,6 +5,9 @@
 import { FIRST_CHARACTER_ID, type PlayableCharacterId } from '../data/characters';
 import { ENCOUNTERS } from '../data/encounters';
 import { ENEMIES } from '../data/enemies';
+import { getEvent } from '../data/events';
+import { openEvent } from '../game/eventEngine';
+import { saveRunCheckpoint } from '../game/save';
 import { drawCards, livingEnemies } from '../game/combat';
 import { createCombat } from '../game/battle/battleManager';
 import {
@@ -15,6 +18,7 @@ import {
   getOwnedRelics,
   enterPractice,
   getAvailableMapNodes,
+  getCurrentActNodes,
   playerEndTurn,
   pickCharacter,
   selectMapNode,
@@ -205,6 +209,34 @@ export function debugSetCastingMode(mode: CastMode): void {
       listenHard: mode === 'listenHard' ? 100 : 0,
     },
   });
+}
+
+/**
+ * Open one event without marking it seen. The first call starts a run.
+ * Later calls keep gold, path, and the current act when the event is shared.
+ */
+export function debugOpenEvent(state: RunState, eventId: string, actIndex?: number): void {
+  const event = getEvent(eventId);
+  if (!state.characterId || state.screen === 'title') {
+    startRun(state);
+    pickCharacter(state, 'echoMage');
+  }
+  debugSetMetaProgress(2000, state);
+  if (actIndex !== undefined) state.actIndex = Math.max(0, Math.min(2, actIndex));
+  else if (event.act !== 'shared') state.actIndex = event.act - 1;
+  const nodes = getCurrentActNodes(state);
+  const node = nodes.find((candidate) => candidate.kind === 'unknown' && candidate.row > 0)
+    ?? nodes.find((candidate) => candidate.row > 0 && candidate.kind !== 'boss');
+  if (!node) return;
+  state.combat = null;
+  state.cast = null;
+  state.tutorial = null;
+  state.activeNodeId = node.id;
+  state.heroHp = Math.max(1, state.heroMaxHp - 8);
+  if (state.gold < 80) state.gold = 80;
+  openEvent(state, node.id, event.id);
+  state.screen = 'event';
+  saveRunCheckpoint(state);
 }
 
 /** Set the active learner's persisted card-unlock milestone for the run's character. */

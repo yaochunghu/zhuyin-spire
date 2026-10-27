@@ -15,6 +15,7 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 ### Cast prompt stream
 
 - Each run stores `castSeed` and `castCounter`. Mode rolls, shuffle-bag refills, and distractor banks read that stream, so a reloaded checkpoint replays the same later prompts
+- 注音神龕 and other event casts draw from that same stream. The question still on screen is not stored, so a reload shows the next prompt
 - A save from before these fields still loads. The missing seed is filled in and the counter starts at 0
 - Learner shuffle bags stay on the profile
 - Debug score, tutorial start, and scene setup follow the run's character, or 共鳴武者 before one is chosen
@@ -51,6 +52,16 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - Attack damage that is not marked 直傷 respects block and 易傷. Enemy block expires at that enemy's next action. This-turn cost discounts expire, and next-enemy-phase riders stack and expire with their text.
 - The next-turn intent pill applies Weak only when that status is still up after this enemy action ticks.
 - Ambiguous single-character prompts for 了, 覺, and 樂 are removed. Pictured 還 and 傳 readings from the dictionary cleanup stay as they are.
+
+### Act I–III events
+
+- Add ? rooms to every act and resolve each one once into an event, a normal fight, a shop, or a treasure.
+- Ship the 30 events from the event bible, including act pools, shared events, and difficulty-15 results.
+- Keep mid-event progress in the run save. Older saves still load.
+- Random event relic rewards draw the five-relic pool and leave 初心音叉 in place. Named event relics are granted by id.
+- Event potion rewards fill empty slots on the three-slot belt. A full belt stays visible and says the slots are full.
+- Saves stay on version 4. Event progress is optional, so older checkpoints still load, including ones that also carry `castSeed` and `castCounter`.
+- Event moth fights use the act-native 鐘粉蛾. A ? that becomes a fight uses the same easy and hard pools as a map fight.
 
 ### Zhuyin corrections
 

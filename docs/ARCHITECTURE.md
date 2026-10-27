@@ -68,7 +68,8 @@ Important fields:
 - **Hero:** `heroHp`, `heroMaxHp`, physical `deck[]`, `nextCardUid`, `gold`, `characterId`, `relicIds` (ordered; v1/v2 `relicId` migrates here), `potions` (3 slots; v3 checkpoints load an empty belt)
 - **Map:** `runMap` (3 acts), `actIndex`, `currentNodeId`, `activeNodeId`, `visitedIds`, `pathIds`
 - **Combat:** `combat: CombatState | null`
-- **Cast:** `castSeed` / `castCounter` choose this run's prompt draws. `cast: { prompt, cardDef } | null` is the live prompt. Shuffle bags stay on the learner profile.
+- **Cast:** `castSeed` / `castCounter` choose this run's prompt draws, including practice, combat, and event casts such as 注音神龕. `cast: { prompt, cardDef } | null` is the live prompt and is not stored. Shuffle bags stay on the learner profile.
+- **Events:** `eventTrack` holds ?-room rolls and the event in progress. It is optional on a version 4 save.
 - **Meta UI:** `flash`, `floatText`, physical shop/reward card-instance fields
 - **Tutorial (ephemeral):** `tutorial`, plus optional saved `tutorialEligibleRun` so old saves are not retrofitted
 
@@ -110,9 +111,9 @@ File: `src/game/save.ts`
 
 - Key: `zhuyin-spire-run-v1:<profile-id>`; the first profile mirrors the old
   `zhuyin-spire-run-v1` key for migration compatibility
-- **Stable screens only** (map, rest, shop, reward, actClear, relicPick, …) — **not** mid-combat or mid-cast
+- **Stable screens only** (map, rest, shop, reward, actClear, relicPick, event, eventCast, …) — **not** mid-combat or a combat cast
 - Current snapshot version is 4. v1 card ids, the old boss floor, a single `relicId`, and a v3 relic list each migrate forward. v3 gains an empty belt and drop chance 40
-- Checkpoints store `castSeed` and `castCounter`. A save without them still loads: the seed is filled in and the counter starts at 0
+- Checkpoints store `castSeed` and `castCounter` beside the optional `eventTrack`. A save missing the cast fields still loads: the seed is filled in and the counter starts at 0. A save missing `eventTrack` still loads an empty event record. Reloading 注音神龕 keeps the question count and draws the next prompt
 - Title offers continue vs new game; new game clears save
 
 Other localStorage keys (non-run):

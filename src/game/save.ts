@@ -3,7 +3,9 @@
  * Not mid-combat or mid-cast. LocalStorage only.
  */
 
-import { CARDS } from '../data/cards';
+import { CARDS, isCardId } from '../data/cards';
+import { CURSES } from '../data/curses';
+import { EVENTS } from '../data/events';
 import {
   FIRST_CHARACTER_ID,
   getPlayableCharacter,
@@ -29,7 +31,7 @@ import {
   SHOP_POTION_COUNT,
 } from '../data/balance';
 import { emptyPotionBelt, isKnownPotionId } from '../data/potions';
-import { isKnownRelicId } from '../data/relics';
+import { isKnownRelicId, RELICS } from '../data/relics';
 import { createCastSeed } from './castRng';
 import type { RunState, Screen, ShopOffer, ShopPotionOffer } from './state';
 import {
@@ -40,6 +42,7 @@ import {
 } from './cardInstances';
 import { createRunScoreStats, type RunScoreStats } from './progression';
 import { getActiveProfileId, isLegacyOwnerProfile } from './profiles';
+import { createEventTrack, type EventTrack } from './eventEngine';
 
 const LEGACY_SAVE_KEY = 'zhuyin-spire-run-v1';
 const SAVE_VERSION_V2 = 2 as const;
@@ -69,6 +72,8 @@ const STABLE_SCREENS: Screen[] = [
   'shopRemove',
   'reward',
   'actClear',
+  'event',
+  'eventCast',
 ];
 
 export interface RunSnapshot {
@@ -92,6 +97,8 @@ export interface RunSnapshot {
   shopPotionOffers: ShopPotionOffer[];
   /** Optional so checkpoints saved before treasure headers still load. */
   rewardSource?: 'fight' | 'treasure' | null;
+  /** Absent on saves made before events. */
+  eventTrack?: EventTrack;
   runMap: RunMap;
   actIndex: number;
   currentNodeId: string | null;
@@ -158,6 +165,7 @@ export function snapshotRun(state: RunState): RunSnapshot | null {
     pendingPotionId: state.pendingPotionId,
     pendingPotionUnplaced: state.pendingPotionUnplaced,
     rewardSource: state.rewardSource,
+    eventTrack: JSON.parse(JSON.stringify(state.eventTrack)) as EventTrack,
     runMap: JSON.parse(JSON.stringify(state.runMap)) as RunMap,
     actIndex: state.actIndex,
     currentNodeId: state.currentNodeId,
@@ -248,7 +256,7 @@ function isBoundedStringArray(
   );
 }
 
-const NODE_KINDS = new Set<NodeKind>(['fight', 'elite', 'rest', 'shop', 'treasure', 'boss']);
+const NODE_KINDS = new Set<NodeKind>(['fight', 'elite', 'rest', 'shop', 'treasure', 'unknown', 'boss']);
 const CAST_STAGES = new Set(['early', 'mid', 'elite', 'boss']);
 
 function isValidMapNode(value: unknown, actNumber: 1 | 2 | 3): value is MapNode {
@@ -316,11 +324,160 @@ function isValidShopOffer(value: unknown): value is ShopOffer {
 }
 
 function isValidCardInstance(value: unknown): value is DeckCard {
-  return isDeckCard(value) && value.defId in CARDS;
+  return isDeckCard(value) && isCardId(value.defId);
 }
 
 function isValidCardOffer(value: unknown): value is CardOffer {
   return isValidCardInstance(value);
+}
+
+const EVENT_IDS = new Set(EVENTS.map((event) => event.id));
+const EVENT_PHASES = new Set(['choose', 'confirm', 'pick', 'offer', 'shrine', 'result', 'fight']);
+const EFFECT_OPS = new Set([
+  'loseHp', 'heal', 'healFull', 'healMissingPercent', 'gainMaxHp', 'loseMaxHp',
+  'gainGold', 'payGold', 'upgrade', 'upgradePair', 'remove', 'transform', 'gainCard',
+  'copy', 'gainRelic', 'gainRandomRelic', 'gainCurse', 'gainPotion', 'bind', 'fight',
+  'bossEnergy', 'futureNormalHp', 'shrine', 'library',
+]);
+const CARD_GROUPS = new Set(['attack', 'skill', 'power']);
+const RELIC_RARITIES = new Set(['common', 'uncommon', 'rare']);
+
+function isValidEffect(value: unknown, depth = 0): boolean {
+  if (depth > 3 || !isPlainObject(value) || typeof value.op !== 'string' || !EFFECT_OPS.has(value.op)) {
+    return false;
+  }
+  const countOk = (n: unknown) => isIntIn(n, 0, 20);
+  switch (value.op) {
+    case 'loseHp':
+    case 'heal':
+    case 'gainMaxHp':
+    case 'loseMaxHp':
+    case 'gainGold':
+    case 'payGold':
+    case 'bossEnergy':
+      return isIntIn(value.amount, 0, 999);
+    case 'healFull':
+    case 'upgradePair':
+    case 'copy':
+    case 'bind':
+      return true;
+    case 'healMissingPercent':
+      return isIntIn(value.percent, 0, 100);
+    case 'futureNormalHp':
+      return isIntIn(value.percent, 0, 100) && isIntIn(value.fights, 0, 10);
+    case 'upgrade':
+      return countOk(value.count)
+        && (value.cardType === undefined || CARD_GROUPS.has(String(value.cardType)))
+        && (value.allBasics === undefined || typeof value.allBasics === 'boolean');
+    case 'remove':
+      return countOk(value.count) && (value.curseOnly === undefined || typeof value.curseOnly === 'boolean');
+    case 'transform':
+      return countOk(value.count) && (value.upgradeResult === undefined || typeof value.upgradeResult === 'boolean');
+    case 'gainCard':
+      return RELIC_RARITIES.has(String(value.rarity))
+        && countOk(value.count)
+        && (value.distinct === undefined || typeof value.distinct === 'boolean');
+    case 'gainRelic':
+      return typeof value.relicId === 'string' && value.relicId in RELICS;
+    case 'gainRandomRelic':
+      return RELIC_RARITIES.has(String(value.rarity));
+    case 'gainCurse':
+      return typeof value.curseId === 'string' && value.curseId in CURSES
+        && (value.count === undefined || countOk(value.count));
+    case 'gainPotion':
+      return countOk(value.count);
+    case 'fight':
+      return typeof value.encounterId === 'string'
+        && value.encounterId in ENCOUNTERS
+        && Array.isArray(value.reward)
+        && value.reward.length <= 8
+        && value.reward.every((effect) => isValidEffect(effect, depth + 1));
+    case 'shrine':
+      return isIntIn(value.questions, 1, 10)
+        && isIntIn(value.hpPerMiss, 0, 20)
+        && Array.isArray(value.then)
+        && value.then.length <= 8
+        && value.then.every((effect) => isValidEffect(effect, depth + 1));
+    case 'library':
+      return typeof value.preferCommon === 'boolean';
+    default:
+      return false;
+  }
+}
+
+function isValidEventTrack(value: unknown, mapIds: Set<string>, screen: Screen): boolean {
+  if (value === undefined) return screen !== 'event' && screen !== 'eventCast';
+  if (!isPlainObject(value)) return false;
+  if (!isIntIn(value.seed, 0, 0xffff_ffff) || !isIntIn(value.cursor, 0, 0xffff_ffff)) return false;
+  if (!isIntIn(value.difficulty, 0, 30) || !isIntIn(value.nonEventUnknownStreak, 0, 100)) return false;
+  if (!isBoundedStringArray(value.seenEventIds, 30, (id) => EVENT_IDS.has(id))) return false;
+  if (!isBoundedStringArray(value.recentEventIds, 4, (id) => EVENT_IDS.has(id))) return false;
+  if (!isPlainObject(value.resolutions)) return false;
+  const resolutionEntries = Object.entries(value.resolutions);
+  if (resolutionEntries.length > 80) return false;
+  for (const [nodeId, resolution] of resolutionEntries) {
+    if (!mapIds.has(nodeId) || !isPlainObject(resolution)) return false;
+    if (!['event', 'fight', 'shop', 'treasure'].includes(String(resolution.outcome))) return false;
+    if (resolution.eventId !== undefined && (typeof resolution.eventId !== 'string' || !EVENT_IDS.has(resolution.eventId))) {
+      return false;
+    }
+    if (resolution.enemyId !== undefined && (typeof resolution.enemyId !== 'string' || !(resolution.enemyId in ENEMIES))) {
+      return false;
+    }
+    if (
+      resolution.encounterId !== undefined
+      && (typeof resolution.encounterId !== 'string' || !(resolution.encounterId in ENCOUNTERS))
+    ) return false;
+    if (resolution.fallbackFight !== undefined && typeof resolution.fallbackFight !== 'boolean') return false;
+  }
+  if (value.musicBoxUid !== null && !isSafeId(value.musicBoxUid)) return false;
+  if (!isIntIn(value.ribbonVictories, 0, 10) || !isIntIn(value.bossOpeningEnergy, 0, 10)) return false;
+  if (!isIntIn(value.normalHpBonusPercent, 0, 100) || !isIntIn(value.normalHpBonusFights, 0, 10)) return false;
+  if (value.active === null) return screen !== 'event' && screen !== 'eventCast';
+  if (!isPlainObject(value.active)) return false;
+  if (screen !== 'event' && screen !== 'eventCast') return false;
+  const active = value.active;
+  if (typeof active.eventId !== 'string' || !EVENT_IDS.has(active.eventId)) return false;
+  if (typeof active.nodeId !== 'string' || !mapIds.has(active.nodeId)) return false;
+  if (typeof active.phase !== 'string' || !EVENT_PHASES.has(active.phase)) return false;
+  if (screen === 'eventCast' && active.phase !== 'shrine') return false;
+  if (screen === 'event' && active.phase === 'shrine') return false;
+  if (active.choiceId !== null && !isSafeId(active.choiceId)) return false;
+  if (!Array.isArray(active.resultLines) || active.resultLines.length > 40) return false;
+  if (!active.resultLines.every((line) => isSafeDisplay(line, 80))) return false;
+  if (!isPlainObject(active.rolls)) return false;
+  if (
+    !isBoundedStringArray(active.rolls.cardOrder, 200, (id) => id in CARDS)
+    || !isIntIn(active.rolls.cursor, 0, 200)
+  ) return false;
+  if (!isPlainObject(active.rolls.relics)) return false;
+  for (const [rarity, relicId] of Object.entries(active.rolls.relics)) {
+    if (!RELIC_RARITIES.has(rarity) || typeof relicId !== 'string' || !(relicId in RELICS)) return false;
+  }
+  if (!isBoundedStringArray(active.rolls.libraryIds, 3, (id) => id in CARDS)) return false;
+  if (!Array.isArray(active.queue) || active.queue.length > 20 || !active.queue.every((effect) => isValidEffect(effect))) {
+    return false;
+  }
+  if (!isIntIn(active.queueIndex, 0, active.queue.length)) return false;
+  if (typeof active.confirmed !== 'boolean') return false;
+  if (!Array.isArray(active.pickSteps) || active.pickSteps.length > 8) return false;
+  if (!isIntIn(active.pickIndex, 0, 8)) return false;
+  if (!isBoundedStringArray(active.draftUids, 8, isSafeId)) return false;
+  if (!isBoundedStringArray(active.chosenUids, 8, isSafeId)) return false;
+  if (!isIntIn(active.uidCursor, 0, 20)) return false;
+  if (!isIntIn(active.shrineLeft, 0, 10) || !isIntIn(active.shrineHpPerMiss, 0, 20)) return false;
+  if (!Array.isArray(active.shrineThen) || !active.shrineThen.every((effect) => isValidEffect(effect))) return false;
+  if (typeof active.shrineCardId !== 'string' || !isCardId(active.shrineCardId)) return false;
+  if (active.fightEncounterId !== null && (typeof active.fightEncounterId !== 'string' || !(active.fightEncounterId in ENCOUNTERS))) {
+    return false;
+  }
+  if (!Array.isArray(active.fightReward) || !active.fightReward.every((effect) => isValidEffect(effect))) return false;
+  if (!isBoundedStringArray(active.offerIds, 3, (id) => id in CARDS)) return false;
+  return true;
+}
+
+function isSafeId(value: unknown): value is string {
+  return typeof value === 'string' && /^[A-Za-z0-9_-]{1,80}$/.test(value);
 }
 
 function isValidRunScoreStats(value: unknown): value is RunScoreStats {
@@ -420,6 +577,8 @@ function isValidSnapshot(data: unknown): data is RunSnapshot {
   if (data.tutorialEligibleRun !== undefined && typeof data.tutorialEligibleRun !== 'boolean') return false;
   if (data.scoreStats !== undefined && !isValidRunScoreStats(data.scoreStats)) return false;
   if (data.scoreCommitted !== undefined && typeof data.scoreCommitted !== 'boolean') return false;
+  if (data.relicIds !== undefined && !isBoundedStringArray(data.relicIds, 12, (id) => id in RELICS)) return false;
+  if (!isValidEventTrack(data.eventTrack, mapIds, data.screen as Screen)) return false;
   if (!isOptionalUint32(data.castSeed) || !isOptionalUint32(data.castCounter)) return false;
   return true;
 }
@@ -623,6 +782,9 @@ export function applySnapshot(state: RunState, snap: RunSnapshot): void {
   state.pendingPotionUnplaced = snap.pendingPotionUnplaced;
   state.shopPotionOffers = snap.shopPotionOffers.map((offer) => ({ ...offer }));
   state.rewardSource = snap.rewardSource ?? null;
+  state.eventTrack = snap.eventTrack
+    ? JSON.parse(JSON.stringify(snap.eventTrack)) as EventTrack
+    : createEventTrack(1);
   state.runMap = JSON.parse(JSON.stringify(snap.runMap)) as RunMap;
   state.actIndex = snap.actIndex;
   state.currentNodeId = snap.currentNodeId;

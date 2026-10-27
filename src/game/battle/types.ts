@@ -125,6 +125,15 @@ export interface CombatState {
   jinGuardBlockPending: number;
   /** 聽勁護心 shield earned by a card, applied at the end of that card. */
   jinGuardBlockImmediate: number;
+  /** Event relics. Absent on combats created before this feature. */
+  relicRainBlock?: number;
+  relicMetronome?: boolean;
+  metronomePlayed?: number;
+  metronomeUsed?: boolean;
+  musicBoxSourceUid?: string | null;
+  musicBoxUsed?: boolean;
+  drawPenaltyNextTurn?: number;
+  stageFrightUsed?: boolean;
   training: number;
   /** 練功起勢 still to remove when the second player turn begins. */
   firstTurnTraining: number;
