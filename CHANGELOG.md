@@ -8,6 +8,10 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+### Shop layout
+
+- On a phone, each shop offer keeps its full card, price, and the remove-card button on screen. Short landscape no longer hides the price under the fold.
+
 ### Combat and campfire fixes
 
 - Searching the discard for a card type no longer deletes the cards still in the draw pile.

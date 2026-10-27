@@ -529,9 +529,6 @@ export function renderShop(): HTMLElement {
   if (!canRemove && !run().shopRemoveUsed) {
     removeBtn.classList.add('shop-remove-dim');
   }
-  services.appendChild(removeBtn);
-  el.appendChild(services);
-
   const leave = document.createElement('button');
   leave.className = 'btn-primary btn-kid-main';
   leave.innerHTML = `<span class="btn-emoji">👋</span>`;
@@ -541,7 +538,11 @@ export function renderShop(): HTMLElement {
     leaveShop(run());
     render();
   });
-  el.appendChild(leave);
+  // Keep removal and leaving on one row so a short landscape shop can show
+  // every price without pushing either action below the screen.
+  services.appendChild(removeBtn);
+  services.appendChild(leave);
+  el.appendChild(services);
   return el;
 }
 
