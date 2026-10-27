@@ -3,10 +3,12 @@
 A **preschool** browser deckbuilder inspired by *Slay the Spire*: climb a colorful tower with **注音符號** spell cards.  
 Recognize or **listen** for the correct 注音 to cast. **Wrong answer = fizzle** (energy spent). **HP → 0 ends the run.**
 
-**Version:** 0.4.1 in `package.json` · **Stack:** Vite + TypeScript (no backend)
+**Version:** 0.4.2 in `package.json` · **Stack:** Vite + TypeScript (no backend)
 
-The published GitHub Release `v0.4.1` is commit `46f6486` (#49). Main is ahead
-of that tag. #44 and #50–#56 are `[Unreleased]` in [CHANGELOG.md](CHANGELOG.md).
+The published GitHub Release is still `v0.4.1` at commit `46f6486` (#49).
+**v0.4.2** is the release in progress. It covers #44 and #50–#58 and is
+`[0.4.2]` in [CHANGELOG.md](CHANGELOG.md). It is not tagged yet.
+Player notes: [RELEASE_NOTES_v0.4.2.md](RELEASE_NOTES_v0.4.2.md).
 
 **Play online:** [https://yaochunghu.github.io/zhuyin-spire/](https://yaochunghu.github.io/zhuyin-spire/)
 
@@ -170,7 +172,7 @@ This folder is its **own git repository** (`zhuyin-spire/.git`).
 
 - Do **not** commit the game through a parent home-directory repo (e.g. unrelated remotes).
 - From this directory: `git status`, `git add`, `git commit` as usual.
-- Published release tag: `v0.4.1` at `46f6486` (#49). `package.json` is `0.4.1`. Main is ahead of that tag (see [CHANGELOG.md](CHANGELOG.md) `[Unreleased]`).
+- Published release tag: `v0.4.1` at `46f6486` (#49). `package.json` is `0.4.2`. v0.4.2 is the release in progress (see [CHANGELOG.md](CHANGELOG.md) `[0.4.2]` and [RELEASE_NOTES_v0.4.2.md](RELEASE_NOTES_v0.4.2.md)). It is not tagged yet.
 - Dedicated remote: `https://github.com/yaochunghu/zhuyin-spire.git`.
 
 ```bash

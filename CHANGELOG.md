@@ -8,6 +8,10 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+---
+
+## [0.4.2] — 2026-10-27
+
 ### Shop layout
 
 - On a phone, each shop offer keeps its full card, price, and the remove-card button on screen. Short landscape no longer hides the price under the fold.
@@ -45,13 +49,9 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - Added tappable relic badges that show the Chinese name and effect. No relic skips casting
 - On a short landscape screen the combat badges sit on their own full-width row, so six tokens stay on screen at 640×360
 
-### Combat and campfire fixes
+### Combat preview
 
-- Searching the discard for a card type no longer deletes the cards still in the draw pile.
-- The campfire remove-card screen can return to rest without deleting a card.
-- Attack damage that is not marked 直傷 respects block and 易傷. Enemy block expires at that enemy's next action. This-turn cost discounts expire, and next-enemy-phase riders stack and expire with their text.
 - The next-turn intent pill applies Weak only when that status is still up after this enemy action ticks.
-- Ambiguous single-character prompts for 了, 覺, and 樂 are removed. Pictured 還 and 傳 readings from the dictionary cleanup stay as they are.
 
 ### Act I–III events
 
@@ -63,18 +63,21 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - Saves stay on version 4. Event progress is optional, so older checkpoints still load, including ones that also carry `castSeed` and `castCounter`.
 - Event moth fights use the act-native 鐘粉蛾. A ? that becomes a fight uses the same easy and hard pools as a map fight.
 
-### Zhuyin corrections
-
-- Point pictured phrases at the 《重編國語辭典修訂本》 headword for that picture: 幹 ㄍㄢˋ, 更 ㄍㄥˋ, 卷 ㄐㄩㄢˋ, 期 ㄑㄧˊ, 甚 ㄕㄣˊ, 鑽 ㄗㄨㄢˋ, 撒 ㄙㄚˇ, and 微 ㄨㄟˊ.
-- Remove the 還 ↩️ and 傳 📣 rows whose readings did not match the picture, because 歸還 ㄏㄨㄢˊ and 傳播 ㄔㄨㄢˊ were already in the bank.
-- Remove the extra 桌 rows that repeated the same word and spelling.
-- Keep 余 for the surplus picture. The revised dictionary defines 剩下、多餘 on 余, so it is not rewritten as 餘.
-- Give the fourteen open phrase pictures the 《重編國語辭典修訂本》 reading for that picture: 背 ㄅㄟ, 鋪 ㄆㄨˋ, 興 ㄒㄧㄥˋ, 熟 ㄕㄨˊ, 掃 ㄙㄠˋ, 艘 ㄙㄠ, and 應 ㄧㄥˋ. 表, 量, 困, 將, 閑, 血, and 于 already had that reading.
-
 ### Engine seams for a future character
 
 - Reserve a pluggable casting task, with 注音 as the only registered task and `math` still unimplemented in the game.
 - Keep character select and score buckets per character id, and add an attempt model for a future three-choice row and number pad. 共鳴武者 prompts, saves, and the cast screen are unchanged.
+
+### Board and phone layout
+
+- Event screens use a felt intro panel, with the choices in a second column, so a short phone landscape keeps every option on screen.
+- The potion belt reads as one strap, with a clear full or empty slot.
+- Act I–III enemies and elites, including 鐘粉蛾, each have their own toy miniature. The moth no longer uses a bat portrait.
+- Brace, strength, and a called friend show on the board as portrait badges and coloured intent pills. Hit targets stay the same size. A phone that hides the next-turn pill still shows these cues.
+
+### Docs
+
+- Design docs describe the tree after the Oct 27 merges: relics, potions, events, act-native fights, the cast seed, and the 珠算武者 seams.
 
 ---
 
@@ -83,12 +86,24 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 ### Zhuyin corrections
 
 - Correct Zhuyin readings and Traditional headwords in the card cues and phrase bank against 《重編國語辭典修訂本》, without changing the phrase schema or run-save format.
+- Point pictured phrases at the 《重編國語辭典修訂本》 headword for that picture: 幹 ㄍㄢˋ, 更 ㄍㄥˋ, 卷 ㄐㄩㄢˋ, 期 ㄑㄧˊ, 甚 ㄕㄣˊ, 鑽 ㄗㄨㄢˋ, 撒 ㄙㄚˇ, and 微 ㄨㄟˊ.
+- Remove the 還 ↩️ and 傳 📣 rows whose readings did not match the picture, because 歸還 ㄏㄨㄢˊ and 傳播 ㄔㄨㄢˊ were already in the bank.
+- Remove the extra 桌 rows that repeated the same word and spelling.
+- Keep 余 for the surplus picture. The revised dictionary defines 剩下、多餘 on 余, so it is not rewritten as 餘.
+- Give the fourteen open phrase pictures the 《重編國語辭典修訂本》 reading for that picture: 背 ㄅㄟ, 鋪 ㄆㄨˋ, 興 ㄒㄧㄥˋ, 熟 ㄕㄨˊ, 掃 ㄙㄠˋ, 艘 ㄙㄠ, and 應 ㄧㄥˋ. 表, 量, 困, 將, 閑, 血, and 于 already had that reading.
+
+### Combat and campfire fixes
+
+- Searching the discard for a card type no longer deletes the cards still in the draw pile.
+- The campfire remove-card screen can return to rest without deleting a card.
+- Attack damage that is not marked 直傷 respects block and 易傷. Enemy block expires at that enemy's next action. This-turn cost discounts expire, and next-enemy-phase riders stack and expire with their text.
+- Ambiguous single-character prompts for 了, 覺, and 樂 are removed. Pictured 還 and 傳 readings from the dictionary cleanup stay as they are.
 
 ### Playtest kit
 
 - Add the parent kit for the two open human gates: a physical-device checklist, an Act I family session with Traditional Chinese read-aloud lines, and a blank record that stays out of git.
 - Relic work may proceed in parallel and merges only after both playtests pass.
-  That sentence is the published v0.4.1 note. The pool later merged on main; see Unreleased.
+  That sentence is the published v0.4.1 note. The pool later merged on main; see [0.4.2].
 
 ### Browser stabilization
 
@@ -307,6 +322,7 @@ Baseline snapshot of the preschool Spire + 注音 game, documented for long-term
 - Standalone git repository for the game folder (tag `v0.1.0`)
 
 [Unreleased]: #unreleased
+[0.4.2]: #042--2026-10-27
 [0.4.1]: #041--2026-10-26
 [0.4.0]: #040--2026-08-21
 [0.3.1]: #031--2026-07-23
