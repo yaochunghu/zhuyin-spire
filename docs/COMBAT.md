@@ -77,6 +77,10 @@ Energy is per-combat; end turn discards remaining hand then enemy acts then redr
 - Selection: `selectedEnemyId` / `selectEnemy`
 - Intents: `attack` | `heavy` | `multi` | `block` (see `data/enemies.ts`)
 - Multi-hit damage is **per hit × hits**; UI should show total where kids need it
+- Enemy Block stays up through the player's turn, then clears at the start of
+  that enemy's next action. `applyEnemyIntent` sets that unit's block to 0
+  before resolving the intent, so a block intent grants a fresh shield and an
+  attack does not keep the old one. Another enemy acting does not clear it.
 - Legacy “primary” fields sync via `syncPrimaryEnemy` for older callers
 
 Encounters (1–3 enemies) come from `data/encounters.ts` or single-enemy node fields on the map.

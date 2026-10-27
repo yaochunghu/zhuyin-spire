@@ -116,6 +116,14 @@ export function nextIntentForUnit(unit: EnemyUnit): Intent {
   return intentAt(def, unit.intentIndex + 1);
 }
 
+/**
+ * Weak remaining after this enemy action. The duration ticks once at the
+ * player-turn boundary that follows the action (`advanceEnemyStatuses`).
+ */
+export function weakTurnsAfterEnemyAction(weakTurns: number): number {
+  return weakTurns > 0 ? weakTurns - 1 : 0;
+}
+
 export function selectEnemy(state: CombatState, enemyInstanceId: string): void {
   const u = state.enemies.find((e) => e.id === enemyInstanceId && e.alive);
   if (u) {
@@ -277,6 +285,6 @@ export function advanceEnemyStatuses(
       const gained = Math.max(0, unit.vulnerableTurns - before);
       unit.vulnerableTurns = Math.min(9, Math.max(0, before - 1) + gained);
     }
-    if (unit.weakTurns > 0) unit.weakTurns -= 1;
+    unit.weakTurns = weakTurnsAfterEnemyAction(unit.weakTurns);
   }
 }

@@ -24,6 +24,7 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - Searching the discard for a card type no longer deletes the cards still in the draw pile.
 - The campfire remove-card screen can return to rest without deleting a card.
 - Attack damage that is not marked 直傷 respects block and 易傷. Enemy block expires at that enemy's next action. This-turn cost discounts expire, and next-enemy-phase riders stack and expire with their text.
+- The next-turn intent pill applies Weak only when that status is still up after this enemy action ticks.
 - Ambiguous single-character prompts for 了, 覺, and 樂 are removed. Pictured 還 and 傳 readings from the dictionary cleanup stay as they are.
 
 ### Zhuyin corrections
