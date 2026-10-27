@@ -255,17 +255,17 @@ export function renderPractice(): HTMLElement {
 export function renderCastCheck(isPractice = false): HTMLElement {
   const cast = run().cast!;
   const mode = cast.prompt.mode;
+  const mathCast = cast.prompt.gateId === 'math';
   const el = document.createElement('div');
   el.className = `screen cast-screen mode-${mode}${isPractice ? ' practice-screen' : ''}${
     !isPractice && run().combat ? ' cast-dock' : ''
-  }`;
+  }${mathCast ? ' cast-math' : ''}`;
 
   const cueWord = cast.prompt.cue.text;
   const cueEmoji = cast.prompt.cue.emoji;
   const parts = cast.prompt.answerTokens;
   const maxLen = parts.length;
 
-  const mathCast = cast.prompt.gateId === 'math';
   const kidLine = mathCast
     ? (cast.prompt.retry ? '再數數看' : '選一個答案')
     : '拼注音';

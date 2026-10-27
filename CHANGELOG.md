@@ -18,6 +18,8 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - 注音神龕 is not offered to 珠算武者. The other shared events do not quiz. A shrine miss cannot cost that character HP
 - Math casts say 算一算, 顯示答案, and 仍需選出答案. The coach changes after 「再算一次」 is used. 口袋節拍器 and 月光音樂盒 keep 念錯 / 拼對 for 共鳴武者 and say 算錯 / 算對 for 珠算武者. Screen readers announce the math card's name
 - Tier-4 subtraction does not borrow or subtract 0. Ordinal choices never include 0. Counting ones is never 0, and tens stay inside 1–9. Grade-2 groups are not always off by one. Three ordinal misses warm up at 湊十 tier 1
+- The math question sits in its own parchment strip with dark walnut ink, and the strip grows to fit the question. The three answers sit in a full-width row below it, never overlap, and stay on screen at 640×360, 844×390, 1280×720, and 390×844. They are 96px tall where there is room and 54px on short landscape phones. 家長協助 sits below them. The 注音 dock is unchanged
+- On landscape phones, character select shows both characters side by side without scrolling. Screenshots are in docs/screenshots/pr61-math-ui/
 - Yao's grade-2 question stays open. Option A remains what is built: tier 5 ignores the grade-1 ceiling until an adaptive drop pulls it inside
 
 ### Playtest v0.4.2 layout fixes
