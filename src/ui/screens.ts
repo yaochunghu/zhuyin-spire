@@ -489,7 +489,11 @@ export function renderShop(): HTMLElement {
     </div>
   `;
   appendCoach(el);
-  el.appendChild(renderPotionBelt());
+  // Belt and bottle offers share one band so the card row can keep its prices
+  // on screen instead of being pushed under the fold.
+  const stock = document.createElement('div');
+  stock.className = 'shop-stock';
+  stock.appendChild(renderPotionBelt());
 
   const potionRow = document.createElement('div');
   potionRow.className = 'shop-potion-row';
@@ -520,7 +524,8 @@ export function renderShop(): HTMLElement {
     });
     potionRow.appendChild(button);
   });
-  el.appendChild(potionRow);
+  stock.appendChild(potionRow);
+  el.appendChild(stock);
 
   const row = document.createElement('div');
   row.className = 'shop-row';
@@ -569,9 +574,6 @@ export function renderShop(): HTMLElement {
   if (!canRemove && !run().shopRemoveUsed) {
     removeBtn.classList.add('shop-remove-dim');
   }
-  services.appendChild(removeBtn);
-  el.appendChild(services);
-
   const leave = document.createElement('button');
   leave.className = 'btn-primary btn-kid-main';
   leave.innerHTML = `<span class="btn-emoji">👋</span>`;
@@ -581,7 +583,11 @@ export function renderShop(): HTMLElement {
     leaveShop(run());
     render();
   });
-  el.appendChild(leave);
+  // Keep removal and leaving on one row so a short landscape shop can show
+  // every price without pushing either action below the screen.
+  services.appendChild(removeBtn);
+  services.appendChild(leave);
+  el.appendChild(services);
   return el;
 }
 
