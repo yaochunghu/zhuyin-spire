@@ -88,6 +88,7 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 - Add the parent kit for the two open human gates: a physical-device checklist, an Act I family session with Traditional Chinese read-aloud lines, and a blank record that stays out of git.
 - Relic work may proceed in parallel and merges only after both playtests pass.
+  That sentence is the published v0.4.1 note. The pool later merged on main; see Unreleased.
 
 ### Browser stabilization
 

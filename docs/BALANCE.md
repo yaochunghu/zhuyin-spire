@@ -3,10 +3,14 @@
 **Source of truth:** `src/data/balance.ts`  
 If this doc and the file disagree, **trust the file** and update the doc.
 
-The proposed card, relic/potion, event, and encounter numbers are intentionally
-kept in the four design bibles linked from [INDEX.md](./INDEX.md). They are
-playtest baselines, not live constants. Structural StS benchmarks and the
-reasons for adapting them to this shorter, cast-gated game are in
+The table below is the live economy. Card text lives in `data/cards.ts`.
+Shipped relic and potion effects live in `data/relics.ts` and `data/potions.ts`
+and are summarized in [NEXT_PHASE.md](./NEXT_PHASE.md). Live fight patterns
+live in `data/enemies.ts` and `data/encounters.ts` and are listed in
+[ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md). Difficulty scaling, keys, and
+Act IV in [EVENT_ENCOUNTER_BIBLE.md](./EVENT_ENCOUNTER_BIBLE.md) are still
+proposals. Structural StS benchmarks and the reasons for adapting them to
+this shorter, cast-gated game are in
 [STS_DESIGN_REFERENCE.md](./STS_DESIGN_REFERENCE.md).
 
 ---
@@ -20,7 +24,7 @@ reasons for adapting them to this shorter, cast-gated game are in
 
 ---
 
-## Live constants (v0.1.0 era)
+## Live constants
 
 | Constant | Value | Notes |
 |----------|-------|-------|
@@ -59,8 +63,10 @@ Helper: `restHealAmount(heroMaxHp)`.
 | Enemy HP / intent damage | `data/enemies.ts` |
 | Multi-enemy recipes | `data/encounters.ts` |
 | Map density / room kinds | `data/map.ts` |
-| Relic strength | `data/relics.ts` — starter, five pool relics, four legacy-only relics |
+| Relic strength | `data/relics.ts` — starter, five pool relics, four legacy-only relics, four named event relics |
 | Potion effects | `data/potions.ts` — six bottles. Block-absorbing hits are not 直傷 |
+| Events | `data/events.ts` — 30 events for Acts I, II, and III |
+| Fight roster | `data/enemies.ts`, `data/encounters.ts` — live patterns in [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md) |
 
 ---
 

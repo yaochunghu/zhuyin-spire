@@ -69,8 +69,9 @@ Example: 爸爸 → `ㄅㄚˋ`.
 
 ## Enemies — `src/data/enemies.ts`
 
-The proposed complete enemy, encounter, event, difficulty, and Act IV contract
-lives in [EVENT_ENCOUNTER_BIBLE.md](./EVENT_ENCOUNTER_BIBLE.md).
+The live fight roster is [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md). The 30
+Act I–III events are in [EVENT_ENCOUNTER_BIBLE.md](./EVENT_ENCOUNTER_BIBLE.md).
+Difficulty variants, keys, and Act IV in that bible are still proposals.
 
 ### Roles (design language)
 

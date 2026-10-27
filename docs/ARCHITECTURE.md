@@ -152,7 +152,7 @@ words and never requests microphone permission.
 | `ui/castView.ts` | Big 注音 keyboard + practice room |
 | `ui/options.ts` | Body-mounted global, accessible Options dialog |
 
-Learner score lives on `characterProgress`, keyed by character id. A future playable character gets its own bucket when it joins the catalog; it does not share 共鳴武者's score. Character select still lists 共鳴武者 only. No second character, deck, or math provider is registered.
+Learner score lives on `characterProgress`, keyed by character id. A future playable character gets its own bucket when it joins the catalog; it does not share 共鳴武者's score. Character select still lists 共鳴武者 only. 珠算武者 is the name of the next playable build. No second character, deck, or math provider is registered.
 
 Full contract and future-provider checklist: [CASTING_GATES.md](./CASTING_GATES.md).
 

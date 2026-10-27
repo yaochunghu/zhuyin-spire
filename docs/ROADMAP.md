@@ -3,7 +3,11 @@
 The live version, obtainability rules, and next implementation slice live in
 [NEXT_PHASE.md](./NEXT_PHASE.md). This page stays a short resume checklist.
 
-## Shipped (through v0.4.0)
+## Shipped on main
+
+`package.json` is 0.4.1. The published GitHub Release `v0.4.1` is `46f6486`
+(#49). Bullets from the #50 combat fixes downward are `[Unreleased]` in
+[CHANGELOG.md](../CHANGELOG.md). Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
 
 - Vite + TypeScript SPA; touch-first preschool UI; adult coach strip  
 - Full first-syllable 注音 cast (including 聲調); listen mode (Web Speech zh-TW)  
@@ -28,30 +32,42 @@ The live version, obtainability rules, and next implementation slice live in
   12 → 33 → 54 → 75 cards at scores 0 / 300 / 1,000 / 2,000; debug can set
   every milestone
 - Act I–III ? rooms: 30 bible events, once each per run, with act pools and
-  shared events. Encounter quotas and Act IV are still spec.
+  shared events. Keys and Act IV are still later
+- #50: a discard search keeps the draw pile, campfire remove can return to
+  rest, and attack damage that is not marked 直傷 respects block and 易傷
+- Five 共鳴 relics from chests, elites, bosses, and random event rewards.
+  Starter 初心音叉 stays. A 3-slot belt and 6 bottles. Do not import the
+  Echo-era 40/20 bible wholesale
+- Act-native fights, including 鐘粉蛾, brace, soothe, and summon. ? rooms that
+  become fights use the same easy and hard pools
+- `castSeed` and `castCounter` on the run. Saves stay version 4. `eventTrack`,
+  `castSeed`, and `castCounter` are optional
+- Engine seams for 珠算武者. The character, deck, and math provider are not
+  registered. 共鳴武者 is still the only playable character
+- Phone shop offers keep the card, price, and remove-card button on screen
 
 ---
 
 ## Natural next steps
 
-Ordered by “resume playtest” value — not a binding schedule. Detail:
-[NEXT_PHASE.md](./NEXT_PHASE.md).
+Detail: [NEXT_PHASE.md](./NEXT_PHASE.md).
 
-1. **Playtest all score milestones** — cast-on / debug-skip matrix in
-   [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md)
-2. **Relic pool and the first potion belt are in the tree.** Five 共鳴 relics
-   come from chests, elites, bosses, and random event rewards. The starter
-   初心音叉 stays. The belt has 3 slots and 6 bottles, and event potion choices
-   fill empty slots. Do not import the Echo-era 40/20 bible wholesale
-3. **Act-native fights are in the tree** — ? rooms that become fights use the
-   same easy and hard pools. Event moth fights use that 鐘粉蛾. Keys and Act IV
-   are still later
-4. **Keys, Act IV, and a 20-level track last**
-5. Optional later: second character using a reviewed English or math provider,
-   plus recorded audio
+1. **Claude UI polish pass** — in progress separately. Do not start it here
+2. **珠算武者 playable build** — first-grade math casting. Engine seams are in.
+   The character, deck, and math provider are not
+3. **#52's nine open questions** in
+   [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md#questions-for-yao)
+4. **The v0.4.1 release** — `package.json` is already 0.4.1. The published tag
+   stops at #49. Publishing a release that includes `[Unreleased]` is still
+   open. This page does not choose a new version number
 
-Smith, physical-copy upgrades, the full 75-card score progression, toy-board
-enemy art, phone layouts, and CI are already in the tree. Do not re-plan them
+Keys, Act IV, and a 20-level track stay later. Cast-on / debug-skip passes at
+each score milestone stay in
+[RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md).
+
+Smith, physical-copy upgrades, the full 75-card score progression, the relic
+pool, the potion belt, Act I–III events, act-native fights, toy-board enemy
+art, phone layouts, and CI are already in the tree. Do not re-plan them
 as gated.
 
 ---
