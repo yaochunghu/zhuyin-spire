@@ -81,15 +81,23 @@ lives in [EVENT_ENCOUNTER_BIBLE.md](./EVENT_ENCOUNTER_BIBLE.md).
 | `tank` | Often guards — chip 🛡️ |
 | `swarm` | Multi small hits |
 | `heavy` | Telegraphs 💥 |
-| `elite` / `boss` | Longer loops |
+| `buffer` | A shield turn makes a neighbor's later hit +1 |
+| `listener` | A correct cast softens its later attack |
+| `summoner` | Calls one friend that waits a turn |
+| `scaling` | Its own later hits grow once |
+| `elite` / `boss` | Longer loops; bosses may change phase |
 
 ### `EnemyDef`
 
-- `pattern: IntentStep[]` cycles each enemy turn  
-- Helpers: `atk`, `heavy`, `multi(value, hits)`, `guard`  
-- `act`, `tier`, `behaviorNote` for adults  
+- `pattern: IntentStep[]` cycles each enemy turn
+- Optional `grantStrength`, `grantSelfStrength`, and `summon` on a step
+- Optional `phases` for one telegraphed boss change, `listens` for cast soothing
+- Helpers: `atk`, `heavy`, `multi(value, hits)`, `guard`
+- `act`, `tier`, `behaviorNote`, `coachTip` for adults
 
-Register ids in `ACT_NORMAL_POOL` / `ACT_ELITE_POOL` / boss mapping as appropriate.
+Register solos in `ACT_EASY_SOLOS` or `ACT_HARD_SOLOS`, elites in `ACT_ELITE_POOL`,
+and groups in `ACT_EASY_MULTIS` / `ACT_HARD_MULTIS`. `ACT_NORMAL_POOL` is the
+joined solo list. Minions are summoned; they are not rolled as their own fight.
 
 Damage budget comment in file: preschool peaks roughly Act I ~3–7, II ~6–9, III ~8–11 unblocked (tune carefully).
 

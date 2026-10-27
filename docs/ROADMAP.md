@@ -43,7 +43,9 @@ Ordered by “resume playtest” value — not a binding schedule. Detail:
    come from chests, elites, bosses, and random event rewards. The starter
    初心音叉 stays. The belt has 3 slots and 6 bottles, and event potion choices
    fill empty slots. Do not import the Echo-era 40/20 bible wholesale
-3. **Encounter rewrites one act at a time** — Act I–III events are already in
+3. **Act-native fights are in the tree** — ? rooms that become fights use the
+   same easy and hard pools. Event moth fights use that 鐘粉蛾. Keys and Act IV
+   are still later
 4. **Keys, Act IV, and a 20-level track last**
 5. Optional later: second character using a reviewed English or math provider,
    plus recorded audio

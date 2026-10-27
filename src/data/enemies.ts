@@ -7,7 +7,11 @@
  * - tank: guards often — chip through 🛡️
  * - swarm: multi small hits — shield still helps
  * - heavy: telegraphs 💥 — block the boom turn
- * - elite / boss: longer scary loops
+ * - buffer: makes a neighbor's later attack bigger
+ * - listener: a correct 注音 cast softens its later attack
+ * - summoner: calls one friend, who waits until the next enemy phase
+ * - scaling: its own later attacks grow once
+ * - elite / boss: longer loops, bosses can change phase
  */
 
 export type IntentKind = 'attack' | 'heavy' | 'multi' | 'block';
@@ -18,6 +22,10 @@ export type EnemyRole =
   | 'tank'
   | 'swarm'
   | 'heavy'
+  | 'buffer'
+  | 'listener'
+  | 'summoner'
+  | 'scaling'
   | 'elite'
   | 'boss';
 
@@ -32,6 +40,20 @@ export interface IntentStep {
   kind: IntentKind;
   value: number;
   hits?: number;
+  /** Other living enemies gain this much strength for attacks after this phase. */
+  grantStrength?: number;
+  /** This enemy gains this much strength for its own attacks after this phase. */
+  grantSelfStrength?: number;
+  /** Spawn this enemy once, if the row has room. It does not act this phase. */
+  summon?: string;
+}
+
+export interface EnemyPhase {
+  /** Enter after the current action once hp is at or below this and still above 0. */
+  belowHp: number;
+  /** Shown as 下回合 when the line is crossed, then played once. */
+  enter: IntentStep;
+  pattern: IntentStep[];
 }
 
 export interface EnemyDef {
@@ -46,22 +68,29 @@ export interface EnemyDef {
   tier: 'normal' | 'elite' | 'boss';
   /** Adult one-liner — what set behavior to teach. */
   behaviorNote: string;
+  /** Parent coach line when this enemy is the fight's main teacher. */
+  coachTip?: string;
+  /** Successful casts reduce a later attack. The current pill does not change. */
+  listens?: boolean;
+  /** Most strength this enemy will keep. Omitted means it does not grow. */
+  strengthCap?: number;
+  phases?: EnemyPhase[];
   isBoss?: boolean;
   isElite?: boolean;
 }
 
-function atk(value: number): IntentStep {
-  return { kind: 'attack', value };
+function atk(value: number, extra?: Partial<IntentStep>): IntentStep {
+  return { kind: 'attack', value, ...extra };
 }
-function heavy(value: number): IntentStep {
-  return { kind: 'heavy', value };
+function heavy(value: number, extra?: Partial<IntentStep>): IntentStep {
+  return { kind: 'heavy', value, ...extra };
 }
 /** Multi-hit: value = damage **per** hit, hits = count (total = value × hits). */
-function multi(value: number, hits: number): IntentStep {
-  return { kind: 'multi', value, hits };
+function multi(value: number, hits: number, extra?: Partial<IntentStep>): IntentStep {
+  return { kind: 'multi', value, hits, ...extra };
 }
-function guard(value: number): IntentStep {
-  return { kind: 'block', value };
+function guard(value: number, extra?: Partial<IntentStep>): IntentStep {
+  return { kind: 'block', value, ...extra };
 }
 
 /**
@@ -114,6 +143,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     act: 1,
     tier: 'normal',
     behaviorNote: '先盾再打；要打穿護盾',
+    strengthCap: 1,
     pattern: [guard(7), atk(4), guard(6), atk(5)],
   },
   bat: {
@@ -244,6 +274,140 @@ export const ENEMIES: Record<string, EnemyDef> = {
     pattern: [guard(12), atk(7), guard(10), multi(4, 2), atk(8)],
   },
 
+  // ─── New Act I teachers ─────────────────────────────────────────
+  echoBug: {
+    id: 'echoBug',
+    name: '跟讀蟲',
+    emoji: '🐛',
+    maxHp: 13,
+    role: 'listener',
+    act: 1,
+    tier: 'normal',
+    listens: true,
+    behaviorNote: '拼對注音會讓牠下一手的攻擊變輕，本回合數字不變',
+    coachTip: '跟讀蟲（ㄍㄣ ㄉㄨˊ）在聽。每拼對一次，牠下一手的攻擊少 1，最少還是 1。這一手的數字不會變。',
+    pattern: [atk(4), atk(5), guard(4), atk(4)],
+  },
+  drumlet: {
+    id: 'drumlet',
+    name: '小鼓手',
+    emoji: '🥁',
+    maxHp: 11,
+    role: 'buffer',
+    act: 1,
+    tier: 'normal',
+    behaviorNote: '敲鼓不會痛，但會讓旁邊那隻的下一手 +1',
+    coachTip: '小鼓手（ㄍㄨˇ ㄕㄡˇ）敲鼓的那一手是盾，不是攻擊。旁邊那隻的下一手會 +1。可以先打鼓手。',
+    pattern: [atk(3), guard(3, { grantStrength: 1 }), atk(4)],
+  },
+
+  // ─── New Act II teachers ────────────────────────────────────────
+  bellMoth: {
+    id: 'bellMoth',
+    name: '鐘粉蛾',
+    emoji: '🦋',
+    maxHp: 19,
+    role: 'listener',
+    act: 2,
+    tier: 'normal',
+    listens: true,
+    behaviorNote: '中層的聽眾：拼對會讓下一手變輕',
+    coachTip: '鐘粉蛾（ㄓㄨㄥ ㄈㄣˇ ㄜˊ）也在聽拼字。拼對會讓牠下一手變輕，這一手的數字不變。',
+    pattern: [atk(5), guard(6), multi(2, 3), atk(6)],
+  },
+  dustDrum: {
+    id: 'dustDrum',
+    name: '塵鼓',
+    emoji: '🥁',
+    maxHp: 23,
+    role: 'scaling',
+    act: 2,
+    tier: 'normal',
+    strengthCap: 1,
+    behaviorNote: '防禦之後，自己後面的每一擊 +1，只加一次',
+    coachTip: '塵鼓（ㄔㄣˊ ㄍㄨˇ）做完一次防禦，後面的攻擊就 +1，只加一次。防禦那一手是打牠的好時機。',
+    pattern: [guard(8, { grantSelfStrength: 1 }), atk(6), multi(2, 3), atk(6)],
+  },
+  noteWisp: {
+    id: 'noteWisp',
+    name: '小音符',
+    emoji: '✨',
+    maxHp: 9,
+    role: 'fodder',
+    act: 2,
+    tier: 'normal',
+    strengthCap: 1,
+    behaviorNote: '被叫出來的小幫手。出現的那一輪先休息，第一手是盾',
+    coachTip: '小音符（ㄒㄧㄠˇ ㄧㄣ ㄈㄨˊ）是被叫來的。出現的那一輪它先休息，下一手先舉盾。',
+    pattern: [guard(3), atk(3)],
+  },
+  littleConductor: {
+    id: 'littleConductor',
+    name: '小指揮',
+    emoji: '🎼',
+    maxHp: 18,
+    role: 'summoner',
+    act: 2,
+    tier: 'normal',
+    behaviorNote: '防禦時叫出一隻小音符，新來的先休息',
+    coachTip: '小指揮（ㄓˇ ㄏㄨㄟ）舉盾時會叫一隻小音符。新來的這一輪先不出手。',
+    pattern: [atk(6), guard(5, { summon: 'noteWisp' }), multi(2, 3)],
+  },
+  bellWisp: {
+    id: 'bellWisp',
+    name: '鐘音符',
+    emoji: '🔔',
+    maxHp: 14,
+    role: 'fodder',
+    act: 2,
+    tier: 'normal',
+    strengthCap: 1,
+    behaviorNote: '指揮菁英叫來的音符。重擊那一輪它在舉盾',
+    coachTip: '鐘音符是樂團指揮叫來的。它出現的那一輪先休息，被加力的數字寫在下一手。',
+    pattern: [atk(4), atk(4), guard(3), atk(3)],
+  },
+
+  // ─── New Act III teachers ───────────────────────────────────────
+  mirrorNote: {
+    id: 'mirrorNote',
+    name: '鏡音',
+    emoji: '🪞',
+    maxHp: 26,
+    role: 'listener',
+    act: 3,
+    tier: 'normal',
+    listens: true,
+    behaviorNote: '後期聽眾：拼對會把下一手的重擊變輕一點',
+    coachTip: '鏡音（ㄐㄧㄥˋ ㄧㄣ）在聽。每拼對一次，下一手少 1。重擊的數字會跟著變，這一手不會。',
+    pattern: [atk(7), guard(8), multi(3, 2), heavy(11)],
+  },
+  crownBell: {
+    id: 'crownBell',
+    name: '冠鐘',
+    emoji: '🔔',
+    maxHp: 30,
+    role: 'scaling',
+    act: 3,
+    tier: 'normal',
+    strengthCap: 1,
+    behaviorNote: '先防禦一次，自己後面的每一擊 +1',
+    coachTip: '冠鐘（ㄍㄨㄢ ㄓㄨㄥ）先舉盾。盾過了以後，自己的每一擊 +1，只加一次。',
+    pattern: [guard(8, { grantSelfStrength: 1 }), atk(8), multi(3, 2), heavy(11)],
+  },
+  starWisp: {
+    id: 'starWisp',
+    name: '星螢',
+    emoji: '🌟',
+    maxHp: 12,
+    role: 'fodder',
+    act: 3,
+    tier: 'normal',
+    strengthCap: 1,
+    behaviorNote: '塔頂叫來的小光點。出現的那一輪先休息，第一手是盾',
+    coachTip: '星螢（ㄒㄧㄥ ㄧㄥˊ）是被叫來的小光。出現的那一輪先休息，下一手先舉盾。',
+    pattern: [guard(4), atk(4)],
+  },
+
   // ─── Elites ─────────────────────────────────────────────────────
   eliteArmor: {
     id: 'eliteArmor',
@@ -305,6 +469,72 @@ export const ENEMIES: Record<string, EnemyDef> = {
     pattern: [atk(8), heavy(12), multi(4, 2), guard(9)],
     isElite: true,
   },
+  eliteChorus: {
+    id: 'eliteChorus',
+    name: '和聲蛹',
+    emoji: '🐛',
+    maxHp: 28,
+    role: 'summoner',
+    act: 1,
+    tier: 'elite',
+    isElite: true,
+    behaviorNote: '重擊先出手，下一手舉盾才叫史萊姆',
+    coachTip: '和聲蛹（ㄏㄜˊ ㄕㄥ ㄩㄥˇ）先出重擊。下一手舉盾時才叫一隻軟軟史萊姆。新來的這一輪先不出手。',
+    pattern: [atk(5), heavy(8), guard(6, { summon: 'slimeWeak' }), multi(2, 3)],
+  },
+  eliteConductor: {
+    id: 'eliteConductor',
+    name: '樂團指揮',
+    emoji: '🎶',
+    maxHp: 36,
+    role: 'summoner',
+    act: 2,
+    tier: 'elite',
+    isElite: true,
+    behaviorNote: '重擊先出手，舉盾才叫音符，下一手才加力',
+    coachTip: '樂團指揮（ㄩㄝˋ ㄉㄨㄟˋ ㄓˇ ㄏㄨㄟ）先出重擊。舉盾時叫一隻鐘音符，再下一手讓它 +1。加過的數字寫在圖示上。',
+    pattern: [atk(7), heavy(12), guard(8, { summon: 'bellWisp' }), atk(6, { grantStrength: 1 })],
+  },
+  eliteMuteDrum: {
+    id: 'eliteMuteDrum',
+    name: '慢拍鼓',
+    emoji: '🥁',
+    maxHp: 38,
+    role: 'scaling',
+    act: 2,
+    tier: 'elite',
+    isElite: true,
+    strengthCap: 1,
+    behaviorNote: '防禦之後每一擊 +1，重擊是這個菁英的大動作',
+    coachTip: '慢拍鼓（ㄇㄢˋ ㄆㄞ ㄍㄨˇ）防禦之後，後面每一擊 +1，只加一次。先看下一手的數字再決定要不要擋。',
+    pattern: [atk(7), guard(10, { grantSelfStrength: 1 }), multi(3, 2), heavy(11)],
+  },
+  elitePrism: {
+    id: 'elitePrism',
+    name: '七音晶',
+    emoji: '💠',
+    maxHp: 44,
+    role: 'tank',
+    act: 3,
+    tier: 'elite',
+    isElite: true,
+    behaviorNote: '厚盾只擋到它下一次行動之前',
+    coachTip: '七音晶（ㄑㄧ ㄧㄣ ㄐㄧㄥ）會先疊很高的盾。盾只留到它下一次行動，這一回合把盾敲掉就打得到血。',
+    pattern: [guard(12), atk(8), guard(10), multi(3, 3), heavy(12)],
+  },
+  eliteStarCaller: {
+    id: 'eliteStarCaller',
+    name: '喚星使',
+    emoji: '🌟',
+    maxHp: 40,
+    role: 'summoner',
+    act: 3,
+    tier: 'elite',
+    isElite: true,
+    behaviorNote: '重擊先出手，下一手舉盾才叫星螢',
+    coachTip: '喚星使（ㄏㄨㄢˋ ㄒㄧㄥ ㄕˇ）先出重擊。下一手舉盾時才叫出星螢。星螢這一輪先休息，再下一手先舉盾。',
+    pattern: [atk(8), heavy(12), guard(10, { summon: 'starWisp' }), multi(4, 2)],
+  },
 
   // ─── Bosses ─────────────────────────────────────────────────────
   boss1: {
@@ -315,8 +545,14 @@ export const ENEMIES: Record<string, EnemyDef> = {
     role: 'boss',
     act: 1,
     tier: 'boss',
-    behaviorNote: '一幕王：攻防連擊輪替',
-    pattern: [atk(6), guard(8), multi(3, 2), heavy(10), multi(2, 3), atk(7)],
+    behaviorNote: '血量過半後先舉盾，下一手重擊，再叫史萊姆',
+    coachTip: '塔守護獸血量變少以後，下一手先舉盾，再下一手是大重擊。重擊之後才叫一隻軟軟史萊姆。新來的那一輪先休息。',
+    pattern: [atk(6), guard(8), multi(3, 2)],
+    phases: [{
+      belowHp: 21,
+      enter: guard(8),
+      pattern: [heavy(10), guard(6, { summon: 'slimeWeak' }), multi(2, 3), atk(7)],
+    }],
     isBoss: true,
   },
   boss2: {
@@ -327,8 +563,14 @@ export const ENEMIES: Record<string, EnemyDef> = {
     role: 'boss',
     act: 2,
     tier: 'boss',
-    behaviorNote: '二幕王：連擊與重擊',
-    pattern: [atk(8), multi(4, 2), guard(10), heavy(13), multi(3, 3), atk(9)],
+    behaviorNote: '血量過半後先舉盾，下一手重擊，再叫小音符',
+    coachTip: '雙翼監守血量過半以後，下一手先舉盾，再下一手是重擊。重擊之後才叫出小音符。小音符那一輪先休息。',
+    pattern: [atk(8), multi(4, 2), guard(10)],
+    phases: [{
+      belowHp: 29,
+      enter: guard(12),
+      pattern: [heavy(13), guard(8, { summon: 'noteWisp' }), multi(3, 3), atk(9)],
+    }],
     isBoss: true,
   },
   boss3: {
@@ -339,32 +581,16 @@ export const ENEMIES: Record<string, EnemyDef> = {
     role: 'boss',
     act: 3,
     tier: 'boss',
-    behaviorNote: '終焉王：長循環考驗牌組',
-    pattern: [
-      atk(9),
-      multi(3, 3),
-      guard(12),
-      heavy(14),
-      multi(4, 2),
-      atk(10),
-      heavy(12),
-    ],
+    behaviorNote: '血量過半後先舉盾並 +1，下一手重擊，再叫星螢',
+    strengthCap: 1,
+    coachTip: '注音終焉王血量變少後，下一手先舉盾，自己的攻擊 +1。變大的重擊數字寫在圖示上。重擊之後才叫出星螢。星螢那一輪先休息。',
+    pattern: [atk(9), multi(3, 3), guard(12)],
+    phases: [{
+      belowHp: 36,
+      enter: guard(14, { grantSelfStrength: 1 }),
+      pattern: [heavy(13), guard(10, { summon: 'starWisp' }), multi(4, 2), atk(9), heavy(12)],
+    }],
     isBoss: true,
-  },
-  /**
-   * Event-only moth. Not in ACT_NORMAL_POOL.
-   * The bible's 雜音 status card is omitted until combat has status cards.
-   */
-  bellMoth: {
-    id: 'bellMoth',
-    name: '鐘粉蛾',
-    emoji: '🦋',
-    maxHp: 19,
-    role: 'striker',
-    act: 2,
-    tier: 'normal',
-    behaviorNote: '事件限定：傷害與護盾照聖經，雜音還沒進戰鬥',
-    pattern: [atk(4), guard(6), multi(2, 3), atk(6)],
   },
   /** @deprecated alias → boss1 */
   boss: {
@@ -376,22 +602,42 @@ export const ENEMIES: Record<string, EnemyDef> = {
     act: 1,
     tier: 'boss',
     behaviorNote: '別名：同 boss1',
-    pattern: [atk(6), guard(8), multi(3, 2), heavy(10), multi(2, 3), atk(7)],
+    coachTip: '塔守護獸血量變少以後，下一手先舉盾，再下一手是大重擊。重擊之後才叫一隻軟軟史萊姆。新來的那一輪先休息。',
+    pattern: [atk(6), guard(8), multi(3, 2)],
+    phases: [{
+      belowHp: 21,
+      enter: guard(8),
+      pattern: [heavy(10), guard(6, { summon: 'slimeWeak' }), multi(2, 3), atk(7)],
+    }],
     isBoss: true,
   },
 };
 
-/** Single-enemy fight pools by act (map normals). */
+/** Opening solos. Act I uses these for the first three normal fights; later acts, the first two. */
+export const ACT_EASY_SOLOS: Record<1 | 2 | 3, string[]> = {
+  1: ['slimeWeak', 'slime', 'bat'],
+  2: ['armor', 'toad', 'bellMoth'],
+  3: ['wraith', 'owl', 'mirrorNote'],
+};
+
+/** Later solos. Minions stay out of this list; a summoner brings them in. */
+export const ACT_HARD_SOLOS: Record<1 | 2 | 3, string[]> = {
+  1: ['rock', 'ember', 'fang', 'echoBug'],
+  2: ['spike', 'fangHard', 'dustDrum', 'littleConductor'],
+  3: ['crystal', 'crownBell'],
+};
+
+/** Single-enemy fight pools by act (easy then hard). Map generation uses the split lists. */
 export const ACT_NORMAL_POOL: Record<1 | 2 | 3, string[]> = {
-  1: ['slimeWeak', 'slime', 'rock', 'bat', 'ember', 'fang'],
-  2: ['armor', 'spike', 'fangHard', 'toad', 'fang'],
-  3: ['wraith', 'owl', 'crystal', 'spike', 'fangHard'],
+  1: [...ACT_EASY_SOLOS[1], ...ACT_HARD_SOLOS[1]],
+  2: [...ACT_EASY_SOLOS[2], ...ACT_HARD_SOLOS[2]],
+  3: [...ACT_EASY_SOLOS[3], ...ACT_HARD_SOLOS[3]],
 };
 
 export const ACT_ELITE_POOL: Record<1 | 2 | 3, string[]> = {
-  1: ['eliteArmor', 'eliteBee', 'eliteBoom'],
-  2: ['eliteBee', 'eliteBoom', 'eliteArmor', 'eliteStorm'],
-  3: ['eliteStorm', 'eliteBoom', 'eliteShadow'],
+  1: ['eliteArmor', 'eliteBee', 'eliteBoom', 'eliteChorus'],
+  2: ['eliteStorm', 'eliteConductor', 'eliteMuteDrum'],
+  3: ['eliteShadow', 'elitePrism', 'eliteStarCaller'],
 };
 
 export const BOSS_ID: Record<1 | 2 | 3, string> = {
@@ -404,9 +650,32 @@ export const ELITE_ENEMY_IDS = [
   'eliteArmor',
   'eliteBee',
   'eliteBoom',
+  'eliteChorus',
   'eliteStorm',
+  'eliteConductor',
+  'eliteMuteDrum',
   'eliteShadow',
+  'elitePrism',
+  'eliteStarCaller',
 ] as const;
+
+const COACH_RANK: Partial<Record<EnemyRole, number>> = {
+  boss: 5,
+  elite: 4,
+  summoner: 3,
+  listener: 3,
+  buffer: 3,
+  scaling: 3,
+};
+
+/** Parent line for the most important teacher currently alive. */
+export function coachBodyForEnemies(defIds: string[]): string | null {
+  const ranked = defIds
+    .map((id) => ENEMIES[id])
+    .filter((def): def is EnemyDef => !!def?.coachTip)
+    .sort((a, b) => (COACH_RANK[b.role] ?? 0) - (COACH_RANK[a.role] ?? 0));
+  return ranked[0]?.coachTip ?? null;
+}
 
 export function getEnemyDef(id: string): EnemyDef {
   return ENEMIES[id] ?? ENEMIES.slime!;

@@ -24,6 +24,22 @@ export interface EnemyUnit {
   alive: boolean;
   vulnerableTurns: number;
   weakTurns: number;
+  /** Damage added to each later attack hit. Already included in the intent number. */
+  strength?: number;
+  /** Strength gained this enemy phase. It applies only after the phase ends. */
+  bankedStrength?: number;
+  /** Soothe already aimed at the current attack. */
+  armedSoothe?: number;
+  /** Soothe from casts this player turn. It aims at a later attack. */
+  pendingSoothe?: number;
+  /** 0 = opening pattern. 1 = the fight has finished its one phase-enter action. */
+  phase?: number;
+  /** The next action is the phase-enter step, not the opening pattern. */
+  queuedEnter?: boolean;
+  /** This unit already used its one summon. */
+  summoned?: boolean;
+  /** Appeared during the current enemy phase and does not act until the next one. */
+  justSummoned?: boolean;
 }
 
 /** One ordered hit, including the monster shield state before and after it. */

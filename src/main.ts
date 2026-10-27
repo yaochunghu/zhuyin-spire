@@ -3,6 +3,7 @@ import './styles/main.css';
 import './styles/toy-board.css';
 import './styles/browser.css';
 import { sfx } from './game/audio';
+import { coachBodyForEnemies } from './data/enemies';
 import { coachForScreen, getCompletedRunCount, isEarlyLearningRuns } from './game/coach';
 import type { CastMode } from './game/castCheck';
 import {
@@ -142,12 +143,16 @@ function appendCoach(parent: HTMLElement, castMode?: CastMode): void {
   const node = getActiveNode(runState) ?? getAvailableMapNodes(runState)[0] ?? undefined;
   const eventId = runState.eventTrack.active?.eventId;
   const event = eventId ? getEvent(eventId) : null;
+  const livingTeachers = runState.combat?.enemies
+    .filter((enemy) => enemy.alive && enemy.hp > 0)
+    .map((enemy) => enemy.defId) ?? [];
   const tip = coachForScreen(screen, {
     node,
     castMode,
     act: runState.actIndex + 1,
     eventTitle: event?.title,
     eventBody: event?.rationale,
+    combatTip: screen === 'combat' ? coachBodyForEnemies(livingTeachers) : null,
     rewardSource: runState.rewardSource,
   });
   if (!tip.body) return;

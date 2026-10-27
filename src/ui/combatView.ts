@@ -334,8 +334,8 @@ function renderEnemySlot(
   opts: { damaged: boolean; castOk: boolean },
 ): HTMLElement {
   const def = ENEMIES[unit.defId] ?? ENEMIES.slime!;
-  const intent = intentForUnit(unit);
-  const nextIntent = nextIntentForUnit(unit);
+  const intent = intentForUnit(unit, combat);
+  const nextIntent = nextIntentForUnit(unit, combat);
   const weak = unit.weakTurns > 0;
   // This action uses the current duration. The 下回合 pill uses whatever
   // remains after that action ticks Weak.
@@ -462,7 +462,7 @@ export function renderCombat(): HTMLElement {
   const c = run().combat!;
   const living = livingEnemies(c);
   const incoming = living.reduce(
-    (sum, unit) => sum + intentTotalDamage(intentForUnit(unit), unit.weakTurns > 0),
+    (sum, unit) => sum + intentTotalDamage(intentForUnit(unit, c), unit.weakTurns > 0),
     0,
   );
   const el = document.createElement('div');

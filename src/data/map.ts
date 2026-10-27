@@ -18,12 +18,8 @@ import {
   restHealAmount,
   SHOP_CARD_PRICES,
 } from './balance';
-import { ACT_MULTI_ENCOUNTERS } from './encounters';
-import {
-  ACT_ELITE_POOL,
-  ACT_NORMAL_POOL,
-  BOSS_ID,
-} from './enemies';
+import { pickEliteFight, pickNormalFight } from './encounters';
+import { BOSS_ID } from './enemies';
 
 export type NodeKind =
   | 'fight'
@@ -539,42 +535,83 @@ function assignKinds(
   }
 }
 
+/**
+ * Nearest matching rooms first, then reversed so callers can drop the oldest
+ * exclusion when a pool would otherwise be empty.
+ */
+function nearestContentKeys(
+  node: MapNode,
+  nodes: MapNode[],
+  kind: 'fight' | 'elite',
+  limit: number,
+): string[] {
+  const found: string[] = [];
+  const seen = new Set<string>([node.id]);
+  let frontier = parentsOf(nodes, node);
+  while (frontier.length > 0 && found.length < limit) {
+    const next: MapNode[] = [];
+    for (const parent of frontier) {
+      if (seen.has(parent.id)) continue;
+      seen.add(parent.id);
+      if (parent.kind === kind) {
+        const key = parent.encounterId ?? parent.enemyId;
+        if (key) found.push(key);
+      }
+      next.push(...parentsOf(nodes, parent));
+    }
+    frontier = next;
+  }
+  return found.slice(0, limit).reverse();
+}
+
 function attachEncounters(
   act: ActNumber,
   nodes: MapNode[],
   rng: () => number,
 ): void {
-  for (const n of nodes) {
+  const priorFights = new Map<string, number>();
+  const ordered = [...nodes].sort((a, b) => a.row - b.row || a.col - b.col);
+  for (const node of ordered) {
+    const parents = parentsOf(nodes, node);
+    if (parents.length === 0) {
+      priorFights.set(node.id, 0);
+      continue;
+    }
+    let min = Number.POSITIVE_INFINITY;
+    for (const parent of parents) {
+      const add = parent.kind === 'fight' ? 1 : 0;
+      min = Math.min(min, add + (priorFights.get(parent.id) ?? 0));
+    }
+    priorFights.set(node.id, min);
+  }
+
+  for (const n of ordered) {
     n.enemyId = undefined;
     n.encounterId = undefined;
     n.rewardTier = undefined;
     n.goldBonus = undefined;
 
     if (n.kind === 'fight') {
-      if (rng() < 0.32) {
-        if (act === 1 && n.row >= 3 && rng() < 0.1) {
-          n.encounterId = 'slimeTriple';
-        } else {
-          n.encounterId = pick(ACT_MULTI_ENCOUNTERS[act], rng);
-        }
-      } else {
-        n.enemyId = pick(ACT_NORMAL_POOL[act], rng);
-      }
+      const pick = pickNormalFight(
+        act,
+        priorFights.get(n.id) ?? 0,
+        nearestContentKeys(n, nodes, 'fight', 2),
+        rng,
+        n.row >= 4,
+      );
+      n.enemyId = pick.enemyId;
+      n.encounterId = pick.encounterId;
+      // The gold bonus marks a hotter reward. It does not swap the monster,
+      // so the easy quota and the no-repeat rule stay intact.
       if (rng() < 0.15) {
         n.rewardTier = 'elite';
         n.goldBonus = GOLD_DANGER_BONUS;
-        if (!n.encounterId) {
-          n.enemyId = pick(
-            act === 1 ? ['fang', 'ember', 'rock'] : ACT_NORMAL_POOL[act],
-            rng,
-          );
-        }
       } else {
         n.rewardTier = 'normal';
       }
     } else if (n.kind === 'elite') {
-      if (rng() < 0.35) n.encounterId = 'eliteDuo';
-      else n.enemyId = pick(ACT_ELITE_POOL[act], rng);
+      const pick = pickEliteFight(act, nearestContentKeys(n, nodes, 'elite', 1), rng);
+      n.enemyId = pick.enemyId;
       n.rewardTier = 'elite';
     } else if (n.kind === 'boss') {
       n.enemyId = BOSS_ID[act];

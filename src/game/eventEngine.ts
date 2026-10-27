@@ -5,8 +5,7 @@
 
 import { canUpgradeCard, getCard, type CardDef } from '../data/cards';
 import { isCurseId } from '../data/curses';
-import { ACT_MULTI_ENCOUNTERS } from '../data/encounters';
-import { ACT_NORMAL_POOL } from '../data/enemies';
+import { pickNormalFight } from '../data/encounters';
 import {
   effectChips,
   effectsNeedConfirm,
@@ -19,7 +18,7 @@ import {
   type CardTypeGroup,
   type EventRelicRarity,
 } from '../data/events';
-import type { MapNode } from '../data/map';
+import type { MapNode, RunMap } from '../data/map';
 import { getPlayableCharacter, type PlayableCharacterId } from '../data/characters';
 import { getRelic, RELIC_POOL_IDS, rollRelicDrop } from '../data/relics';
 import { nextCardUid, type DeckCard } from './cardInstances';
@@ -105,6 +104,8 @@ export interface EventRun {
   potions: (string | null)[];
   eventTrack: EventTrack;
   flash: string | null;
+  runMap?: RunMap;
+  visitedIds?: string[];
 }
 
 export function createEventTrack(seed: number): EventTrack {
@@ -390,13 +391,32 @@ function pickEventId(state: EventRun, node: MapNode): string | null {
   return pool[rollIndex(state.eventTrack, pool.length)]!.id;
 }
 
-function rollNormalFight(state: EventRun, act: 1 | 2 | 3): Pick<UnknownResolution, 'enemyId' | 'encounterId'> {
-  if (nextEventUnit(state.eventTrack) < 0.3) {
-    const pool = ACT_MULTI_ENCOUNTERS[act];
-    return { encounterId: pool[rollIndex(state.eventTrack, pool.length)]! };
+function fightsAlreadySeen(state: EventRun, node: MapNode): { count: number; recent: string[] } {
+  const actMap = state.runMap?.acts.find((act) => act.act === node.act);
+  if (!actMap) return { count: 0, recent: [] };
+  const nodes = new Map(actMap.nodes.map((entry) => [entry.id, entry]));
+  const keys: string[] = [];
+  for (const id of state.visitedIds ?? []) {
+    const earlier = nodes.get(id);
+    if (earlier?.kind !== 'fight') continue;
+    const key = earlier.encounterId ?? earlier.enemyId;
+    if (key) keys.push(key);
   }
-  const pool = ACT_NORMAL_POOL[act];
-  return { enemyId: pool[rollIndex(state.eventTrack, pool.length)]! };
+  return { count: keys.length, recent: keys.slice(-2) };
+}
+
+/** A ? that becomes a fight uses the same easy/hard pick as a map fight. */
+function rollNormalFight(state: EventRun, node: MapNode): Pick<UnknownResolution, 'enemyId' | 'encounterId'> {
+  const act = node.act === 2 || node.act === 3 ? node.act : 1;
+  const seen = fightsAlreadySeen(state, node);
+  const pick = pickNormalFight(
+    act,
+    seen.count,
+    seen.recent,
+    () => nextEventUnit(state.eventTrack),
+    node.row >= 4,
+  );
+  return { enemyId: pick.enemyId, encounterId: pick.encounterId };
 }
 
 export function ensureUnknownResolution(state: EventRun, node: MapNode): UnknownResolution {
@@ -424,11 +444,11 @@ export function ensureUnknownResolution(state: EventRun, node: MapNode): Unknown
       rememberEvent(state.eventTrack, eventId);
       state.eventTrack.nonEventUnknownStreak = 0;
     } else {
-      resolution = { outcome: 'fight', fallbackFight: true, ...rollNormalFight(state, act) };
+      resolution = { outcome: 'fight', fallbackFight: true, ...rollNormalFight(state, node) };
       state.eventTrack.nonEventUnknownStreak += 1;
     }
   } else if (outcome === 'fight' && (act === 1 || act === 2 || act === 3)) {
-    resolution = { outcome: 'fight', ...rollNormalFight(state, act) };
+    resolution = { outcome: 'fight', ...rollNormalFight(state, node) };
     state.eventTrack.nonEventUnknownStreak += 1;
   } else if (outcome === 'shop') {
     resolution = { outcome: 'shop' };

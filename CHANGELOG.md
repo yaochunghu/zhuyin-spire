@@ -8,6 +8,12 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+### Encounter diversity
+
+- Each act gains native listeners, buffers or scalers, and summoners. Act II and Act III elites are no longer recycled Act I fights. Bosses telegraph a brace, then one heavier hit. A small friend arrives on the shield after that hit, and the Act III boss grows one point during the brace.
+- A correct 注音 cast softens a listening enemy's later attack. The current intent number stays put. Fizzles are not punished.
+- Map fights use an easy opening quota and do not repeat a normal recipe across the next two fights on a path.
+
 ### Potion belt
 
 - Added a 3-slot belt and six bottles: 護盾泡泡, 音波小石, 蜂蜜暖茶, 火花汽水, 翻頁果汁, and 合唱爆泡
@@ -43,6 +49,7 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - Random event relic rewards draw the five-relic pool and leave 初心音叉 in place. Named event relics are granted by id.
 - Event potion rewards fill empty slots on the three-slot belt. A full belt stays visible and says the slots are full.
 - Saves stay on version 4. Event progress is optional, so older checkpoints still load.
+- Event moth fights use the act-native 鐘粉蛾. A ? that becomes a fight uses the same easy and hard pools as a map fight.
 
 ### Zhuyin corrections
 

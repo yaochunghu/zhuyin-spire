@@ -33,12 +33,20 @@ The event chance starts at 65% and rises by 10% after each non-event ?, up to
 95%. The rest of the chance splits fight:shop:treasure 4:2:1. Shops are skipped
 when fewer than two floors remain before the boss, and treasure is skipped on
 the pre-boss floor. Act events only appear in their act. Each event appears
-once per run. Shared events can appear in any act.
+once per run. Shared events can appear in any act. A ? that becomes a fight
+uses `pickNormalFight` with the normal fights already visited in that act, so
+it draws the same easy and hard pools as the map. The result is stored with
+the resolution.
 
 Content hooks:
 
-- Normal / elite pools: `data/enemies.ts` (`ACT_NORMAL_POOL`, `ACT_ELITE_POOL`, `BOSS_ID`)
-- Multi-enemy recipes: `data/encounters.ts` (`ACT_MULTI_ENCOUNTERS`)
+- Normal / elite pools: `data/enemies.ts` (`ACT_EASY_SOLOS`, `ACT_HARD_SOLOS`, `ACT_ELITE_POOL`, `BOSS_ID`)
+- Multi-enemy recipes: `data/encounters.ts` (`pickNormalFight`, `pickEliteFight`)
+- Act I's first three normal fights on the shortest path use the easy pool.
+  Acts II and III use it for the first two. A normal key stays out of the two
+  nearest earlier fights, and an elite stays out of the nearest earlier elite.
+  If that would empty the pool, the oldest exclusion drops. The pools are
+  chosen when the map is built, so reloading does not reroll them.
 - Cast difficulty stage per node: `early` | `mid` | `elite` | `boss`
 
 Layout notes baked into generation:
