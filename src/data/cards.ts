@@ -1,3 +1,10 @@
+import {
+  isZhuyinGatedCard,
+  RARITY_TIER,
+  resolveCastBinding,
+  type CardMathCast,
+  type MathGatePrefs,
+} from '../game/casting/binding';
 import type { CastBinding, CastingGateId } from '../game/casting/types';
 import {
   RESONANCE_CARD_IDS,
@@ -92,6 +99,8 @@ export interface CardDef {
   upgrade?: CardUpgradeDef;
   /** Cumulative per-character score needed before this card enters run pools. */
   unlockScore?: 300 | 1000 | 2000;
+  /** Future subject binding. Absent on every 共鳴武者 card, which stays Zhuyin. */
+  cast?: CardMathCast;
 }
 
 export interface ResolvedCardDef extends CardDef {
@@ -810,6 +819,11 @@ export function canUpgradeCard(id: string, level: 0 | 1): boolean {
   return level === 0 && !!getCard(id).upgrade;
 }
 
+/** Compile-time lock: every card rarity has a nominal cast tier. */
+export function rarityTierFor(rarity: CardRarity): 1 | 2 | 3 | 4 {
+  return RARITY_TIER[rarity];
+}
+
 /**
  * Current cards retain `zhuyin` for display compatibility while casting uses a
  * provider-neutral lesson binding. Pure vowels teach their whole rime family.
@@ -817,16 +831,9 @@ export function canUpgradeCard(id: string, level: 0 | 1): boolean {
 export function getCardCastBinding(
   def: CardDef,
   gateId: CastingGateId = 'zhuyin',
+  mathPrefs?: MathGatePrefs,
 ): CastBinding {
-  if (gateId !== 'zhuyin') {
-    throw new Error(`Card ${def.id} has no ${gateId} casting binding`);
-  }
-  const vowelFamily = def.zhuyin === 'ㄚ' || def.zhuyin === 'ㄛ' || def.zhuyin === 'ㄜ';
-  return {
-    gateId,
-    lessonFamilyId: vowelFamily ? `vowel:${def.zhuyin}` : `initial:${def.zhuyin}`,
-    displayGlyph: def.zhuyin,
-  };
+  return resolveCastBinding(def, gateId, mathPrefs);
 }
 
 export function pickCue(def: CardDef, rng: () => number = Math.random): Cue {
@@ -835,7 +842,9 @@ export function pickCue(def: CardDef, rng: () => number = Math.random): Cue {
 }
 
 export function allZhuyin(): string[] {
-  return [...new Set(Object.values(CARDS).map((c) => c.zhuyin))];
+  return [...new Set(
+    Object.values(CARDS).filter((card) => isZhuyinGatedCard(card)).map((card) => card.zhuyin),
+  )];
 }
 
 /** Split a spell string into tappable symbols (注音 + 聲調). */

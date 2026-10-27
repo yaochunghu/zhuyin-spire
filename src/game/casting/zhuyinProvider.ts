@@ -14,6 +14,7 @@ import {
   getLessonProgress,
   saveLessonProgress,
 } from '../profiles';
+import { isZhuyinGatedCard } from './binding';
 import type {
   AmbientManaCue,
   CastMode,
@@ -308,7 +309,7 @@ export interface ZhuyinCardCoverage {
 export function getZhuyinCardCoverage(
   preferences: CastingPreferences = getCastingPreferences(),
 ): ZhuyinCardCoverage[] {
-  return Object.values(CARDS).map((card) => {
+  return Object.values(CARDS).filter((card) => isZhuyinGatedCard(card)).map((card) => {
     const binding = getCardCastBinding(card, 'zhuyin');
     const items = strictFilteredItems(
       {

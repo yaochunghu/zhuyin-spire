@@ -932,7 +932,7 @@ export function tryPlayCard(
     const stage = currentCastStage(state);
     const gateId = getActiveCharacter(state)?.castingGateId ?? 'zhuyin';
     const binding = getCardCastBinding(def, gateId);
-    const mode = pickCastMode(stage, Math.random, binding.lessonFamilyId);
+    const mode = pickCastMode(stage, Math.random, binding.lessonFamilyId, gateId);
     const prompt = buildCastPrompt(def, mode, Math.random, stage, gateId);
     state.cast = { prompt, cardDef: def };
     state.screen = 'castCheck';
