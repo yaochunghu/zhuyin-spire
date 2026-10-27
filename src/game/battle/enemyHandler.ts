@@ -358,7 +358,7 @@ export function applyEnemyIntent(state: CombatState, unit: EnemyUnit): void {
     );
   } else if (totalBlocked > 0 && totalDamage === 0) {
     state.log.push(`${def.name} 的攻擊全被擋住了！`);
-    if (state.jin < 9) {
+    if (state.rules?.jinOnFullBlock !== false && state.jin < 9) {
       gainJin(state, 1, 'afterEnemies');
       state.gainedJinThisEnemyPhase = true;
       state.log.push(`完整化解攻擊：勁 +1（${state.jin}/9）`);

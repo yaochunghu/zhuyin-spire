@@ -224,6 +224,12 @@ export function renderCharacterPick(): HTMLElement {
       continue;
     }
     const relic = getRelic(character.startingRelicId);
+    const portrait = character.id === 'echoMage'
+      ? artImageHtml('heroMartialArtist', 'character-hero-art')
+      : character.emoji;
+    const starterAria = character.id === 'echoMage'
+      ? '起始牌組：五張基礎攻擊、四張防守、一張易傷攻擊'
+      : '起始牌組';
     const starterSummary = character.starterSummary
       .map((item) => `<span>${item.icon} ${item.label}</span>`)
       .join('');
@@ -234,11 +240,11 @@ export function renderCharacterPick(): HTMLElement {
       : '目前發布的卡牌全數可用';
     btn.innerHTML = `
       <div class="character-status character-status-playable">✨ 可遊玩</div>
-      <div class="relic-emoji character-emoji">${artImageHtml('heroMartialArtist', 'character-hero-art')}</div>
+      <div class="relic-emoji character-emoji">${portrait}</div>
       <div class="character-name">${character.name}</div>
       <div class="adult-text character-title">${character.title}</div>
-      <div class="character-theme">🥋 ${character.theme}</div>
-      <div class="starter-deck-summary" aria-label="起始牌組：五張基礎攻擊、四張防守、一張易傷攻擊">
+      <div class="character-theme">${character.emoji} ${character.theme}</div>
+      <div class="starter-deck-summary" aria-label="${starterAria}">
         ${starterSummary}
       </div>
       <div class="starting-relic">

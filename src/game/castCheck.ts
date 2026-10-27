@@ -18,8 +18,14 @@ import type {
   CastingDiagnosis,
   CastingGateId,
   CastingPrompt,
+  CastingTier,
 } from './casting/types';
-import { recordCastingResult } from './profiles';
+import {
+  applyMathAdaptiveDrop,
+  getLessonProgress,
+  getMathCastingPreferences,
+  recordCastingResult,
+} from './profiles';
 
 export type { CastMode } from './casting/types';
 export type CastPrompt = CastingPrompt;
@@ -61,13 +67,16 @@ export function buildCastPrompt(
   rng: () => number = Math.random,
   _difficulty: CueDifficulty = 'mid',
   gateId: CastingGateId = 'zhuyin',
+  options?: { tierOverride?: CastingTier },
 ): CastPrompt {
-  const binding = getCardCastBinding(def, gateId);
+  const mathPrefs = gateId === 'math' ? getMathCastingPreferences() : undefined;
+  const binding = getCardCastBinding(def, gateId, mathPrefs);
   return getCastingGateProvider(gateId).createPrompt({
     binding,
     mode,
     fallbackCues: def.cues,
     rng,
+    ...(options?.tierOverride ? { tierOverride: options.tierOverride } : {}),
   });
 }
 
@@ -97,11 +106,11 @@ export function recordCastResult(
   correct: boolean,
   now = Date.now(),
 ): void {
-  recordCastingResult(
-    `${prompt.gateId}:${prompt.lessonFamilyId}`,
-    correct,
-    now - prompt.createdAt,
-  );
+  const lessonKey = `${prompt.gateId}:${prompt.lessonFamilyId}`;
+  recordCastingResult(lessonKey, correct, now - prompt.createdAt);
+  if (prompt.gateId === 'math' && prompt.adaptiveFamily) {
+    applyMathAdaptiveDrop(prompt.adaptiveFamily, getLessonProgress(lessonKey).recentResults);
+  }
 }
 
 /** History is intentionally profile-persistent; a new run must not reset it. */

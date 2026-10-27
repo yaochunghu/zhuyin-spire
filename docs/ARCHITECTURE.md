@@ -143,7 +143,7 @@ words and never requests microphone permission.
 |--------|------|
 | `data/phrases.ts` | Topic-tagged core/broad Zhuyin phrase bank |
 | `game/profiles.ts` | Learners, curriculum, results, persistent shuffle state |
-| `game/casting/types.ts`, `registry.ts`, `zhuyinProvider.ts` | Casting-task contract. The game registry's only task is 注音. `math` and `english` stay reserved ids |
+| `game/casting/types.ts`, `registry.ts`, `zhuyinProvider.ts`, `math/` | Casting-task contract. The game registry installs 注音 and 珠算. `english` stays reserved |
 | `game/casting/binding.ts` | Card → lesson binding. 共鳴武者 cards stay on Zhuyin families; a math binding is accepted only when a card declares one |
 | `game/casting/input.ts` | Shared attempt model for sequence, three-choice, number pad, and build. The cast screen still draws only sequence and single choice |
 | `game/castCheck.ts` | Compatibility facade used by run state. Zhuyin mode picking stays on `chooseZhuyinMode` |
@@ -152,7 +152,7 @@ words and never requests microphone permission.
 | `ui/castView.ts` | Big 注音 keyboard + practice room |
 | `ui/options.ts` | Body-mounted global, accessible Options dialog |
 
-Learner score lives on `characterProgress`, keyed by character id. A future playable character gets its own bucket when it joins the catalog; it does not share 共鳴武者's score. Character select still lists 共鳴武者 only. 珠算武者 is the name of the next playable build. No second character, deck, or math provider is registered.
+Learner score lives on `characterProgress`, keyed by character id. 珠算武者 has its own bucket and does not share 共鳴武者's score. Character select lists both playable rows.
 
 Full contract and future-provider checklist: [CASTING_GATES.md](./CASTING_GATES.md).
 

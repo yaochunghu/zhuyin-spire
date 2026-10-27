@@ -186,10 +186,15 @@ export function submitSpell(): void {
   const isBoss = !!foeDef?.isBoss;
   const isElite = !!foeDef?.isElite;
 
-  answerCast(run(), attempt);
+  const outcome = answerCast(run(), attempt);
   session.spellAttempt = [];
   session.spellUsedBankIdx = [];
   session.hintSpell = null;
+  if (outcome === 'retry') {
+    session.castLocked = false;
+    render();
+    return;
+  }
   session.castSpeechPlayedForOpen = false;
 
   if (correct) {
@@ -260,12 +265,16 @@ export function renderCastCheck(isPractice = false): HTMLElement {
   const parts = cast.prompt.answerTokens;
   const maxLen = parts.length;
 
+  const mathCast = cast.prompt.gateId === 'math';
+  const kidLine = mathCast
+    ? (cast.prompt.retry ? '再數數看' : '選一個答案')
+    : '拼注音';
   let cueInner = '';
   if (mode === 'recognize') {
     cueInner = `
       <div class="cue-emoji">${cueEmoji}</div>
       <div class="cue-word adult-read-aloud">${cueWord}</div>
-      <p class="kid-prompt cast-kid-prompt">👉 拼注音</p>
+      <p class="kid-prompt cast-kid-prompt">👉 ${kidLine}</p>
     `;
   } else if (mode === 'listen') {
     cueInner = `
@@ -345,11 +354,12 @@ export function renderCastCheck(isPractice = false): HTMLElement {
 
   if (cast.prompt.inputMode === 'singleChoice') {
     const choices = document.createElement('div');
-    choices.className = 'cast-choice-grid';
+    const largeChoices = cast.prompt.gateId === 'math';
+    choices.className = `cast-choice-grid${largeChoices ? ' cast-choice-lg' : ''}`;
     for (const token of cast.prompt.choiceTokens) {
       const button = document.createElement('button');
       button.type = 'button';
-      button.className = 'spell-key cast-choice-key';
+      button.className = `spell-key cast-choice-key${largeChoices ? ' cast-choice-lg' : ''}`;
       button.textContent = token;
       button.disabled = session.castLocked;
       button.addEventListener('click', () => {

@@ -84,7 +84,7 @@ The test for the child is recognizing / listening for 注音 — not reading Chi
 ## How to play (short)
 
 1. Adult opens the game; child taps **▶️** to climb, or **📚** for **practice** (no HP).
-2. Pick a character, which sets the starting deck, deck theme, and starting relic. **共鳴武者** is the only playable character. 珠算武者 is not on the select screen.
+2. Pick a character, which sets the starting deck, deck theme, and starting relic. **共鳴武者** casts 注音. **珠算武者** answers three big number choices.
 3. **Map climbs upward** (StS-style web): lit rooms are branches. **3 acts**, each with boss. **?** rooms appear in every act. **🃏** shows the deck.
 4. In combat, play a card (tap or **drag** onto enemy / shield). Cast check — spell the **full first syllable**:
    - 聲母 + 韻母 + **聲調**（ˊˇˋ˙；一聲 usually unmarked）

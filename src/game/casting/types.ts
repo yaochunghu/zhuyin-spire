@@ -15,6 +15,10 @@ export interface CastBinding {
   fallbackPromptIds?: string[];
   /** Binder metadata. The Zhuyin provider does not read it when creating a prompt. */
   tier?: CastingTier;
+  /** Card family whose adaptive drop this prompt should update. */
+  adaptiveFamily?: string;
+  /** Grade-1 family used when a grade-2 binding is lowered below tier 5. */
+  fallbackFamily?: string;
 }
 
 export interface CastingCue {
@@ -73,7 +77,9 @@ export interface CastingPrompt {
   createdAt: number;
   presentation?: PromptPresentation;
   tier?: CastingTier;
-  /** Reserved for a future once-per-combat retry. No live prompt sets it. */
+  /** Card family for adaptivity. The lesson id above is the cell that was asked. */
+  adaptiveFamily?: string;
+  /** Set when this prompt is the one scaffolded retry for the combat. */
   retry?: boolean;
 }
 
@@ -82,6 +88,8 @@ export interface CastingPromptContext {
   mode: CastMode;
   fallbackCues: Array<{ word: string; emoji: string; spell: string }>;
   rng: () => number;
+  /** Combat warmup. Clamped into the parent band by the math provider. */
+  tierOverride?: CastingTier;
 }
 
 /** Opaque subject tag. The engine stores it and does not interpret the code. */
@@ -90,8 +98,8 @@ export interface CastingDiagnosis {
 }
 
 /**
- * One pluggable casting task. The game registry installs 注音 only.
- * `math` and `english` are reserved ids until a task is registered for them.
+ * One pluggable casting task. The game registry installs 注音 and 珠算.
+ * `english` stays reserved until a task is registered for it.
  */
 export interface CastingGateProvider {
   id: CastingGateId;

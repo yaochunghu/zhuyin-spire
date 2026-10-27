@@ -33,6 +33,7 @@ import {
   GOLD_TREASURE_BASE,
   GOLD_TREASURE_JITTER,
   HERO_MAX_HP,
+  MATH_WARMUP_STREAK,
   POTION_DROP_START,
   RELIC_POOL_EXHAUST_GOLD,
   restHealAmount,
@@ -65,6 +66,7 @@ import {
   applyCombatPotion,
   beginPlay,
   combatPotionBlock,
+  combatRulesForGate,
   createCombat,
   endTurn,
   healedAmount,
@@ -100,6 +102,7 @@ import {
   awardActiveCharacterScore,
   filterObtainableCardsForProfile,
   getActiveProfile,
+  getMathCastingPreferences,
   updateActiveProfile,
 } from './profiles';
 import {
@@ -319,6 +322,10 @@ export function getActiveCharacter(state: RunState): PlayableCharacterDef | null
   return state.characterId ? getPlayableCharacter(state.characterId) : null;
 }
 
+function combatRulesForRun(state: RunState): ReturnType<typeof combatRulesForGate> {
+  return combatRulesForGate(getActiveCharacter(state)?.castingGateId ?? 'zhuyin');
+}
+
 export function getCurrentAct(state: RunState) {
   return getActMap(state.runMap, state.actIndex);
 }
@@ -478,10 +485,13 @@ function drawCastPrompt(
   gateId: CastingGateId,
 ): CastPrompt {
   const rng = castStreamRng(state);
-  const binding = getCardCastBinding(def, gateId);
+  const binding = getCardCastBinding(def, gateId, gateId === 'math' ? getMathCastingPreferences() : undefined);
   const modeStage = stage === 'practice' ? 'early' : stage;
   const mode = pickCastMode(modeStage, rng, binding.lessonFamilyId, gateId);
-  return buildCastPrompt(def, mode, rng, stage, gateId);
+  const tierOverride = gateId === 'math' && (state.combat?.mathMissStreak ?? 0) >= MATH_WARMUP_STREAK
+    ? 1 as const
+    : undefined;
+  return buildCastPrompt(def, mode, rng, stage, gateId, tierOverride ? { tierOverride } : undefined);
 }
 
 export function enterPractice(state: RunState): void {
@@ -558,6 +568,7 @@ export function pickCharacter(state: RunState, characterId: string): boolean {
 
 export function isTutorialEligible(state: RunState, node: MapNode): boolean {
   return (
+    state.characterId === 'echoMage' &&
     state.tutorialEligibleRun &&
     loadGameSettings().tutorialEnabled &&
     !isTutorialComplete() &&
@@ -577,6 +588,8 @@ function createTutorialCombat(state: RunState): CombatState {
     state.heroHp,
     state.heroMaxHp,
     getOwnedRelics(state),
+    undefined,
+    combatRulesForRun(state),
   );
 
   // This ordering is local to the tutorial combat. The player's saved deck is
@@ -647,6 +660,7 @@ function enterUnknownNode(state: RunState, node: MapNode): void {
     state.heroMaxHp,
     getOwnedRelics(state),
     resolution.encounterId,
+    combatRulesForRun(state),
   );
   decorateCombat(state, state.combat, { normalFight: true, boss: false });
   state.tutorial = null;
@@ -716,6 +730,7 @@ export function startEventCombat(state: RunState): void {
     state.heroMaxHp,
     getOwnedRelics(state),
     active.fightEncounterId,
+    combatRulesForRun(state),
   );
   decorateCombat(state, state.combat, { normalFight: false, boss: false });
   state.scoreStats.currentCombatHpLost = 0;
@@ -786,6 +801,7 @@ export function selectMapNode(state: RunState, nodeId: string): void {
         state.heroMaxHp,
         getOwnedRelics(state),
         node.encounterId,
+        combatRulesForRun(state),
       );
   if (state.combat && !tutorial) {
     decorateCombat(state, state.combat, {
@@ -913,7 +929,7 @@ function openShop(state: RunState): void {
 
 /** One unowned pool relic, or exhaust gold when the pool is already owned. */
 function grantRelicReward(state: RunState): void {
-  const relicId = rollRelicDrop(state.relicIds, secureRandomInt);
+  const relicId = rollRelicDrop(state.relicIds, secureRandomInt, state.characterId);
   if (!relicId) {
     state.gold += RELIC_POOL_EXHAUST_GOLD;
     state.pendingGold += RELIC_POOL_EXHAUST_GOLD;
@@ -1243,6 +1259,7 @@ export function debugStartEncounter(
     state.heroMaxHp,
     getOwnedRelics(state),
     encounterId,
+    combatRulesForRun(state),
   );
   decorateCombat(state, state.combat, {
     normalFight: false,
@@ -1253,12 +1270,27 @@ export function debugStartEncounter(
   state.screen = 'combat';
 }
 
-export function answerCast(state: RunState, attempt: string[]): void {
-  if (!state.combat || !state.cast) return;
+export function answerCast(state: RunState, attempt: string[]): 'success' | 'fizzle' | 'retry' {
+  if (!state.combat || !state.cast) return 'fizzle';
   cancelSpeech();
   const { prompt, cardDef } = state.cast;
   const correct = isCastAnswerCorrect(prompt, attempt);
+  const mathRetry = prompt.gateId === 'math'
+    && !correct
+    && !prompt.retry
+    && !state.combat.mathRetryUsed
+    && !state.combat.parentHintUsed
+    && getMathCastingPreferences().scaffoldedRetry;
+  if (mathRetry) {
+    state.combat.mathRetryUsed = true;
+    state.cast = { prompt: { ...prompt, retry: true }, cardDef };
+    state.screen = 'castCheck';
+    return 'retry';
+  }
   recordCastResult(prompt, correct);
+  if (prompt.gateId === 'math') {
+    state.combat.mathMissStreak = correct ? 0 : state.combat.mathMissStreak + 1;
+  }
 
   if (correct) {
     resolveCastSuccess(state.combat, cardDef);
@@ -1282,16 +1314,17 @@ export function answerCast(state: RunState, attempt: string[]): void {
   if (state.combat.status === 'won') {
     // Still play discard FX before leaving combat if UI wants; keep batch
     finishFight(state);
-    return;
+    return correct ? 'success' : 'fizzle';
   }
   if (state.combat.status === 'lost') {
     recordCombatTelemetry(state, false);
     commitRunScore(state, false);
     state.screen = 'defeat';
     clearSavedRun();
-    return;
+    return 'fizzle';
   }
   state.screen = 'combat';
+  return correct ? 'success' : 'fizzle';
 }
 
 export function useParentHint(state: RunState): string | null {

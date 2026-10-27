@@ -68,15 +68,17 @@ are `[0.4.2]` in [CHANGELOG.md](../CHANGELOG.md). That release is not tagged yet
   brace, then one heavier hit. 鐘粉蛾 is the event moth. Nine questions from
   that pass are still open in [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md).
 - **Teaching:** full first-syllable 注音 cast, per-learner persistent shuffle bags,
-  detailed curriculum controls, and a provider boundary. 注音 is the only
-  registered task. Each run's `castSeed` and `castCounter` replay later prompts.
-- **Cards:** Act I uses the 12-design teaching pool. Later acts expand by
-  cumulative character score: 12 → 33 → 54 → all 75. 共鳴武者 is the only
-  playable character. 珠算武者 has engine seams and no deck.
+  detailed curriculum controls, and a provider boundary. 注音 and 珠算 are
+  registered. `english` is reserved. Each run's `castSeed` and `castCounter`
+  replay later prompts.
+- **Cards:** 共鳴武者 Act I uses the 12-design teaching pool. Later acts expand
+  by cumulative character score: 12 → 33 → 54 → all 75. 珠算武者 is the second
+  playable character, with 27 cards and the same score gates.
 - **Events:** 30 events across Acts I, II, and III. Difficulty variants, keys,
   and Act IV are still proposed.
-- **Relics:** starter 初心音叉, plus five chest/elite/boss 共鳴 relics. Legacy four
-  remain loadable only. See [NEXT_PHASE.md](./NEXT_PHASE.md).
+- **Relics:** each character has its own drop pool. 共鳴武者 keeps 初心音叉 plus
+  five drops. 珠算武者 starts with 木珠串 and rolls four math relics. Legacy
+  four remain loadable. See [NEXT_PHASE.md](./NEXT_PHASE.md).
 - **Potions:** 3 belt slots and 6 bottles. Combat rewards and the shop can
   give one. See [NEXT_PHASE.md](./NEXT_PHASE.md).
 - **Shop:** on a phone, each offer keeps its card, price, and the remove-card

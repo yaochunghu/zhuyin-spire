@@ -2,7 +2,7 @@
  * Battle lifecycle: create combat, end turn, phase transitions, win/loss.
  */
 
-import { DRAW_PER_TURN, MAX_HAND_SIZE } from '../../data/balance';
+import { DRAW_PER_TURN, MAX_HAND_SIZE, TURN_START_BEADS } from '../../data/balance';
 import { resolveEnemyDefIds } from '../../data/encounters';
 import { ENEMIES } from '../../data/enemies';
 import { resolveCard } from '../../data/cards';
@@ -15,11 +15,12 @@ import {
   spawnEnemies,
   syncPrimaryEnemy,
 } from './enemyHandler';
+import { addBeads, livingEnemies } from './effects';
 import { discardHandEndTurn } from './playerHandler';
 import { drawCards, makeCard, shuffle } from './piles';
 import { applyPendingListeningHeart } from './resources';
 import { pushFx } from './fx';
-import type { CombatState } from './types';
+import { ECHO_COMBAT_RULES, type CombatRules, type CombatState } from './types';
 
 export function createCombat(
   deckDefIds: Array<string | DeckCard>,
@@ -28,6 +29,7 @@ export function createCombat(
   heroMaxHp: number,
   relics?: RelicDef | readonly RelicDef[] | null,
   encounterId?: string,
+  rules: CombatRules = ECHO_COMBAT_RULES,
 ): CombatState {
   const defIds = Array.isArray(enemyIdOrIds)
     ? enemyIdOrIds
@@ -88,6 +90,24 @@ export function createCombat(
     phase: 'playerAction',
     turn: 1,
     parentHintUsed: false,
+    rules,
+    beads: 0,
+    tens: 0,
+    castsThisTurn: 0,
+    makeTenThisTurn: 0,
+    makeTenCount: 0,
+    mathRetryUsed: false,
+    mathMissStreak: 0,
+    beadsMadeLastAdd: 0,
+    makeTenDirectDamage: mods.makeTenDirectDamage,
+    tenBellEnergy: mods.firstMakeTenEnergy,
+    tenBellReady: mods.firstMakeTenEnergy > 0,
+    rulerCharmBlock: mods.rulerCharmBlock,
+    rulerCharmCast: mods.rulerCharmCast > 0 ? mods.rulerCharmCast : 3,
+    rulerCharmUsedThisTurn: false,
+    fizzleBeads: mods.fizzleBeads,
+    eraserReady: mods.fizzleBeads > 0,
+    compareExtraDamage: 0,
     status: 'playing',
     log: [`遇到了 ${names}！`],
     pending: null,
@@ -122,6 +142,10 @@ export function createCombat(
   }
   if (mods.firstJinBlock > 0) {
     state.log.push(`聽勁護心：第一次得勁護盾 +${mods.firstJinBlock}`);
+  }
+  if (rules.beadsEnabled && mods.startBeads > 0) {
+    addBeads(state, mods.startBeads);
+    state.log.push(`算珠袋：撥 ${mods.startBeads} 珠`);
   }
   drawCards(state, DRAW_PER_TURN);
   if (mods.startDraw > 0) {
@@ -177,6 +201,9 @@ export function endTurn(state: CombatState): CombatState['status'] {
   state.lastPlayedType = null;
   state.tempoCount = 0;
   state.basicPlayedThisTurn = 0;
+  state.castsThisTurn = 0;
+  state.makeTenThisTurn = 0;
+  state.rulerCharmUsedThisTurn = false;
   state.powerTriggersThisTurn = {};
   state.nextAttackBonus = 0;
   state.freeBasicsRemaining = 0;
@@ -184,6 +211,15 @@ export function endTurn(state: CombatState): CombatState['status'] {
   state.metronomePlayed = 0;
   state.metronomeUsed = false;
   state.stageFrightUsed = false;
+  if (state.rules?.beadsEnabled && state.activePowerIds.includes('M019')) {
+    addBeads(state, TURN_START_BEADS);
+    state.log.push(`撥算如飛：撥 ${TURN_START_BEADS} 珠`);
+    if (livingEnemies(state).length === 0) {
+      state.status = 'won';
+      state.log.push('敵人全部倒下了！');
+      return state.status;
+    }
+  }
   const drawPenalty = state.drawPenaltyNextTurn ?? 0;
   state.drawPenaltyNextTurn = 0;
   drawCards(state, Math.max(0, DRAW_PER_TURN - drawPenalty));

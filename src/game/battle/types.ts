@@ -3,6 +3,24 @@
  * Handlers, effects, and UI import from here (not from combat facade).
  */
 
+import type { CastingGateId } from '../casting/types';
+
+/** Per-character combat switches. Omitted rules keep the 共鳴武者 defaults. */
+export interface CombatRules {
+  jinOnFullBlock: boolean;
+  beadsEnabled: boolean;
+}
+
+export const ECHO_COMBAT_RULES: CombatRules = {
+  jinOnFullBlock: true,
+  beadsEnabled: false,
+};
+
+export function combatRulesForGate(gateId: CastingGateId): CombatRules {
+  if (gateId === 'math') return { jinOnFullBlock: false, beadsEnabled: true };
+  return { jinOnFullBlock: true, beadsEnabled: false };
+}
+
 export interface CombatCard {
   uid: string;
   sourceUid: string;
@@ -167,6 +185,26 @@ export interface CombatState {
   phase: BattlePhase;
   turn: number;
   parentHintUsed: boolean;
+  rules: CombatRules;
+  beads: number;
+  tens: number;
+  castsThisTurn: number;
+  makeTenThisTurn: number;
+  makeTenCount: number;
+  mathRetryUsed: boolean;
+  mathMissStreak: number;
+  /** How many 湊十 the latest addBeads call fired. */
+  beadsMadeLastAdd: number;
+  makeTenDirectDamage: number;
+  tenBellEnergy: number;
+  tenBellReady: boolean;
+  rulerCharmBlock: number;
+  rulerCharmCast: number;
+  rulerCharmUsedThisTurn: boolean;
+  fizzleBeads: number;
+  eraserReady: boolean;
+  /** Extra damage for 比大小 when the shown intent does not beat Block. */
+  compareExtraDamage: number;
   status: 'playing' | 'won' | 'lost';
   log: string[];
   pending: CombatCard | null;

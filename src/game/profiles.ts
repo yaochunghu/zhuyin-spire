@@ -12,6 +12,14 @@ import type {
   LessonProgress,
   ToneClass,
 } from './casting/types';
+import {
+  DEFAULT_MATH_PREFS,
+  nextAdaptiveDrop,
+  parseMathCastingPreferences,
+  parseMathInsights,
+  type MathCastingPreferences,
+  type MathInsights,
+} from './casting/math/prefs';
 
 const STORE_KEY = 'zhuyin-spire-learner-profiles-v1';
 const LEGACY_PHRASE_KEY = 'zhuyin-spire-phrase-settings-v1';
@@ -45,6 +53,9 @@ export interface LearnerProfileV1 {
   characterProgress: Partial<Record<CharacterId, CharacterProgress>>;
   casting: CastingPreferences;
   castingHistory: CastingHistory;
+  /** Absent on profiles saved before math casting. Readers use the defaults. */
+  mathCasting?: MathCastingPreferences;
+  mathInsights?: MathInsights;
 }
 
 export interface CharacterProgress {
@@ -336,7 +347,23 @@ function sanitizeProfile(value: unknown, index: number): LearnerProfileV1 | null
     characterProgress: sanitizeCharacterProgress(data.characterProgress, !hasProgressField),
     casting: parseCastingPreferences(data.casting),
     castingHistory: sanitizeHistory(data.castingHistory),
+    ...mathFields(data),
   };
+}
+
+function mathFields(
+  data: Partial<LearnerProfileV1>,
+): Pick<LearnerProfileV1, 'mathCasting' | 'mathInsights'> {
+  const fields: Pick<LearnerProfileV1, 'mathCasting' | 'mathInsights'> = {};
+  if (Object.prototype.hasOwnProperty.call(data, 'mathCasting')) {
+    const parsed = parseMathCastingPreferences(data.mathCasting);
+    if (parsed) fields.mathCasting = parsed;
+  }
+  if (Object.prototype.hasOwnProperty.call(data, 'mathInsights')) {
+    const parsed = parseMathInsights(data.mathInsights);
+    if (parsed) fields.mathInsights = parsed;
+  }
+  return fields;
 }
 
 function readStore(): LearnerProfileStoreV1 {
@@ -470,6 +497,43 @@ export function deleteProfile(profileId: string): boolean {
 
 export function getCastingPreferences(): CastingPreferences {
   return getActiveProfile().casting;
+}
+
+export function getMathCastingPreferences(): MathCastingPreferences {
+  return getActiveProfile().mathCasting ?? { ...DEFAULT_MATH_PREFS };
+}
+
+export function saveMathCastingPreferences(
+  preferences: MathCastingPreferences,
+): MathCastingPreferences {
+  const clean = parseMathCastingPreferences(preferences) ?? { ...DEFAULT_MATH_PREFS };
+  updateActiveProfile((profile) => ({ ...profile, mathCasting: clean }));
+  return clean;
+}
+
+export function getMathAdaptiveDrop(family: string): number {
+  return getActiveProfile().mathInsights?.adaptiveDrop[family] ?? 0;
+}
+
+export function setMathAdaptiveDrop(family: string, drop: number): void {
+  const parsed = parseMathInsights({ adaptiveDrop: { [family]: drop } });
+  const nextDrop = parsed?.adaptiveDrop[family];
+  if (nextDrop === undefined) return;
+  updateActiveProfile((profile) => ({
+    ...profile,
+    mathInsights: {
+      adaptiveDrop: {
+        ...(profile.mathInsights?.adaptiveDrop ?? {}),
+        [family]: nextDrop,
+      },
+    },
+  }));
+}
+
+export function applyMathAdaptiveDrop(family: string, recent: readonly boolean[]): void {
+  const current = getMathAdaptiveDrop(family);
+  const next = nextAdaptiveDrop(current, recent);
+  if (next !== current) setMathAdaptiveDrop(family, next);
 }
 
 export function saveCastingPreferences(preferences: CastingPreferences): CastingPreferences {

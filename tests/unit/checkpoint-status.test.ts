@@ -38,12 +38,12 @@ describe('stable checkpoint compatibility', () => {
     expect(getSaveStatus()).toBe('saved');
   });
 
-  it('rejects an unknown character id and resumes a legacy id as 共鳴武者', () => {
+  it('loads a playable character id and resumes a legacy id as 共鳴武者', () => {
     const state = createNewRun();
     expect(pickCharacter(state, 'echoMage')).toBe(true);
     const saved = snapshotRun(state);
     expect(saved).not.toBeNull();
-    expect(parseSnapshot({ ...saved!, characterId: 'abacusFist' })).toBeNull();
+    expect(parseSnapshot({ ...saved!, characterId: 'abacusFist' })?.characterId).toBe('abacusFist');
     expect(parseSnapshot({ ...saved!, characterId: 'not-a-character' })).toBeNull();
 
     const legacy = parseSnapshot({ ...saved!, characterId: undefined });

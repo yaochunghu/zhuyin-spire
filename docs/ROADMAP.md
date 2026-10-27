@@ -43,8 +43,8 @@ Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
   become fights use the same easy and hard pools
 - `castSeed` and `castCounter` on the run. Saves stay version 4. `eventTrack`,
   `castSeed`, and `castCounter` are optional
-- Engine seams for 珠算武者. The character, deck, and math provider are not
-  registered. 共鳴武者 is still the only playable character
+- 珠算武者 is playable: 27-card pool, math casting with three choices, and
+  its own relic pool. 共鳴武者 stays the 注音 character. `english` is reserved
 - Phone shop offers keep the card, price, and remove-card button on screen
 
 ---
@@ -54,8 +54,8 @@ Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
 Detail: [NEXT_PHASE.md](./NEXT_PHASE.md).
 
 1. **Claude UI polish pass** — in progress separately. Do not start it here
-2. **珠算武者 playable build** — first-grade math casting. Engine seams are in.
-   The character, deck, and math provider are not
+2. **珠算武者 follow-ups** — number pad, math tutorial, and the character-select
+   art pass. The playable deck and three-choice cast are in this tree
 3. **#52's nine open questions** in
    [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md#questions-for-yao)
 4. **The v0.4.2 release** — this is the release in progress. `package.json`

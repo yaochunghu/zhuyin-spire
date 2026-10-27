@@ -8,10 +8,13 @@ export type {
   BattlePhase,
   CombatCard,
   CombatFx,
+  CombatRules,
   CombatState,
   EnemyUnit,
   PlayerImpact,
 } from './battle';
+
+export { combatRulesForGate } from './battle/types';
 
 export {
   beginPlay,
@@ -21,6 +24,7 @@ export {
   healedAmount,
   cardNeedsEnemyTarget,
   cardTargetType,
+  addBeads,
   dealBlockedDamage,
   dealTrueDamage,
   effectiveCost,

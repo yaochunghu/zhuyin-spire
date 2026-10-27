@@ -83,9 +83,9 @@ beforeEach(() => {
 
 describe('casting task registry', () => {
   it('keeps 注音 as the only task registered for the game', () => {
-    expect(listRegisteredCastingGates()).toEqual(['zhuyin']);
+    expect(listRegisteredCastingGates()).toEqual(['zhuyin', 'math']);
     expect(getCastingGateProvider('zhuyin')).toBe(zhuyinProvider);
-    expect(() => getCastingGateProvider('math')).toThrow(/not implemented yet/);
+    expect(getCastingGateProvider('math').id).toBe('math');
     expect(() => getCastingGateProvider('english')).toThrow(/not implemented yet/);
   });
 
@@ -93,7 +93,7 @@ describe('casting task registry', () => {
     const registry = createCastingGateRegistry([zhuyinProvider, stubMathCastingTask]);
     expect(registry.ids()).toEqual(['zhuyin', 'math']);
     expect(registry.get('math')).toBe(stubMathCastingTask);
-    expect(listRegisteredCastingGates()).toEqual(['zhuyin']);
+    expect(listRegisteredCastingGates()).toEqual(['zhuyin', 'math']);
     expect(() => createCastingGateRegistry([zhuyinProvider, zhuyinProvider])).toThrow(/already registered/);
   });
 
@@ -106,7 +106,7 @@ describe('casting task registry', () => {
     };
     const registry = createCastingGateRegistry([listening]);
     expect(pickCastMode('early', () => 0, 'add@1', 'math', registry)).toBe('listen');
-    expect(() => pickCastMode('early', () => 0, 'add@1', 'math')).toThrow(/not implemented yet/);
+    expect(pickCastMode('early', () => 0, 'add@1', 'math')).toBe('recognize');
 
     for (const family of ['initial:ㄅ', 'initial:ㄆ', 'vowel:ㄚ']) {
       expect(pickCastMode('mid', seededRandom(9), family)).toBe(
@@ -269,7 +269,7 @@ describe('zhuyin behavior through the new seams', () => {
 
   it('keeps zhuyin coverage on every shipped card and skips a math binding', () => {
     expect(getZhuyinCardCoverage().map((item) => item.cardId).sort()).toEqual(
-      Object.keys(CARDS).sort(),
+      Object.values(CARDS).filter((card) => isZhuyinGatedCard(card)).map((card) => card.id).sort(),
     );
     expect(isZhuyinGatedCard(getCard('bo'))).toBe(true);
     expect(isZhuyinGatedCard(mathCard('pad'))).toBe(false);
@@ -302,7 +302,7 @@ describe('per-character selection and score', () => {
     expect(selectPlayableFromCatalog(catalog, 'stubHero')).toMatchObject({ castingGateId: 'math' });
     expect(selectPlayableFromCatalog(catalog, 'future')).toBeNull();
     expect(selectPlayableFromCatalog(catalog, 'missing')).toBeNull();
-    expect(PLAYABLE_CHARACTER_IDS).toEqual(['echoMage']);
+    expect(PLAYABLE_CHARACTER_IDS).toEqual(['echoMage', 'abacusFist']);
     expect(selectPlayableFromCatalog(Object.values(CHARACTERS), 'echoMage')?.castingGateId).toBe('zhuyin');
 
     const state = createNewRun();

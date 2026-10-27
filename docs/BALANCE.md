@@ -41,7 +41,7 @@ this shorter, cast-gated game are in
 | `GOLD_DANGER_BONUS` | **8** | Hard path bonus |
 | `GOLD_TREASURE_BASE` | **32** | + treasure jitter |
 | `GOLD_TREASURE_JITTER` | **8** | |
-| `RELIC_POOL_EXHAUST_GOLD` | **20** | Chest, elite, or boss drop when all five pool relics are owned |
+| `RELIC_POOL_EXHAUST_GOLD` | **20** | Chest, elite, or boss drop when that character's pool is already owned |
 | `SHOP_CARD_PRICES` | **22, 34, 46** | Three shop slots |
 | `SHOP_REMOVE_PRICE` | **38** | Once per shop visit |
 | `POTION_BELT_SLOTS` | **3** | Fixed belt. Not expandable |
@@ -50,6 +50,22 @@ this shorter, cast-gated game are in
 | `POTION_DROP_START` | **40** | Percent. Resets when the next act starts |
 | `POTION_DROP_STEP` | **10** | Down after a drop, up after a miss |
 | `POTION_DROP_MIN` / `MAX` | **10 / 80** | Clamp |
+| `BEAD_CAP` / `TENS_CAP` / `MAKE_TEN_SIZE` | **9 / 9 / 10** | 算珠 wraps every 10. 十串 stops at 9 and the 湊十 still fires |
+| `BEAD_FILL_CAP` | **5** | 湊十訣 adds at most this many, and never past the next ten |
+| `WOOD_BEADS_DIRECT_DAMAGE` | **2** | 木珠串 direct damage per 湊十 |
+| `BEAD_POUCH_START` | **4** | 算珠袋 beads at combat start |
+| `RULER_CHARM_CAST` / `BLOCK` | **3 / 3** | 小尺子: Block when this many casts have succeeded this turn |
+| `TEN_BELL_ENERGY` | **1** | 十響鈴 energy on the first 湊十 |
+| `ERASER_BEADS` | **2** | 橡皮擦 beads on the first final fizzle |
+| `BEAD_ARRAY_BLOCK` / `_PLUS` | **4 / 6** | 珠串陣 |
+| `BEAD_BURST_DAMAGE` / `_PLUS` | **2 / 3** | 珠落玉盤 direct damage |
+| `TURN_START_BEADS` | **2** | 撥算如飛 |
+| `MATH_CHOICE_COUNT` | **3** | Answers on every live math prompt |
+| `MATH_TIER_FLOOR_DEFAULT` / `CEILING` | **1 / 4** | Parent band. Tier 5 is the grade-2 opt-in |
+| `MATH_ADAPTIVE_DROP_CAP` | **4** | Adaptivity only lowers |
+| `MATH_MISS_WINDOW` / `TRIGGER` | **5 / 2** | Newest miss plus this many misses drops one step |
+| `MATH_RECOVER_WINDOW` / `HITS` | **8 / 6** | Newest hit plus this many hits restores one step |
+| `MATH_WARMUP_STREAK` | **3** | Misses in a row this combat force the next prompt to tier 1 |
 
 Helper: `restHealAmount(heroMaxHp)`.
 
@@ -63,7 +79,7 @@ Helper: `restHealAmount(heroMaxHp)`.
 | Enemy HP / intent damage | `data/enemies.ts` |
 | Multi-enemy recipes | `data/encounters.ts` |
 | Map density / room kinds | `data/map.ts` |
-| Relic strength | `data/relics.ts` — starter, five pool relics, four legacy-only relics, four named event relics |
+| Relic strength | `data/relics.ts` — per-character pools. 共鳴武者: starter plus five drops. 珠算武者: 木珠串 plus four drops. Four legacy relics and four named event relics stay shared |
 | Potion effects | `data/potions.ts` — six bottles. Block-absorbing hits are not 直傷 |
 | Events | `data/events.ts` — 30 events for Acts I, II, and III |
 | Fight roster | `data/enemies.ts`, `data/encounters.ts` — live patterns in [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md) |

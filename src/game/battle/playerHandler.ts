@@ -3,7 +3,9 @@
  */
 
 import { resolveCard, type CardDef } from '../../data/cards';
+import { intentTotalDamage } from '../../data/enemies';
 import {
+  addBeads,
   cardNeedsEnemyTarget,
   cardTargetType,
   executeEffects,
@@ -12,7 +14,7 @@ import {
 } from './effects';
 import { pushFx } from './fx';
 import { drawCards } from './piles';
-import { noteSuccessfulCast, syncPrimaryEnemy } from './enemyHandler';
+import { intentForUnit, noteSuccessfulCast, syncPrimaryEnemy } from './enemyHandler';
 import type { CombatState } from './types';
 
 export function canPlay(state: CombatState, uid: string): boolean {
@@ -90,6 +92,7 @@ export function effectiveCost(
 }
 
 export function resolveCastSuccess(state: CombatState, def: CardDef): void {
+  state.castsThisTurn += 1;
   const card = state.pending;
   const isTempo =
     (def.type === 'attack' && state.lastPlayedType === 'skill') ||
@@ -112,8 +115,19 @@ export function resolveCastSuccess(state: CombatState, def: CardDef): void {
 
   const targets = [...state.pendingTargetIds];
   state.pendingTargetIds = [];
+  primeCompare(state, def, targets);
 
   executeEffects(state, def, targets, (fx) => pushFx(state, fx), drawCards, card, isTempo);
+  if (
+    state.rulerCharmBlock > 0
+    && !state.rulerCharmUsedThisTurn
+    && state.castsThisTurn >= state.rulerCharmCast
+  ) {
+    state.rulerCharmUsedThisTurn = true;
+    state.block += state.rulerCharmBlock;
+    pushFx(state, { type: 'playerBlock', amount: state.rulerCharmBlock });
+    state.log.push(`小尺子：護盾 +${state.rulerCharmBlock}`);
+  }
   state.metronomePlayed = (state.metronomePlayed ?? 0) + 1;
   if (state.relicMetronome && !state.metronomeUsed && state.metronomePlayed === 3) {
     state.metronomeUsed = true;
@@ -158,7 +172,35 @@ export function resolveCastFizzle(state: CombatState, def: CardDef): void {
     pushFx(state, { type: 'discard', cards: [card], reason: 'fizzle' });
   }
   state.pendingTargetIds = [];
-  state.log.push(`${def.zhuyin} 失敗了…法術消散！`);
+  state.log.push(`${def.name} 失敗了…法術消散！`);
+  if (state.eraserReady && state.fizzleBeads > 0) {
+    state.eraserReady = false;
+    addBeads(state, state.fizzleBeads);
+    state.log.push(`橡皮擦：撥 ${state.fizzleBeads} 珠`);
+    if (livingEnemies(state).length === 0) {
+      state.status = 'won';
+      state.log.push('敵人全部倒下了！');
+    }
+  }
+}
+
+function primeCompare(state: CombatState, def: CardDef, targetIds: string[]): void {
+  if (def.designId !== 'M015') return;
+  const enemy = state.enemies.find((unit) => unit.id === targetIds[0] && unit.alive && unit.hp > 0);
+  if (!enemy) return;
+  const shown = intentTotalDamage(intentForUnit(enemy, state), enemy.weakTurns > 0);
+  if (shown > state.block) {
+    enemy.vulnerableTurns = Math.min(9, enemy.vulnerableTurns + 1);
+    pushFx(state, {
+      type: 'enemyStatus',
+      enemyId: enemy.id,
+      status: 'vulnerable',
+      turns: enemy.vulnerableTurns,
+    });
+    state.log.push('比大小：先附上易傷');
+  } else {
+    state.compareExtraDamage = 3;
+  }
 }
 
 /** Discard remaining hand at end of player turn. */

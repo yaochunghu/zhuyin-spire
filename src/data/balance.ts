@@ -78,5 +78,45 @@ export const SHOP_POTION_PRICE = 18;
 /** Combat drop chance, in percent. Starts at 40 each act, steps by 10, clamps here. */
 export const POTION_DROP_START = 40;
 export const POTION_DROP_STEP = 10;
+
+/** 珠算武者 beads. A 湊十 fires at this size and leaves the remainder. */
+export const BEAD_CAP = 9;
+export const TENS_CAP = 9;
+export const MAKE_TEN_SIZE = 10;
+/** 湊十訣 adds at most this many beads, and never past the next ten. */
+export const BEAD_FILL_CAP = 5;
+/** 木珠串: direct damage on each 湊十. Skips Block and 易傷. */
+export const WOOD_BEADS_DIRECT_DAMAGE = 2;
+/** 算珠袋: beads added once at combat start, as its own add. */
+export const BEAD_POUCH_START = 4;
+/** 小尺子: block when this many casts have succeeded this turn. */
+export const RULER_CHARM_CAST = 3;
+export const RULER_CHARM_BLOCK = 3;
+/** 十響鈴: energy on the first 湊十 of the combat. */
+export const TEN_BELL_ENERGY = 1;
+/** 橡皮擦: beads on the first final fizzle of the combat. */
+export const ERASER_BEADS = 2;
+/** 珠串陣 block on each 湊十, then the upgraded amount. */
+export const BEAD_ARRAY_BLOCK = 4;
+export const BEAD_ARRAY_BLOCK_PLUS = 6;
+/** 珠落玉盤 direct damage to every living enemy, then the upgraded amount. */
+export const BEAD_BURST_DAMAGE = 2;
+export const BEAD_BURST_DAMAGE_PLUS = 3;
+/** 撥算如飛 beads at the start of each player turn after the power is in play. */
+export const TURN_START_BEADS = 2;
+
+/** Every live math prompt offers this many answers. */
+export const MATH_CHOICE_COUNT = 3;
+export const MATH_TIER_FLOOR_DEFAULT = 1;
+export const MATH_TIER_CEILING_DEFAULT = 4;
+export const MATH_ADAPTIVE_DROP_CAP = 4;
+/** Struggle: this many misses inside the recent window, including a miss just now. */
+export const MATH_MISS_WINDOW = 5;
+export const MATH_MISS_TRIGGER = 2;
+/** Recovery: this many hits inside the recent window, including a hit just now. */
+export const MATH_RECOVER_WINDOW = 8;
+export const MATH_RECOVER_HITS = 6;
+/** Wrong answers in a row this combat force the next prompt down to tier 1. */
+export const MATH_WARMUP_STREAK = 3;
 export const POTION_DROP_MIN = 10;
 export const POTION_DROP_MAX = 80;

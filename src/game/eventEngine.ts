@@ -20,7 +20,7 @@ import {
 } from '../data/events';
 import type { MapNode, RunMap } from '../data/map';
 import { getPlayableCharacter, type PlayableCharacterId } from '../data/characters';
-import { getRelic, RELIC_POOL_IDS, rollRelicDrop } from '../data/relics';
+import { getRelic, relicPoolIdsFor, rollRelicDrop } from '../data/relics';
 import { nextCardUid, type DeckCard } from './cardInstances';
 import { getActiveProfile, filterObtainableCardsForProfile } from './profiles';
 import { grantPotions, potionBlockReason } from './potions';
@@ -233,7 +233,7 @@ function conditionReason(state: EventRun, condition: EventCondition): string | n
     case 'notOwned':
       return ownedRelicIds(state).includes(condition.relicId) ? '已經有了' : null;
     case 'relicAvailable':
-      return RELIC_POOL_IDS.some((id) => !ownedRelicIds(state).includes(id))
+      return relicPoolIdsFor(state.characterId).some((id) => !ownedRelicIds(state).includes(id))
         ? null
         : '沒有新的遺物';
     case 'potionSlots':
@@ -295,7 +295,7 @@ function effectReason(state: EventRun, effect: EventEffect): string | null {
     case 'gainRelic':
       return ownedRelicIds(state).includes(effect.relicId) ? '已經有了' : null;
     case 'gainRandomRelic':
-      return RELIC_POOL_IDS.some((id) => !ownedRelicIds(state).includes(id))
+      return relicPoolIdsFor(state.characterId).some((id) => !ownedRelicIds(state).includes(id))
         ? null
         : '沒有新的遺物';
     case 'gainCard': {
@@ -495,7 +495,7 @@ function prepareRolls(state: EventRun, event: EventDef): EventRolls {
   const relics: EventRolls['relics'] = {};
   // The bible still names a rarity. The live pool has no tiers, so one roll
   // is stored for every rarity word and the event cursor only advances once.
-  const rolled = rollRelicDrop(owned, (max) => rollIndex(state.eventTrack, max));
+  const rolled = rollRelicDrop(owned, (max) => rollIndex(state.eventTrack, max), state.characterId);
   if (rolled) {
     relics.common = rolled;
     relics.uncommon = rolled;
@@ -892,7 +892,7 @@ function applyEffect(state: EventRun, effect: EventEffect): void {
       const owned = ownedRelicIds(state);
       const id = rolled && !owned.includes(rolled)
         ? rolled
-        : rollRelicDrop(owned, () => 0);
+        : rollRelicDrop(owned, () => 0, state.characterId);
       if (id && acquireRelic(state, id)) lines.push(`得到 ${getRelic(id).name}`);
       break;
     }

@@ -9,6 +9,7 @@ import type { CastMode } from './game/castCheck';
 import {
   createNewRun,
   ensureEventCast,
+  getActiveCharacter,
   getActiveNode,
   getAvailableMapNodes,
   type RunState,
@@ -154,6 +155,7 @@ function appendCoach(parent: HTMLElement, castMode?: CastMode): void {
     eventBody: event?.rationale,
     combatTip: screen === 'combat' ? coachBodyForEnemies(livingTeachers) : null,
     rewardSource: runState.rewardSource,
+    castingGateId: runState.cast?.prompt.gateId ?? getActiveCharacter(runState)?.castingGateId,
   });
   if (!tip.body) return;
 

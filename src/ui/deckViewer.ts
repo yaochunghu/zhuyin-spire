@@ -10,6 +10,8 @@ import type { DeckCard } from '../game/cardInstances';
 import { sfx } from '../game/audio';
 import { cardFaceHtml, jobLabel, typeLabel } from './cards';
 import { lockPageScroll, trapModalFocus, createModalShell, showModalShell, dismissModalShell } from './modal';
+import { FIRST_CHARACTER_ID, getPlayableCharacter } from '../data/characters';
+import { getActiveCharacter } from '../game/state';
 import { run } from './runtime';
 
 let bodyRoot: HTMLDialogElement | null = null;
@@ -71,6 +73,10 @@ function effectText(effect: EffectDef): string {
       return `獲得 ${effect.amount} 練功`;
     case 'jin':
       return `獲得 ${effect.amount} 勁`;
+    case 'beads':
+      return `撥 ${effect.amount} 珠`;
+    case 'tens':
+      return `獲得 ${effect.amount} 十串`;
   }
 }
 
@@ -81,6 +87,14 @@ function option(value: string, label: string): HTMLOptionElement {
   return item;
 }
 
+function catalogCards(): CardDef[] {
+  const active = getActiveCharacter(run());
+  const ids = new Set(
+    active?.cardPoolIds ?? getPlayableCharacter(FIRST_CHARACTER_ID).cardPoolIds,
+  );
+  return Object.values(CARDS).filter((def) => ids.has(def.id));
+}
+
 function entriesFor(state: ViewerState): ViewerEntry[] {
   const entries: ViewerEntry[] = state.mode === 'deck'
     ? run().deck.map((card, deckIndex) => ({
@@ -89,7 +103,7 @@ function entriesFor(state: ViewerState): ViewerEntry[] {
         deckIndex,
         def: resolveCard(card.defId, card.upgradeLevel),
       }))
-    : Object.values(CARDS).map((def) => ({ key: `catalog:${def.id}`, def }));
+    : catalogCards().map((def) => ({ key: `catalog:${def.id}`, def }));
 
   const query = state.query.trim().toLocaleLowerCase('zh-Hant');
   const filtered = entries.filter(({ def }) => {
@@ -249,7 +263,7 @@ export function renderDeckViewer(onClose: () => void): HTMLElement {
     const head = document.createElement('div');
     head.className = 'deck-viewer-head';
     head.innerHTML = `
-      <div class="kid-prompt">${state.mode === 'deck' ? `🃏 我的牌組 ×${run().deck.length}` : `🧰 設計檢視 ×${Object.keys(CARDS).length}`}</div>
+      <div class="kid-prompt">${state.mode === 'deck' ? `🃏 我的牌組 ×${run().deck.length}` : `🧰 設計檢視 ×${catalogCards().length}`}</div>
       <p class="adult-text">${state.mode === 'deck' ? '每一張實體牌都分開顯示；重複牌不合併。' : '搜尋、篩選並檢查定義、效果順序、升級、題庫與平衡備註。'}</p>
     `;
     overlay.appendChild(head);

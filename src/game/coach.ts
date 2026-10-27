@@ -4,6 +4,7 @@
  */
 
 import type { CastMode } from './castCheck';
+import type { CastingGateId } from './casting/types';
 import type { MapNode } from '../data/map';
 import type { Screen } from './state';
 import { getActiveProfile, updateActiveProfile } from './profiles';
@@ -34,6 +35,7 @@ export function coachForScreen(
     /** Mechanic line for the enemy teaching this fight. */
     combatTip?: string | null;
     rewardSource?: 'fight' | 'treasure' | null;
+    castingGateId?: CastingGateId;
   },
 ): { title: string; body: string } {
   switch (screen) {
@@ -50,7 +52,7 @@ export function coachForScreen(
     case 'relicPick':
       return {
         title: '選角色',
-        body: '共鳴武者有 75 種牌，會依分數慢慢解鎖。先用易傷找空隙，完整防守累積勁，再練習攻守換拍；初心音叉每回合幫第一次攻擊 +1。',
+        body: '共鳴武者有 75 種牌，會依分數慢慢解鎖。先用易傷找空隙，完整防守累積勁，再練習攻守換拍；初心音叉每回合幫第一次攻擊 +1。珠算武者靠答數學題出招。每張牌會撥算珠，湊滿十顆變成一串十串，可以拿去放大招。木珠串每次湊十會多打 2 點。',
       };
     case 'map':
       return {
@@ -90,11 +92,19 @@ export function coachForScreen(
     case 'combat':
       return {
         title: '戰鬥',
-        body: opts?.combatTip
-          ? `${opts.combatTip} 攻擊拖到怪，技能拖到角色，✋ 結束回合。藥水在上方腰帶，不用能量、不用注音。要選怪物的藥水，先點使用再點怪物。教學戰鬥先把藥水鎖住。`
-          : '先看意圖。完整擋住一次敵方攻擊會得到 1 勁；易傷讓攻擊變成 1.5 倍；技能與攻擊交替成功會轉拍。攻擊拖到怪，技能拖到角色，✋ 結束回合。藥水在上方腰帶，不用能量、不用注音。要選怪物的藥水，先點使用再點怪物。教學戰鬥先把藥水鎖住。',
+        body: opts?.castingGateId === 'math'
+          ? `${opts?.combatTip ? `${opts.combatTip} ` : '先看意圖。'}打出牌要答對數學。算珠湊滿十變成十串。攻擊拖到怪，技能拖到角色，✋ 結束回合。藥水不用能量，也不用答題。`
+          : opts?.combatTip
+            ? `${opts.combatTip} 攻擊拖到怪，技能拖到角色，✋ 結束回合。藥水在上方腰帶，不用能量、不用注音。要選怪物的藥水，先點使用再點怪物。教學戰鬥先把藥水鎖住。`
+            : '先看意圖。完整擋住一次敵方攻擊會得到 1 勁；易傷讓攻擊變成 1.5 倍；技能與攻擊交替成功會轉拍。攻擊拖到怪，技能拖到角色，✋ 結束回合。藥水在上方腰帶，不用能量、不用注音。要選怪物的藥水，先點使用再點怪物。教學戰鬥先把藥水鎖住。',
       };
     case 'castCheck': {
+      if (opts?.castingGateId === 'math') {
+        return {
+          title: '選一個答案',
+          body: '三個大按鈕裡選一個。答錯這張牌會消散，能量不會退回。每場戰鬥可以再算一次。💡 家長可以亮一次答案。',
+        };
+      }
       if (opts?.castMode === 'listen' || opts?.castMode === 'listenHard') {
         return {
           title: '聽一聽 → 拼注音',

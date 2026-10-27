@@ -202,12 +202,19 @@ waves at scores 300, 1000, and 2000. Profiles saved before character
 progression migrate to score 300 and therefore begin with 33 cards unlocked.
 
 The live first-character specification and future upgrade constraints are in
-[DECK_DESIGN.md](./DECK_DESIGN.md). The live relic pool is the five 共鳴 drops
-in [NEXT_PHASE.md](./NEXT_PHASE.md) plus the starter 初心音叉. Random event
-relic rewards use that pool. Named event relics are granted by id and are not
-chest drops. The live potion belt is the six bottles on that same page, and
-event potion rewards fill its empty slots. Do not restore the archived
-Echo-coupled 40-relic or 20-potion proposal.
+[DECK_DESIGN.md](./DECK_DESIGN.md). 珠算武者 is the second playable character.
+Its 27 cards live in `src/data/abacusCards.ts` and join `CARDS`. The starter
+is 撥珠拳 ×5, 算珠盾 ×4, 十全掌 ×1, and 木珠串. Act I rewards are the nine
+score-0 designs. Later acts use the same 300 / 1,000 / 2,000 score waves.
+The only grade-2 card is 倍數連拳. The child never sees a grade label.
+
+Each character rolls its own relic pool. 共鳴武者 keeps the five drops in
+[NEXT_PHASE.md](./NEXT_PHASE.md) plus 初心音叉. 珠算武者 rolls 算珠袋, 小尺子,
+十響鈴, and 橡皮擦, and starts with 木珠串. Random event relic rewards use the
+current character's pool. Named event relics are granted by id, tagged for
+both characters, and are not chest drops. Legacy relics still load. The potion
+belt stays the shared six bottles, and event potion rewards fill its empty
+slots. Do not restore the archived Echo-coupled 40-relic or 20-potion proposal.
 
 ---
 

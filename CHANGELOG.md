@@ -8,6 +8,13 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+### 珠算武者
+
+- 珠算武者 is playable. The starter deck is 撥珠拳 ×5, 算珠盾 ×4, and 十全掌 ×1, with starter relic 木珠串. The card pool is 27 designs. Score gates stay 0 / 300 / 1,000 / 2,000
+- Math prompts are three large choices at every tier. Grade 1 is the default. 二年級 is a parent opt-in and only lifts 倍數連拳 to tier 5. A wrong answer fizzles the card. One scaffolded 「再算一次」 is allowed per combat. Adaptivity only lowers the tier
+- 算珠, 湊十, and 十串 are combat-only. There is no 勁. Direct damage from 木珠串 skips Block and 易傷. The 注音 tutorial stays on 共鳴武者
+- Chest, elite, boss, and random event relics roll the current character's pool. 共鳴武者 keeps the existing five. 珠算武者 rolls 算珠袋, 小尺子, 十響鈴, and 橡皮擦. Owning that pool still pays 20 gold. Legacy relics still load. Potions stay the shared six. Saves stay version 4
+
 ---
 
 ## [0.4.2] — 2026-10-27
