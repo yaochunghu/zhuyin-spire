@@ -1,5 +1,6 @@
 import { getCard, resolveCard } from '../data/cards';
 import { CHARACTER_IDS, getCharacter } from '../data/characters';
+import { getPotion } from '../data/potions';
 import { getRelic } from '../data/relics';
 import { sfx, startMusic, warmAudio } from '../game/audio';
 import { getActiveProfile, getCharacterCardProgress } from '../game/profiles';
@@ -15,6 +16,7 @@ import {
   canSmith,
   beginShopRemove,
   buyShopCard,
+  buyShopPotion,
   cancelShopRemove,
   confirmShopRemove,
   enterPractice,
@@ -23,9 +25,12 @@ import {
   hasEarBadge,
   hasPracticeBadge,
   hasSavedRun,
+  declinePendingPotion,
   leaveShop,
   pickCharacter,
   pickReward,
+  potionOfferBlocksReward,
+  replacePendingPotion,
   removeCardFromDeck,
   skipRemoveCard,
   smithCard,
@@ -37,6 +42,7 @@ import { openOptions } from './options';
 import { createConfettiLayer } from './outcome';
 import { appendCoach, render, run, session, showFlash } from './runtime';
 import { artImageHtml } from './assets';
+import { renderPotionBelt } from './potionBelt';
 import { relicBadgeButton } from './relicBadges';
 
 export function renderTitle(): HTMLElement {
@@ -267,6 +273,7 @@ export function renderRest(): HTMLElement {
     <div class="kid-status"><span class="kid-stat">🥋❤️${run().heroHp}/${run().heroMaxHp}</span></div>
   `;
   appendCoach(el);
+  el.appendChild(renderPotionBelt());
 
   const row = document.createElement('div');
   row.className = 'rest-choices';
@@ -482,6 +489,38 @@ export function renderShop(): HTMLElement {
     </div>
   `;
   appendCoach(el);
+  el.appendChild(renderPotionBelt());
+
+  const potionRow = document.createElement('div');
+  potionRow.className = 'shop-potion-row';
+  const beltFull = run().potions.every((id) => id !== null);
+  run().shopPotionOffers.forEach((offer, index) => {
+    const potion = getPotion(offer.potionId);
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'btn-secondary shop-potion-button';
+    button.disabled = offer.sold || beltFull || run().gold < offer.price;
+    button.textContent = offer.sold ? `${potion.emoji} ✅` : `${potion.emoji} ${potion.name} 🪙${offer.price}`;
+    button.setAttribute(
+      'aria-label',
+      offer.sold
+        ? `${potion.name} 已買`
+        : beltFull
+          ? `腰帶滿了，先丟掉一瓶才能買 ${potion.name}`
+          : `買 ${potion.name}，${offer.price} 金幣`,
+    );
+    button.addEventListener('click', () => {
+      sfx.click();
+      const ok = buyShopPotion(run(), index);
+      const flash = run().flash;
+      render();
+      if (ok) sfx.shopBuy();
+      else if (flash === '🪙×' || flash === '🧪滿') sfx.shopDeny();
+      if (flash) showFlash(flash);
+    });
+    potionRow.appendChild(button);
+  });
+  el.appendChild(potionRow);
 
   const row = document.createElement('div');
   row.className = 'shop-row';
@@ -588,6 +627,63 @@ export function renderReward(): HTMLElement {
     empty.textContent = '遺物已經集齊，這次改成金幣。';
     el.appendChild(empty);
   }
+  const pendingPotionId = run().pendingPotionId;
+  if (pendingPotionId) {
+    const potion = getPotion(pendingPotionId);
+    const found = document.createElement('div');
+    found.className = 'potion-reward';
+    const token = document.createElement('span');
+    token.className = 'relic-badge potion-slot';
+    token.setAttribute('aria-hidden', 'true');
+    token.textContent = potion.emoji;
+    const copy = document.createElement('div');
+    const name = document.createElement('strong');
+    name.className = 'potion-reward-name';
+    name.textContent = potion.name;
+    const blurb = document.createElement('p');
+    blurb.className = 'adult-text';
+    blurb.textContent = run().pendingPotionUnplaced
+      ? '腰帶滿了。換掉一瓶，或不要這瓶。'
+      : potion.blurb;
+    copy.append(name, blurb);
+    found.append(token, copy);
+    el.appendChild(found);
+  }
+  el.appendChild(renderPotionBelt());
+  const rewardBlocked = potionOfferBlocksReward(run());
+  if (rewardBlocked && run().pendingPotionId) {
+    const swaps = document.createElement('div');
+    swaps.className = 'potion-replace-row';
+    run().potions.forEach((potionId, index) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'btn-secondary';
+      const occupied = potionId ? getPotion(potionId).name : '空格';
+      button.textContent = `換成第 ${index + 1} 瓶`;
+      button.setAttribute('aria-label', `用這瓶換掉${occupied}`);
+      button.addEventListener('click', () => {
+        sfx.click();
+        replacePendingPotion(run(), index);
+        const flash = run().flash;
+        render();
+        if (flash) showFlash(flash);
+      });
+      swaps.appendChild(button);
+    });
+    const decline = document.createElement('button');
+    decline.type = 'button';
+    decline.className = 'btn-secondary';
+    decline.textContent = '不拿這瓶';
+    decline.addEventListener('click', () => {
+      sfx.click();
+      declinePendingPotion(run());
+      const flash = run().flash;
+      render();
+      if (flash) showFlash(flash);
+    });
+    swaps.appendChild(decline);
+    el.appendChild(swaps);
+  }
   appendCoach(el);
 
   const row = document.createElement('div');
@@ -596,6 +692,7 @@ export function renderReward(): HTMLElement {
     const def = resolveCard(offer.defId, offer.upgradeLevel);
     const btn = document.createElement('button');
     btn.className = `card ${def.type}`;
+    btn.disabled = rewardBlocked;
     btn.innerHTML = cardFaceHtml(def);
     btn.setAttribute('aria-label', `注音 ${def.zhuyin}`);
     btn.addEventListener('click', () => {
@@ -615,10 +712,13 @@ export function renderReward(): HTMLElement {
   } else {
     skip.innerHTML = `<span class="btn-emoji">⏭️</span><span class="adult-text"> 跳過</span>`;
   }
+  skip.disabled = rewardBlocked;
   skip.addEventListener('click', () => {
     sfx.click();
     pickReward(run(), null);
+    const flash = run().flash;
     render();
+    if (flash === '🧪先選') showFlash(flash);
   });
   el.appendChild(skip);
   return el;

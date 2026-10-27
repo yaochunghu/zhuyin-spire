@@ -11,6 +11,7 @@ import type { MapNode } from '../data/map';
 import { sfx } from '../game/audio';
 import { gameplayMs } from '../game/settings';
 import { openDeckViewer } from './deckViewer';
+import { renderPotionBelt } from './potionBelt';
 import { renderRelicBadges } from './relicBadges';
 import { appendCoach, render, run, session } from './runtime';
 
@@ -79,6 +80,10 @@ export function renderMap(): HTMLElement {
   const relicBadges = renderRelicBadges(getOwnedRelics(run()));
   relicBadges.classList.add('map-relic-badges');
   top.querySelector('.map-status-bar')!.appendChild(relicBadges);
+  const potionRow = document.createElement('div');
+  potionRow.className = 'map-potion-row';
+  potionRow.appendChild(renderPotionBelt());
+  top.appendChild(potionRow);
   stage.appendChild(top);
 
   // —— Organic fitted graph (centered; side margins on stage) ——

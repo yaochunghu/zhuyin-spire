@@ -37,6 +37,8 @@ export const session = {
   autoSubmitTimer: undefined as number | undefined,
   floatTimer: undefined as number | undefined,
   flashTimer: undefined as number | undefined,
+  /** Belt slot waiting for an enemy click. Not saved. */
+  potionAimSlot: null as number | null,
 };
 
 let _app: HTMLElement;
@@ -51,6 +53,7 @@ let _playOutcome: (
   onDone: () => void,
 ) => void;
 let _submitSpell: () => void;
+let _playBattleEnding: () => Promise<void> = async () => {};
 
 export function bindUi(opts: {
   app: HTMLElement;
@@ -65,6 +68,7 @@ export function bindUi(opts: {
     onDone: () => void,
   ) => void;
   submitSpell: () => void;
+  playBattleEnding: () => Promise<void>;
 }): void {
   _app = opts.app;
   _run = opts.run;
@@ -74,6 +78,11 @@ export function bindUi(opts: {
   _clearFloatSoon = opts.clearFloatSoon;
   _playOutcome = opts.playOutcomeOverlay;
   _submitSpell = opts.submitSpell;
+  _playBattleEnding = opts.playBattleEnding;
+}
+
+export function playBattleEnding(): Promise<void> {
+  return _playBattleEnding();
 }
 
 export function app(): HTMLElement {

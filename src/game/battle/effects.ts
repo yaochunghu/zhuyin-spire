@@ -520,9 +520,48 @@ function getResolved(card: CombatCard): CardDef {
   return resolveCard(card.defId, card.upgradeLevel);
 }
 
-function dealDirect(enemy: EnemyUnit, amount: number): void {
-  enemy.hp = Math.max(0, enemy.hp - Math.max(0, amount));
+/**
+ * Damage that is not an Attack and not 直傷.
+ * Block absorbs it. 易傷, 練功, and attack relics do not.
+ */
+export function dealBlockedDamage(
+  enemy: EnemyUnit,
+  amount: number,
+  impacts: PlayerImpact[],
+  hitIndex: number,
+): number {
+  if (!enemy.alive || enemy.hp <= 0) return 0;
+  const hitAmount = Math.max(0, amount);
+  const blockBefore = enemy.block;
+  const blocked = Math.min(blockBefore, hitAmount);
+  enemy.block = Math.max(0, blockBefore - blocked);
+  const hpDamage = Math.max(0, hitAmount - blocked);
+  if (hpDamage > 0) enemy.hp = Math.max(0, enemy.hp - hpDamage);
+  const killed = enemy.hp <= 0;
+  if (killed) enemy.alive = false;
+  impacts.push({
+    enemyId: enemy.id,
+    hitIndex,
+    blockBefore,
+    blocked,
+    blockAfter: enemy.block,
+    hpDamage,
+    killed,
+  });
+  return hpDamage;
+}
+
+/** 直傷: HP only. Enemy Block stays. Use this only when the text says 直傷. */
+export function dealTrueDamage(enemy: EnemyUnit, amount: number): number {
+  if (!enemy.alive || enemy.hp <= 0) return 0;
+  const hpDamage = Math.min(enemy.hp, Math.max(0, amount));
+  enemy.hp -= hpDamage;
   if (enemy.hp === 0) enemy.alive = false;
+  return hpDamage;
+}
+
+function dealDirect(enemy: EnemyUnit, amount: number): void {
+  dealTrueDamage(enemy, amount);
 }
 
 function lastIndexWhere<T>(items: T[], predicate: (item: T) => boolean): number {

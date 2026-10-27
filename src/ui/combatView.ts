@@ -9,6 +9,7 @@ import {
   intentTotalDamage,
   intentTotalLabel,
 } from '../data/enemies';
+import { drinkAimedPotion, renderPotionBelt } from './potionBelt';
 import { renderRelicBadges } from './relicBadges';
 import {
   canPlay,
@@ -363,7 +364,8 @@ function renderEnemySlot(
     (justSlain && session.battleDeathCue ? ' enemy-just-defeated' : '') +
     (opts.damaged && !dead ? ' enemy-hurt' : '') +
     (unit.block > 0 && !dead ? ' has-block' : '') +
-    (urgent ? ' enemy-intent-urgent' : '');
+    (urgent ? ' enemy-intent-urgent' : '') +
+    (!dead && session.potionAimSlot !== null ? ' potion-aim-target' : '');
   slot.dataset.enemyId = unit.id;
   if (!dead) {
     slot.dataset.drop = 'enemy';
@@ -436,6 +438,7 @@ function renderEnemySlot(
     const pick = (): void => {
       if (session.combatFxPlaying || session.outcomeAnimPlaying) return;
       if (run().tutorial) return;
+      if (drinkAimedPotion(unit.id)) return;
       sfx.click();
       selectCombatEnemy(run(), unit.id);
       render();
@@ -514,6 +517,9 @@ export function renderCombat(): HTMLElement {
     </div>
   `;
   hud.querySelector('.combat-hud-relics')!.append(renderRelicBadges(getOwnedRelics(run())));
+  const potionBelt = renderPotionBelt();
+  potionBelt.classList.add('combat-potion-belt');
+  hud.appendChild(potionBelt);
   stage.appendChild(hud);
 
   const battlefield = document.createElement('div');
