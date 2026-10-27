@@ -12,7 +12,9 @@ import { createCombat } from '../game/battle/battleManager';
 import {
   createNewRun,
   debugFinishFight,
+  debugOpenActTreasure,
   debugStartEncounter,
+  getOwnedRelics,
   enterPractice,
   getAvailableMapNodes,
   getCurrentActNodes,
@@ -46,6 +48,7 @@ export function debugInspect(state: RunState): string {
     `act: ${state.actIndex + 1}`,
     `hp: ${state.heroHp}/${state.heroMaxHp}`,
     `gold: ${state.gold}`,
+    `relics: ${state.relicIds.join(', ') || '—'}`,
     `node: ${state.currentNodeId ?? '—'}`,
     `active: ${state.activeNodeId ?? '—'}`,
   ];
@@ -150,6 +153,14 @@ export function debugEnterAvailable(
   state.combat = null;
   state.cast = null;
   state.screen = 'map';
+  if (kind === 'treasure') {
+    const nextTreasure = getAvailableMapNodes(state).find((node) => node.kind === 'treasure');
+    if (nextTreasure) {
+      selectMapNode(state, nextTreasure.id);
+      return;
+    }
+    if (debugOpenActTreasure(state)) return;
+  }
   const avail = getAvailableMapNodes(state);
   const node = kind ? avail.find((n) => n.kind === kind) ?? avail[0] : avail[0];
   if (node) selectMapNode(state, node.id);
@@ -327,6 +338,7 @@ export function debugPrepareVisualReview(
         [...enemyIds],
         state.heroHp,
         state.heroMaxHp,
+        getOwnedRelics(state),
       );
       for (
         let index = state.combat.enemies.length;
@@ -360,6 +372,7 @@ export function debugPrepareVisualReview(
         ['rock', 'bat'],
         state.heroHp,
         state.heroMaxHp,
+        getOwnedRelics(state),
       );
       state.cast = reviewCast;
       state.screen = 'castCheck';
@@ -372,6 +385,7 @@ export function debugPrepareVisualReview(
       state.rewardOptions = reviewOffers;
       state.rewardTier = 'normal';
       state.rewardSource = 'fight';
+      state.pendingRelicId = null;
       state.pendingGold = 18;
       state.gold += state.pendingGold;
       state.screen = 'reward';

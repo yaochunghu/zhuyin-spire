@@ -2,27 +2,22 @@ import { getRelic } from '../data/relics';
 
 /** The smallest surface events need in order to grant a relic once. */
 export interface RelicCarrier {
-  relicId: string | null;
   relicIds: string[];
   gold: number;
 }
 
 export function ownedRelicIds(state: RelicCarrier): string[] {
-  const ids = state.relicIds.length > 0
-    ? [...state.relicIds]
-    : state.relicId
-      ? [state.relicId]
-      : [];
-  if (state.relicId && !ids.includes(state.relicId)) ids.unshift(state.relicId);
-  return ids;
+  return [...state.relicIds];
 }
 
-/** Adds a relic once. Start-of-run gold is applied here and is not repeated on load. */
+/**
+ * Adds a relic to the end of the owned list. The starter stays where it is.
+ * Start-of-run gold is applied here and is not repeated on load.
+ */
 export function acquireRelic(state: RelicCarrier, relicId: string): boolean {
-  if (ownedRelicIds(state).includes(relicId)) return false;
+  if (state.relicIds.includes(relicId)) return false;
   const relic = getRelic(relicId);
-  if (!state.relicIds.includes(relicId)) state.relicIds.push(relicId);
-  if (!state.relicId) state.relicId = relicId;
+  state.relicIds.push(relicId);
   if (relic.startGold) state.gold += relic.startGold;
   return true;
 }

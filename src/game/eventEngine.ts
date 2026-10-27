@@ -21,7 +21,7 @@ import {
 } from '../data/events';
 import type { MapNode } from '../data/map';
 import { getPlayableCharacter, type PlayableCharacterId } from '../data/characters';
-import { getRelic, relicIdsForRarity } from '../data/relics';
+import { getRelic, RELIC_POOL_IDS, rollRelicDrop } from '../data/relics';
 import { nextCardUid, type DeckCard } from './cardInstances';
 import { getActiveProfile, filterObtainableCardsForProfile } from './profiles';
 import { grantPotions, potionBlockReason } from './potions';
@@ -101,7 +101,6 @@ export interface EventRun {
   deck: DeckCard[];
   nextCardUid: number;
   characterId: PlayableCharacterId | null;
-  relicId: string | null;
   relicIds: string[];
   eventTrack: EventTrack;
   flash: string | null;
@@ -232,7 +231,7 @@ function conditionReason(state: EventRun, condition: EventCondition): string | n
     case 'notOwned':
       return ownedRelicIds(state).includes(condition.relicId) ? '已經有了' : null;
     case 'relicAvailable':
-      return relicIdsForRarity(condition.rarity).some((id) => !ownedRelicIds(state).includes(id))
+      return RELIC_POOL_IDS.some((id) => !ownedRelicIds(state).includes(id))
         ? null
         : '沒有新的遺物';
     case 'potionSlots':
@@ -294,7 +293,7 @@ function effectReason(state: EventRun, effect: EventEffect): string | null {
     case 'gainRelic':
       return ownedRelicIds(state).includes(effect.relicId) ? '已經有了' : null;
     case 'gainRandomRelic':
-      return relicIdsForRarity(effect.rarity).some((id) => !ownedRelicIds(state).includes(id))
+      return RELIC_POOL_IDS.some((id) => !ownedRelicIds(state).includes(id))
         ? null
         : '沒有新的遺物';
     case 'gainCard': {
@@ -471,11 +470,15 @@ function rollLibrary(state: EventRun, preferCommon: boolean): string[] {
 }
 
 function prepareRolls(state: EventRun, event: EventDef): EventRolls {
-  const owned = new Set(ownedRelicIds(state));
+  const owned = ownedRelicIds(state);
   const relics: EventRolls['relics'] = {};
-  for (const rarity of ['common', 'uncommon', 'rare'] as const) {
-    const pool = relicIdsForRarity(rarity).filter((id) => !owned.has(id));
-    if (pool.length > 0) relics[rarity] = pool[rollIndex(state.eventTrack, pool.length)];
+  // The bible still names a rarity. The live pool has no tiers, so one roll
+  // is stored for every rarity word and the event cursor only advances once.
+  const rolled = rollRelicDrop(owned, (max) => rollIndex(state.eventTrack, max));
+  if (rolled) {
+    relics.common = rolled;
+    relics.uncommon = rolled;
+    relics.rare = rolled;
   }
   const libraryChoice = event.choices.find((choice) =>
     [...choice.effects, ...choice.a15].some((effect) => effect.op === 'library'),
@@ -865,9 +868,10 @@ function applyEffect(state: EventRun, effect: EventEffect): void {
       break;
     case 'gainRandomRelic': {
       const rolled = active.rolls.relics[effect.rarity];
-      const id = rolled && !ownedRelicIds(state).includes(rolled)
+      const owned = ownedRelicIds(state);
+      const id = rolled && !owned.includes(rolled)
         ? rolled
-        : relicIdsForRarity(effect.rarity).find((candidate) => !ownedRelicIds(state).includes(candidate));
+        : rollRelicDrop(owned, () => 0);
       if (id && acquireRelic(state, id)) lines.push(`得到 ${getRelic(id).name}`);
       break;
     }

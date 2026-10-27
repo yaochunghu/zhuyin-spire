@@ -106,7 +106,8 @@ describe('card upgrades', () => {
     };
     delete (legacy as { nextCardUid?: number }).nextCardUid;
     const migrated = parseSnapshot(legacy)!;
-    expect(migrated.v).toBe(2);
+    expect(migrated.v).toBe(3);
+    expect(migrated.relicIds).toEqual(['tuningFork']);
     expect(migrated.deck).toHaveLength(10);
     expect(new Set(migrated.deck.map((card) => card.uid)).size).toBe(10);
     expect(migrated.deck.every((card) => card.upgradeLevel === 0)).toBe(true);

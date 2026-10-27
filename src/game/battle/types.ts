@@ -37,6 +37,8 @@ export interface PlayerImpact {
   killed: boolean;
   /** Optional damage additions, kept separate so feedback can explain them. */
   relicBonus?: number;
+  basicRelicBonus?: number;
+  vulnerableRelicBonus?: number;
 }
 
 /** Visual / motion events for UI */
@@ -88,9 +90,25 @@ export interface CombatState {
   block: number;
   energy: number;
   maxEnergy: number;
-  /** Character relic: spent by the first damaging hit of this combat. */
+  /** Character relic: spent by the first Attack hit of each player turn. */
   firstAttackBonusDamage: number;
   firstAttackBonusReady: boolean;
+  /** First 基礎攻擊 hit of each player turn. */
+  basicHitBonus: number;
+  basicHitBonusReady: boolean;
+  /** First Attack hit each turn against an enemy that already has 易傷. */
+  vulnerableHitBonus: number;
+  vulnerableHitBonusReady: boolean;
+  /** Block from the first 轉拍 of each player turn. */
+  tempoRelicBlock: number;
+  tempoRelicReady: boolean;
+  /** Block the first time this combat a full block grants 勁. Not reset each turn. */
+  jinGuardBlock: number;
+  jinGuardReady: boolean;
+  /** 聽勁護心 shield earned during the enemy phase, applied after block expires. */
+  jinGuardBlockPending: number;
+  /** 聽勁護心 shield earned by a card, applied at the end of that card. */
+  jinGuardBlockImmediate: number;
   /** Event relics. Absent on combats created before this feature. */
   relicRainBlock?: number;
   relicMetronome?: boolean;
@@ -101,6 +119,8 @@ export interface CombatState {
   drawPenaltyNextTurn?: number;
   stageFrightUsed?: boolean;
   training: number;
+  /** 練功起勢 still to remove when the second player turn begins. */
+  firstTurnTraining: number;
   jin: number;
   gainedJinLastEnemyPhase: boolean;
   gainedJinThisEnemyPhase: boolean;

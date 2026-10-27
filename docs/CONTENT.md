@@ -193,9 +193,11 @@ waves at scores 300, 1000, and 2000. Profiles saved before character
 progression migrate to score 300 and therefore begin with 33 cards unlocked.
 
 The live first-character specification and future upgrade constraints are in
-[DECK_DESIGN.md](./DECK_DESIGN.md). Relic and potion work is deliberately
-gated by [NEXT_PHASE.md](./NEXT_PHASE.md); do not restore the archived
-Echo-coupled proposal.
+[DECK_DESIGN.md](./DECK_DESIGN.md). The live relic pool is the five 共鳴 drops
+in [NEXT_PHASE.md](./NEXT_PHASE.md) plus the starter 初心音叉. Random event
+relic rewards use that pool. Named event relics are granted by id and are not
+chest drops. Do not restore the archived Echo-coupled 40-relic proposal.
+Potions stay gated.
 
 ---
 
@@ -208,8 +210,9 @@ at most three choices plus 離開. Put the difficulty-15 result in `a15`. The
 engine in `src/game/eventEngine.ts` applies those effects; do not invent a
 second outcome path in the UI. A ? room resolves through `ensureUnknownResolution`.
 
-Potions still have no belt. `{ op: 'gainPotion' }` is a typed hook that reports
-`藥水還沒準備好` until that belt exists.
+A random relic reward calls `rollRelicDrop` and appends the result. It does
+not replace 初心音叉. Potions still have no belt. `{ op: 'gainPotion' }` is a
+typed hook that reports `藥水還沒準備好` until that belt exists.
 
 ## Balance constants
 

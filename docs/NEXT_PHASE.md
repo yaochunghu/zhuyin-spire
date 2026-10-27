@@ -19,22 +19,44 @@ at each score milestone while balancing the advanced tiers.
   0 / 300 / 1,000 / 2,000
 - Debug Meta controls can set every score milestone on the active profile
 - Smith and later-act `+` rolls for unlocked non-basic cards
-- Act I–III ? rooms and all 30 bible events are live. Potions are still gated:
-  event choices that want a bottle stay visible and say the belt is not ready.
-  Random uncommon and rare relics stay unavailable until a relic pool lands.
+- A chest gives gold and one relic. Elites and bosses still offer a card and also drop one relic. When the five relics are already owned, that drop pays 20 gold
+- Act I–III ? rooms and all 30 bible events. A random relic reward draws that same pool and never replaces 初心音叉. Named event relics are granted by id
 
 ## Before expanding content
 
-The 75-card progression remains the baseline. Browser checks stay in [BROWSER_SUPPORT.md](BROWSER_SUPPORT.md) and [STABILIZATION.md](STABILIZATION.md). The physical-device checklist and the Act I family session are still open; run them from the kit in [PLAYTEST_GATE.md](PLAYTEST_GATE.md#playtest-kit). Relic work may be developed in parallel. Merge that relic work only after both playtests pass. Potions stay deferred. Act I–III events are in.
+The 75-card progression remains the baseline. Browser checks stay in [BROWSER_SUPPORT.md](BROWSER_SUPPORT.md) and [STABILIZATION.md](STABILIZATION.md). The physical-device checklist and the Act I family session are still open; run them from the kit in [PLAYTEST_GATE.md](PLAYTEST_GATE.md#playtest-kit). Potions stay deferred. Act I–III events and the relic pool are in the tree.
 
-## Next feature: relic pool (0.5)
+## Relic pool (0.5)
 
-Treasure currently duplicates the card-reward screen. Add a small 共鳴-safe
-relic pool (3–6 relics) for chests and elites, with inspectable badges. Do not
-import the Echo-era 40-relic bible. Keep the starter 初心音叉.
+Chests no longer repeat the card-reward screen. A chest pays its gold and one
+relic. An elite or a boss still offers a card and also drops one relic. Normal
+fights do not drop relics. The drop pool is five 共鳴 relics:
 
-After that: a 3-slot potion belt with 4–6 potions. Act I–III events are already
-in the climb; wire potion rewards into the existing `{ op: 'gainPotion' }` hook.
+| Id | Name | Effect |
+|----|------|--------|
+| `gapThumb` | 尋隙指套 | First Attack hit each turn against an enemy that already has 易傷: +2 before the multiplier |
+| `trainingWrap` | 練功護腕 | First 基礎攻擊 hit each turn: +1 before 易傷 |
+| `tempoWood` | 換拍木魚 | First successful 轉拍 each turn: +2 Block |
+| `listeningHeart` | 聽勁護心 | First 勁 gained in a combat: +3 Block. A full block's shield waits until the next player turn; a card's 勁 grants it immediately |
+| `trainingStance` | 練功起勢 | Turn 1 only: 練功 +1, removed when turn 2 starts |
+
+The starter remains 🎵 初心音叉. Each relic can be owned once. When the pool is
+exhausted, a chest, elite, or boss drop pays `RELIC_POOL_EXHAUST_GOLD` (20)
+instead. An event choice that wants a random relic stays visible and says
+沒有新的遺物 once those five are owned. Owned relics show as tappable badges
+on the map, in combat, and on the reward screen. No relic skips casting.
+
+The four legacy relics (小盾符, 零錢袋, 晨光火花, 幸運抽) stay in
+`src/data/relics.ts` so old saves keep their effects. They are not in the drop
+pool. Saves are version 3: a v1 or v2 `relicId` becomes `relicIds`. Event
+progress is optional on that snapshot, so a save from before events still loads.
+
+Event choices that name 口袋節拍器, 月光音樂盒, 雨聲筒, or 合唱緞帶 grant that
+relic by id. Choices that ask for a random common, uncommon, or rare relic all
+draw one unowned relic from the five-relic pool above.
+
+Next: a 3-slot potion belt with 4–6 potions. Wire those rewards into the
+existing `{ op: 'gainPotion' }` hook.
 
 ## Still gated
 

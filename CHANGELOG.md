@@ -8,6 +8,17 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+### Relic pool
+
+- Added five 共鳴 relics for chests, elites, and bosses: 尋隙指套, 練功護腕, 換拍木魚, 聽勁護心, and 練功起勢
+- Chests give gold and one relic. Elites and bosses still offer a card and also drop a relic. A repeated drop pays 20 gold
+- 練功起勢 adds 練功 only for the first player turn, then that point is removed
+- 聽勁護心 gives 3 Block the first time the run gains 勁. Block from a full defense arrives on the next player turn, so it cannot create another 勁. Block from a card arrives with that card. The parent note names 破綻借力 and 剛柔並濟 as immediate cases.
+- Kept 初心音叉 as the starter. The four legacy relics still load for old saves and are not offered
+- Moved saves to version 3. A v1 or v2 `relicId` becomes the ordered `relicIds` list
+- Added tappable relic badges that show the Chinese name and effect. No relic skips casting
+- On a short landscape screen the combat badges sit on their own full-width row, so six tokens stay on screen at 640×360
+
 ### Combat and campfire fixes
 
 - Searching the discard for a card type no longer deletes the cards still in the draw pile.
@@ -21,6 +32,7 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - Add ? rooms to every act and resolve each one once into an event, a normal fight, a shop, or a treasure.
 - Ship the 30 events from the event bible, including act pools, shared events, and difficulty-15 results.
 - Keep mid-event progress in the run save. Older saves still load.
+- Random event relic rewards draw the five-relic pool and leave 初心音叉 in place. Named event relics are granted by id.
 - Leave potion rewards as a typed hook until the belt exists.
 
 ### Zhuyin corrections

@@ -2290,8 +2290,156 @@ button:disabled {
   font-weight: 950;
 }
 
-.relic-pill {
-  border-color: var(--accent2) !important;
+.relic-badge-row,
+.map-relic-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+}
+
+/* Brass-rimmed token, same family as the toy-board HUD chips. */
+.relic-badge {
+  display: inline-grid;
+  flex: 0 0 48px;
+  place-items: center;
+  width: 48px;
+  min-width: 48px;
+  height: 48px;
+  min-height: 48px;
+  padding: 0;
+  border: 2px solid var(--toy-brass);
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 30%, var(--panel), #37233f 70%);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 231, 160, 0.18),
+    0 3px 0 var(--toy-walnut-dark);
+  color: inherit;
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.relic-badge:active {
+  transform: translateY(2px);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 231, 160, 0.18),
+    0 1px 0 var(--toy-walnut-dark);
+}
+
+.relic-badge:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.relic-reward {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(100%, 440px);
+  text-align: left;
+}
+
+/* Acquire moment: the new token drops in once with a brass glint. */
+.relic-reward .relic-badge {
+  animation: relicAcquire 0.7s ease-out both;
+}
+
+@keyframes relicAcquire {
+  0% { transform: translateY(-14px) scale(0.6); opacity: 0; }
+  55% { transform: translateY(0) scale(1.12); opacity: 1; filter: brightness(1.4); }
+  100% { transform: none; }
+}
+
+.relic-reward-name {
+  display: block;
+  font-size: 1.2rem;
+}
+
+.relic-reward-blurb {
+  margin: 4px 0 0;
+}
+
+.native-modal-shell.relic-inspect-dialog {
+  display: grid;
+  place-items: center;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  background: rgba(20, 12, 30, 0.55);
+}
+
+.relic-inspect-panel {
+  width: min(92vw, 420px);
+  max-height: 90dvh;
+  overflow: auto;
+  padding: 20px;
+  border: 3px solid var(--toy-brass);
+  border-radius: 18px;
+  background: var(--toy-paper);
+  color: var(--toy-ink);
+  box-shadow: var(--shadow);
+  text-align: center;
+  animation: relicInspectIn 0.18s ease-out;
+}
+
+@keyframes relicInspectIn {
+  from { transform: scale(0.94); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.relic-inspect-emoji {
+  margin: 0;
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.relic-inspect-name {
+  margin: 8px 0 4px;
+  font-size: 1.7rem;
+  font-weight: 900;
+}
+
+.relic-inspect-blurb {
+  margin: 4px 0 12px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.relic-inspect-adult {
+  margin: 0;
+  padding-top: 10px;
+  border-top: 2px dashed var(--toy-paper-deep);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.relic-inspect-adult-label {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.relic-inspect-close {
+  min-width: 48px;
+  min-height: 48px;
+  margin-top: 14px;
+  padding: 8px 18px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .relic-reward .relic-badge,
+  .relic-inspect-panel {
+    animation: none;
+  }
+
+  .relic-badge:active {
+    transform: none;
+  }
 }
 
 .shop-row {
@@ -2520,8 +2668,9 @@ button:disabled {
   height: 1080px;
   flex-shrink: 0;
   transform-origin: center center;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 8px;
   padding: 16px 24px 12px;
   box-sizing: border-box;
@@ -2538,8 +2687,9 @@ button:disabled {
 }
 
 .map-stage-top .map-status-bar {
+  flex-wrap: wrap;
   width: auto;
-  max-width: none;
+  max-width: 100%;
   justify-content: center;
 }
 
@@ -2570,12 +2720,18 @@ button:disabled {
   min-height: 0;
 }
 
-/* Floating coach on map — same idea as combat */
+/*
+ * Floating coach on map — same idea as combat. Placing it in the panel's grid
+ * row makes that row its containing block, so it always starts below the top
+ * bar however many lines the bar wraps to.
+ */
 .map-stage .adult-coach,
 .map-stage .adult-coach-float {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  grid-row: 2;
+  grid-column: 1;
+  top: 10px;
+  left: 10px;
   z-index: 45;
   max-width: min(400px, 32vw);
   margin: 0;
@@ -5406,15 +5562,21 @@ body.modal-open {
     min-height: 64px;
     padding-right: 70px;
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    gap: 5px;
+    gap: 5px 4px;
   }
 
+  /* HP, gold and floor progress share the first line; relics wrap below. */
   .map-stage-top .map-status-bar {
-    flex-wrap: nowrap;
-    gap: 4px;
+    display: contents;
     font-size: 0.92rem;
+  }
+
+  .map-stage-top .map-relic-badges {
+    order: 1;
+    justify-content: center;
   }
 
   .map-stage-top .kid-stat {
@@ -5492,8 +5654,8 @@ body.modal-open {
   }
 
   .map-stage .adult-coach {
-    top: 70px;
-    left: max(6px, env(safe-area-inset-left));
+    top: 6px;
+    left: 6px;
     max-width: 142px;
   }
 

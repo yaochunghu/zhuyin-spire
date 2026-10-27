@@ -1,21 +1,39 @@
-/** Character-bound starter relics plus legacy definitions kept for v1 saves. */
+/**
+ * Relics.
+ *
+ * The starter is always 初心音叉. Chests, elites, and bosses roll the small
+ * 0.5 pool. Named event relics are granted by id and are not in that roll.
+ * The four legacy relics stay defined so v1 and v2 saves still load; they are
+ * not offered. Nothing here skips or refunds a cast.
+ */
 
-export type RelicRarity = 'starter' | 'common' | 'uncommon' | 'rare' | 'event';
+export type RelicSource = 'starter' | 'pool' | 'legacy' | 'event';
 
 export interface RelicDef {
   id: string;
   emoji: string;
   name: string;
   blurb: string;
-  /** Starter and event relics stay out of the chest roll. */
-  rarity?: RelicRarity;
+  /** Adult co-play line shown when the badge is inspected. */
+  adultNote: string;
+  source: RelicSource;
   startBlock?: number;
   startGold?: number;
   maxEnergy?: number;
   firstTurnEnergy?: number;
   startDraw?: number;
-  /** Added once to the first damaging Attack hit of each player turn. */
+  /** Added once to the first Attack hit of each player turn, before 易傷. */
   firstAttackBonusDamage?: number;
+  /** Added to the first 基礎攻擊 hit of each player turn, before 易傷. */
+  firstBasicHitBonus?: number;
+  /** Added to the first Attack hit each turn against an enemy that already has 易傷, before the multiplier. */
+  firstVulnerableHitBonus?: number;
+  /** Block gained the first 轉拍 of each player turn. */
+  firstTempoBlock?: number;
+  /** Block gained the first time this combat the player gains 勁. */
+  firstJinBlock?: number;
+  /** 練功 gained at combat start and removed when the second player turn begins. */
+  firstTurnTraining?: number;
 }
 
 export const RELICS: Record<string, RelicDef> = {
@@ -24,15 +42,62 @@ export const RELICS: Record<string, RelicDef> = {
     emoji: '🎵',
     name: '初心音叉',
     blurb: '每回合第一次攻擊命中時，追加 1 點傷害',
-    rarity: 'starter',
+    adultNote: '加在易傷之前。念錯不會用掉，護盾把傷害擋光也算打過這一記。',
+    source: 'starter',
     firstAttackBonusDamage: 1,
+  },
+  gapThumb: {
+    id: 'gapThumb',
+    emoji: '🎯',
+    name: '尋隙指套',
+    blurb: '每回合第一次打中已經易傷的敵人，那一下多 2 點傷害',
+    adultNote: '這 2 點加在易傷乘算之前。這一記才附上易傷時不會用掉它。',
+    source: 'pool',
+    firstVulnerableHitBonus: 2,
+  },
+  trainingWrap: {
+    id: 'trainingWrap',
+    emoji: '👊',
+    name: '練功護腕',
+    blurb: '每回合第一次基礎攻擊的第一下，多 1 點傷害',
+    adultNote: '只加在基礎攻擊上。連打的牌只有第一下會加。易傷仍在之後結算。',
+    source: 'pool',
+    firstBasicHitBonus: 1,
+  },
+  tempoWood: {
+    id: 'tempoWood',
+    emoji: '🥁',
+    name: '換拍木魚',
+    blurb: '每回合第一次攻守換拍，獲得 2 點護盾',
+    adultNote: '要成功打出攻擊再技能，或技能再攻擊。念錯的那張不算換拍，也不會拿到護盾。',
+    source: 'pool',
+    firstTempoBlock: 2,
+  },
+  listeningHeart: {
+    id: 'listeningHeart',
+    emoji: '💛',
+    name: '聽勁護心',
+    blurb: '每場戰鬥第一次得到勁時，再獲得 3 點護盾',
+    adultNote: '擋住攻擊得到的勁，護盾下一回合才出現，不會因此再得到勁。破綻借力或剛柔並濟直接給的勁，會立刻多 3 點護盾。',
+    source: 'pool',
+    firstJinBlock: 3,
+  },
+  trainingStance: {
+    id: 'trainingStance',
+    emoji: '🥋',
+    name: '練功起勢',
+    blurb: '第 1 回合，練功 +1',
+    adultNote: '這一點練功只留在第一回合。第二回合開始就收回。牌自己給的練功不會被收回。',
+    source: 'pool',
+    firstTurnTraining: 1,
   },
   shieldCharm: {
     id: 'shieldCharm',
     emoji: '🛡️',
     name: '小盾符',
     blurb: '每場戰鬥開始 +2 護盾',
-    rarity: 'common',
+    adultNote: '舊存檔遺物。新的寶箱、菁英和 Boss 不會再掉這一件。',
+    source: 'legacy',
     startBlock: 2,
   },
   coinPouch: {
@@ -40,7 +105,8 @@ export const RELICS: Record<string, RelicDef> = {
     emoji: '🪙',
     name: '零錢袋',
     blurb: '出發 +14 金幣（約半張商店牌）',
-    rarity: 'common',
+    adultNote: '舊存檔遺物。金幣在拿到的那一次加入，讀檔不會再加一次。',
+    source: 'legacy',
     startGold: 14,
   },
   morningSpark: {
@@ -48,16 +114,17 @@ export const RELICS: Record<string, RelicDef> = {
     emoji: '🌅',
     name: '晨光火花',
     blurb: '每場只有第 1 回合有 4 能量，之後仍是 3',
-    rarity: 'common',
+    adultNote: '舊存檔遺物。新的寶箱、菁英和 Boss 不會再掉這一件。',
+    source: 'legacy',
     firstTurnEnergy: 4,
   },
-  /** Extra opening hand size */
   luckyDraw: {
     id: 'luckyDraw',
     emoji: '🎴',
     name: '幸運抽',
     blurb: '每場戰鬥開始多抽 1 張牌',
-    rarity: 'common',
+    adultNote: '舊存檔遺物。新的寶箱、菁英和 Boss 不會再掉這一件。',
+    source: 'legacy',
     startDraw: 1,
   },
   pocketMetronome: {
@@ -65,44 +132,41 @@ export const RELICS: Record<string, RelicDef> = {
     emoji: '⏱️',
     name: '口袋節拍器',
     blurb: '一回合成功打出第 3 張牌時，抽 1 張',
-    rarity: 'common',
+    adultNote: '要這一回合成功打出第三張牌才抽。念錯的牌不算。',
+    source: 'event',
   },
   moonMusicBox: {
     id: 'moonMusicBox',
     emoji: '🌙',
     name: '月光音樂盒',
     blurb: '綁定的那張牌，每場第一次拼對時抽 1 張',
-    rarity: 'event',
+    adultNote: '只認綁定的那一張牌。每場第一次拼對才抽。拿掉那張牌之後就不會再抽。',
+    source: 'event',
   },
   rainSoundTube: {
     id: 'rainSoundTube',
     emoji: '🌧️',
     name: '雨聲筒',
     blurb: '怪物行動前，如果沒有護盾，先獲得 2 點護盾',
-    rarity: 'event',
+    adultNote: '怪物行動前，身上沒有護盾才先給 2 點。已經有護盾就不會再加。',
+    source: 'event',
   },
   choirRibbon: {
     id: 'choirRibbon',
     emoji: '🎀',
     name: '合唱緞帶',
     blurb: '每贏 3 場戰鬥，回復 5 點生命',
-    rarity: 'event',
+    adultNote: '每贏三場戰鬥回 5 點心。沒打完的戰鬥不算。',
+    source: 'event',
   },
 };
 
-/** Common relics an event may roll, including the metronome. */
-export const COMMON_RELIC_IDS = [
-  'shieldCharm',
-  'coinPouch',
-  'morningSpark',
-  'luckyDraw',
-  'pocketMetronome',
-] as const;
+/** Chest, elite, boss, and random event rewards, in roll order. */
+export const RELIC_POOL_IDS = ['gapThumb', 'trainingWrap', 'tempoWood', 'listeningHeart', 'trainingStance'] as const;
 
-/** Uncommon and rare random relics are not in the live pool yet. */
-export const UNCOMMON_RELIC_IDS = [] as const;
-export const RARE_RELIC_IDS = [] as const;
+export type RelicPoolId = (typeof RELIC_POOL_IDS)[number];
 
+/** Granted by a named event choice. Never offered by the chest roll. */
 export const EVENT_RELIC_IDS = [
   'pocketMetronome',
   'moonMusicBox',
@@ -110,14 +174,80 @@ export const EVENT_RELIC_IDS = [
   'choirRibbon',
 ] as const;
 
-export function relicIdsForRarity(rarity: 'common' | 'uncommon' | 'rare'): readonly string[] {
-  if (rarity === 'common') return COMMON_RELIC_IDS;
-  if (rarity === 'uncommon') return UNCOMMON_RELIC_IDS;
-  return RARE_RELIC_IDS;
+export function getRelic(id: string): RelicDef {
+  const relic = RELICS[id];
+  if (!relic) throw new Error(`Unknown relic ${id}`);
+  return relic;
 }
 
-export function getRelic(id: string): RelicDef {
-  const r = RELICS[id];
-  if (!r) throw new Error(`Unknown relic ${id}`);
-  return r;
+export function isKnownRelicId(id: string): boolean {
+  return Object.prototype.hasOwnProperty.call(RELICS, id);
+}
+
+/** Uniform pick among pool relics the run does not already own. */
+export function rollRelicDrop(
+  ownedIds: readonly string[],
+  randomIndex: (exclusiveMax: number) => number,
+): string | null {
+  const owned = new Set(ownedIds);
+  const available = RELIC_POOL_IDS.filter((id) => !owned.has(id));
+  if (available.length === 0) return null;
+  const index = randomIndex(available.length);
+  return available[index] ?? null;
+}
+
+export interface RelicCombatMods {
+  startBlock: number;
+  maxEnergy: number;
+  firstTurnEnergy: number;
+  startDraw: number;
+  firstAttackBonusDamage: number;
+  firstBasicHitBonus: number;
+  firstVulnerableHitBonus: number;
+  firstTempoBlock: number;
+  firstJinBlock: number;
+  firstTurnTraining: number;
+}
+
+export function combatModsFor(relics: readonly RelicDef[]): RelicCombatMods {
+  const mods: RelicCombatMods = {
+    startBlock: 0,
+    maxEnergy: 3,
+    firstTurnEnergy: 0,
+    startDraw: 0,
+    firstAttackBonusDamage: 0,
+    firstBasicHitBonus: 0,
+    firstVulnerableHitBonus: 0,
+    firstTempoBlock: 0,
+    firstJinBlock: 0,
+    firstTurnTraining: 0,
+  };
+  const seen = new Set<string>();
+  for (const relic of relics) {
+    if (seen.has(relic.id)) continue;
+    seen.add(relic.id);
+    mods.startBlock += relic.startBlock ?? 0;
+    mods.startDraw += relic.startDraw ?? 0;
+    mods.firstAttackBonusDamage += relic.firstAttackBonusDamage ?? 0;
+    mods.firstBasicHitBonus += relic.firstBasicHitBonus ?? 0;
+    mods.firstVulnerableHitBonus += relic.firstVulnerableHitBonus ?? 0;
+    mods.firstTempoBlock += relic.firstTempoBlock ?? 0;
+    mods.firstJinBlock += relic.firstJinBlock ?? 0;
+    mods.firstTurnTraining += relic.firstTurnTraining ?? 0;
+    if (relic.maxEnergy) mods.maxEnergy = Math.max(mods.maxEnergy, relic.maxEnergy);
+    if (relic.firstTurnEnergy) {
+      mods.firstTurnEnergy = Math.max(mods.firstTurnEnergy, relic.firstTurnEnergy);
+    }
+  }
+  if (mods.firstTurnEnergy === 0) mods.firstTurnEnergy = mods.maxEnergy;
+  return mods;
+}
+
+function isRelicDef(value: RelicDef | readonly RelicDef[]): value is RelicDef {
+  return !Array.isArray(value);
+}
+
+export function listRelics(relics?: RelicDef | readonly RelicDef[] | null): RelicDef[] {
+  if (!relics) return [];
+  return isRelicDef(relics) ? [relics] : [...relics];
 }

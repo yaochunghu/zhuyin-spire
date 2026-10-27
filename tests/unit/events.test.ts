@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { isCardId } from '../../src/data/cards';
+import { RELIC_POOL_IDS } from '../../src/data/relics';
 import { EVENTS, effectsNeedConfirm, eventsForAct, getEvent } from '../../src/data/events';
 import {
   TREASURE_FLOOR,
@@ -255,6 +256,9 @@ describe('event results', () => {
     confirmEventChoice(cursed);
     const curse = cursed.deck.find((card) => card.defId === 'cu_silence');
     expect(curse).toBeTruthy();
+    expect(cursed.relicIds[0]).toBe('tuningFork');
+    expect(RELIC_POOL_IDS).toContain(cursed.relicIds[1]);
+    expect(cursed.relicIds).toHaveLength(2);
     const combat = createCombat(cursed.deck, 'slime', cursed.heroHp, cursed.heroMaxHp, null);
     const piles = [combat.hand, combat.drawPile, combat.discardPile];
     let played = combat.hand.find((card) => card.uid === curse!.uid);
@@ -268,6 +272,23 @@ describe('event results', () => {
       }
     }
     expect(canPlay(combat, curse!.uid)).toBe(false);
+  });
+
+  it('appends a named event relic and disables a random relic once the pool is owned', () => {
+    const state = prepare();
+    state.activeNodeId = room(state).id;
+    openEvent(state, state.activeNodeId, 'event_a1_lost_metronome');
+    state.screen = 'event';
+    chooseEventChoice(state, 'keep');
+    confirmEventChoice(state);
+    expect(state.relicIds).toEqual(['tuningFork', 'pocketMetronome']);
+
+    const full = prepare();
+    full.relicIds = ['tuningFork', ...RELIC_POOL_IDS];
+    full.activeNodeId = room(full).id;
+    openEvent(full, full.activeNodeId, 'event_a2_moth_rehearsal');
+    expect(choiceReason(full, getEvent('event_a2_moth_rehearsal').choices[0]!)).toBe('沒有新的遺物');
+    expect(full.relicIds[0]).toBe('tuningFork');
   });
 
   it('removes and transforms the selected physical card', () => {
@@ -318,14 +339,17 @@ describe('event saves', () => {
   it('loads a save from before events existed', () => {
     const state = prepare();
     const snapshot = snapshotRun(state)!;
-    delete snapshot.eventTrack;
-    delete snapshot.relicIds;
-    const parsed = parseSnapshot(snapshot);
+    const legacy: Record<string, unknown> = { ...snapshot, v: 2, relicId: 'tuningFork' };
+    delete legacy.eventTrack;
+    delete legacy.relicIds;
+    delete legacy.pendingRelicId;
+    delete legacy.rewardSource;
+    const parsed = parseSnapshot(legacy);
     expect(parsed).not.toBeNull();
     const restored = createNewRun();
     applySnapshot(restored, parsed!);
     expect(restored.eventTrack.seenEventIds).toEqual([]);
-    expect(restored.relicIds).toContain('tuningFork');
+    expect(restored.relicIds).toEqual(['tuningFork']);
     expect(restored.deck.every((card) => isCardId(card.defId))).toBe(true);
   });
 

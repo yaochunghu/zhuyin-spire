@@ -33,6 +33,7 @@ import {
   GOLD_TREASURE_BASE,
   GOLD_TREASURE_JITTER,
   HERO_MAX_HP,
+  RELIC_POOL_EXHAUST_GOLD,
   restHealAmount,
   SHOP_REMOVE_PRICE,
 } from '../data/balance';
@@ -48,7 +49,7 @@ import {
   type RunMap,
 } from '../data/map';
 import { getEnemyDef } from '../data/enemies';
-import { getRelic, type RelicDef } from '../data/relics';
+import { getRelic, rollRelicDrop, type RelicDef } from '../data/relics';
 import {
   beginPlay,
   createCombat,
@@ -110,7 +111,7 @@ import {
   type EventStep,
   type EventTrack,
 } from './eventEngine';
-import { acquireRelic } from './relicOwnership';
+import { acquireRelic as grantOwnedRelic } from './relicOwnership';
 
 export type Screen =
   | 'title'
@@ -152,9 +153,10 @@ export interface RunState {
   nextCardUid: number;
   gold: number;
   characterId: PlayableCharacterId | null;
-  relicId: string | null;
-  /** Owned relics. relicId stays the starter so combat still reads one RelicDef. */
+  /** Owned relics in acquisition order. The starter is first on a new run. */
   relicIds: string[];
+  /** Relic just awarded on the reward screen. Already included in relicIds. */
+  pendingRelicId: string | null;
   /** Unknown-room rolls and the event in progress. */
   eventTrack: EventTrack;
   /** Full 3-act branching map for this run */
@@ -263,8 +265,19 @@ function emptyRunMap(): RunMap {
   return generateRunMap(() => 0.5);
 }
 
-export function getActiveRelic(state: RunState): RelicDef | null {
-  return state.relicId ? getRelic(state.relicId) : null;
+export function getOwnedRelics(state: RunState): RelicDef[] {
+  return state.relicIds.map((id) => getRelic(id));
+}
+
+/** Adds a relic once. Start-of-run gold is applied here and is not repeated on load. */
+export function acquireRelic(state: RunState, relicId: string, showPending = false): boolean {
+  const goldBefore = state.gold;
+  if (!grantOwnedRelic(state, relicId)) return false;
+  if (showPending) {
+    state.pendingGold += state.gold - goldBefore;
+    state.pendingRelicId = relicId;
+  }
+  return true;
 }
 
 export function getActiveCharacter(state: RunState): PlayableCharacterDef | null {
@@ -314,8 +327,8 @@ export function createNewRun(): RunState {
     nextCardUid: initialUid,
     gold: 0,
     characterId: null,
-    relicId: null,
     relicIds: [],
+    pendingRelicId: null,
     eventTrack: createEventTrack(1),
     runMap: emptyRunMap(),
     actIndex: 0,
@@ -369,8 +382,8 @@ export function startRun(state: RunState): void {
   state.deck = STARTER_DECK_IDS.map((id) => addCardInstance(state, id));
   state.gold = 0;
   state.characterId = null;
-  state.relicId = null;
   state.relicIds = [];
+  state.pendingRelicId = null;
   state.eventTrack = createEventTrack(secureRandomUint32() || 1);
   state.runMap = generateRunMap();
   state.actIndex = 0;
@@ -474,8 +487,8 @@ export function pickCharacter(state: RunState, characterId: string): boolean {
   state.characterId = characterId;
   state.nextCardUid = 1;
   state.deck = character.starterDeckIds.map((id) => addCardInstance(state, id));
-  state.relicId = null;
   state.relicIds = [];
+  state.pendingRelicId = null;
   acquireRelic(state, relic.id);
   state.screen = 'map';
   saveRunCheckpoint(state);
@@ -502,7 +515,7 @@ function createTutorialCombat(state: RunState): CombatState {
     'tutorialSlime',
     state.heroHp,
     state.heroMaxHp,
-    getActiveRelic(state),
+    getOwnedRelics(state),
   );
 
   // This ordering is local to the tutorial combat. The player's saved deck is
@@ -571,7 +584,7 @@ function enterUnknownNode(state: RunState, node: MapNode): void {
     resolution.enemyId ?? 'slime',
     state.heroHp,
     state.heroMaxHp,
-    getActiveRelic(state),
+    getOwnedRelics(state),
     resolution.encounterId,
   );
   decorateCombat(state, state.combat, { normalFight: true, boss: false });
@@ -646,7 +659,7 @@ export function startEventCombat(state: RunState): void {
     'slime',
     state.heroHp,
     state.heroMaxHp,
-    getActiveRelic(state),
+    getOwnedRelics(state),
     active.fightEncounterId,
   );
   decorateCombat(state, state.combat, { normalFight: false, boss: false });
@@ -716,7 +729,7 @@ export function selectMapNode(state: RunState, nodeId: string): void {
         node.enemyId ?? 'slime',
         state.heroHp,
         state.heroMaxHp,
-        getActiveRelic(state),
+        getOwnedRelics(state),
         node.encounterId,
       );
   if (state.combat && !tutorial) {
@@ -838,7 +851,19 @@ function openShop(state: RunState): void {
   saveRunCheckpoint(state);
 }
 
-/** Treasure chest: gold + pick 1 of 3 cards (reuse reward screen). */
+/** One unowned pool relic, or exhaust gold when the pool is already owned. */
+function grantRelicReward(state: RunState): void {
+  const relicId = rollRelicDrop(state.relicIds, secureRandomInt);
+  if (!relicId) {
+    state.gold += RELIC_POOL_EXHAUST_GOLD;
+    state.pendingGold += RELIC_POOL_EXHAUST_GOLD;
+    state.pendingRelicId = null;
+    return;
+  }
+  acquireRelic(state, relicId, true);
+}
+
+/** Treasure chest: gold plus one relic. Cards stay on fight rewards. */
 function openTreasure(state: RunState): void {
   const gold = GOLD_TREASURE_BASE + secureRandomInt(GOLD_TREASURE_JITTER);
   state.gold += gold;
@@ -846,10 +871,25 @@ function openTreasure(state: RunState): void {
   state.pendingHeal = 0;
   state.rewardSource = 'treasure';
   state.rewardTier = 'normal';
-  state.rewardOptions = pickRewardIds(rewardPoolFor(state, 'normal'), 3)
-    .map((id) => makeOffer(state, id, 'reward'));
+  state.rewardOptions = [];
+  state.pendingRelicId = null;
+  grantRelicReward(state);
   state.screen = 'reward';
   saveRunCheckpoint(state);
+}
+
+/** Debug: open an unvisited chest in this act, even when it is not the next room. */
+export function debugOpenActTreasure(state: RunState): boolean {
+  const treasures = getCurrentActNodes(state).filter((node) => node.kind === 'treasure');
+  const treasure = treasures.find((node) => !state.visitedIds.includes(node.id)) ?? treasures[0];
+  if (!treasure) return false;
+  state.combat = null;
+  state.cast = null;
+  state.floatText = null;
+  state.activeNodeId = treasure.id;
+  state.rewardTier = treasure.rewardTier ?? 'normal';
+  openTreasure(state);
+  return true;
 }
 
 export function buyShopCard(state: RunState, offerIndex: number): void {
@@ -927,6 +967,7 @@ function completeNode(state: RunState): void {
   state.rewardOptions = [];
   state.pendingGold = 0;
   state.pendingHeal = 0;
+  state.pendingRelicId = null;
   state.rewardSource = null;
 
   clearActiveEvent(state);
@@ -1110,12 +1151,13 @@ export function debugStartEncounter(
 ): void {
   state.cast = null;
   state.tutorial = null;
+  state.activeNodeId = null;
   state.combat = createCombat(
     state.deck,
     enemyId,
     state.heroHp,
     state.heroMaxHp,
-    getActiveRelic(state),
+    getOwnedRelics(state),
     encounterId,
   );
   decorateCombat(state, state.combat, {
@@ -1255,6 +1297,7 @@ function finishFight(state: RunState): void {
   if (ribbon) state.flash = ribbon;
   // No ordinary post-combat heal — campfires restore 40% max HP.
   state.pendingHeal = 0;
+  state.pendingRelicId = null;
   const node = getActiveNode(state);
   if (node?.kind === 'boss') {
     state.scoreStats.bossWins += 1;
@@ -1277,6 +1320,7 @@ function finishFight(state: RunState): void {
     state.rewardTier = 'elite';
     state.rewardOptions = pickRewardIds(rewardPoolFor(state, 'elite'), 3)
       .map((id) => makeOffer(state, id, 'reward'));
+    grantRelicReward(state);
     state.screen = 'reward';
     saveRunCheckpoint(state);
     return;
@@ -1293,6 +1337,7 @@ function finishFight(state: RunState): void {
   const pool = rewardPoolFor(state, tier);
   state.rewardTier = tier;
   state.rewardOptions = pickRewardIds(pool, 3).map((id) => makeOffer(state, id, 'reward'));
+  if (node?.kind === 'elite') grantRelicReward(state);
   state.screen = 'reward';
   saveRunCheckpoint(state);
 }

@@ -37,6 +37,7 @@ import { openOptions } from './options';
 import { createConfettiLayer } from './outcome';
 import { appendCoach, render, run, session, showFlash } from './runtime';
 import { artImageHtml } from './assets';
+import { relicBadgeButton } from './relicBadges';
 
 export function renderTitle(): HTMLElement {
   const el = document.createElement('div');
@@ -553,6 +554,7 @@ export function renderReward(): HTMLElement {
   const el = document.createElement('div');
   el.className = 'screen reward-screen';
   const isTreasure = run().rewardSource === 'treasure';
+  const pendingRelic = run().pendingRelicId ? getRelic(run().pendingRelicId!) : null;
   const healBit =
     run().pendingHeal > 0
       ? `<div class="kid-stat heal-gain">❤️+${run().pendingHeal}</div>`
@@ -562,7 +564,7 @@ export function renderReward(): HTMLElement {
       ? `<div class="kid-stat gold-gain">🪙+${run().pendingGold}</div>`
       : '';
   const title = isTreasure
-    ? '💎 寶箱 · 選一張'
+    ? '💎 寶箱'
     : run().rewardTier === 'elite'
       ? '⭐ 選一張'
       : '🎉 選一張';
@@ -571,6 +573,21 @@ export function renderReward(): HTMLElement {
     <div class="reward-gains">${healBit}${goldBit}</div>
     <div class="kid-status"><span class="kid-stat">🥋❤️${run().heroHp}/${run().heroMaxHp}</span><span class="kid-stat">🪙${run().gold}</span></div>
   `;
+  if (pendingRelic) {
+    const found = document.createElement('div');
+    found.className = 'relic-reward';
+    const copy = document.createElement('div');
+    copy.innerHTML = `<strong class="relic-reward-name"></strong><p class="relic-reward-blurb"></p>`;
+    copy.querySelector('.relic-reward-name')!.textContent = pendingRelic.name;
+    copy.querySelector('.relic-reward-blurb')!.textContent = pendingRelic.blurb;
+    found.append(relicBadgeButton(pendingRelic), copy);
+    el.appendChild(found);
+  } else if (isTreasure) {
+    const empty = document.createElement('p');
+    empty.className = 'adult-text';
+    empty.textContent = '遺物已經集齊，這次改成金幣。';
+    el.appendChild(empty);
+  }
   appendCoach(el);
 
   const row = document.createElement('div');
@@ -592,7 +609,12 @@ export function renderReward(): HTMLElement {
 
   const skip = document.createElement('button');
   skip.className = 'btn-secondary';
-  skip.innerHTML = `<span class="btn-emoji">⏭️</span><span class="adult-text"> 跳過</span>`;
+  if (run().rewardOptions.length === 0) {
+    skip.innerHTML = `<span class="btn-emoji">✅</span><span class="adult-text"> 收下</span>`;
+    skip.setAttribute('aria-label', '收下寶箱');
+  } else {
+    skip.innerHTML = `<span class="btn-emoji">⏭️</span><span class="adult-text"> 跳過</span>`;
+  }
   skip.addEventListener('click', () => {
     sfx.click();
     pickReward(run(), null);

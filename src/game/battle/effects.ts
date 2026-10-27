@@ -11,6 +11,7 @@ import type {
   EnemyUnit,
   PlayerImpact,
 } from './types';
+import { gainJin, applyImmediateListeningHeart } from './resources';
 
 export type { TargetType, EffectDef };
 
@@ -66,19 +67,27 @@ function nextHitIndex(impacts: PlayerImpact[], enemyId: string): number {
   return index;
 }
 
-/** One Attack hit: 練功 and other bonuses are already in rawAmount. 易傷 and Block apply here. */
+/** One Attack hit: 練功 and other printed bonuses are already in rawAmount. 易傷 and Block apply here. */
 function dealAttackHit(
   state: CombatState,
   enemy: EnemyUnit,
   rawAmount: number,
   impacts: PlayerImpact[],
   hitIndex: number,
+  basic = false,
 ): number {
   if (!enemy.alive) return 0;
   const relicBonus = state.firstAttackBonusReady ? state.firstAttackBonusDamage : 0;
   if (state.firstAttackBonusReady) state.firstAttackBonusReady = false;
+  const basicRelicBonus = basic && state.basicHitBonusReady ? state.basicHitBonus : 0;
+  if (basicRelicBonus > 0) state.basicHitBonusReady = false;
+  const vulnerableRelicBonus = enemy.vulnerableTurns > 0 && state.vulnerableHitBonusReady
+    ? state.vulnerableHitBonus
+    : 0;
+  if (vulnerableRelicBonus > 0) state.vulnerableHitBonusReady = false;
   const hitAmount = Math.floor(
-    Math.max(0, rawAmount + relicBonus) * (enemy.vulnerableTurns > 0 ? 1.5 : 1),
+    Math.max(0, rawAmount + relicBonus + basicRelicBonus + vulnerableRelicBonus) *
+      (enemy.vulnerableTurns > 0 ? 1.5 : 1),
   );
   const blockBefore = enemy.block;
   const blocked = Math.min(blockBefore, hitAmount);
@@ -96,6 +105,8 @@ function dealAttackHit(
     hpDamage,
     killed,
     ...(relicBonus > 0 ? { relicBonus } : {}),
+    ...(basicRelicBonus > 0 ? { basicRelicBonus } : {}),
+    ...(vulnerableRelicBonus > 0 ? { vulnerableRelicBonus } : {}),
   });
   return hpDamage;
 }
@@ -165,7 +176,8 @@ export function executeEffects(
         let dealt = 0;
         for (let i = 0; i < hits; i += 1) {
           if (!enemy.alive) break;
-          const basicBonus = (def.basicAttack || card?.basicOverride) ? state.training : 0;
+          const isBasicHit = !!(def.basicAttack || card?.basicOverride);
+          const basicBonus = isBasicHit ? state.training : 0;
           const attackBonus = state.nextAttackBonus;
           const tempoBonus = def.designId === 'B061' ? state.tempoCount : 0;
           const trainingEcho = def.designId === 'B123' && triggeredTempo ? state.training : 0;
@@ -179,7 +191,7 @@ export function executeEffects(
             0,
             eff.amount + basicBonus + attackBonus + tempoBonus + trainingEcho + jinBonus - fright,
           );
-          dealt += dealAttackHit(state, enemy, rawAmount, impacts, i);
+          dealt += dealAttackHit(state, enemy, rawAmount, impacts, i, isBasicHit);
         }
         totalDamage += dealt;
       }
@@ -221,7 +233,7 @@ export function executeEffects(
     } else if (eff.kind === 'training') {
       state.training += eff.amount;
     } else if (eff.kind === 'jin') {
-      state.jin = Math.max(0, Math.min(9, state.jin + eff.amount));
+      gainJin(state, eff.amount);
     }
   }
 
@@ -254,6 +266,7 @@ export function executeEffects(
     triggeredTempo,
     card,
   );
+  applyImmediateListeningHeart(state);
   totalBlock += Math.max(0, state.block - blockBeforeSpecial);
   totalEnergy += Math.max(0, state.energy - energyBeforeSpecial);
 
@@ -318,7 +331,14 @@ function applySpecialCardEffect(
     return spent;
   };
   const rider = (target: EnemyUnit, amount: number): number =>
-    dealAttackHit(state, target, amount, impacts, nextHitIndex(impacts, target.id));
+    dealAttackHit(
+      state,
+      target,
+      amount,
+      impacts,
+      nextHitIndex(impacts, target.id),
+      def.basicAttack,
+    );
   let riderHp = 0;
   switch (def.designId) {
     case 'B013':
@@ -486,7 +506,7 @@ function applySpecialCardEffect(
       if (enemy) {
         const removed = Math.min(enemy.vulnerableTurns, upgraded ? 3 : 2);
         enemy.vulnerableTurns -= removed;
-        state.jin = Math.min(9, state.jin + removed);
+        gainJin(state, removed);
       }
       break;
     case 'B128':
@@ -620,7 +640,7 @@ function applyPowerTriggers(
   const cardSpentJin = state.jin < jinBefore;
   if (tempo && has('B131')) {
     if (state.tempoCount === 1) state.training += upgradedPower('B131') ? 2 : 1;
-    if (state.tempoCount === 2) state.jin = Math.min(9, state.jin + 1);
+    if (state.tempoCount === 2) gainJin(state, 1);
   }
   if (cardSpentJin && has('B093')) {
     state.block += 2;
