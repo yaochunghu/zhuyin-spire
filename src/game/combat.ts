@@ -31,6 +31,7 @@ export {
   livingEnemies,
   makeCard,
   nextIntentForUnit,
+  weakTurnsAfterEnemyAction,
   pickRewardIds,
   resolveCastFizzle,
   resolveCastSuccess,
