@@ -3544,3 +3544,186 @@ html[data-screen='combat'] .global-control-btn {
     animation: none;
   }
 }
+
+/*
+ * Playtest v0.4.2 (M1): the map coach owns a grid cell beside the map panel
+ * (above it in portrait) instead of floating over the dots, so neither the
+ * collapsed chip nor the open tips can ever sit on a room button.
+ */
+.map-stage {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.map-stage > .map-stage-top,
+.map-stage > .map-stage-bottom {
+  grid-column: 1 / -1;
+}
+
+.map-stage > .map-stage-top {
+  grid-row: 1;
+}
+
+.map-stage > .map-stage-bottom {
+  grid-row: 3;
+}
+
+.map-stage > .map-panel {
+  grid-row: 2;
+  grid-column: 2;
+}
+
+.map-stage .adult-coach,
+.map-stage .adult-coach-float {
+  position: relative;
+  grid-row: 2;
+  grid-column: 1;
+  top: auto;
+  left: auto;
+  align-self: start;
+  box-sizing: border-box;
+  width: 300px;
+  max-width: 300px;
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.map-stage .adult-coach.collapsed {
+  width: 150px;
+  max-width: 150px;
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  /* Keep the ☰ menu and tower rail in their own gutter, not over the map. */
+  .map-stage {
+    padding-right: max(76px, calc(env(safe-area-inset-right) + 70px));
+  }
+
+  html[data-screen='map'] .tower-progress {
+    top: max(76px, calc(env(safe-area-inset-top) + 72px));
+    right: max(14px, env(safe-area-inset-right));
+    flex-direction: column-reverse;
+  }
+
+  /* One HUD line (relics wrap last) so the map panel gets the height. */
+  .map-stage-top {
+    width: auto;
+    min-height: 0;
+    margin-inline: auto;
+    padding: 3px 8px;
+    flex-wrap: wrap;
+  }
+
+  .map-stage-top .map-relic-badges {
+    order: 2;
+  }
+
+  .map-stage-top .map-potion-row {
+    order: 1;
+    width: auto;
+    margin: 0;
+  }
+
+  .map-stage .adult-coach,
+  .map-stage .adult-coach-float {
+    width: 200px;
+    max-width: 200px;
+  }
+
+  .map-stage .adult-coach.collapsed {
+    width: 132px;
+    max-width: 132px;
+    padding: 2px 8px;
+  }
+}
+
+@media (orientation: portrait) and (max-width: 900px) {
+  .map-stage {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+  }
+
+  .map-stage > .map-panel {
+    grid-row: 3;
+    grid-column: 1;
+  }
+
+  .map-stage > .map-stage-bottom {
+    grid-row: 4;
+  }
+
+  .map-stage .adult-coach,
+  .map-stage .adult-coach-float {
+    grid-row: 2;
+    width: auto;
+    max-width: none;
+    max-height: 32dvh;
+  }
+
+  .map-stage .adult-coach.collapsed {
+    justify-self: start;
+    width: auto;
+    max-width: 220px;
+  }
+}
+
+/*
+ * Playtest v0.4.2 (M2): the campfire's three choices must be on screen
+ * without scrolling. Landscape puts the HUD on one wrapped line and the
+ * choices side by side under it; portrait keeps the column but tighter.
+ */
+.screen.rest-screen > .rest-choices {
+  gap: 10px;
+}
+
+.screen.rest-screen .rest-choice {
+  min-height: 96px;
+  padding: 10px 12px;
+  gap: 4px;
+}
+
+.screen.rest-screen .rest-choice-emoji {
+  font-size: 2.4rem;
+}
+
+@media (orientation: landscape) {
+  .screen.rest-screen {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    align-content: flex-start;
+    justify-content: center;
+    gap: 10px 14px;
+  }
+
+  .screen.rest-screen > .rest-fire {
+    font-size: 3.2rem;
+  }
+
+  .screen.rest-screen > .rest-choices {
+    flex: 1 0 100%;
+    flex-direction: row;
+    justify-content: center;
+    max-width: none;
+  }
+
+  .screen.rest-screen .rest-choice {
+    flex: 0 1 240px;
+    min-width: 0;
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  /* Start below the tower rail and beside the ☰ menu so neither hides HP. */
+  #app > .screen.rest-screen {
+    padding-top: max(56px, calc(env(safe-area-inset-top) + 52px));
+    padding-right: max(76px, calc(env(safe-area-inset-right) + 70px));
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) and (min-width: 761px) {
+  /* Wider phones stand the tower rail beside the menu instead of under it. */
+  #app > .screen.rest-screen {
+    padding-right: max(130px, calc(env(safe-area-inset-right) + 124px));
+  }
+}

@@ -558,8 +558,17 @@ export function renderShop(): HTMLElement {
   removeBtn.innerHTML = run().shopRemoveUsed
     ? `<span class="btn-emoji">🗑️</span><span class="adult-text"> 已刪過</span>`
     : `<span class="btn-emoji">🗑️</span><span class="adult-text"> 刪牌 🪙${SHOP_REMOVE_PRICE}</span>`;
-  removeBtn.setAttribute('aria-label', `刪除一張牌，花費 ${SHOP_REMOVE_PRICE} 金幣`);
-  removeBtn.disabled = run().shopRemoveUsed || run().deck.length <= 1;
+  const removeTooPoor =
+    !run().shopRemoveUsed && run().deck.length > 1 && run().gold < SHOP_REMOVE_PRICE;
+  removeBtn.setAttribute(
+    'aria-label',
+    removeTooPoor
+      ? `金幣不夠，刪牌要 ${SHOP_REMOVE_PRICE} 金幣`
+      : `刪除一張牌，花費 ${SHOP_REMOVE_PRICE} 金幣`,
+  );
+  // Match the card and potion offers: an unaffordable service is disabled,
+  // not a live button that only answers with a deny buzz.
+  removeBtn.disabled = !canRemove;
   removeBtn.addEventListener('click', () => {
     sfx.click();
     const ok = beginShopRemove(run());
