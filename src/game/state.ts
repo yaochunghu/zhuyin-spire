@@ -79,12 +79,15 @@ import {
   type CombatState,
 } from './combat';
 import {
-  buildCastPrompt,
   isCastAnswerCorrect,
   pickCastMode,
+  buildCastPrompt,
   recordCastResult,
   type CastPrompt,
+  type CueDifficulty,
 } from './castCheck';
+import type { CastingGateId } from './casting/types';
+import { castStreamRng, createCastSeed, takeCastRandom } from './castRng';
 import { cancelSpeech } from './speech';
 import { clearSavedRun, saveRunCheckpoint } from './save';
 import { getDebugSkipCast } from '../debug/debugFlags';
@@ -117,7 +120,6 @@ import {
   ensureUnknownResolution,
   finishEventFight,
   isEventFight,
-  nextEventUnit,
   noteChoirVictory,
   noteShrineAnswer,
   openEvent,
@@ -230,6 +232,9 @@ export interface RunState {
   scoreCommitted: boolean;
   /** Terminal-only result; intentionally not written into resumable saves. */
   scoreResult: RunScoreResult | null;
+  /** Prompt-draw stream. Checkpoints persist the counter so a reload continues it. */
+  castSeed: number;
+  castCounter: number;
 }
 
 const HERO_MAX = HERO_MAX_HP;
@@ -392,6 +397,8 @@ export function createNewRun(): RunState {
     scoreStats: createRunScoreStats(),
     scoreCommitted: false,
     scoreResult: null,
+    castSeed: createCastSeed(),
+    castCounter: 0,
   };
 }
 
@@ -452,13 +459,29 @@ export function startRun(state: RunState): void {
   state.scoreStats = createRunScoreStats();
   state.scoreCommitted = false;
   state.scoreResult = null;
+  state.castSeed = createCastSeed();
+  state.castCounter = 0;
   state.screen = 'relicPick';
   saveRunCheckpoint(state);
 }
 
-function rollPracticeCard(): CardDef {
-  const id = PRACTICE_CARD_IDS[Math.floor(Math.random() * PRACTICE_CARD_IDS.length)] ?? 'bo';
+function rollPracticeCard(state: RunState): CardDef {
+  const index = Math.floor(takeCastRandom(state) * PRACTICE_CARD_IDS.length);
+  const id = PRACTICE_CARD_IDS[index] ?? 'bo';
   return getCard(id);
+}
+
+function drawCastPrompt(
+  state: RunState,
+  def: CardDef,
+  stage: CueDifficulty,
+  gateId: CastingGateId,
+): CastPrompt {
+  const rng = castStreamRng(state);
+  const binding = getCardCastBinding(def, gateId);
+  const modeStage = stage === 'practice' ? 'early' : stage;
+  const mode = pickCastMode(modeStage, rng, binding.lessonFamilyId, gateId);
+  return buildCastPrompt(def, mode, rng, stage, gateId);
 }
 
 export function enterPractice(state: RunState): void {
@@ -472,10 +495,8 @@ export function enterPractice(state: RunState): void {
 }
 
 export function nextPracticePrompt(state: RunState): void {
-  const def = rollPracticeCard();
-  const binding = getCardCastBinding(def, 'zhuyin');
-  const mode = pickCastMode('early', Math.random, binding.lessonFamilyId);
-  const prompt = buildCastPrompt(def, mode, Math.random, 'practice', 'zhuyin');
+  const def = rollPracticeCard(state);
+  const prompt = drawCastPrompt(state, def, 'practice', 'zhuyin');
   state.cast = { prompt, cardDef: def };
   state.screen = 'practice';
 }
@@ -642,13 +663,7 @@ export function ensureEventCast(state: RunState): void {
   const cardId = preferred && isCardId(preferred) && !getCard(preferred).curse ? preferred : fallback;
   const cardDef = getCard(cardId);
   state.cast = {
-    prompt: buildCastPrompt(
-      cardDef,
-      'recognize',
-      () => nextEventUnit(state.eventTrack),
-      'early',
-      'zhuyin',
-    ),
+    prompt: drawCastPrompt(state, cardDef, 'early', 'zhuyin'),
     cardDef,
   };
 }
@@ -1186,9 +1201,7 @@ export function tryPlayCard(
 
     const stage = currentCastStage(state);
     const gateId = getActiveCharacter(state)?.castingGateId ?? 'zhuyin';
-    const binding = getCardCastBinding(def, gateId);
-    const mode = pickCastMode(stage, Math.random, binding.lessonFamilyId, gateId);
-    const prompt = buildCastPrompt(def, mode, Math.random, stage, gateId);
+    const prompt = drawCastPrompt(state, def, stage, gateId);
     state.cast = { prompt, cardDef: def };
     state.screen = 'castCheck';
   } catch {

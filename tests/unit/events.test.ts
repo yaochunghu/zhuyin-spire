@@ -10,6 +10,7 @@ import {
   type MapNode,
 } from '../../src/data/map';
 import { debugSetMetaProgress } from '../../src/debug/debugActions';
+import { getActiveProfile, updateActiveProfile } from '../../src/game/profiles';
 import { canPlay, createCombat } from '../../src/game/combat';
 import {
   choiceReason,
@@ -26,6 +27,7 @@ import {
   confirmEventCard,
   confirmEventChoice,
   createNewRun,
+  ensureEventCast,
   pickCharacter,
   startRun,
   toggleEventCard,
@@ -353,6 +355,79 @@ describe('event saves', () => {
     expect(restored.eventTrack.active?.phase).toBe('pick');
   });
 
+  it('draws 注音神龕 from the run cast stream and continues that stream on reload', () => {
+    const clearLessons = () => {
+      updateActiveProfile((profile) => ({
+        ...profile,
+        castingHistory: { lessons: {} },
+      }));
+    };
+    const openShrine = (seed: number) => {
+      clearLessons();
+      const state = prepare();
+      state.eventTrack = createEventTrack(7);
+      state.castSeed = seed;
+      state.castCounter = 0;
+      state.activeNodeId = room(state).id;
+      openEvent(state, state.activeNodeId, 'event_shared_phonetic_shrine');
+      state.screen = 'event';
+      chooseEventChoice(state, 'practice');
+      confirmEventChoice(state);
+      const prompt = state.cast?.prompt;
+      if (!prompt) throw new Error('expected a shrine prompt');
+      return {
+        state,
+        cursor: state.eventTrack.cursor,
+        counter: state.castCounter,
+        signature: {
+          contentId: prompt.contentId,
+          mode: prompt.mode,
+          answerTokens: [...prompt.answerTokens],
+          choiceTokens: [...prompt.choiceTokens],
+        },
+      };
+    };
+
+    const first = openShrine(0x51);
+    const again = openShrine(0x51);
+    const otherSeed = openShrine(0x52);
+    expect(again.signature).toEqual(first.signature);
+    expect(again.counter).toBe(first.counter);
+    expect(first.counter).toBeGreaterThan(0);
+    expect(otherSeed.cursor).toBe(first.cursor);
+    expect(first.state.screen).toBe('eventCast');
+    expect(first.state.eventTrack.active?.shrineLeft).toBe(3);
+
+    const fresh = openShrine(0x51);
+    const history = structuredClone(getActiveProfile().castingHistory);
+    const snapshot = snapshotRun(fresh.state);
+    expect(snapshot?.castSeed).toBe(0x51);
+    expect(snapshot?.castCounter).toBe(fresh.counter);
+    expect(snapshot?.eventTrack?.active?.eventId).toBe('event_shared_phonetic_shrine');
+
+    fresh.state.cast = null;
+    ensureEventCast(fresh.state);
+    const continued = fresh.state.cast?.prompt;
+    if (!continued) throw new Error('expected the next shrine prompt');
+
+    const restored = createNewRun();
+    applySnapshot(restored, parseSnapshot(snapshot)!);
+    updateActiveProfile((profile) => ({
+      ...profile,
+      castingHistory: structuredClone(history),
+    }));
+    expect(restored.screen).toBe('eventCast');
+    expect(restored.cast).toBeNull();
+    expect(restored.castSeed).toBe(0x51);
+    expect(restored.castCounter).toBe(fresh.counter);
+    expect(restored.eventTrack.active?.shrineLeft).toBe(3);
+    ensureEventCast(restored);
+    expect(restored.cast?.prompt.contentId).toBe(continued.contentId);
+    expect(restored.cast?.prompt.mode).toBe(continued.mode);
+    expect(restored.cast?.prompt.answerTokens).toEqual(continued.answerTokens);
+    expect(restored.castCounter).toBe(fresh.state.castCounter);
+  });
+
   it('loads a save from before events existed', () => {
     const state = prepare();
     const snapshot = snapshotRun(state)!;
@@ -367,6 +442,8 @@ describe('event saves', () => {
     applySnapshot(restored, parsed!);
     expect(restored.eventTrack.seenEventIds).toEqual([]);
     expect(restored.relicIds).toEqual(['tuningFork']);
+    expect(Number.isInteger(restored.castSeed)).toBe(true);
+    expect(restored.castCounter).toBe(0);
     expect(restored.deck.every((card) => isCardId(card.defId))).toBe(true);
   });
 

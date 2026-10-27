@@ -65,6 +65,16 @@ The remaining bag is stored in the learner profile, so starting a new run,
 reloading, or closing the browser does not reset repetition protection. Changing
 curriculum filters safely removes now-ineligible queued items.
 
+### Run prompt stream
+
+Each run stores `castSeed` and `castCounter`. Mode choice, bag refills, and the
+distractor bank read that stream. The counter is how many draws this run has
+already taken, and stable checkpoints store both numbers. Loading that
+checkpoint together with the learner profile from the same moment replays the
+following prompts. Bags stay on the learner, one map keyed by
+`gateId:lessonFamilyId`. A save written before these fields loads with a new
+seed and a counter of 0. Practice and event casts, including 注音神龕, draw from the same stream. The live shrine prompt is not stored, so reloading that question takes the next draw.
+
 ### Curriculum controls
 
 Options exposes these parent controls per learner:

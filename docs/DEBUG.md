@@ -62,7 +62,7 @@ Turn **off** when testing teaching / cast UX.
 |------|----------|
 | Run nav | Map, title, new run, practice |
 | Resources | Full / low HP, ±HP, +gold, full energy, draw |
-| Meta progression | Set the active learner to score 0 / 300 / 1,000 / 2,000 (12 / 33 / 54 / 75 cards) |
+| Meta progression | Set the run's character to score 0 / 300 / 1,000 / 2,000 (12 / 33 / 54 / 75 cards). Before a character is chosen, the buttons write 共鳴武者 |
 | Combat | Kill all (win), lose fight, end turn, start encounter from dropdown |
 | Casting | Skip gate, force See/Hear/Hard for the next prompts, refill persistent bags without deleting accuracy |
 | Tutorial / motion | Reset completion, start the scripted fight immediately, set 1×/2× |
@@ -73,7 +73,9 @@ Turn **off** when testing teaching / cast UX.
 Exact buttons live in `debugPanel.ts`; helpers in `debugActions.ts`.
 The Meta buttons persist to the active learner profile and affect newly
 generated later-act fight, shop, and treasure offers immediately. They never
-delete cards already present in a run.
+delete cards already present in a run. Tutorial start and the scene jump pick
+`debugCharacterId`: the run's character, or 共鳴武者 when the run has not chosen
+one.
 
 ---
 
