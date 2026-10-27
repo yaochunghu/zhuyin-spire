@@ -19,6 +19,7 @@ export {
   getEnemy,
   getEnemyUnit,
   intentForUnit,
+  intentStepForUnit,
   nextIntentForUnit,
   weakTurnsAfterEnemyAction,
   runEnemyTurn,

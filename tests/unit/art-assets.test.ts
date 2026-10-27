@@ -11,7 +11,7 @@ import { ENEMIES } from '../../src/data/enemies';
 
 describe('magical toy-board art registry', () => {
   it('defines a local WebP source, fallback, and accessible label for every required asset', () => {
-    expect(REQUIRED_ART_ASSET_KEYS).toHaveLength(35);
+    expect(REQUIRED_ART_ASSET_KEYS).toHaveLength(50);
     expect(new Set(REQUIRED_ART_ASSET_KEYS).size).toBe(
       REQUIRED_ART_ASSET_KEYS.length,
     );

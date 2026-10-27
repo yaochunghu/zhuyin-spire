@@ -10,11 +10,23 @@ import {
   intentTotalLabel,
 } from '../data/enemies';
 import { drinkAimedPotion, renderPotionBelt } from './potionBelt';
+import {
+  intentCueIcon,
+  intentCues,
+  intentCueTitle,
+  isNewArrival,
+  noteArrivals,
+  strengthBadge,
+  takeEntrance,
+  type ArrivalLog,
+  type IntentCue,
+} from './enemyCues';
 import { renderRelicBadges } from './relicBadges';
 import {
   canPlay,
   effectiveCost,
   intentForUnit,
+  intentStepForUnit,
   isEligibleHandChoice,
   livingEnemies,
   nextIntentForUnit,
@@ -328,6 +340,27 @@ function playCardFromUi(uid: string, targetIds: string[] = [], chosenHandUid?: s
   }
 }
 
+/** UI-only memory of each fight's starting row, for the 新來的 greeting. */
+const arrivalLogs = new WeakMap<CombatState, ArrivalLog>();
+
+function arrivalLogFor(combat: CombatState): ArrivalLog {
+  const log = noteArrivals(
+    arrivalLogs.get(combat),
+    combat.enemies.map((enemy) => enemy.id),
+    combat.turn,
+  );
+  arrivalLogs.set(combat, log);
+  return log;
+}
+
+function intentChipsHtml(cues: readonly IntentCue[], strengthMark: boolean): string {
+  const chips = [
+    ...cues.map((cue) => `<span class="intent-cue-chip intent-cue-chip-${cue}">${intentCueIcon(cue)}</span>`),
+    ...(strengthMark ? ['<span class="intent-cue-chip intent-strength-mark">💪</span>'] : []),
+  ];
+  return chips.length ? `<span class="intent-chips" aria-hidden="true">${chips.join('')}</span>` : '';
+}
+
 function renderEnemySlot(
   unit: EnemyUnit,
   combat: CombatState,
@@ -336,6 +369,37 @@ function renderEnemySlot(
   const def = ENEMIES[unit.defId] ?? ENEMIES.slime!;
   const intent = intentForUnit(unit, combat);
   const nextIntent = nextIntentForUnit(unit, combat);
+  // Strength is already inside the intent numbers; these cues only explain them.
+  const strengthCap = def.strengthCap ?? 0;
+  const strength = Math.min(strengthCap, unit.strength ?? 0);
+  const nextStrength = Math.min(strengthCap, strength + (unit.bankedStrength ?? 0));
+  const strengthInfo = strengthBadge(strength);
+  const nowStep = intentStepForUnit(unit, 0);
+  const nextStep = intentStepForUnit(unit, 1);
+  const canSummon = !unit.summoned && combat.enemies.length < 3;
+  const cueContext = {
+    canSummon,
+    hasBuffableAlly: combat.enemies.some(
+      (other) =>
+        other.id !== unit.id &&
+        other.alive &&
+        other.hp > 0 &&
+        (ENEMIES[other.defId]?.strengthCap ?? 0) > (other.strength ?? 0),
+    ),
+    canGrowSelf: strengthCap > nextStrength,
+  };
+  const nowCues = intentCues(nowStep.step, { ...cueContext, phaseEnter: nowStep.phaseEnter });
+  const nextCues = intentCues(nextStep.step, {
+    ...cueContext,
+    canSummon: canSummon && !nowCues.includes('summon'),
+    phaseEnter: nextStep.phaseEnter,
+  });
+  const nowStrengthMark = intent.kind !== 'block' && strength > 0;
+  const nextStrengthMark = nextIntent.kind !== 'block' && nextStrength > 0;
+  const braceSoon = nowCues.includes('brace') || nextCues.includes('brace');
+  const arrivals = arrivalLogFor(combat);
+  const newArrival = !!unit.justSummoned || isNewArrival(arrivals, unit.id, combat.turn);
+  const arriving = newArrival && takeEntrance(arrivals, unit.id, combat.turn);
   const weak = unit.weakTurns > 0;
   // This action uses the current duration. The 下回合 pill uses whatever
   // remains after that action ticks Weak.
@@ -365,6 +429,9 @@ function renderEnemySlot(
     (opts.damaged && !dead ? ' enemy-hurt' : '') +
     (unit.block > 0 && !dead ? ' has-block' : '') +
     (urgent ? ' enemy-intent-urgent' : '') +
+    (!dead && braceSoon ? ' enemy-brace-soon' : '') +
+    (!dead && newArrival ? ' enemy-new-arrival' : '') +
+    (!dead && arriving ? ' enemy-arriving' : '') +
     (!dead && session.potionAimSlot !== null ? ' potion-aim-target' : '');
   slot.dataset.enemyId = unit.id;
   if (!dead) {
@@ -373,7 +440,7 @@ function renderEnemySlot(
     slot.tabIndex = 0;
     slot.setAttribute(
       'aria-label',
-      `${def.name} ❤️${unit.hp}${unit.block > 0 ? ` 盾${unit.block}` : ''}${unit.vulnerableTurns > 0 ? ` 易傷${unit.vulnerableTurns}回合` : ''} ${intentTitle}${urgent ? '（危險）' : ''}${selected ? '（已選）' : ''}`,
+      `${def.name} ❤️${unit.hp}${unit.block > 0 ? ` 盾${unit.block}` : ''}${unit.vulnerableTurns > 0 ? ` 易傷${unit.vulnerableTurns}回合` : ''}${strength > 0 ? ` 力量+${strength}` : ''}${newArrival ? ' 新來的' : ''} ${intentTitle}${urgent ? '（危險）' : ''}${nowCues.length ? ` ${intentCueTitle(nowCues)}` : ''}${!nowCues.includes('brace') && nextCues.includes('brace') ? ` ${intentCueTitle(['brace'])}` : ''}${selected ? '（已選）' : ''}`,
     );
   }
 
@@ -383,19 +450,37 @@ function renderEnemySlot(
   const portrait = enemyArtKey
     ? artImageHtml(enemyArtKey, 'enemy-miniature-art')
     : def.emoji;
+  // Small corner badges stay visible on phones, where the 下回合 pill is hidden.
+  const leftBadges = [
+    strengthInfo
+      ? `<span class="enemy-cue-badge enemy-strength-badge" title="${strengthInfo.title}">${strengthInfo.label}</span>`
+      : '',
+    newArrival
+      ? '<span class="enemy-cue-badge enemy-new-badge" title="新來的：剛被叫來的朋友">新來的</span>'
+      : '',
+  ].join('');
+  const rightBadges = braceSoon
+    ? `<span class="enemy-cue-badge enemy-brace-badge" title="${intentCueTitle(['brace'])}">🛡️✨</span>`
+    : '';
+  const portraitBadges =
+    leftBadges || rightBadges
+      ? `<span class="enemy-cue-badges" aria-hidden="true"><span class="enemy-cue-col">${leftBadges}</span><span class="enemy-cue-col">${rightBadges}</span></span>`
+      : '';
   slot.innerHTML = `
     <div class="enemy-intent-stack">
       ${
         dead
           ? ''
-          : `<div class="intent intent-now intent-pulse intent-${intent.kind}${urgent ? ' intent-urgent' : ''}" title="本回合：${intentTitle}${urgent ? ' · 建議擋' : ''}">
+          : `<div class="intent intent-now intent-pulse intent-${intent.kind}${urgent ? ' intent-urgent' : ''}${nowCues.length ? ` intent-cue intent-cue-${nowCues[0]}` : ''}" title="本回合：${intentTitle}${nowStrengthMark ? `（含力量 +${strength}）` : ''}${nowCues.length ? ` · ${intentCueTitle(nowCues)}` : ''}${urgent ? ' · 建議擋' : ''}">
         <span class="intent-badge adult-text">${urgent ? '⚠ 本回合' : '本回合'}</span>
         <span class="intent-total">${intentTotalLabel(intent, weak)}</span>
         ${multiHint ? `<span class="intent-multi-hint adult-text">${multiHint}</span>` : ''}
+        ${intentChipsHtml(nowCues, nowStrengthMark)}
       </div>
-      <div class="intent intent-next intent-${nextIntent.kind}${nextUrgent ? ' intent-urgent-soft' : ''}" title="${intentNextHint(nextIntent, nextWeak)}">
+      <div class="intent intent-next intent-${nextIntent.kind}${nextUrgent ? ' intent-urgent-soft' : ''}${nextCues.length ? ` intent-cue intent-cue-${nextCues[0]}` : ''}" title="${intentNextHint(nextIntent, nextWeak)}${nextStrengthMark ? `（含力量 +${nextStrength}）` : ''}${nextCues.length ? ` · ${intentCueTitle(nextCues)}` : ''}">
         <span class="intent-badge adult-text">下回合</span>
         <span class="intent-total intent-next-total">${intentTotalLabel(nextIntent, nextWeak)}</span>
+        ${intentChipsHtml(nextCues, nextStrengthMark)}
       </div>`
       }
     </div>
@@ -404,7 +489,7 @@ function renderEnemySlot(
         ? `<span class="enemy-portrait enemy-poof">${portrait}</span><span class="enemy-defeat-cloud" aria-hidden="true">💨</span>`
         : poofNow
           ? '💨'
-          : portrait
+          : `${portrait}${portraitBadges}`
     }</div>
     <div class="adult-text enemy-name-adult">${def.name}${def.isElite ? ' · 菁英' : ''}${def.isBoss ? ' · BOSS' : ''}</div>
     ${

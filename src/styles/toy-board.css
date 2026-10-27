@@ -3011,3 +3011,536 @@ html[data-screen='combat'] .global-control-btn {
   overflow: auto;
   margin-bottom: 4px;
 }
+
+/*
+ * Potion belt: one walnut strap with three brass loops. The 🧪 mark rides
+ * inside the strap so it never floats alone beside the slots. Full loops
+ * glow; empty loops are sunken and dashed so a child can tell them apart
+ * without reading.
+ */
+.potion-belt {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  width: max-content;
+  max-width: 100%;
+  padding: 4px 8px 4px 5px;
+  border: 2px solid rgba(255, 224, 142, 0.72);
+  border-radius: 28px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0 2px, transparent 2px 10px),
+    linear-gradient(180deg, rgba(255, 244, 204, 0.16), transparent 52%),
+    var(--toy-walnut);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 3px 0 rgba(36, 16, 23, 0.78);
+}
+
+.screen > .potion-belt {
+  align-self: center;
+}
+
+.potion-belt-mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: rgba(22, 12, 28, 0.5);
+  font-size: 1.05rem;
+}
+
+.potion-belt .potion-slot {
+  flex: 0 0 46px;
+  width: 46px;
+  min-width: 46px;
+  height: 46px;
+  min-height: 46px;
+  font-size: 1.4rem;
+}
+
+.potion-belt .potion-slot:not(.is-empty) {
+  border: 3px solid var(--toy-brass);
+  background:
+    radial-gradient(circle at 36% 28%, rgba(255, 247, 229, 0.45), transparent 40%),
+    radial-gradient(circle at 50% 62%, #7d4f8f, #3b2249 72%);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 231, 160, 0.22),
+    0 0 10px rgba(255, 214, 120, 0.32),
+    0 3px 0 var(--toy-walnut-dark);
+}
+
+.potion-belt .potion-slot.is-empty {
+  opacity: 1;
+  cursor: default;
+  border: 2px dashed rgba(255, 224, 142, 0.45);
+  background: rgba(22, 12, 28, 0.58);
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.45);
+  color: rgba(255, 228, 148, 0.5);
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.potion-belt .potion-slot.is-empty:active {
+  transform: none;
+}
+
+.potion-belt .potion-aim-hint {
+  color: var(--toy-brass-light);
+  font-weight: 800;
+}
+
+.map-potion-row {
+  justify-content: center;
+}
+
+.combat-potion-belt {
+  justify-self: end;
+}
+
+/* Short landscape: the belt shares the relic row instead of adding a third
+   HUD row, so the battlefield keeps its height. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .combat-hud-strip {
+    grid-template-areas:
+      'location resources'
+      'relics potions';
+  }
+
+  .combat-potion-belt {
+    grid-area: potions;
+    padding-block: 2px;
+  }
+
+  .combat-potion-belt .potion-slot {
+    flex-basis: 44px;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    font-size: 1.3rem;
+  }
+}
+
+/*
+ * Event rooms. The intro (icon, title, line, HP/gold) sits on a felt panel
+ * so text never rides on busy scene art; choices are raised brass buttons.
+ */
+.event-intro,
+.event-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: min(100%, 560px);
+  min-width: 0;
+}
+
+.event-intro {
+  padding: 14px 18px 16px;
+  border: 2px solid var(--toy-panel-border);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 244, 204, 0.08), transparent 40%),
+    rgba(36, 19, 46, 0.92);
+  box-shadow: var(--toy-raised-shadow), var(--toy-inset);
+}
+
+.event-intro .event-icon {
+  filter: drop-shadow(0 3px 0 rgba(30, 12, 20, 0.6));
+}
+
+.event-intro h2 {
+  margin: 0;
+  color: var(--toy-brass-light);
+  font-size: 1.7rem;
+  line-height: 1.2;
+  text-shadow: 0 2px 0 rgba(55, 26, 34, 0.8);
+}
+
+/* The title takes focus only so screen readers start here. */
+.event-intro h2:focus {
+  outline: none;
+}
+
+.event-presentation {
+  color: var(--toy-cream);
+  line-height: 1.45;
+}
+
+.event-intro .kid-status {
+  gap: 10px;
+  font-size: 1.15rem;
+}
+
+.event-intro .kid-stat {
+  padding: 4px 12px;
+}
+
+.event-body .kid-prompt {
+  margin: 0;
+}
+
+.event-body .event-choices {
+  max-width: 460px;
+  gap: 10px;
+}
+
+.event-choice {
+  flex-direction: row;
+  flex-wrap: wrap;
+  column-gap: 6px;
+  row-gap: 4px;
+  min-height: 52px;
+  padding: 8px 14px;
+  border: 3px solid var(--toy-brass);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 46%),
+    linear-gradient(180deg, #5d3a6c, #3a2349);
+  color: var(--toy-cream);
+  font-size: 1.15rem;
+  font-weight: 800;
+  box-shadow: var(--toy-raised-shadow), var(--toy-inset);
+}
+
+.event-choice-label {
+  flex-basis: 100%;
+}
+
+.event-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.event-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border: 1px solid rgba(255, 224, 142, 0.42);
+  border-radius: 999px;
+  background: rgba(22, 12, 28, 0.55);
+  color: var(--toy-cream);
+  font-weight: 800;
+}
+
+.event-choice:disabled {
+  border: 3px dashed rgba(255, 224, 142, 0.5);
+  background: rgba(30, 18, 38, 0.92);
+  color: #d9cbe0;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.event-choice:disabled .event-chip {
+  opacity: 0.75;
+}
+
+.event-choice-reason {
+  flex-basis: 100%;
+  color: #ffcfae;
+  font-weight: 700;
+}
+
+.event-result {
+  color: var(--toy-cream);
+  font-weight: 700;
+}
+
+.event-results {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 16px;
+  border-radius: 18px;
+  background: rgba(36, 19, 46, 0.88);
+}
+
+/*
+ * Short landscape phones: two columns. Intro on the left, choices on the
+ * right so every choice is on screen at first view. Each column scrolls on
+ * its own if a long event still runs out of room.
+ */
+@media (max-height: 500px) and (orientation: landscape) {
+  #app > .screen.event-screen {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      'coach body'
+      'intro body';
+    align-items: stretch;
+    gap: 6px 12px;
+    height: calc(100dvh - max(12px, env(safe-area-inset-top)) - max(12px, env(safe-area-inset-bottom)));
+    min-height: 0;
+    /* Clear the menu button and the vertical tower rail on the right. */
+    padding: 2px max(128px, calc(env(safe-area-inset-right) + 124px)) 2px 2px;
+    overflow: hidden;
+  }
+
+  .event-screen > .adult-coach {
+    grid-area: coach;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    max-height: 40dvh;
+    overflow-y: auto;
+  }
+
+  .event-screen > .event-intro {
+    grid-area: intro;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    min-height: 0;
+    padding: 10px 12px;
+    overflow-y: auto;
+  }
+
+  .event-screen > .event-body {
+    grid-area: body;
+    gap: 8px;
+    width: 100%;
+    min-height: 0;
+    padding: 2px 2px 8px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* Auto margins center short content but still scroll safely when tall. */
+  .event-screen > .event-body > :first-child {
+    margin-top: auto;
+  }
+
+  .event-screen > .event-body > :last-child {
+    margin-bottom: auto;
+  }
+
+  .event-intro .event-icon {
+    font-size: 2.2rem;
+  }
+
+  .event-intro h2 {
+    font-size: 1.35rem;
+  }
+
+  .event-presentation {
+    font-size: 0.98rem;
+    line-height: 1.35;
+  }
+
+  .event-intro .kid-status {
+    gap: 8px;
+    font-size: 1rem;
+  }
+
+  .event-intro .kid-stat {
+    padding: 3px 10px;
+  }
+
+  .event-body .event-choices {
+    max-width: none;
+    gap: 8px;
+  }
+
+  .event-choice {
+    min-height: 48px;
+    padding: 6px 10px;
+    border-radius: 16px;
+    font-size: 1.05rem;
+  }
+
+  .event-choice-label {
+    font-size: 1.05rem;
+  }
+
+  .event-chip,
+  .event-choice-reason {
+    font-size: 0.84rem;
+  }
+
+  .event-body .kid-prompt {
+    font-size: 1.05rem;
+  }
+}
+
+/* Narrower landscape: the tower rail turns sideways next to the menu, so
+   the choice column drops below it instead of keeping a wide gutter. */
+@media (max-height: 500px) and (orientation: landscape) and (max-width: 760px) {
+  #app > .screen.event-screen {
+    padding-right: max(74px, calc(env(safe-area-inset-right) + 70px));
+  }
+
+  .event-screen > .event-body {
+    padding-top: 46px;
+  }
+}
+
+/* ─── Enemy mechanic cues: strength, summon, boss brace ─────────────────
+   Chips and badges are absolutely placed so they never change slot size
+   or hit targets. Icons carry the meaning; titles are for adults. */
+.combat-stage .intent {
+  position: relative;
+}
+
+.intent-chips {
+  position: absolute;
+  top: 2px;
+  right: 3px;
+  display: flex;
+  gap: 1px;
+  pointer-events: none;
+}
+
+.intent-cue-chip {
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 2px;
+  border-radius: 999px;
+  background: rgba(45, 23, 20, 0.78);
+  box-shadow: 0 0 0 1px rgba(255, 224, 147, 0.7);
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.intent-strength-mark {
+  background: #8f2f1f;
+  box-shadow: 0 0 0 1px #ffb36b;
+}
+
+.combat-stage .intent.intent-cue-brace {
+  border-color: var(--toy-brass) !important;
+  background: linear-gradient(180deg, #2f5f8f, #1c3757) !important;
+  color: #d8eeff !important;
+  box-shadow:
+    0 0 0 2px rgba(228, 184, 76, 0.55),
+    0 3px 0 var(--toy-walnut-dark);
+}
+
+.combat-stage .intent.intent-cue-summon {
+  border-color: #8fe3b8 !important;
+  background: linear-gradient(180deg, #2b5c4c, #1a3a33) !important;
+  color: #d6ffe9 !important;
+}
+
+.combat-stage .intent.intent-cue-buff-allies,
+.combat-stage .intent.intent-cue-buff-self {
+  border-color: #ffa654 !important;
+  background: linear-gradient(180deg, #7a3d1a, #4f2412) !important;
+  color: #ffe0bd !important;
+}
+
+.combat-stage .enemy-emoji {
+  position: relative;
+}
+
+.enemy-cue-badges {
+  position: absolute;
+  inset: 0 -4px auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.enemy-cue-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.enemy-cue-col:last-child {
+  align-items: flex-end;
+}
+
+.enemy-cue-badge {
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.86rem;
+  font-weight: 900;
+  line-height: 1.3;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.enemy-strength-badge {
+  border: 2px solid var(--toy-brass);
+  background: linear-gradient(180deg, #e0582f, #a52f1d);
+  color: #fff4e0;
+  box-shadow: 0 2px 0 var(--toy-walnut-dark);
+}
+
+.enemy-new-badge {
+  border: 2px solid #8fe3b8;
+  background: #1f5a45;
+  color: #e6fff1;
+  box-shadow: 0 2px 0 var(--toy-walnut-dark);
+}
+
+.enemy-brace-badge {
+  border: 2px solid var(--toy-brass);
+  background: linear-gradient(180deg, #3d78b0, #1f4369);
+  color: #fff;
+  box-shadow:
+    0 0 10px rgba(122, 196, 255, 0.55),
+    0 2px 0 var(--toy-walnut-dark);
+  animation: braceGlint 1.6s ease-in-out infinite;
+}
+
+@keyframes braceGlint {
+  0%,
+  100% {
+    box-shadow:
+      0 0 6px rgba(122, 196, 255, 0.35),
+      0 2px 0 var(--toy-walnut-dark);
+  }
+  50% {
+    box-shadow:
+      0 0 14px rgba(122, 196, 255, 0.85),
+      0 2px 0 var(--toy-walnut-dark);
+  }
+}
+
+.enemy-slot.enemy-arriving .enemy-miniature-art,
+.enemy-slot.enemy-arriving .enemy-new-badge {
+  animation: enemyArrive 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes enemyArrive {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.6);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
+  .intent-cue-chip {
+    min-width: 16px;
+    height: 16px;
+    font-size: 0.66rem;
+  }
+
+  .enemy-cue-badge {
+    padding: 0 4px;
+    border-width: 1.5px;
+    font-size: 0.7rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enemy-brace-badge,
+  .enemy-slot.enemy-arriving .enemy-miniature-art,
+  .enemy-slot.enemy-arriving .enemy-new-badge {
+    animation: none;
+  }
+}

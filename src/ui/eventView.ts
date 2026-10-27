@@ -53,6 +53,7 @@ export function renderEvent(): HTMLElement {
   }
   el.dataset.eventId = event.id;
   el.dataset.act = String(state.actIndex + 1);
+  el.dataset.phase = active.phase;
 
   if (session.eventSpokenId !== event.id) {
     session.eventSpokenId = event.id;
@@ -77,7 +78,14 @@ export function renderEvent(): HTMLElement {
   gold.className = 'kid-stat';
   gold.textContent = `🪙${state.gold}`;
   status.append(hp, gold);
-  el.append(icon, title, line, status);
+  // The intro sits on its own felt panel so text never rides on busy art;
+  // the body column holds whatever the current phase asks the child to tap.
+  const intro = document.createElement('div');
+  intro.className = 'event-intro';
+  intro.append(icon, title, line, status);
+  const body = document.createElement('div');
+  body.className = 'event-body';
+  el.append(intro, body);
   appendCoach(el);
 
   if (session.eventFocusId !== event.id) {
@@ -119,7 +127,7 @@ export function renderEvent(): HTMLElement {
       });
       choices.appendChild(button);
     }
-    el.appendChild(choices);
+    body.appendChild(choices);
     return el;
   }
 
@@ -149,7 +157,7 @@ export function renderEvent(): HTMLElement {
       actionButton('確定', () => confirmEventChoice(run())),
       actionButton('回去', () => cancelEventChoice(run())),
     );
-    el.append(note, chips, names, actions);
+    body.append(note, chips, names, actions);
     return el;
   }
 
@@ -172,7 +180,7 @@ export function renderEvent(): HTMLElement {
     const stepNeed = active.pickSteps[active.pickIndex]?.need ?? 1;
     confirm.disabled = active.draftUids.length < stepNeed;
     actions.append(confirm, actionButton('回去', () => cancelEventChoice(run())));
-    el.append(prompt, grid, actions);
+    body.append(prompt, grid, actions);
     return el;
   }
 
@@ -186,7 +194,7 @@ export function renderEvent(): HTMLElement {
       grid.appendChild(cardButton(defId, false, () => takeEventOfferCard(run(), defId)));
     }
     const skip = actionButton('不拿也很好', () => takeEventOfferCard(run(), null));
-    el.append(prompt, grid, skip);
+    body.append(prompt, grid, skip);
     return el;
   }
 
@@ -198,7 +206,7 @@ export function renderEvent(): HTMLElement {
     const prompt = document.createElement('p');
     prompt.className = 'kid-prompt';
     prompt.textContent = names ? `要跟${names}打招呼` : '要開始了';
-    el.append(prompt, actionButton('開始', () => startEventCombat(run())));
+    body.append(prompt, actionButton('開始', () => startEventCombat(run())));
     return el;
   }
 
@@ -210,7 +218,7 @@ export function renderEvent(): HTMLElement {
     row.textContent = result;
     results.appendChild(row);
   }
-  el.append(results, actionButton('繼續', () => continueEventResult(run())));
+  body.append(results, actionButton('繼續', () => continueEventResult(run())));
   return el;
 }
 
