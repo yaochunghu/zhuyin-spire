@@ -790,6 +790,11 @@ button:active:not(:disabled) {
   backdrop-filter: blur(7px);
 }
 
+/* Centered, so keep clear of the ☰ control on both sides as relics pile up. */
+.map-stage-top {
+  max-width: calc(100% - 168px);
+}
+
 .map-panel {
   padding: 8px;
   border: 7px solid var(--toy-walnut);
@@ -1781,8 +1786,7 @@ html[data-screen='combat'] .global-control-btn {
   white-space: nowrap;
 }
 
-.combat-hud-location > span,
-.combat-relic-token {
+.combat-hud-location > span {
   display: grid;
   width: 42px;
   height: 42px;
@@ -1796,7 +1800,6 @@ html[data-screen='combat'] .global-control-btn {
 
 .combat-hud-relics {
   gap: 6px;
-  overflow: hidden;
 }
 
 .combat-hud-resources {
@@ -2361,6 +2364,61 @@ html[data-screen='combat'] .global-control-btn {
   }
 }
 
+/*
+ * Phones keep relics to one HUD row so the battlefield keeps its height:
+ * compact 44px tokens, then a sideways scroll with a visible bar once the
+ * HUD column runs out of room (640px landscape fits only two).
+ */
+@media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
+  .combat-hud-relics {
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+    scrollbar-color: var(--toy-brass) rgba(36, 18, 28, 0.6);
+  }
+
+  .combat-hud-relics .relic-badge-row {
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    max-width: none;
+  }
+
+  .combat-hud-relics .relic-badge {
+    flex-basis: 44px;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    font-size: 1.3rem;
+    scroll-snap-align: start;
+  }
+}
+
+/* Fade the right edge only while more relics wait off-screen. */
+@property --relic-scroll-fade {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@keyframes relicScrollHint {
+  from { --relic-scroll-fade: 28px; }
+  to { --relic-scroll-fade: 0px; }
+}
+
+@supports (animation-timeline: scroll()) {
+  @media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
+    .combat-hud-relics {
+      animation: relicScrollHint linear both;
+      animation-timeline: scroll(self inline);
+      -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - var(--relic-scroll-fade)), transparent);
+      mask-image: linear-gradient(90deg, #000 calc(100% - var(--relic-scroll-fade)), transparent);
+    }
+  }
+}
+
 @media (max-width: 600px) {
   .combat-stage {
     grid-template-rows: auto minmax(0, 1fr) auto;
@@ -2398,8 +2456,7 @@ html[data-screen='combat'] .global-control-btn {
     font-size: 0.74rem;
   }
 
-  .combat-hud-location > span,
-  .combat-relic-token {
+  .combat-hud-location > span {
     width: 34px;
     height: 34px;
     border-radius: 10px;
@@ -2420,7 +2477,6 @@ html[data-screen='combat'] .global-control-btn {
     display: flex;
     grid-area: relics;
     justify-content: flex-start;
-    overflow-x: auto;
   }
 
   .combat-hud-resources {

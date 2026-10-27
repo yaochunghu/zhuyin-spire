@@ -1,6 +1,21 @@
 import { expect, test, type Page } from '@playwright/test';
 
 const POOL_IDS = ['gapThumb', 'trainingWrap', 'tempoWood', 'listeningHeart', 'trainingStance'];
+const ALL_RELIC_IDS = ['tuningFork', ...POOL_IDS];
+const SMALL_VIEWPORTS = [
+  { width: 390, height: 844 },
+  { width: 360, height: 640 },
+  { width: 640, height: 360 },
+  { width: 844, height: 390 },
+  { width: 768, height: 1024 },
+];
+
+interface Box {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
 const consoleErrors = new WeakMap<Page, string[]>();
 
 async function debugAction(page: Page, rowName: string, buttonName: string): Promise<void> {
@@ -9,6 +24,114 @@ async function debugAction(page: Page, rowName: string, buttonName: string): Pro
     .filter({ hasText: rowName })
     .getByRole('button', { name: buttonName, exact: true })
     .click();
+}
+
+async function roundedBox(page: Page, selector: string, index = 0): Promise<Box | null> {
+  return page.evaluate(
+    ([sel, i]) => {
+      const el = document.querySelectorAll<HTMLElement>(sel)[i];
+      if (!el || getComputedStyle(el).display === 'none') return null;
+      const rect = el.getBoundingClientRect();
+      return {
+        left: Math.round(rect.left),
+        right: Math.round(rect.right),
+        top: Math.round(rect.top),
+        bottom: Math.round(rect.bottom),
+      };
+    },
+    [selector, index] as const,
+  );
+}
+
+function overlaps(a: Box, b: Box): boolean {
+  return a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+}
+
+function contains(outer: Box, inner: Box): boolean {
+  return (
+    inner.left >= outer.left &&
+    inner.right <= outer.right &&
+    inner.top >= outer.top &&
+    inner.bottom <= outer.bottom
+  );
+}
+
+async function isTopmostAtCenter(page: Page, selector: string, index: number): Promise<boolean> {
+  return page.evaluate(
+    ([sel, i]) => {
+      const el = document.querySelectorAll<HTMLElement>(sel)[i]!;
+      const rect = el.getBoundingClientRect();
+      const hit = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      return !!hit && el.contains(hit);
+    },
+    [selector, index] as const,
+  );
+}
+
+/**
+ * Every badge must sit fully on screen with a >= 44px target, inside its
+ * container's visible box. A scrollable container may hold a badge out of
+ * view, as long as scrolling brings it in and it then takes a tap.
+ */
+async function expectBadgesReachable(
+  page: Page,
+  containerSelector: string,
+  viewport: { width: number; height: number },
+): Promise<Box[]> {
+  const badgeSelector = `${containerSelector} .relic-badge`;
+  const badges = page.locator(badgeSelector);
+  await expect(badges).toHaveCount(ALL_RELIC_IDS.length);
+  // Screen entry and resize can still be settling; measure a still frame.
+  const frame = () =>
+    page.evaluate(async (sel) => {
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      return [...document.querySelectorAll<HTMLElement>(sel)]
+        .map((el) => {
+          const rect = el.getBoundingClientRect();
+          return [rect.left, rect.top, rect.right, rect.bottom].map(Math.round).join(',');
+        })
+        .join('|');
+    }, `${containerSelector}, ${badgeSelector}`);
+  let previous = '';
+  await expect
+    .poll(async () => {
+      const current = await frame();
+      const stable = current === previous;
+      previous = current;
+      return stable;
+    })
+    .toBe(true);
+  const boxes: Box[] = [];
+  for (let i = 0; i < ALL_RELIC_IDS.length; i += 1) {
+    const label = `${containerSelector} badge ${i + 1} at ${viewport.width}x${viewport.height}`;
+    let box = (await roundedBox(page, badgeSelector, i))!;
+    let container = (await roundedBox(page, containerSelector))!;
+    if (!contains(container, box)) {
+      const scrollable = await page.locator(containerSelector).evaluate((el) => {
+        const overflowX = getComputedStyle(el).overflowX;
+        return (overflowX === 'auto' || overflowX === 'scroll') && el.scrollWidth > el.clientWidth;
+      });
+      expect(scrollable, `${label} is clipped by a container that cannot scroll`).toBe(true);
+      await badges.nth(i).scrollIntoViewIfNeeded();
+      box = (await roundedBox(page, badgeSelector, i))!;
+      container = (await roundedBox(page, containerSelector))!;
+      expect(contains(container, box), `${label} stays clipped after scrolling`).toBe(true);
+      await badges.nth(i).click();
+      const dialog = page.getByRole('dialog', { name: /查看遺物/ });
+      await expect(dialog).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(dialog).toBeHidden();
+    }
+    expect(box.left, `${label} left`).toBeGreaterThanOrEqual(0);
+    expect(box.right, `${label} right`).toBeLessThanOrEqual(viewport.width);
+    expect(box.top, `${label} top`).toBeGreaterThanOrEqual(0);
+    expect(box.bottom, `${label} bottom`).toBeLessThanOrEqual(viewport.height);
+    expect(box.right - box.left, `${label} width`).toBeGreaterThanOrEqual(44);
+    expect(box.bottom - box.top, `${label} height`).toBeGreaterThanOrEqual(44);
+    expect(await isTopmostAtCenter(page, badgeSelector, i), `${label} is covered`).toBe(true);
+    boxes.push(box);
+  }
+  return boxes;
 }
 
 test.beforeEach(async ({ page }) => {
@@ -105,27 +228,6 @@ test('chests, elites, and bosses drop relics, and a badge opens the inspect dial
   await page.getByRole('button', { name: '關閉遺物說明' }).click();
   await expect(dialog).toBeHidden();
 
-  const earnedRelicIds = await page.evaluate(async () => {
-    const { run, render } = await import('/src/ui/runtime.ts');
-    const state = run();
-    const earned = [...state.relicIds];
-    state.relicIds = ['tuningFork', 'gapThumb', 'trainingWrap', 'tempoWood', 'listeningHeart', 'trainingStance'];
-    render();
-    return earned;
-  });
-  const sixBadges = page.locator('.map-relic-badges .relic-badge');
-  await expect(sixBadges).toHaveCount(6);
-  const tops = await sixBadges.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().top));
-  expect(new Set(tops).size).toBe(1);
-  const rights = await sixBadges.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().right));
-  expect(Math.max(...rights)).toBeLessThanOrEqual(390);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
-
-  await page.evaluate(async (earned) => {
-    const { run, render } = await import('/src/ui/runtime.ts');
-    run().relicIds = earned;
-    render();
-  }, earnedRelicIds);
   await expect(badges).toHaveCount(3);
 
   await page.evaluate(async () => {
@@ -146,4 +248,60 @@ test('chests, elites, and bosses drop relics, and a badge opens the inspect dial
   expect(POOL_IDS).toContain(bossId);
   expect(bossId).not.toBe(chestId);
   expect(bossId).not.toBe(eliteId);
+});
+
+test('six relic badges stay on screen and tappable on phones and tablets', async ({ page }) => {
+  await page.goto('/?debug=1');
+  await page.getByRole('button', { name: '開始爬塔' }).click();
+  await page.getByRole('button', { name: /選擇共鳴武者/ }).click();
+  await expect(page.locator('.map-stage')).toBeVisible();
+  await page.evaluate(async (ids) => {
+    const { run, render } = await import('/src/ui/runtime.ts');
+    run().relicIds = ids;
+    render();
+  }, ALL_RELIC_IDS);
+
+  for (const viewport of SMALL_VIEWPORTS) {
+    await page.setViewportSize(viewport);
+    const toggle = page.locator('.map-stage .adult-coach-head');
+    // The expanded coach is the larger box, so measure against it.
+    if ((await toggle.getAttribute('aria-expanded')) === 'false') await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+
+    const badgeBoxes = await expectBadgesReachable(page, '.map-relic-badges', viewport);
+    const pause = (await roundedBox(page, '.pause-global-control'))!;
+    const coach = (await roundedBox(page, '.map-stage .adult-coach'))!;
+    const chrome: [string, Box | null][] = [
+      ['.map-stage-top', await roundedBox(page, '.map-stage-top')],
+      ['.map-phone-progress', await roundedBox(page, '.map-phone-progress')],
+      ...badgeBoxes.map((box, i): [string, Box] => [`badge ${i + 1}`, box]),
+    ];
+    for (const [name, box] of chrome) {
+      if (!box) continue;
+      const at = `at ${viewport.width}x${viewport.height}`;
+      expect(overlaps(box, pause), `${name} overlaps the pause button ${at}`).toBe(false);
+      expect(overlaps(box, coach), `${name} overlaps the coach panel ${at}`).toBe(false);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      viewport.width,
+    );
+  }
+
+  await page.evaluate(async () => {
+    const { run, render } = await import('/src/ui/runtime.ts');
+    const { debugStartEncounter } = await import('/src/game/state.ts');
+    debugStartEncounter(run(), 'slime');
+    render();
+  });
+  await expect(page.locator('.combat-hud-relics')).toBeVisible();
+  for (const viewport of SMALL_VIEWPORTS) {
+    await page.setViewportSize(viewport);
+    await page.locator('.combat-hud-relics').evaluate((el) => {
+      el.scrollLeft = 0;
+    });
+    await expectBadgesReachable(page, '.combat-hud-relics', viewport);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      viewport.width,
+    );
+  }
 });

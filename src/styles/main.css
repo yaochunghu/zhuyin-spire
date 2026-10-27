@@ -2221,14 +2221,10 @@ button:disabled {
   font-weight: 950;
 }
 
-.relic-pill {
-  border-color: var(--accent2) !important;
-}
-
 .relic-badge-row,
 .map-relic-badges {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: center;
   gap: 4px;
   max-width: 100%;
@@ -2603,8 +2599,9 @@ button:disabled {
   height: 1080px;
   flex-shrink: 0;
   transform-origin: center center;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 8px;
   padding: 16px 24px 12px;
   box-sizing: border-box;
@@ -2621,8 +2618,9 @@ button:disabled {
 }
 
 .map-stage-top .map-status-bar {
+  flex-wrap: wrap;
   width: auto;
-  max-width: none;
+  max-width: 100%;
   justify-content: center;
 }
 
@@ -2653,12 +2651,18 @@ button:disabled {
   min-height: 0;
 }
 
-/* Floating coach on map — same idea as combat */
+/*
+ * Floating coach on map — same idea as combat. Placing it in the panel's grid
+ * row makes that row its containing block, so it always starts below the top
+ * bar however many lines the bar wraps to.
+ */
 .map-stage .adult-coach,
 .map-stage .adult-coach-float {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  grid-row: 2;
+  grid-column: 1;
+  top: 10px;
+  left: 10px;
   z-index: 45;
   max-width: min(400px, 32vw);
   margin: 0;
@@ -5482,15 +5486,21 @@ body.modal-open {
     min-height: 64px;
     padding-right: 70px;
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    gap: 5px;
+    gap: 5px 4px;
   }
 
+  /* HP, gold and floor progress share the first line; relics wrap below. */
   .map-stage-top .map-status-bar {
-    flex-wrap: wrap;
-    gap: 4px;
+    display: contents;
     font-size: 0.92rem;
+  }
+
+  .map-stage-top .map-relic-badges {
+    order: 1;
+    justify-content: center;
   }
 
   .map-stage-top .kid-stat {
@@ -5568,8 +5578,8 @@ body.modal-open {
   }
 
   .map-stage .adult-coach {
-    top: 70px;
-    left: max(6px, env(safe-area-inset-left));
+    top: 6px;
+    left: 6px;
     max-width: 142px;
   }
 
