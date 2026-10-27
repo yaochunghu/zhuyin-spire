@@ -2365,9 +2365,10 @@ html[data-screen='combat'] .global-control-btn {
 }
 
 /*
- * Phones keep relics to one HUD row so the battlefield keeps its height:
- * compact 44px tokens, then a sideways scroll with a visible bar once the
- * HUD column runs out of room (640px landscape fits only two).
+ * Phones keep relics on one HUD row so the battlefield keeps its height:
+ * compact 44px tokens, then a sideways scroll once that row runs out of room.
+ * Short landscape windows do not use this squeezed middle column; the block
+ * below gives those relics their own full-width row.
  */
 @media (max-width: 600px), (max-height: 500px) and (orientation: landscape) {
   .combat-hud-relics {
@@ -2717,6 +2718,29 @@ html[data-screen='combat'] .global-control-btn {
   .combat-hud-strip {
     grid-column: 1 / -1;
     grid-row: 1;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'location resources'
+      'relics relics';
+  }
+
+  .combat-hud-location {
+    grid-area: location;
+    overflow: hidden;
+  }
+
+  .combat-hud-resources {
+    grid-area: resources;
+  }
+
+  /* The middle column of the wide HUD is too narrow here to show a 44px
+     token after scrolling. Give the relics the full strip width instead. */
+  .combat-hud-relics {
+    grid-area: relics;
+    justify-content: flex-start;
+    align-items: center;
+    min-height: 44px;
+    scrollbar-width: none;
   }
 
   .combat-battlefield {

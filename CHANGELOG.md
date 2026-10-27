@@ -17,6 +17,7 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - Kept 初心音叉 as the starter. The four legacy relics still load for old saves and are not offered
 - Moved saves to version 3. A v1 or v2 `relicId` becomes the ordered `relicIds` list
 - Added tappable relic badges that show the Chinese name and effect. No relic skips casting
+- On a short landscape screen the combat badges sit on their own full-width row, so six tokens stay on screen at 640×360
 
 ### Combat and campfire fixes
 
