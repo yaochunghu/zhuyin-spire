@@ -69,6 +69,19 @@ Energy is per-combat; end turn discards remaining hand then enemy acts then redr
   that enemy's next action. `applyEnemyIntent` sets that unit's block to 0
   before resolving the intent, so a block intent grants a fresh shield and an
   attack does not keep the old one. Another enemy acting does not clear it.
+- A listening enemy (`listens`) treats each successful cast as −1 to a later
+  attack, minimum 1 before Weak. The current intent pill does not change. A
+  fizzle does not soften or punish. Block turns hold that soothe for the next
+  attack.
+- Strength from a buff step is added to later attack hits and is already inside
+  the intent number. It commits after the whole enemy phase, so the attack
+  shown this turn does not grow. Only enemies with `strengthCap` can keep it.
+- A summon step adds one enemy if the row has fewer than three. The new enemy
+  shows an intent on the next player turn and does not act in the phase it
+  appeared.
+- A boss `phases` entry replaces 下回合 with its `enter` step once hp is at or
+  below `belowHp`. That enter step plays once, then the phase pattern cycles.
+  The current pill stays put until the enemy acts.
 - Legacy “primary” fields sync via `syncPrimaryEnemy` for older callers
 
 Encounters (1–3 enemies) come from `data/encounters.ts` or single-enemy node fields on the map.

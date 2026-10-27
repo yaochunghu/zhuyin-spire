@@ -29,6 +29,8 @@ export function coachForScreen(
     node?: MapNode;
     castMode?: CastMode;
     act?: number;
+    /** Mechanic line for the enemy teaching this fight. */
+    combatTip?: string | null;
   },
 ): { title: string; body: string } {
   switch (screen) {
@@ -85,7 +87,9 @@ export function coachForScreen(
     case 'combat':
       return {
         title: '戰鬥',
-        body: '先看意圖。完整擋住一次敵方攻擊會得到 1 勁；易傷讓攻擊變成 1.5 倍；技能與攻擊交替成功會轉拍。攻擊拖到怪，技能拖到角色，✋ 結束回合。',
+        body: opts?.combatTip
+          ? `${opts.combatTip} 攻擊拖到怪，技能拖到角色，✋ 結束回合。`
+          : '先看意圖。完整擋住一次敵方攻擊會得到 1 勁；易傷讓攻擊變成 1.5 倍；技能與攻擊交替成功會轉拍。攻擊拖到怪，技能拖到角色，✋ 結束回合。',
       };
     case 'castCheck': {
       if (opts?.castMode === 'listen' || opts?.castMode === 'listenHard') {

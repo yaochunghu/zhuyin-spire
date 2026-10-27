@@ -8,6 +8,12 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+### Encounter diversity
+
+- Each act gains native listeners, buffers or scalers, and summoners. Act II and Act III elites are no longer recycled Act I fights. Bosses telegraph a brace, then one heavier hit. A small friend arrives on the shield after that hit, and the Act III boss grows one point during the brace.
+- A correct 注音 cast softens a listening enemy's later attack. The current intent number stays put. Fizzles are not punished.
+- Map fights use an easy opening quota and do not repeat a normal recipe across the next two fights on a path.
+
 ### Combat and campfire fixes
 
 - Searching the discard for a card type no longer deletes the cards still in the draw pile.

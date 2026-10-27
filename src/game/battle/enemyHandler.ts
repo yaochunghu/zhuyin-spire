@@ -5,10 +5,10 @@
 
 import {
   ENEMIES,
-  intentAt,
   intentHitCount,
   type EnemyDef,
   type Intent,
+  type IntentStep,
 } from '../../data/enemies';
 import { livingEnemies } from './effects';
 import { pushFx } from './fx';
@@ -31,6 +31,14 @@ export function spawnEnemies(defIds: string[]): EnemyUnit[] {
       alive: true,
       vulnerableTurns: 0,
       weakTurns: 0,
+      strength: 0,
+      bankedStrength: 0,
+      armedSoothe: 0,
+      pendingSoothe: 0,
+      phase: 0,
+      queuedEnter: false,
+      summoned: false,
+      justSummoned: false,
     };
   });
 }
@@ -91,28 +99,85 @@ export function getEnemyUnit(state: CombatState, id: string): EnemyUnit | null {
   return state.enemies.find((e) => e.id === id) ?? null;
 }
 
+function strengthCap(unit: EnemyUnit): number {
+  return ENEMIES[unit.defId]?.strengthCap ?? 0;
+}
+
+function rawStep(unit: EnemyUnit, offset: 0 | 1): IntentStep {
+  const def = ENEMIES[unit.defId];
+  if (!def || def.pattern.length === 0) return { kind: 'attack', value: 0 };
+  const phase = def.phases?.[0];
+  const crossed = !!phase && unit.hp > 0 && unit.hp <= phase.belowHp && (unit.phase ?? 0) === 0;
+  if (unit.queuedEnter && phase) {
+    if (offset === 0) return phase.enter;
+    return phase.pattern[0] ?? phase.enter;
+  }
+  if (!unit.queuedEnter && crossed && offset === 1 && phase) return phase.enter;
+  const pattern = (unit.phase ?? 0) > 0 && phase ? phase.pattern : def.pattern;
+  const index = ((unit.intentIndex ?? 0) + offset) % pattern.length;
+  return pattern[index] ?? { kind: 'attack', value: 0 };
+}
+
+function projectedStrength(unit: EnemyUnit, offset: 0 | 1, state?: CombatState): number {
+  const cap = strengthCap(unit);
+  const current = unit.strength ?? 0;
+  if (offset === 0 || cap <= 0) return Math.min(cap, current);
+  let extra = unit.bankedStrength ?? 0;
+  const actors = state?.enemies ?? [unit];
+  for (const actor of actors) {
+    if (!actor.alive || actor.hp <= 0 || actor.justSummoned) continue;
+    const step = rawStep(actor, 0);
+    if (actor.id === unit.id) extra += step.grantSelfStrength ?? 0;
+    else extra += step.grantStrength ?? 0;
+  }
+  return Math.min(cap, current + extra);
+}
+
+function sootheAmount(unit: EnemyUnit, offset: 0 | 1): number {
+  const pending = unit.pendingSoothe ?? 0;
+  const armed = unit.armedSoothe ?? 0;
+  if (!ENEMIES[unit.defId]?.listens) return 0;
+  if (offset === 0) return armed;
+  if (rawStep(unit, 0).kind === 'block') return armed + pending;
+  return pending;
+}
+
+/** Damage number before Weak. Strength and soothe are already inside it. */
+export function intentForOffset(unit: EnemyUnit, offset: 0 | 1, state?: CombatState): Intent {
+  const step = rawStep(unit, offset);
+  if (step.kind === 'block') return { kind: 'block', value: step.value };
+  const value = Math.max(1, step.value + projectedStrength(unit, offset, state) - sootheAmount(unit, offset));
+  return { kind: step.kind, value, hits: step.hits };
+}
+
 export function currentIntent(state: CombatState): Intent {
   const living = livingEnemies(state);
   const unit =
     (state.selectedEnemyId && living.find((e) => e.id === state.selectedEnemyId)) ||
     living[0];
   if (!unit) return { kind: 'attack', value: 0 };
-  const def = ENEMIES[unit.defId];
-  if (!def) return { kind: 'attack', value: 0 };
-  return intentAt(def, unit.intentIndex);
+  return intentForOffset(unit, 0, state);
 }
 
-export function intentForUnit(unit: EnemyUnit): Intent {
-  const def = ENEMIES[unit.defId];
-  if (!def) return { kind: 'attack', value: 0 };
-  return intentAt(def, unit.intentIndex);
+export function intentForUnit(unit: EnemyUnit, state?: CombatState): Intent {
+  if (!ENEMIES[unit.defId]) return { kind: 'attack', value: 0 };
+  return intentForOffset(unit, 0, state);
 }
 
 /** Intent the unit will show after the current one resolves (next turn). */
-export function nextIntentForUnit(unit: EnemyUnit): Intent {
-  const def = ENEMIES[unit.defId];
-  if (!def) return { kind: 'attack', value: 0 };
-  return intentAt(def, unit.intentIndex + 1);
+export function nextIntentForUnit(unit: EnemyUnit, state?: CombatState): Intent {
+  if (!ENEMIES[unit.defId]) return { kind: 'attack', value: 0 };
+  return intentForOffset(unit, 1, state);
+}
+
+/** A correct cast softens a listening enemy's later attack. Fizzles do not. */
+export function noteSuccessfulCast(state: CombatState): void {
+  for (const unit of state.enemies) {
+    if (!unit.alive || unit.hp <= 0) continue;
+    const def = ENEMIES[unit.defId];
+    if (!def?.listens) continue;
+    unit.pendingSoothe = Math.min(6, (unit.pendingSoothe ?? 0) + 1);
+  }
 }
 
 /**
@@ -134,12 +199,87 @@ export function selectEnemy(state: CombatState, enemyInstanceId: string): void {
 /**
  * Resolve one enemy intent: block self, or attack hero (multi hits sequential vs shield).
  */
+function bankGrants(state: CombatState, actor: EnemyUnit, step: IntentStep): void {
+  if (step.grantSelfStrength) {
+    actor.bankedStrength = (actor.bankedStrength ?? 0) + step.grantSelfStrength;
+  }
+  const allyBonus = step.grantStrength ?? 0;
+  if (allyBonus <= 0) return;
+  for (const other of state.enemies) {
+    if (other.id === actor.id || !other.alive || other.hp <= 0) continue;
+    other.bankedStrength = (other.bankedStrength ?? 0) + allyBonus;
+  }
+}
+
+function trySummon(state: CombatState, unit: EnemyUnit, defId: string | undefined): void {
+  if (!defId || unit.summoned) return;
+  unit.summoned = true;
+  const def = ENEMIES[defId];
+  const actor = ENEMIES[unit.defId];
+  if (!def || state.enemies.length >= 3) return;
+  enemyUid += 1;
+  state.enemies.push({
+    id: `e${enemyUid}`,
+    defId,
+    hp: def.maxHp,
+    maxHp: def.maxHp,
+    block: 0,
+    intentIndex: 0,
+    alive: true,
+    vulnerableTurns: 0,
+    weakTurns: 0,
+    strength: 0,
+    bankedStrength: 0,
+    armedSoothe: 0,
+    pendingSoothe: 0,
+    phase: 0,
+    queuedEnter: false,
+    summoned: false,
+    justSummoned: true,
+  });
+  state.log.push(`${actor?.name ?? unit.defId} 叫來了 ${def.name}`);
+}
+
+function consumeSoothe(unit: EnemyUnit, step: IntentStep): void {
+  if (!ENEMIES[unit.defId]?.listens) return;
+  if (step.kind === 'block') {
+    unit.armedSoothe = (unit.armedSoothe ?? 0) + (unit.pendingSoothe ?? 0);
+  } else {
+    unit.armedSoothe = unit.pendingSoothe ?? 0;
+  }
+  unit.pendingSoothe = 0;
+}
+
+function advancePattern(unit: EnemyUnit): void {
+  const def = ENEMIES[unit.defId];
+  const phase = def?.phases?.[0];
+  const crossed = !!phase && unit.hp > 0 && unit.hp <= phase.belowHp && (unit.phase ?? 0) === 0;
+  if (unit.queuedEnter && phase) {
+    unit.queuedEnter = false;
+    unit.phase = 1;
+    unit.intentIndex = 0;
+    return;
+  }
+  unit.intentIndex += 1;
+  if (crossed && phase) unit.queuedEnter = true;
+}
+
+function commitStrength(state: CombatState): void {
+  for (const unit of state.enemies) {
+    const cap = strengthCap(unit);
+    unit.strength = Math.min(cap, (unit.strength ?? 0) + (unit.bankedStrength ?? 0));
+    unit.bankedStrength = 0;
+    unit.justSummoned = false;
+  }
+}
+
 export function applyEnemyIntent(state: CombatState, unit: EnemyUnit): void {
   const def = ENEMIES[unit.defId];
   if (!def) return;
   // Enemy Block lasts until this enemy's next action, then a guard can grant a fresh shield.
   unit.block = 0;
-  const intent = intentAt(def, unit.intentIndex);
+  const step = rawStep(unit, 0);
+  const intent = intentForOffset(unit, 0, state);
 
   // —— Defend ——
   if (intent.kind === 'block') {
@@ -150,7 +290,10 @@ export function applyEnemyIntent(state: CombatState, unit: EnemyUnit): void {
       amount: intent.value,
       enemyId: unit.id,
     });
-    unit.intentIndex += 1;
+    trySummon(state, unit, step.summon);
+    bankGrants(state, unit, step);
+    consumeSoothe(unit, step);
+    advancePattern(unit);
     return;
   }
 
@@ -246,7 +389,10 @@ export function applyEnemyIntent(state: CombatState, unit: EnemyUnit): void {
       value: state.jin,
     });
   }
-  unit.intentIndex += 1;
+  trySummon(state, unit, step.summon);
+  bankGrants(state, unit, step);
+  consumeSoothe(unit, step);
+  advancePattern(unit);
 }
 
 /** Run sequential intents for all living enemies. */
@@ -254,9 +400,11 @@ export function runEnemyTurn(state: CombatState): void {
   const hpBefore = state.heroHp;
   for (const unit of state.enemies) {
     if (!unit.alive || unit.hp <= 0) continue;
+    if (unit.justSummoned) continue;
     applyEnemyIntent(state, unit);
     if (state.heroHp <= 0) break;
   }
+  commitStrength(state);
   if (state.flawlessTrainingPending > 0) {
     if (state.heroHp === hpBefore) state.training += state.flawlessTrainingPending;
     state.flawlessTrainingPending = 0;

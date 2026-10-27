@@ -249,11 +249,26 @@ export type EnemyArtDefId =
   | 'wraith'
   | 'owl'
   | 'crystal'
+  | 'echoBug'
+  | 'drumlet'
+  | 'bellMoth'
+  | 'dustDrum'
+  | 'noteWisp'
+  | 'littleConductor'
+  | 'bellWisp'
+  | 'mirrorNote'
+  | 'crownBell'
+  | 'starWisp'
   | 'eliteArmor'
   | 'eliteBee'
   | 'eliteBoom'
   | 'eliteStorm'
   | 'eliteShadow'
+  | 'eliteChorus'
+  | 'eliteConductor'
+  | 'eliteMuteDrum'
+  | 'elitePrism'
+  | 'eliteStarCaller'
   | 'boss1'
   | 'boss2'
   | 'boss3'
@@ -275,11 +290,26 @@ export const ENEMY_ART_BY_DEF_ID = {
   wraith: 'enemyWraith',
   owl: 'enemyOwl',
   crystal: 'enemyCrystal',
+  echoBug: 'enemyBat',
+  drumlet: 'enemyRock',
+  bellMoth: 'enemyBat',
+  dustDrum: 'enemyArmor',
+  noteWisp: 'enemyEmber',
+  littleConductor: 'enemySpike',
+  bellWisp: 'enemyEmber',
+  mirrorNote: 'enemyCrystal',
+  crownBell: 'enemyOwl',
+  starWisp: 'enemyWraith',
   eliteArmor: 'enemyEliteArmor',
   eliteBee: 'enemyEliteBee',
   eliteBoom: 'enemyEliteBoom',
   eliteStorm: 'enemyEliteStorm',
   eliteShadow: 'enemyEliteShadow',
+  eliteChorus: 'enemyEliteBee',
+  eliteConductor: 'enemyEliteStorm',
+  eliteMuteDrum: 'enemyEliteArmor',
+  elitePrism: 'enemyCrystal',
+  eliteStarCaller: 'enemyEliteShadow',
   boss1: 'enemyBoss1',
   boss2: 'enemyBoss2',
   boss3: 'enemyBoss3',

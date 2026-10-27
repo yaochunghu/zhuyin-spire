@@ -27,8 +27,12 @@ Kinds: `fight` | `elite` | `rest` | `shop` | `treasure` | `boss`
 
 Content hooks:
 
-- Normal / elite pools: `data/enemies.ts` (`ACT_NORMAL_POOL`, `ACT_ELITE_POOL`, `BOSS_ID`)
-- Multi-enemy recipes: `data/encounters.ts` (`ACT_MULTI_ENCOUNTERS`)
+- Normal / elite pools: `data/enemies.ts` (`ACT_EASY_SOLOS`, `ACT_HARD_SOLOS`, `ACT_ELITE_POOL`, `BOSS_ID`)
+- Multi-enemy recipes: `data/encounters.ts` (`pickNormalFight`, `pickEliteFight`)
+- Act I's first three normal fights on the shortest path use the easy pool.
+  Acts II and III use it for the first two. A normal key does not repeat among
+  the next two fights on a path, and an elite does not repeat the previous elite.
+  The pools are chosen when the map is built, so reloading does not reroll them.
 - Cast difficulty stage per node: `early` | `mid` | `elite` | `boss`
 
 Layout notes baked into generation:
