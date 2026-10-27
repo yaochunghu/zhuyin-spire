@@ -21,6 +21,7 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - Remove the 還 ↩️ and 傳 📣 rows whose readings did not match the picture, because 歸還 ㄏㄨㄢˊ and 傳播 ㄔㄨㄢˊ were already in the bank.
 - Remove the extra 桌 rows that repeated the same word and spelling.
 - Keep 余 for the surplus picture. The revised dictionary defines 剩下、多餘 on 余, so it is not rewritten as 餘.
+- Give the fourteen open phrase pictures the 《重編國語辭典修訂本》 reading for that picture: 背 ㄅㄟ, 鋪 ㄆㄨˋ, 興 ㄒㄧㄥˋ, 熟 ㄕㄨˊ, 掃 ㄙㄠˋ, 艘 ㄙㄠ, and 應 ㄧㄥˋ. 表, 量, 困, 將, 閑, 血, and 于 already had that reading.
 
 ---
 
