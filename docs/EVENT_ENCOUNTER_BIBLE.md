@@ -1,8 +1,11 @@
 # Event and encounter bible
 
-> **Status:** the 30 events below are implemented. Encounter quotas, per-act
-> enemy rewrites, and Act IV are still specification. This document remains the
-> source of truth for the event pass. Values are
+> **Status:** the 30 events below are implemented for Acts I, II, and III.
+> The live normal, elite, and boss roster, including easy quotas and
+> act-native elites, is [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md). Difficulty
+> variants, keys, the fuller status roster, and Act IV in this document are
+> still proposals. This document remains the source of truth for the event
+> pass. Values are
 > scaled for a 40-HP hero, three Energy, five cards per turn, persistent HP, and
 > a full 注音 cast before every playable card. Names, prose, and mechanics are
 > original to **注音之塔**.

@@ -141,8 +141,8 @@ flawless elite/boss victories, and a full-victory bonus. Stable run checkpoints
 carry the pending score counters; overwriting an unfinished run awards nothing.
 The profile stores only cumulative per-character score. Card counts and unlock
 stages are derived from each character's published pool, so future reviewed
-waves can join score tiers without another profile migration. The current
-共鳴武者 release exposes all 12 published designs and no score-gated draft cards.
+waves can join score tiers without another profile migration. The current 共鳴武者 release exposes all 75 designs: 12 at score 0, 33 at 300,
+54 at 1,000, and 75 at 2,000. Act I rewards stay on the nine-card teaching pool.
 
 `setCharacterScore` writes one character id and copies every other id through.
 `characterProgress` is the score namespace. On load, ids that are not in

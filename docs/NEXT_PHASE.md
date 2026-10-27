@@ -1,19 +1,23 @@
-# Next phase — after the 75-card progression
+# Next phase — after the Oct 27 merges
 
-The complete score-gated card pool is implemented. This page records what is
-live and what to do next. Keep running both debug-skip and cast-on Act II passes
-at each score milestone while balancing the advanced tiers.
+The complete score-gated card pool is implemented. The relic pool, potion belt,
+Act I–III events, act-native fights, cast-prompt seed, shop layout fix, and
+the 珠算武者 engine seams are on `main`. This page records what is live and
+what to do next. Keep running both debug-skip and cast-on Act II passes at
+each score milestone while balancing the advanced tiers.
 
 ## Current version
 
 | Source | Says |
 |--------|------|
-| `package.json` / `CHANGELOG.md` | **0.4.1** |
-| GitHub Releases | Latest published tag is **v0.4.0** (`535af22`). Publish **v0.4.1** from `main` after this version lands. |
+| `package.json` | **0.4.1** |
+| `CHANGELOG.md` | **[0.4.1]** is the published release. **[Unreleased]** is #44 and #50–#56. |
+| GitHub Releases | **v0.4.1** is published at `46f6486` (#49). That tag stops before #44 and #50–#56. |
 
 ## What is live
 
-- One playable character: 共鳴武者 (`echoMage`)
+- One playable character: 共鳴武者 (`echoMage`). Character select lists that row only.
+- Engine seams for 珠算武者 (first-grade math casting) from #51. `math` and `english` stay reserved ids. The game registry installs 注音 only. No second character, deck, card, or math provider is registered. Practice still builds Zhuyin prompts.
 - Act I: 12 teaching designs (starter 5/4/1 + 9 rewards)
 - Later acts / shop / treasure: 12 → 33 → 54 → 75 cards at character scores
   0 / 300 / 1,000 / 2,000
@@ -22,12 +26,18 @@ at each score milestone while balancing the advanced tiers.
 - A chest gives gold and one relic. Elites and bosses still offer a card and also drop one relic. When the five relics are already owned, that drop pays 20 gold
 - A 3-slot potion belt with six bottles. Event choices that ask for a bottle fill empty slots from that pool
 - Act I–III ? rooms and all 30 bible events. A random relic reward draws the relic pool and never replaces 初心音叉. Named event relics are granted by id
+- Act-native fights from #52. Each act has a listener, a buffer or scaler, and a summoner. Act II and Act III elites are not recycled Act I fights. Bosses brace, then one heavier hit, then a shield calls one friend that does not act on the turn it appears. The Act III boss gains one point during the brace. A correct cast softens a listener's later attack; the current intent number stays; a fizzle is not punished. Easy-opening quotas and the two-fight anti-repeat are chosen when the map is built. Event moth fights use the act-native 鐘粉蛾. Patterns are in [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md)
+- Each run stores `castSeed` and `castCounter` (#55). Mode rolls, shuffle-bag refills, and distractor banks read that stream. 注音神龕 draws from it too. The question on screen is not stored, so a reload shows the next prompt
+- On a phone, each shop offer keeps its card, price, and the remove-card button on screen. Short landscape no longer hides the price (#56)
+- #50: searching the discard for a card type no longer deletes cards still in the draw pile. The campfire remove screen can return to rest without deleting a card. Attack damage that is not marked 直傷 respects block and 易傷. Enemy block expires at that enemy's next action
+
+Saves stay on version 4. `eventTrack`, `castSeed`, and `castCounter` are optional, so a checkpoint from before those fields still loads. A missing event record starts empty. A missing seed is filled in and the counter starts at 0. A v1 or v2 `relicId` becomes `relicIds`. A v3 checkpoint loads with an empty belt and chance 40.
 
 ## Before expanding content
 
-The 75-card progression remains the baseline. Browser checks stay in [BROWSER_SUPPORT.md](BROWSER_SUPPORT.md) and [STABILIZATION.md](STABILIZATION.md). The physical-device checklist and the Act I family session are still open; run them from the kit in [PLAYTEST_GATE.md](PLAYTEST_GATE.md#playtest-kit). The relic pool, the first potion belt, and Act I–III events are in the tree.
+The 75-card progression remains the baseline. Browser checks stay in [BROWSER_SUPPORT.md](BROWSER_SUPPORT.md) and [STABILIZATION.md](STABILIZATION.md). The physical-device checklist and the Act I family session are still the recorded open human gates; run them from the kit in [PLAYTEST_GATE.md](PLAYTEST_GATE.md#playtest-kit). Relics, potions, events, and the fight pass are already in this tree. The published v0.4.1 notes still say relic work waits on those two playtests. That sentence describes the tag at #49.
 
-## Relic pool (0.5)
+## Relic pool
 
 Chests no longer repeat the card-reward screen. A chest pays its gold and one
 relic. An elite or a boss still offers a card and also drops one relic. Normal
@@ -49,9 +59,7 @@ on the map, in combat, and on the reward screen. No relic skips casting.
 
 The four legacy relics (小盾符, 零錢袋, 晨光火花, 幸運抽) stay in
 `src/data/relics.ts` so old saves keep their effects. They are not in the drop
-pool. Saves are version 4. A v1 or v2 `relicId` becomes `relicIds`, then a v3
-checkpoint gains an empty belt. Event progress is optional on that snapshot,
-so a save from before events still loads.
+pool.
 
 Event choices that name 口袋節拍器, 月光音樂盒, 雨聲筒, or 合唱緞帶 grant that
 relic by id. Choices that ask for a random common, uncommon, or rare relic all
@@ -88,9 +96,20 @@ Event choices that say `{ op: 'gainPotion' }` fill that many empty slots from
 the same six bottles. A choice that needs more free slots than the belt has
 stays visible and says 藥水格已滿.
 
-Saves are version 4. A v3 checkpoint loads with an empty belt and chance 40.
-Events did not need a fifth save version: `eventTrack` stays optional.
+## Next
 
-## Still gated
+These four are the current slice. Keys and Act IV stay later. They are not this slice.
 
-- Keys, Act IV, second character, English/math providers
+1. **Claude UI polish pass.** In progress separately. Do not start that UI work from this page. #52 left reused portraits and no strength, soothe, or summon icon; those cues belong to that pass. The pill number is the fight contract until then.
+2. **珠算武者 playable build.** First-grade math casting. #51 landed the engine seams only: a casting-task registry, a math binding that no shipped card sets, per-character score buckets, and an attempt model for sequence, three-choice, number pad, and build. The cast screen still draws sequence and single choice. The catalog, deck, cards, and math provider are still to build.
+3. **#52's open design questions.** Nine questions in [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md#questions-for-yao) are still open. They are not decided here:
+   - Keep Act II and Act III from rolling Act I elites and Act I normals.
+   - Keep one boss per act until each boss has its own portrait.
+   - A correct cast soothes a listener; a fizzle does not punish. The current pill stays a promise.
+   - New enemies reuse old portraits, for a later art pass.
+   - No new strength, soothe, or summon icon, for a later UI pass.
+   - Easy quota and anti-repeat stay baked when the map is built.
+   - Keep the enemy-block expiry shipped in #50.
+   - Act I has four elites after 和聲蛹. Keep four unless the pool must stay at three.
+   - 塔守護獸's friend is the shared 軟軟史萊姆. The first heavy is alone; a later heavy can share a turn with the slime if it is still alive.
+4. **The v0.4.1 release.** `package.json` is already 0.4.1. The published GitHub Release `v0.4.1` is `46f6486` (#49) and does not include #44 or #50–#56. Those commits are `[Unreleased]` in [CHANGELOG.md](../CHANGELOG.md). Publishing a release that includes them is still open. This page does not choose a new version number.

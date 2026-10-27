@@ -35,12 +35,12 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [STS_DESIGN_REFERENCE.md](./STS_DESIGN_REFERENCE.md) | StS combat, cards, runs, economy, progression, UX, and lessons to adapt |
 | [ENCOUNTER_RELIC_DESIGN_RESEARCH.md](./ENCOUNTER_RELIC_DESIGN_RESEARCH.md) | Review memo on StS/StS2 encounters, bosses, relic co-design, and a full-run design method |
 | [UPGRADE_BIBLE.md](./UPGRADE_BIBLE.md) | Live physical-copy foundation and all 75 score-gated upgrades |
-| [EVENT_ENCOUNTER_BIBLE.md](./EVENT_ENCOUNTER_BIBLE.md) | 30 live events; difficulty variants and Act IV still proposed |
-| [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md) | Live normal, elite, and boss roster, gaps, and the diversity pass |
+| [EVENT_ENCOUNTER_BIBLE.md](./EVENT_ENCOUNTER_BIBLE.md) | 30 live Act I–III events; difficulty variants, keys, and Act IV still proposed |
+| [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md) | Live normal, elite, and boss roster, and #52's nine open questions |
 | [BALANCE.md](./BALANCE.md) | Live economy / HP / hand numbers + design intent |
 | [DEBUG.md](./DEBUG.md) | Debug panel, flags, skip-cast testing |
 | [ROADMAP.md](./ROADMAP.md) | Shipped systems, next work, known pitfalls |
-| [NEXT_PHASE.md](./NEXT_PHASE.md) | Current version, complete 75-card progression, next feature slice |
+| [NEXT_PHASE.md](./NEXT_PHASE.md) | Live tree after the Oct 27 merges, and the next four items |
 
 Root companions:
 
@@ -52,19 +52,34 @@ Root companions:
 
 ---
 
-## Snapshot (v0.4.0)
+## Snapshot (main, after the Oct 27 merges)
 
-- **Stack:** Vite + TypeScript SPA, no backend; localStorage save
-- **Acts:** 3 × (15 floors × 7 lanes), STS-style path generation
+`package.json` is **0.4.1**. The published GitHub Release `v0.4.1` is
+`46f6486` (#49) and does not include #44 or #50–#56. Those commits are
+`[Unreleased]` in [CHANGELOG.md](../CHANGELOG.md).
+
+- **Stack:** Vite + TypeScript SPA, no backend; localStorage save. Saves stay
+  on version 4. `eventTrack`, `castSeed`, and `castCounter` are optional.
+- **Acts:** 3 × (15 floors × 7 lanes), STS-style path generation. ? rooms in
+  every act resolve once into an event, a fight, a shop, or a treasure.
 - **Combat:** modular `src/game/battle/*`, multi-enemy intents, drag-and-drop cards
+- **Fights:** act-native listeners, buffers or scalers, and summoners. Bosses
+  brace, then one heavier hit. 鐘粉蛾 is the event moth. Nine questions from
+  that pass are still open in [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md).
 - **Teaching:** full first-syllable 注音 cast, per-learner persistent shuffle bags,
-  detailed curriculum controls, and a provider boundary for future subjects
+  detailed curriculum controls, and a provider boundary. 注音 is the only
+  registered task. Each run's `castSeed` and `castCounter` replay later prompts.
 - **Cards:** Act I uses the 12-design teaching pool. Later acts expand by
-  cumulative character score: 12 → 33 → 54 → all 75.
-- **Relics:** starter 初心音叉, plus five chest/elite 共鳴 relics. Legacy four
+  cumulative character score: 12 → 33 → 54 → all 75. 共鳴武者 is the only
+  playable character. 珠算武者 has engine seams and no deck.
+- **Events:** 30 events across Acts I, II, and III. Difficulty variants, keys,
+  and Act IV are still proposed.
+- **Relics:** starter 初心音叉, plus five chest/elite/boss 共鳴 relics. Legacy four
   remain loadable only. See [NEXT_PHASE.md](./NEXT_PHASE.md).
 - **Potions:** 3 belt slots and 6 bottles. Combat rewards and the shop can
   give one. See [NEXT_PHASE.md](./NEXT_PHASE.md).
+- **Shop:** on a phone, each offer keeps its card, price, and the remove-card
+  button on screen.
 - **Debug:** body-mounted panel for testing (not for kids in normal play)
 
 共鳴武者 Smith and all 75 physical-copy upgrades are live through score unlocks.

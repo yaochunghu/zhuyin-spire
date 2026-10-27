@@ -3,7 +3,10 @@
 A **preschool** browser deckbuilder inspired by *Slay the Spire*: climb a colorful tower with **注音符號** spell cards.  
 Recognize or **listen** for the correct 注音 to cast. **Wrong answer = fizzle** (energy spent). **HP → 0 ends the run.**
 
-**Version:** 0.4.0 · **Stack:** Vite + TypeScript (no backend)
+**Version:** 0.4.1 in `package.json` · **Stack:** Vite + TypeScript (no backend)
+
+The published GitHub Release `v0.4.1` is commit `46f6486` (#49). Main is ahead
+of that tag. #44 and #50–#56 are `[Unreleased]` in [CHANGELOG.md](CHANGELOG.md).
 
 **Play online:** [https://yaochunghu.github.io/zhuyin-spire/](https://yaochunghu.github.io/zhuyin-spire/)
 
@@ -79,13 +82,13 @@ The test for the child is recognizing / listening for 注音 — not reading Chi
 ## How to play (short)
 
 1. Adult opens the game; child taps **▶️** to climb, or **📚** for **practice** (no HP).
-2. Pick a character, which sets the starting deck, deck theme, and starting relic. **共鳴武者** is the first playable character.
-3. **Map climbs upward** (StS-style web): lit rooms are branches. **3 acts**, each with boss. **🃏** shows the deck.
+2. Pick a character, which sets the starting deck, deck theme, and starting relic. **共鳴武者** is the only playable character. 珠算武者 is not on the select screen.
+3. **Map climbs upward** (StS-style web): lit rooms are branches. **3 acts**, each with boss. **?** rooms appear in every act. **🃏** shows the deck.
 4. In combat, play a card (tap or **drag** onto enemy / shield). Cast check — spell the **full first syllable**:
    - 聲母 + 韻母 + **聲調**（ˊˇˋ˙；一聲 usually unmarked）
    - Example: 爸爸 → `ㄅㄚˋ` (not just ㄅ)
 5. **🔊 再聽** for listen modes. ✋ ends the turn. Rest at campfires (**40% max HP**). **No free heal after every fight.**
-6. Rewards / shop / treasure use big icons; adult text stays secondary. A chest pays gold and one relic. An elite or boss still offers a card and also drops a relic.
+6. Rewards / shop / treasure use big icons; adult text stays secondary. A chest pays gold and one relic. An elite or boss still offers a card and also drops a relic. A fight or the shop can hand out a one-use bottle. The belt has 3 slots. On a phone, each shop offer keeps its card, price, and the remove-card button on screen.
 
 The first character starts with exactly 10 cards: 5 one-energy 基礎攻擊,
 4 one-energy shields, and 1 two-energy attack that applies 易傷. Act I adds a
@@ -110,7 +113,7 @@ Autosave on stable screens (map, rest, shop, reward, …). Title: continue or ne
 ```
 src/
   main.ts           App shell + screen switch + debug mount
-  data/             cards, enemies, encounters, map, balance, phrases, relics
+  data/             cards, enemies, encounters, events, map, balance, phrases, relics, potions
   game/             run state, settings, cast, save, coach, combat facade
   game/casting/     reusable gate contract + Zhuyin provider and shuffle bags
   game/battle/      combat implementation (modular)
@@ -136,15 +139,15 @@ CHANGELOG.md        version history
 | [docs/CONTENT.md](docs/CONTENT.md) | Add cards / enemies / phrases |
 | [docs/CASTING_GATES.md](docs/CASTING_GATES.md) | Casting metaphor, anti-repeat pools, profiles, future subjects |
 | [docs/DESIGN_PLAYBOOK.md](docs/DESIGN_PLAYBOOK.md) | Character design funnel, evidence ladder, and release gates |
-| [docs/DECK_DESIGN.md](docs/DECK_DESIGN.md) | Live 共鳴武者 wave, four mechanics, and expansion boundary |
+| [docs/DECK_DESIGN.md](docs/DECK_DESIGN.md) | Live 共鳴武者 deck. 珠算武者 has engine seams and no cards |
 | [docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md](docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md) | Locked 共鳴武者 75-card roster, meta progression, simulation, and review checks |
 | [docs/STS_DESIGN_REFERENCE.md](docs/STS_DESIGN_REFERENCE.md) | StS systems reference and what to copy, adapt, or defer |
 | [docs/UPGRADE_BIBLE.md](docs/UPGRADE_BIBLE.md) | Physical-copy migration contract and live 75-card upgrades |
-| [docs/EVENT_ENCOUNTER_BIBLE.md](docs/EVENT_ENCOUNTER_BIBLE.md) | Proposed events, encounters, difficulty variants, keys, and Act IV |
+| [docs/EVENT_ENCOUNTER_BIBLE.md](docs/EVENT_ENCOUNTER_BIBLE.md) | 30 live Act I–III events. Difficulty variants, keys, and Act IV are still proposed |
 | [docs/BALANCE.md](docs/BALANCE.md) | HP, gold, rest, hand rules |
 | [docs/DEBUG.md](docs/DEBUG.md) | Skip cast, jump fights, cheats for testing |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | What’s done / next |
-| [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) | Live version, complete card progression, and next feature slice |
+| [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) | What merged on Oct 27, and the next four items |
 
 ---
 
@@ -167,7 +170,7 @@ This folder is its **own git repository** (`zhuyin-spire/.git`).
 
 - Do **not** commit the game through a parent home-directory repo (e.g. unrelated remotes).
 - From this directory: `git status`, `git add`, `git commit` as usual.
-- Latest release tag: `v0.2.2`; code version: `0.4.0` (see [CHANGELOG.md](CHANGELOG.md)).
+- Published release tag: `v0.4.1` at `46f6486` (#49). `package.json` is `0.4.1`. Main is ahead of that tag (see [CHANGELOG.md](CHANGELOG.md) `[Unreleased]`).
 - Dedicated remote: `https://github.com/yaochunghu/zhuyin-spire.git`.
 
 ```bash
