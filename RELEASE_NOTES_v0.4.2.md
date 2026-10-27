@@ -2,13 +2,13 @@
 
 ## 給一起玩的大人
 
-v0.4.2 正在準備發行。已經公開的版本仍是 v0.4.1。這一版加上遺物、藥水、每一幕的問號事件，以及各幕自己的怪物。存檔還是第 4 版，先前存下來的進度可以繼續讀。
+v0.4.2 已於 2026-10-27 15:00 UTC 公開，對應提交 `027961c`。這一版加上遺物、藥水、每一幕的問號事件，以及各幕自己的怪物。存檔還是第 4 版，先前存下來的進度可以繼續讀。
 
 共鳴武者仍是唯一可選的角色。答錯注音仍會失敗。生命歸零仍會結束這一次爬塔。
 
 ## For families
 
-v0.4.2 is the release in progress. The published game is still v0.4.1. This build adds relics, potions, events in every act, and fights that belong to that act. A run saved before this update still loads. Saves stay on version 4.
+v0.4.2 is the published release, tagged at commit `027961c` on 2026-10-27 15:00 UTC. This build adds relics, potions, events in every act, and fights that belong to that act. A run saved before this update still loads. Saves stay on version 4.
 
 共鳴武者 is still the only character on the select screen. A wrong 注音 still fizzles, and nothing skips the cast. HP at 0 still ends the run.
 

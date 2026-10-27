@@ -40,7 +40,7 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [BALANCE.md](./BALANCE.md) | Live economy / HP / hand numbers + design intent |
 | [DEBUG.md](./DEBUG.md) | Debug panel, flags, skip-cast testing |
 | [ROADMAP.md](./ROADMAP.md) | Shipped systems, next work, known pitfalls |
-| [NEXT_PHASE.md](./NEXT_PHASE.md) | Live tree after the Oct 27 merges, and the next four items |
+| [NEXT_PHASE.md](./NEXT_PHASE.md) | Published v0.4.2, and the next four items |
 
 Root companions:
 
@@ -49,15 +49,15 @@ Root companions:
 | [../README.md](../README.md) | Play, quick start, version control |
 | [../AGENTS.md](../AGENTS.md) | AI/human resume guide |
 | [../CHANGELOG.md](../CHANGELOG.md) | Human-readable version history |
-| [../RELEASE_NOTES_v0.4.2.md](../RELEASE_NOTES_v0.4.2.md) | Player-facing notes for the v0.4.2 release in progress |
+| [../RELEASE_NOTES_v0.4.2.md](../RELEASE_NOTES_v0.4.2.md) | Player-facing notes for the published v0.4.2 release |
 
 ---
 
 ## Snapshot (main, after the Oct 27 merges)
 
-`package.json` is **0.4.2**. The published GitHub Release is still `v0.4.1`
-at `46f6486` (#49). **v0.4.2** is the release in progress: #44 and #50–#58
-are `[0.4.2]` in [CHANGELOG.md](../CHANGELOG.md). That release is not tagged yet.
+`package.json` is **0.4.2**. **v0.4.2** is the published GitHub Release, at
+`027961c`, 2026-10-27 15:00 UTC. #44 and #50–#58 are `[0.4.2]` in
+[CHANGELOG.md](../CHANGELOG.md).
 
 - **Stack:** Vite + TypeScript SPA, no backend; localStorage save. Saves stay
   on version 4. `eventTrack`, `castSeed`, and `castCounter` are optional.

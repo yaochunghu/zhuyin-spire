@@ -11,8 +11,8 @@ each score milestone while balancing the advanced tiers.
 | Source | Says |
 |--------|------|
 | `package.json` | **0.4.2** |
-| `CHANGELOG.md` | **[0.4.2] — 2026-10-27** is the release in progress (#44 and #50–#58). **[0.4.1]** is the last published section. |
-| GitHub Releases | **v0.4.1** is still the published tag, at `46f6486` (#49). **v0.4.2** is the release in progress and is not tagged yet. |
+| `CHANGELOG.md` | **[0.4.2] — 2026-10-27** is the published release (#44 and #50–#58). |
+| GitHub Releases | **v0.4.2** is the published release, at `027961c`, 2026-10-27 15:00 UTC. |
 
 ## What is live
 
@@ -100,8 +100,8 @@ stays visible and says 藥水格已滿.
 
 These four are the current slice. Keys and Act IV stay later. They are not this slice.
 
-1. **Claude UI polish pass.** In progress separately. Do not start that UI work from this page. #52 left reused portraits and no strength, soothe, or summon icon; those cues belong to that pass. The pill number is the fight contract until then.
-2. **珠算武者 playable build.** First-grade math casting. #51 landed the engine seams only: a casting-task registry, a math binding that no shipped card sets, per-character score buckets, and an attempt model for sequence, three-choice, number pad, and build. The cast screen still draws sequence and single choice. The catalog, deck, cards, and math provider are still to build.
+1. **珠算武者 playable build.** In progress. First-grade math casting. #51 landed the engine seams only: a casting-task registry, a math binding that no shipped card sets, per-character score buckets, and an attempt model for sequence, three-choice, number pad, and build. The cast screen still draws sequence and single choice. The catalog, deck, cards, and math provider are still to build.
+2. **Claude design pass for 珠算武者.** Character select and the answer pad. This page does not do that UI work.
 3. **#52's open design questions.** Nine questions in [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md#questions-for-yao) are still open. They are not decided here:
    - Keep Act II and Act III from rolling Act I elites and Act I normals.
    - Keep one boss per act until each boss has its own portrait.
@@ -112,4 +112,4 @@ These four are the current slice. Keys and Act IV stay later. They are not this 
    - Keep the enemy-block expiry shipped in #50.
    - Act I has four elites after 和聲蛹. Keep four unless the pool must stay at three.
    - 塔守護獸's friend is the shared 軟軟史萊姆. The first heavy is alone; a later heavy can share a turn with the slime if it is still alive.
-4. **The v0.4.2 release.** This is the release in progress. `package.json` is 0.4.2. `[0.4.2] — 2026-10-27` in [CHANGELOG.md](../CHANGELOG.md) covers #44 and #50–#58. The published GitHub Release is still `v0.4.1` at `46f6486` (#49). Tagging and the GitHub Release are still open. Saves stay on version 4.
+4. **Full-run v0.4.2 playtest.** Play the published build at `027961c` through a full run. The device checklist and the Act I family session stay in [PLAYTEST_GATE.md](PLAYTEST_GATE.md#playtest-kit). Saves stay on version 4.
