@@ -373,6 +373,39 @@ test('phone menu opens the current deck without changing the run', async ({ page
   await expect(page.locator('.map-dot')).toHaveCount(before);
 });
 
+test('shop prices sit fully inside the 640x360 landscape viewport', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'phone-landscape-chromium');
+  await page.goto('/?debug=1');
+  await page.evaluate(async () => {
+    await (
+      window as Window & {
+        __zhuyinVisualReview: (screen: string) => Promise<void>;
+      }
+    ).__zhuyinVisualReview('shop');
+  });
+
+  const prices = page.locator('.shop-price');
+  await expect(prices).toHaveCount(3);
+  for (const price of await prices.all()) {
+    await expect(price).toBeInViewport({ ratio: 1 });
+  }
+
+  const cards = page.locator('.shop-card');
+  await expect(cards).toHaveCount(3);
+  for (const card of await cards.all()) {
+    await expect(card).toBeInViewport({ ratio: 1 });
+    await expect(card.locator('.card-desc')).toBeInViewport({ ratio: 1 });
+  }
+  await expect(page.locator('.shop-remove-btn')).toBeInViewport({ ratio: 1 });
+
+  const overflow = await page.evaluate(() => ({
+    vertical: document.documentElement.scrollHeight - window.innerHeight,
+    horizontal: document.documentElement.scrollWidth - window.innerWidth,
+  }));
+  expect(overflow.vertical).toBeLessThanOrEqual(1);
+  expect(overflow.horizontal).toBeLessThanOrEqual(1);
+});
+
 test('three-enemy encounters keep every target usable', async ({ page }) => {
   await page.goto('/?debug=1');
   await openDebug(page);

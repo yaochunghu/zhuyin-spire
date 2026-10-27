@@ -8,6 +8,10 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+### Shop layout
+
+- On a phone, each shop offer keeps its full card, price, and the remove-card button on screen. Short landscape no longer hides the price under the fold.
+
 ### Cast prompt stream
 
 - Each run stores `castSeed` and `castCounter`. Mode rolls, shuffle-bag refills, and distractor banks read that stream, so a reloaded checkpoint replays the same later prompts
