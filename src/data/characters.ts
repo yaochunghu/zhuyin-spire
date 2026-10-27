@@ -67,7 +67,14 @@ export const CHARACTERS = {
 } as const satisfies Record<string, CharacterDef>;
 
 export type CharacterId = keyof typeof CHARACTERS;
-export type PlayableCharacterId = 'echoMage';
+export type PlayableCharacterId = {
+  [K in CharacterId]: (typeof CHARACTERS)[K]['status'] extends 'playable' ? K : never
+}[CharacterId];
+
+export interface CharacterCatalogEntry {
+  id: string;
+  status: CharacterStatus;
+}
 
 export const FIRST_CHARACTER_ID: PlayableCharacterId = 'echoMage';
 export const CHARACTER_IDS = Object.keys(CHARACTERS) as CharacterId[];
@@ -91,6 +98,17 @@ export function isCharacterId(value: unknown): value is CharacterId {
   return typeof value === 'string' && value in CHARACTERS;
 }
 
+/** Playable row from any catalog. The game UI passes `CHARACTERS` and lists only those rows. */
+export function selectPlayableFromCatalog<T extends CharacterCatalogEntry>(
+  catalog: readonly T[],
+  characterId: string,
+): T | null {
+  const character = catalog.find((item) => item.id === characterId);
+  if (!character || character.status !== 'playable') return null;
+  return character;
+}
+
 export function isPlayableCharacterId(value: unknown): value is PlayableCharacterId {
-  return isCharacterId(value) && CHARACTERS[value].status === 'playable';
+  return typeof value === 'string'
+    && selectPlayableFromCatalog(Object.values(CHARACTERS), value) !== null;
 }

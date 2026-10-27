@@ -586,6 +586,25 @@ export function filterObtainableCardsForProfile(
   );
 }
 
+/**
+ * One character's score bucket. Writing `characterId` copies every other id through unchanged.
+ * Persistence still drops ids that are not in the character catalog.
+ */
+export function setCharacterScore<Id extends string>(
+  progress: Partial<Record<Id, CharacterProgress>>,
+  characterId: Id,
+  score: number,
+): Partial<Record<Id, CharacterProgress>> {
+  const safe = Math.min(
+    MAX_CHARACTER_SCORE,
+    Math.max(0, Math.floor(Number.isFinite(score) ? score : 0)),
+  );
+  return {
+    ...progress,
+    [characterId]: { score: safe },
+  };
+}
+
 export function awardActiveCharacterScore(
   characterId: PlayableCharacterId,
   points: number,
@@ -603,10 +622,7 @@ export function awardActiveCharacterScore(
     : [];
   updateActiveProfile((current) => ({
     ...current,
-    characterProgress: {
-      ...current.characterProgress,
-      [characterId]: { score },
-    },
+    characterProgress: setCharacterScore(current.characterProgress, characterId, score),
   }));
   return { previousScore, score, newlyUnlockedCardIds };
 }

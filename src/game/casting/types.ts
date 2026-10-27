@@ -1,15 +1,20 @@
 export type CastingGateId = 'zhuyin' | 'english' | 'math';
 
 export type CastMode = 'recognize' | 'listen' | 'listenHard';
-export type CastingInputMode = 'sequence' | 'singleChoice';
+/** `numberPad` and `build` are reserved attempt shapes. The cast screen does not render them yet. */
+export type CastingInputMode = 'sequence' | 'singleChoice' | 'numberPad' | 'build';
 export type VocabularyTier = 'core' | 'broad';
 export type ToneClass = 1 | 2 | 3 | 4 | 5;
+/** 1–4 follow card rarity. 5 is reserved for a future opt-in lesson. */
+export type CastingTier = 1 | 2 | 3 | 4 | 5;
 
 export interface CastBinding {
   gateId: CastingGateId;
   lessonFamilyId: string;
   displayGlyph: string;
   fallbackPromptIds?: string[];
+  /** Binder metadata. The Zhuyin provider does not read it when creating a prompt. */
+  tier?: CastingTier;
 }
 
 export interface CastingCue {
@@ -26,6 +31,25 @@ export interface AmbientManaCue {
   icon: string;
   label: string;
 }
+
+/**
+ * Data-only picture a future cast screen can draw. Combat does not read it,
+ * and Zhuyin prompts leave it unset.
+ */
+export type PromptPresentation =
+  | { kind: 'tenFrame'; frames: Array<{ a: number; b: number }>; crossOut?: number }
+  | { kind: 'beadString'; beads: number; groupedBy: 5 }
+  | { kind: 'rods'; hundreds?: number; tens: number; ones: number }
+  | { kind: 'objects'; emoji: string; count: number; crossOut?: number; groups?: number }
+  | { kind: 'numberLine'; from: number; to: number; start?: number; jumps?: number[] }
+  | { kind: 'clock'; hour: number; minute: number }
+  | { kind: 'calendar'; month: number; days: number; circled?: number; today?: number }
+  | { kind: 'timeOfDay'; period: 'morning' | 'noon' | 'afternoon' | 'night' }
+  | { kind: 'coins'; coins: Array<1 | 5 | 10 | 50 | 100 | 500 | 1000> }
+  | { kind: 'shapes'; items: Array<'circle' | 'triangle' | 'square' | 'rectangle' | 'ball' | 'can' | 'box'> }
+  | { kind: 'ruler'; unit: 'block' | 'cm'; items: Array<{ emoji: string; start: number; length: number }> }
+  | { kind: 'row'; items: string[]; from: 'left' | 'right' }
+  | { kind: 'none' };
 
 /** Provider-neutral prompt rendered by the shared casting screen. */
 export interface CastingPrompt {
@@ -47,6 +71,10 @@ export interface CastingPrompt {
   ambientMana: AmbientManaCue;
   speechFallback: boolean;
   createdAt: number;
+  presentation?: PromptPresentation;
+  tier?: CastingTier;
+  /** Reserved for a future once-per-combat retry. No live prompt sets it. */
+  retry?: boolean;
 }
 
 export interface CastingPromptContext {
@@ -56,10 +84,25 @@ export interface CastingPromptContext {
   rng: () => number;
 }
 
+/** Opaque subject tag. The engine stores it and does not interpret the code. */
+export interface CastingDiagnosis {
+  code: string;
+}
+
+/**
+ * One pluggable casting task. The game registry installs 注音 only.
+ * `math` and `english` are reserved ids until a task is registered for them.
+ */
 export interface CastingGateProvider {
   id: CastingGateId;
   createPrompt(context: CastingPromptContext): CastingPrompt;
   validate(prompt: CastingPrompt, attempt: string[]): boolean;
+  diagnose?(prompt: CastingPrompt, attempt: string[]): CastingDiagnosis | null;
+  /**
+   * Optional mode picker for a non-Zhuyin task. 注音 keeps `chooseZhuyinMode`
+   * so parent weights stay on the existing path.
+   */
+  chooseMode?(lessonFamilyId: string, rng: () => number): CastMode;
 }
 
 export interface ModeWeights {

@@ -23,6 +23,11 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - Keep 余 for the surplus picture. The revised dictionary defines 剩下、多餘 on 余, so it is not rewritten as 餘.
 - Give the fourteen open phrase pictures the 《重編國語辭典修訂本》 reading for that picture: 背 ㄅㄟ, 鋪 ㄆㄨˋ, 興 ㄒㄧㄥˋ, 熟 ㄕㄨˊ, 掃 ㄙㄠˋ, 艘 ㄙㄠ, and 應 ㄧㄥˋ. 表, 量, 困, 將, 閑, 血, and 于 already had that reading.
 
+### Engine seams for a future character
+
+- Reserve a pluggable casting task, with 注音 as the only registered task and `math` still unimplemented in the game.
+- Keep character select and score buckets per character id, and add an attempt model for a future three-choice row and number pad. 共鳴武者 prompts, saves, and the cast screen are unchanged.
+
 ---
 
 ## [0.4.1] — 2026-10-26

@@ -4,13 +4,18 @@ import {
   type Cue,
 } from '../data/cards';
 import type { MapNode } from '../data/map';
-import { getCastingGateProvider } from './casting/registry';
+import {
+  getCastingGateProvider,
+  getGameCastingRegistry,
+  type CastingGateRegistry,
+} from './casting/registry';
 import {
   buildZhuyinTokenBank,
   chooseZhuyinMode,
 } from './casting/zhuyinProvider';
 import type {
   CastMode,
+  CastingDiagnosis,
   CastingGateId,
   CastingPrompt,
 } from './casting/types';
@@ -20,13 +25,19 @@ export type { CastMode } from './casting/types';
 export type CastPrompt = CastingPrompt;
 export type CueDifficulty = MapNode['castStage'] | 'practice';
 
-/** Educational difficulty is profile-controlled; tower stage is combat-only. */
+/**
+ * Educational difficulty is profile-controlled; tower stage is combat-only.
+ * Zhuyin always uses `chooseZhuyinMode`, including when a caller passes another registry.
+ */
 export function pickCastMode(
   _castStage: MapNode['castStage'],
   rng: () => number = Math.random,
   lessonFamilyId = 'initial:ㄅ',
+  gateId: CastingGateId = 'zhuyin',
+  registry: CastingGateRegistry = getGameCastingRegistry(),
 ): CastMode {
-  return chooseZhuyinMode(lessonFamilyId, rng);
+  if (gateId === 'zhuyin') return chooseZhuyinMode(lessonFamilyId, rng);
+  return registry.get(gateId).chooseMode?.(lessonFamilyId, rng) ?? 'recognize';
 }
 
 export function pickCueForDifficulty(
@@ -65,8 +76,20 @@ export function isSpellCorrect(attempt: string[], correctParts: string[]): boole
   return attempt.every((symbol, index) => symbol === correctParts[index]);
 }
 
-export function isCastAnswerCorrect(prompt: CastPrompt, attempt: string[]): boolean {
-  return getCastingGateProvider(prompt.gateId).validate(prompt, attempt);
+export function isCastAnswerCorrect(
+  prompt: CastPrompt,
+  attempt: string[],
+  registry: CastingGateRegistry = getGameCastingRegistry(),
+): boolean {
+  return registry.get(prompt.gateId).validate(prompt, attempt);
+}
+
+export function diagnoseCast(
+  prompt: CastPrompt,
+  attempt: string[],
+  registry: CastingGateRegistry = getGameCastingRegistry(),
+): CastingDiagnosis | null {
+  return registry.get(prompt.gateId).diagnose?.(prompt, attempt) ?? null;
 }
 
 export function recordCastResult(
