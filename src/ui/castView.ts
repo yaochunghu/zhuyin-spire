@@ -303,11 +303,16 @@ export function renderCastCheck(isPractice = false): HTMLElement {
   header.innerHTML = `
     ${practiceHud}
     ${cast.prompt.speechFallback ? '<div class="warn-banner adult-text">此裝置沒有語音，請大人念出圖的意思</div>' : ''}
-    <div class="mana-condition mana-${cast.prompt.ambientMana.id}" aria-label="空氣中的魔力狀態：${cast.prompt.ambientMana.label}">
+    ${mathCast
+      ? `<div class="mana-condition mana-clear" aria-label="這是數學題">
+      <span aria-hidden="true">🧮</span>
+      <span>算一算</span>
+    </div>`
+      : `<div class="mana-condition mana-${cast.prompt.ambientMana.id}" aria-label="空氣中的魔力狀態：${cast.prompt.ambientMana.label}">
       <span>${cast.prompt.ambientMana.icon}</span>
       <span>${cast.prompt.ambientMana.label}</span>
       <span class="mana-focus">魔法音 ${cast.prompt.focusGlyph}</span>
-    </div>
+    </div>`}
   `;
   el.appendChild(header);
 
@@ -491,9 +496,10 @@ export function renderCastCheck(isPractice = false): HTMLElement {
     hint.disabled = false;
   } else {
     const used = run().tutorial ? false : run().combat?.parentHintUsed;
+    const hintNote = mathCast ? '顯示答案' : '顯示完整拼法';
     hint.innerHTML = used
       ? '<span class="adult-text">家長協助已用完</span>'
-      : `<span>💡</span><span class="adult-text"> 家長協助（顯示完整拼法${run().tutorial ? '，教學可重複' : '，本場一次'}）</span>`;
+      : `<span>💡</span><span class="adult-text"> 家長協助（${hintNote}${run().tutorial ? '，教學可重複' : '，本場一次'}）</span>`;
     hint.disabled = !!used;
   }
   hint.addEventListener('click', () => {

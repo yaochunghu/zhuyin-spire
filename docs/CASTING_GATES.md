@@ -195,17 +195,23 @@ not used for math.
 A wrong answer fizzles the card. Energy is already spent. One scaffolded
 「再算一次」 is available per combat while `scaffoldedRetry` is on, which is
 the default. The retry does not record a result and does not reveal the
-correction. The second miss fizzles and then shows it. A parent hint used
-before the first attempt makes a miss fizzle immediately and does not spend
-the retry. A hint during the retry reveals the answer.
+correction. The second miss fizzles and then shows it. 💡 is still once per
+combat. It blocks the retry only on the card whose answer it revealed before
+the first attempt. A hint on an earlier card leaves the retry available. A
+hint during the retry reveals the answer. The coach names whichever of those
+states is actually open, and it does not promise a retry when
+`scaffoldedRetry` is off.
 
 Rarity sets the nominal tier inside the parent floor and ceiling (defaults 1
 and 4). Adaptivity only lowers that tier, by card family, at most 4 steps.
 Two misses in the last five results of the cell just asked, with the newest
 a miss, drop the family one step. Six hits in the last eight, with the newest
 a hit, raise it one step back toward the nominal tier. Three misses in a row
-this combat force the next prompt to tier 1, still inside the parent floor.
+this combat force the next prompt to tier 1 of that family, still inside the
+parent floor. Ordinal has no tier 1, so that warm-up asks 湊十 at tier 1.
 Grade-2 tier 5 ignores the grade-1 ceiling until a drop pulls it back inside.
+That ceiling question is still open for Yao. What is built is option A: a
+tier-5 prompt stays at tier 5 until an adaptive drop pulls it into the band.
 The child never sees a grade label.
 
 `mathCasting` and `mathInsights` are optional profile fields. A profile that

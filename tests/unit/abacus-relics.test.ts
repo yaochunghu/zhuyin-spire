@@ -8,6 +8,8 @@ import {
   EVENT_RELIC_IDS,
   RELICS,
   RELIC_POOL_IDS,
+  getRelic,
+  relicPlayerCopy,
   relicPoolIdsFor,
   rollRelicDrop,
 } from '../../src/data/relics';
@@ -180,5 +182,20 @@ describe('per-character relic pools', () => {
     expect(state.relicIds).toEqual(['woodBeads']);
     expect(getPlayableCharacter('abacusFist').cardPoolIds).toHaveLength(27);
     expect(getPlayableCharacter('abacusFist').starterDeckIds).toEqual([...ABACUS_STARTER_DECK_IDS]);
+  });
+
+  it('keeps 念錯 and 拼對 for 共鳴武者 and says 算錯 and 算對 for 珠算武者', () => {
+    const metronome = getRelic('pocketMetronome');
+    const box = getRelic('moonMusicBox');
+    expect(relicPlayerCopy(metronome, 'zhuyin').adultNote).toContain('念錯');
+    expect(relicPlayerCopy(metronome, 'math').adultNote).toContain('算錯');
+    expect(relicPlayerCopy(metronome, 'math').adultNote).not.toContain('念錯');
+    expect(relicPlayerCopy(box, 'zhuyin').blurb).toContain('拼對');
+    expect(relicPlayerCopy(box, 'math').blurb).toContain('算對');
+    expect(relicPlayerCopy(box, 'math').blurb).not.toContain('拼對');
+    expect(relicPlayerCopy(box, 'math').adultNote).toContain('算對');
+    expect(getRelic('rulerCharm').adultNote).toContain('算錯');
+    expect(getRelic('rulerCharm').adultNote).not.toContain('念錯');
+    expect(getRelic('tuningFork').adultNote).toContain('念錯');
   });
 });

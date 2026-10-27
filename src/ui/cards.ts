@@ -62,6 +62,12 @@ export function formatCardDescription(def: CardDef): string {
   return '使用此牌。';
 }
 
+/** Screen-reader name. Math cards announce the card name. 注音 cards keep the syllable. */
+export function cardAriaLabel(def: CardDef): string {
+  if (def.cast?.gateId === 'math') return def.name;
+  return `注音 ${def.zhuyin}`;
+}
+
 /**
  * StS-style card face: cost · type · 注音 art · name plate · description box.
  * Still text/emoji — sized for 1080p combat hand readability.

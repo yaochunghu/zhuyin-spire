@@ -676,8 +676,9 @@ export function ensureEventCast(state: RunState): void {
   const fallback = state.deck.find((card) => !getCard(card.defId).curse)?.defId ?? 'bo';
   const cardId = preferred && isCardId(preferred) && !getCard(preferred).curse ? preferred : fallback;
   const cardDef = getCard(cardId);
+  const gateId = getActiveCharacter(state)?.castingGateId ?? 'zhuyin';
   state.cast = {
-    prompt: drawCastPrompt(state, cardDef, 'early', 'zhuyin'),
+    prompt: drawCastPrompt(state, cardDef, 'early', gateId),
     cardDef,
   };
 }
@@ -1279,7 +1280,7 @@ export function answerCast(state: RunState, attempt: string[]): 'success' | 'fiz
     && !correct
     && !prompt.retry
     && !state.combat.mathRetryUsed
-    && !state.combat.parentHintUsed
+    && !prompt.hintRevealedAnswer
     && getMathCastingPreferences().scaffoldedRetry;
   if (mathRetry) {
     state.combat.mathRetryUsed = true;
@@ -1337,6 +1338,12 @@ export function useParentHint(state: RunState): string | null {
   if (state.tutorial) return state.cast.prompt.correctionText;
   if (state.combat.parentHintUsed) return null;
   state.combat.parentHintUsed = true;
+  if (!state.cast.prompt.retry) {
+    state.cast = {
+      prompt: { ...state.cast.prompt, hintRevealedAnswer: true },
+      cardDef: state.cast.cardDef,
+    };
+  }
   return state.cast.prompt.correctionText;
 }
 

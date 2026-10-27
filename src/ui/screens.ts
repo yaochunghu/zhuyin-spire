@@ -1,7 +1,7 @@
 import { getCard, resolveCard } from '../data/cards';
 import { CHARACTER_IDS, getCharacter } from '../data/characters';
 import { getPotion } from '../data/potions';
-import { getRelic } from '../data/relics';
+import { getRelic, relicPlayerCopy } from '../data/relics';
 import { sfx, startMusic, warmAudio } from '../game/audio';
 import { getActiveProfile, getCharacterCardProgress } from '../game/profiles';
 import { warmSpeech } from '../game/speech';
@@ -27,6 +27,7 @@ import {
   hasSavedRun,
   declinePendingPotion,
   leaveShop,
+  getActiveCharacter,
   pickCharacter,
   pickReward,
   potionOfferBlocksReward,
@@ -37,7 +38,7 @@ import {
   resumeSavedRun,
   startRun,
 } from '../game/state';
-import { cardFaceHtml } from './cards';
+import { cardAriaLabel, cardFaceHtml } from './cards';
 import { openOptions } from './options';
 import { createConfettiLayer } from './outcome';
 import { appendCoach, render, run, session, showFlash } from './runtime';
@@ -639,7 +640,10 @@ export function renderReward(): HTMLElement {
     const copy = document.createElement('div');
     copy.innerHTML = `<strong class="relic-reward-name"></strong><p class="relic-reward-blurb"></p>`;
     copy.querySelector('.relic-reward-name')!.textContent = pendingRelic.name;
-    copy.querySelector('.relic-reward-blurb')!.textContent = pendingRelic.blurb;
+    copy.querySelector('.relic-reward-blurb')!.textContent = relicPlayerCopy(
+      pendingRelic,
+      getActiveCharacter(run())?.castingGateId,
+    ).blurb;
     found.append(relicBadgeButton(pendingRelic), copy);
     el.appendChild(found);
   } else if (isTreasure) {
@@ -715,7 +719,7 @@ export function renderReward(): HTMLElement {
     btn.className = `card ${def.type}`;
     btn.disabled = rewardBlocked;
     btn.innerHTML = cardFaceHtml(def);
-    btn.setAttribute('aria-label', `注音 ${def.zhuyin}`);
+    btn.setAttribute('aria-label', cardAriaLabel(def));
     btn.addEventListener('click', () => {
       sfx.click();
       pickReward(run(), offer.uid);

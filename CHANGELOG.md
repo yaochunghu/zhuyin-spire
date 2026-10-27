@@ -14,6 +14,11 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - Math prompts are three large choices at every tier. Grade 1 is the default. 二年級 is a parent opt-in and only lifts 倍數連拳 to tier 5. A wrong answer fizzles the card. One scaffolded 「再算一次」 is allowed per combat. Adaptivity only lowers the tier
 - 算珠, 湊十, and 十串 are combat-only. There is no 勁. Direct damage from 木珠串 skips Block and 易傷. The 注音 tutorial stays on 共鳴武者
 - Chest, elite, boss, and random event relics roll the current character's pool. 共鳴武者 keeps the existing five. 珠算武者 rolls 算珠袋, 小尺子, 十響鈴, and 橡皮擦. Owning that pool still pays 20 gold. Legacy relics still load. Potions stay the shared six. Saves stay version 4
+- 💡 on one card no longer spends 「再算一次」 for a later card. The retry is blocked only when that card's own answer was revealed before the first try
+- 注音神龕 is not offered to 珠算武者. The other shared events do not quiz. A shrine miss cannot cost that character HP
+- Math casts say 算一算, 顯示答案, and 仍需選出答案. The coach changes after 「再算一次」 is used. 口袋節拍器 and 月光音樂盒 keep 念錯 / 拼對 for 共鳴武者 and say 算錯 / 算對 for 珠算武者. Screen readers announce the math card's name
+- Tier-4 subtraction does not borrow or subtract 0. Ordinal choices never include 0. Counting ones is never 0, and tens stay inside 1–9. Grade-2 groups are not always off by one. Three ordinal misses warm up at 湊十 tier 1
+- Yao's grade-2 question stays open. Option A remains what is built: tier 5 ignores the grade-1 ceiling until an adaptive drop pulls it inside
 
 ### Playtest v0.4.2 layout fixes
 

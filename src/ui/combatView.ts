@@ -48,7 +48,7 @@ import {
 import { sfx } from '../game/audio';
 import { gameplayMs } from '../game/settings';
 import { playCombatFxBatch, queryCombatAnchors } from './cardFx';
-import { cardFaceHtml } from './cards';
+import { cardAriaLabel, cardFaceHtml } from './cards';
 import { bindCardDrag, cleanupDragUi, collectDropTargets } from './dragPlay';
 import { teachingTimers } from './pauseTimers';
 import { isPhoneLayout } from './responsive';
@@ -781,7 +781,7 @@ export function renderCombat(): HTMLElement {
     btn.innerHTML = cardFaceHtml(def, effectiveCost(c, card, def));
     btn.disabled = !energyPlayable || !tutorialPlayable || locked;
     btn.dataset.uid = card.uid;
-    btn.setAttribute('aria-label', `注音 ${def.zhuyin}`);
+    btn.setAttribute('aria-label', cardAriaLabel(def));
     const scrollableHand = isPhoneLayout();
     btn.style.touchAction = scrollableHand ? 'pan-x' : 'none';
 

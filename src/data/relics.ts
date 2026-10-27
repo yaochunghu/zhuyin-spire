@@ -24,6 +24,10 @@ export interface RelicDef {
   blurb: string;
   /** Adult co-play line shown when the badge is inspected. */
   adultNote: string;
+  /** Shown instead of blurb when the active character casts math. */
+  mathBlurb?: string;
+  /** Shown instead of adultNote when the active character casts math. */
+  mathAdultNote?: string;
   source: RelicSource;
   /** Characters that can be offered or start with this relic. Legacy stays loadable for both. */
   characters: readonly string[];
@@ -165,6 +169,7 @@ export const RELICS: Record<string, RelicDef> = {
     name: '口袋節拍器',
     blurb: '一回合成功打出第 3 張牌時，抽 1 張',
     adultNote: '要這一回合成功打出第三張牌才抽。念錯的牌不算。',
+    mathAdultNote: '要這一回合成功打出第三張牌才抽。算錯的牌不算。',
     source: 'event',
     characters: ['echoMage', 'abacusFist'],
   },
@@ -174,6 +179,8 @@ export const RELICS: Record<string, RelicDef> = {
     name: '月光音樂盒',
     blurb: '綁定的那張牌，每場第一次拼對時抽 1 張',
     adultNote: '只認綁定的那一張牌。每場第一次拼對才抽。拿掉那張牌之後就不會再抽。',
+    mathBlurb: '綁定的那張牌，每場第一次算對時抽 1 張',
+    mathAdultNote: '只認綁定的那一張牌。每場第一次算對才抽。拿掉那張牌之後就不會再抽。',
     source: 'event',
     characters: ['echoMage', 'abacusFist'],
   },
@@ -220,7 +227,7 @@ export const RELICS: Record<string, RelicDef> = {
     emoji: '📏',
     name: '小尺子',
     blurb: '每回合第 3 招成功時，獲得 3 點護盾',
-    adultNote: '要這一回合成功打出第三張牌。念錯不算一招，也不會拿到護盾。',
+    adultNote: '要這一回合成功打出第三張牌。算錯不算一招，也不會拿到護盾。',
     source: 'pool',
     characters: ['abacusFist'],
     ordinalCast: RULER_CHARM_CAST,
@@ -309,6 +316,20 @@ export interface RelicCombatMods {
   rulerCharmBlock: number;
   firstMakeTenEnergy: number;
   fizzleBeads: number;
+}
+
+/** Player-facing relic lines. Echo keeps 念錯 / 拼對. Math uses 算錯 / 算對. */
+export function relicPlayerCopy(
+  relic: RelicDef,
+  gateId?: string,
+): { blurb: string; adultNote: string } {
+  if (gateId === 'math') {
+    return {
+      blurb: relic.mathBlurb ?? relic.blurb,
+      adultNote: relic.mathAdultNote ?? relic.adultNote,
+    };
+  }
+  return { blurb: relic.blurb, adultNote: relic.adultNote };
 }
 
 export function combatModsFor(relics: readonly RelicDef[]): RelicCombatMods {

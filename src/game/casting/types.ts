@@ -81,6 +81,11 @@ export interface CastingPrompt {
   adaptiveFamily?: string;
   /** Set when this prompt is the one scaffolded retry for the combat. */
   retry?: boolean;
+  /**
+   * 💡 revealed this prompt's answer before the first attempt.
+   * A later miss fizzles and does not spend 再算一次. A hint on another card does not set this.
+   */
+  hintRevealedAnswer?: boolean;
 }
 
 export interface CastingPromptContext {

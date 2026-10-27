@@ -36,6 +36,12 @@ export function coachForScreen(
     combatTip?: string | null;
     rewardSource?: 'fight' | 'treasure' | null;
     castingGateId?: CastingGateId;
+    /** Combat already spent its one scaffolded retry. */
+    mathRetryUsed?: boolean;
+    /** The open prompt is the second attempt. */
+    mathRetryOpen?: boolean;
+    /** Parent preference. Absent means the default, which is on. */
+    scaffoldedRetry?: boolean;
   },
 ): { title: string; body: string } {
   switch (screen) {
@@ -100,9 +106,28 @@ export function coachForScreen(
       };
     case 'castCheck': {
       if (opts?.castingGateId === 'math') {
+        if (opts.mathRetryOpen) {
+          return {
+            title: '再算一次',
+            body: '再算一次：可以一起數十格框上的點，但讓孩子自己按答案。',
+          };
+        }
+        const retryAvailable = opts.scaffoldedRetry !== false && !opts.mathRetryUsed;
+        if (retryAvailable) {
+          return {
+            title: '選一個答案',
+            body: '請不要直接說答案。可以說『我們一起數』，或指著十格框。這場戰鬥第一次答錯，可以再算一次。',
+          };
+        }
+        if (opts.mathRetryUsed) {
+          return {
+            title: '選一個答案',
+            body: '請不要直接說答案。這場的『再算一次』已經用過了，答錯這張牌會失效，可以先按 👀 看看。',
+          };
+        }
         return {
           title: '選一個答案',
-          body: '三個大按鈕裡選一個。答錯這張牌會消散，能量不會退回。每場戰鬥可以再算一次。💡 家長可以亮一次答案。',
+          body: '請不要直接說答案。可以說『我們一起數』，或指著十格框。答錯這張牌會失效，可以先按 👀 看看。',
         };
       }
       if (opts?.castMode === 'listen' || opts?.castMode === 'listenHard') {
@@ -116,12 +141,23 @@ export function coachForScreen(
         body: '請您念出國字。孩子拼出整個音（例：爸爸→ㄅㄚˋ）。填滿自動送出。💡 本場可亮答案一次。',
       };
     }
-    case 'event':
+    case 'event': {
+      let body = opts?.eventBody ?? '按鈕上的數字就是代價。可以離開。';
+      if (opts?.castingGateId === 'math') {
+        body = body.replace(/拼對/g, '算對').replace(/念錯/g, '算錯').replace(/拼錯/g, '算錯');
+      }
       return {
         title: opts?.eventTitle ?? '奇遇',
-        body: opts?.eventBody ?? '按鈕上的數字就是代價。可以離開。',
+        body,
       };
+    }
     case 'eventCast':
+      if (opts?.castingGateId === 'math') {
+        return {
+          title: opts?.eventTitle ?? '數學神龕',
+          body: `${opts?.eventBody ?? ''} 請把題目念出來，讓孩子自己選答案。答錯不會少心。`.trim(),
+        };
+      }
       return {
         title: opts?.eventTitle ?? '注音神龕',
         body: `${opts?.eventBody ?? ''} 請念出國字，孩子拼出整個音。拼錯會少一點心。`.trim(),

@@ -356,6 +356,9 @@ export function choiceIsHidden(state: EventRun, choice: EventChoiceDef): boolean
 }
 
 export function eventIsEligible(state: EventRun, event: EventDef, row: number, act: 1 | 2 | 3): boolean {
+  // 注音神龕 quizzes with a 注音 gate and charges HP for a miss. 珠算武者 cannot
+  // answer that, so the event is not offered. The other shared events do not quiz.
+  if (event.id === 'event_shared_phonetic_shrine' && state.characterId === 'abacusFist') return false;
   if (event.act !== 'shared' && event.act !== act) return false;
   if (event.act === 1 && row === 0) return false;
   if (state.eventTrack.seenEventIds.includes(event.id)) return false;
@@ -1004,15 +1007,20 @@ export function noteShrineAnswer(state: EventRun, correct: boolean): EventStep {
   const active = state.eventTrack.active;
   if (!active || active.phase !== 'shrine') return active?.phase ?? 'choose';
   if (!correct) {
-    state.heroHp = Math.max(0, state.heroHp - active.shrineHpPerMiss);
-    state.flash = `-${active.shrineHpPerMiss}❤️`;
-    if (state.heroHp <= 0) return 'defeat';
+    // A resumed 珠算武者 shrine must not charge HP for a quiz that character cannot take.
+    if (state.characterId === 'abacusFist') {
+      state.flash = '再想想';
+    } else {
+      state.heroHp = Math.max(0, state.heroHp - active.shrineHpPerMiss);
+      state.flash = `-${active.shrineHpPerMiss}❤️`;
+      if (state.heroHp <= 0) return 'defeat';
+    }
   } else {
     state.flash = '✨';
   }
   active.shrineLeft -= 1;
   if (active.shrineLeft > 0) return 'shrine';
-  active.resultLines.push('三題都拼完了');
+  active.resultLines.push(state.characterId === 'abacusFist' ? '三題都算完了' : '三題都拼完了');
   return resumeAfterShrine(state);
 }
 
@@ -1044,7 +1052,11 @@ export function isEventFight(state: EventRun): boolean {
 }
 
 export function choiceChips(state: EventRun, choice: EventChoiceDef): string[] {
-  return effectChips(activeEffects(state, choice));
+  const verb = state.characterId
+    && getPlayableCharacter(state.characterId).castingGateId === 'math'
+    ? '算'
+    : '拼';
+  return effectChips(activeEffects(state, choice), verb);
 }
 
 export function decorateCombat(

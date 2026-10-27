@@ -93,7 +93,7 @@ export function redirectMathFamily(family: string, tier: CastingTier): { family:
   if (family === 'add20' && tier >= 4) return { family: 'add100', tier: 4 };
   if (family === 'sub20' && tier <= 1) return { family: 'sub10', tier: 1 };
   if (family === 'sub20' && tier >= 4) return { family: 'add100', tier: 4 };
-  if (family === 'ordinal' && tier < 2) return { family: 'ordinal', tier: 2 };
+  if (family === 'ordinal' && tier < 2) return { family: 'make10', tier: 1 };
   if (family === 'shapes') return { family: 'shapes', tier: 2 };
   if (family === 'add10') return tier >= 4 ? { family: 'add100', tier: 4 } : { family: 'add20', tier: tier >= 3 ? 3 : 2 };
   if (family === 'sub10') return tier >= 4 ? { family: 'add100', tier: 4 } : { family: 'sub20', tier: tier >= 3 ? 3 : 2 };
@@ -126,11 +126,11 @@ export function resolveMathTask(
   return { cardFamily, family: redirected.family, tier: redirected.tier };
 }
 
-function choiceNumbers(answer: number, rng: Rng): string[] {
+function choiceNumbers(answer: number, rng: Rng, floor = 0): string[] {
   const picked = [String(answer)];
   const preferred = [answer + 1, answer - 1, answer - 10, answer + 10, answer + 2, answer - 2];
   for (const candidate of preferred) {
-    if (candidate < 0 || candidate === answer) continue;
+    if (candidate < floor || candidate === answer) continue;
     const text = String(candidate);
     if (!picked.includes(text)) picked.push(text);
     if (picked.length === MATH_CHOICE_COUNT) break;
@@ -138,14 +138,18 @@ function choiceNumbers(answer: number, rng: Rng): string[] {
   let step = 3;
   while (picked.length < MATH_CHOICE_COUNT && step < 40) {
     const next = answer + step;
-    if (next >= 0 && !picked.includes(String(next))) picked.push(String(next));
+    if (next >= floor && !picked.includes(String(next))) picked.push(String(next));
+    const prev = answer - step;
+    if (picked.length < MATH_CHOICE_COUNT && prev >= floor && prev !== answer && !picked.includes(String(prev))) {
+      picked.push(String(prev));
+    }
     step += 1;
   }
   return shuffle(picked.slice(0, MATH_CHOICE_COUNT), rng);
 }
 
-function numeric(question: string, answer: number, rng: Rng, emoji = '🧮'): MathQuestion {
-  return { question, answer: String(answer), choices: choiceNumbers(answer, rng), emoji };
+function numeric(question: string, answer: number, rng: Rng, emoji = '🧮', floor = 0): MathQuestion {
+  return { question, answer: String(answer), choices: choiceNumbers(answer, rng, floor), emoji };
 }
 
 function labeled(question: string, answer: string, pool: readonly string[], rng: Rng, emoji: string): MathQuestion {
@@ -178,9 +182,13 @@ function countQuestion(rng: Rng, tier: CastingTier): MathQuestion {
     const count = tier === 1 ? irand(rng, 3, 10) : irand(rng, 11, 20);
     return numeric(`${'🍎'.repeat(count)} 有幾個？`, count, rng, '🍎');
   }
-  const count = irand(rng, 20, 100);
-  if (rng() < 0.5) return numeric(`${count} 有幾個十？`, Math.floor(count / 10), rng, '🍎');
-  return numeric(`${count} 有幾個一？`, count % 10, rng, '🍎');
+  const tens = irand(rng, 2, 9);
+  if (rng() < 0.5) {
+    const count = tens * 10 + irand(rng, 0, 9);
+    return numeric(`${count} 有幾個十？`, tens, rng, '🍎');
+  }
+  const ones = irand(rng, 1, 9);
+  return numeric(`${tens * 10 + ones} 有幾個一？`, ones, rng, '🍎');
 }
 
 function make10Question(rng: Rng, tier: CastingTier): MathQuestion {
@@ -286,7 +294,7 @@ function ordinalQuestion(rng: Rng, tier: CastingTier): MathQuestion {
   const row = icons.slice(0, length);
   const index = irand(rng, 1, length);
   const target = row[index - 1]!;
-  return numeric(`從左邊排好：${row.join('')}。${target} 是第幾個？`, index, rng, target);
+  return numeric(`從左邊排好：${row.join('')}。${target} 是第幾個？`, index, rng, target, 1);
 }
 
 function add100Question(rng: Rng, tier: CastingTier): MathQuestion {
@@ -311,7 +319,7 @@ function add100Question(rng: Rng, tier: CastingTier): MathQuestion {
     const tens = irand(rng, 1, Math.max(1, Math.floor((99 - left) / 10)));
     return numeric(`${left} + ${tens * 10} = ？`, left + tens * 10, rng);
   }
-  const left = irand(rng, 11, 99);
+  const left = irand(rng, 1, 9) * 10 + irand(rng, 1, 9);
   const right = irand(rng, 1, left % 10);
   return numeric(`${left} - ${right} = ？`, left - right, rng);
 }
@@ -430,7 +438,22 @@ function columnQuestion(rng: Rng): MathQuestion {
 function timesQuestion(rng: Rng): MathQuestion {
   const size = [2, 5, 10][irand(rng, 0, 2)]!;
   const groups = irand(rng, 2, 9);
-  return numeric(`有 ${groups} 組，每組 ${size} 個，一共有幾個？`, groups * size, rng);
+  const answer = groups * size;
+  const other = size === 5 ? 2 : 5;
+  const pool = [(groups - 1) * size, (groups + 1) * size, groups * other, (groups + 1) * other];
+  const picked = [String(answer)];
+  for (const value of pool) {
+    if (value <= 0 || value === answer) continue;
+    const text = String(value);
+    if (!picked.includes(text)) picked.push(text);
+    if (picked.length === MATH_CHOICE_COUNT) break;
+  }
+  return {
+    question: `有 ${groups} 組，每組 ${size} 個，一共有幾個？`,
+    answer: String(answer),
+    choices: shuffle(picked, rng),
+    emoji: '🧮',
+  };
 }
 
 function cmQuestion(rng: Rng): MathQuestion {

@@ -185,6 +185,33 @@ describe('珠算武者 combat', () => {
     expect(combat.beads).toBe(2);
   });
 
+  it('keeps 再算一次 for a later card after 💡 was used on an earlier card', () => {
+    const state = createNewRun();
+    startRun(state);
+    pickCharacter(state, 'abacusFist');
+    debugStartEncounter(state, 'rock');
+    const combat = state.combat!;
+    combat.energy = 9;
+    const firstDef = beginPlay(combat, combat.hand[0]!.uid);
+    state.cast = { prompt: mathPrompt(), cardDef: firstDef };
+    state.screen = 'castCheck';
+    expect(useParentHint(state)).toContain('4');
+    expect(state.cast?.prompt.hintRevealedAnswer).toBe(true);
+    expect(answerCast(state, ['9'])).toBe('fizzle');
+    expect(combat.parentHintUsed).toBe(true);
+    expect(combat.mathRetryUsed).toBe(false);
+
+    const second = combat.hand.find((card) => canPlay(combat, card.uid));
+    expect(second).toBeTruthy();
+    const secondDef = beginPlay(combat, second!.uid);
+    state.cast = { prompt: mathPrompt(), cardDef: secondDef };
+    state.screen = 'castCheck';
+    expect(state.cast.prompt.hintRevealedAnswer).toBeUndefined();
+    expect(answerCast(state, ['9'])).toBe('retry');
+    expect(combat.mathRetryUsed).toBe(true);
+    expect(state.cast?.prompt.retry).toBe(true);
+  });
+
   it('fizzles immediately when the parent hint was used before the first try', () => {
     const state = createNewRun();
     startRun(state);

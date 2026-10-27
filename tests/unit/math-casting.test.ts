@@ -6,9 +6,12 @@ import { buildCastPrompt, recordCastResult } from '../../src/game/castCheck';
 import { mathProvider } from '../../src/game/casting/math/provider';
 import {
   generateMathQuestion,
+  redirectMathFamily,
   resolveMathTask,
   type MathQuestion,
 } from '../../src/game/casting/math/generate';
+import { coachForScreen } from '../../src/game/coach';
+import { cardAriaLabel } from '../../src/ui/cards';
 import {
   DEFAULT_MATH_PREFS,
   effectiveMathTier,
@@ -303,5 +306,118 @@ describe('math provider', () => {
     expect(state.cast?.prompt.tier).toBe(1);
     expect(state.cast?.prompt.lessonFamilyId).toBe('add10@1');
     expect(state.cast?.prompt.adaptiveFamily).toBe('placeValue');
+  });
+
+  it('drops an ordinal warm-up to 湊十 tier 1 after three misses', () => {
+    expect(redirectMathFamily('ordinal', 1)).toEqual({ family: 'make10', tier: 1 });
+    expect(redirectMathFamily('ordinal', 2)).toEqual({ family: 'ordinal', tier: 2 });
+    const state = createNewRun();
+    startRun(state);
+    pickCharacter(state, 'abacusFist');
+    debugStartEncounter(state, 'rock');
+    const card = state.combat!.hand[0]!;
+    card.defId = 'ab_m010';
+    state.combat!.mathMissStreak = 3;
+    tryPlayCard(state, card.uid);
+    expect(state.cast?.prompt.tier).toBe(1);
+    expect(state.cast?.prompt.lessonFamilyId).toBe('make10@1');
+    expect(state.cast?.prompt.adaptiveFamily).toBe('ordinal');
+  });
+});
+
+describe('math prompt seed sweep', () => {
+  const SEEDS = 2000;
+
+  function sweep(family: string, tier: CastingTier): MathQuestion[] {
+    const questions: MathQuestion[] = [];
+    for (let seed = 1; seed <= SEEDS; seed += 1) {
+      questions.push(generateMathQuestion(family, tier, castStreamRng({ castSeed: seed, castCounter: 0 })));
+    }
+    return questions;
+  }
+
+  it('never borrows, subtracts zero, or asks a grade-1 count outside 1–9', () => {
+    const subtracts = sweep('add100', 4).filter((question) => question.question.includes(' - '));
+    expect(subtracts.length).toBeGreaterThan(100);
+    for (const question of subtracts) {
+      expect(question.question).not.toMatch(/ - 0 /);
+      const match = /^(\d+) - (\d+) = ？$/.exec(question.question);
+      expect(match).not.toBeNull();
+      const left = Number(match![1]);
+      const right = Number(match![2]);
+      expect(right).toBeGreaterThanOrEqual(1);
+      expect(right).toBeLessThanOrEqual(left % 10);
+      expect(Number(question.answer)).toBe(left - right);
+    }
+
+    for (const question of sweep('count', 3)) {
+      const answer = Number(question.answer);
+      if (question.question.includes('有幾個一')) {
+        expect(answer).toBeGreaterThanOrEqual(1);
+        expect(answer).toBeLessThanOrEqual(9);
+      }
+      if (question.question.includes('有幾個十')) {
+        expect(answer).toBeGreaterThanOrEqual(1);
+        expect(answer).toBeLessThanOrEqual(9);
+        expect(question.question.startsWith('100 ')).toBe(false);
+      }
+    }
+  });
+
+  it('never offers 第0個 and does not make every times distractor ±1', () => {
+    for (const question of sweep('ordinal', 2)) {
+      expect(question.choices).not.toContain('0');
+      expect(question.choices.join(' ')).not.toContain('第0');
+      expect(Number(question.answer)).toBeGreaterThanOrEqual(1);
+      expect(question.choices).toContain(question.answer);
+      expect(new Set(question.choices).size).toBe(3);
+    }
+
+    const times = sweep('g2Times', 5);
+    let offByOne = 0;
+    for (const question of times) {
+      const answer = Number(question.answer);
+      const choices = question.choices.map(Number).sort((left, right) => left - right);
+      expect(new Set(question.choices).size).toBe(3);
+      expect(question.choices).toContain(question.answer);
+      const plusMinus = choices[0] === answer - 1 && choices[1] === answer && choices[2] === answer + 1;
+      if (plusMinus) offByOne += 1;
+    }
+    expect(offByOne).toBe(0);
+    expect(times.length).toBe(SEEDS);
+  });
+});
+
+describe('math cast copy', () => {
+  it('names the retry state and the card, and keeps 注音 labels for 共鳴武者', () => {
+    expect(coachForScreen('castCheck', {
+      castingGateId: 'math',
+      scaffoldedRetry: true,
+    }).body).toContain('可以再算一次');
+    expect(coachForScreen('castCheck', {
+      castingGateId: 'math',
+      mathRetryUsed: true,
+      scaffoldedRetry: true,
+    }).body).toContain('已經用過了');
+    expect(coachForScreen('castCheck', {
+      castingGateId: 'math',
+      mathRetryUsed: true,
+      scaffoldedRetry: true,
+    }).body).not.toContain('可以再算一次');
+    expect(coachForScreen('castCheck', {
+      castingGateId: 'math',
+      mathRetryOpen: true,
+      mathRetryUsed: true,
+    }).body).toContain('讓孩子自己按答案');
+    expect(coachForScreen('castCheck', {
+      castingGateId: 'math',
+      scaffoldedRetry: false,
+    }).body).not.toContain('再算一次');
+    expect(coachForScreen('castCheck').body).toContain('拼出整個音');
+
+    expect(cardAriaLabel(getCard('ab_m001'))).toBe('撥珠拳');
+    expect(cardAriaLabel(getCard('ab_m002'))).toBe('算珠盾');
+    expect(cardAriaLabel(getCard('ab_m003'))).toBe('十全掌');
+    expect(cardAriaLabel(getCard('bo'))).toBe('注音 ㄅ');
   });
 });
