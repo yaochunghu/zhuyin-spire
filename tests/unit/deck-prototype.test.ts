@@ -254,7 +254,7 @@ describe('共鳴 combat rules', () => {
       () => {},
       noDraw,
     );
-    expect(vulnerableEnemy.hp).toBe(hpBefore - 12);
+    expect(vulnerableEnemy.hp).toBe(hpBefore - 13);
 
     const tempoCombat = createCombat(['a'], 'rock', 30, 30);
     const tempoEnemy = tempoCombat.enemies[0]!;

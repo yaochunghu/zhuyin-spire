@@ -1,12 +1,5 @@
 # Changelog
 
-## Unreleased — browser stabilization on 0.4.0
-
-- Keep the 75-card score progression and current catalog while repairing dependencies and checking three browser engines.
-- Add native menus/inspection, overlapping pause ownership, speech fallback, visible save failures, and animation cancellation recovery.
-- Make B041 choose its physical Attack before casting; retain upstream B144 and B051 corrections with regression coverage.
-- Preserve save/profile compatibility and separate historical audit results from integrated validation.
-
 All notable changes to **注音之塔 / Zhuyin Spire** are documented here.
 
 Format: human-readable summary per version. For code archaeology use `git log` and tags.
@@ -24,6 +17,45 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - Kept 初心音叉 as the starter. The four legacy relics still load for old saves and are not offered
 - Moved saves to version 3. A v1 or v2 `relicId` becomes the ordered `relicIds` list
 - Added tappable relic badges that show the Chinese name and effect. No relic skips casting
+
+### Combat and campfire fixes
+
+- Searching the discard for a card type no longer deletes the cards still in the draw pile.
+- The campfire remove-card screen can return to rest without deleting a card.
+- Attack damage that is not marked 直傷 respects block and 易傷. Enemy block expires at that enemy's next action. This-turn cost discounts expire, and next-enemy-phase riders stack and expire with their text.
+- Ambiguous single-character prompts for 了, 覺, and 樂 are removed. Pictured 還 and 傳 readings from the dictionary cleanup stay as they are.
+
+### Zhuyin corrections
+
+- Point pictured phrases at the 《重編國語辭典修訂本》 headword for that picture: 幹 ㄍㄢˋ, 更 ㄍㄥˋ, 卷 ㄐㄩㄢˋ, 期 ㄑㄧˊ, 甚 ㄕㄣˊ, 鑽 ㄗㄨㄢˋ, 撒 ㄙㄚˇ, and 微 ㄨㄟˊ.
+- Remove the 還 ↩️ and 傳 📣 rows whose readings did not match the picture, because 歸還 ㄏㄨㄢˊ and 傳播 ㄔㄨㄢˊ were already in the bank.
+- Remove the extra 桌 rows that repeated the same word and spelling.
+- Keep 余 for the surplus picture. The revised dictionary defines 剩下、多餘 on 余, so it is not rewritten as 餘.
+- Give the fourteen open phrase pictures the 《重編國語辭典修訂本》 reading for that picture: 背 ㄅㄟ, 鋪 ㄆㄨˋ, 興 ㄒㄧㄥˋ, 熟 ㄕㄨˊ, 掃 ㄙㄠˋ, 艘 ㄙㄠ, and 應 ㄧㄥˋ. 表, 量, 困, 將, 閑, 血, and 于 already had that reading.
+
+---
+
+## [0.4.1] — 2026-10-26
+
+### Zhuyin corrections
+
+- Correct Zhuyin readings and Traditional headwords in the card cues and phrase bank against 《重編國語辭典修訂本》, without changing the phrase schema or run-save format.
+
+### Playtest kit
+
+- Add the parent kit for the two open human gates: a physical-device checklist, an Act I family session with Traditional Chinese read-aloud lines, and a blank record that stays out of git.
+- Relic work may proceed in parallel and merges only after both playtests pass.
+
+### Browser stabilization
+
+- Keep the 75-card score progression and current catalog while repairing dependencies and checking three browser engines.
+- Add native menus/inspection, overlapping pause ownership, speech fallback, visible save failures, and animation cancellation recovery.
+- Make B041 choose its physical Attack before casting; retain upstream B144 and B051 corrections with regression coverage.
+- Preserve save/profile compatibility and separate historical audit results from integrated validation.
+
+### Fight stays on screen
+
+- Keep the hero on the board while a card is spelled, and play a monster's defeat before rewards when a cast ends the fight
 
 ### Complete card meta progression
 
@@ -231,6 +263,7 @@ Baseline snapshot of the preschool Spire + 注音 game, documented for long-term
 - Standalone git repository for the game folder (tag `v0.1.0`)
 
 [Unreleased]: #unreleased
+[0.4.1]: #041--2026-10-26
 [0.4.0]: #040--2026-08-21
 [0.3.1]: #031--2026-07-23
 [0.3.0]: #030--2026-07-22

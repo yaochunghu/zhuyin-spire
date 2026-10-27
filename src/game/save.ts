@@ -74,6 +74,7 @@ export interface RunSnapshot {
   /** Acquisition order. v1 and v2 stored this as a single relicId. */
   relicIds: string[];
   pendingRelicId?: string | null;
+  /** Optional so checkpoints saved before treasure headers still load. */
   rewardSource?: 'fight' | 'treasure' | null;
   runMap: RunMap;
   actIndex: number;

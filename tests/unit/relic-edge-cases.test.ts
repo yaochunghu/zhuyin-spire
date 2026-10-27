@@ -203,7 +203,7 @@ describe('relic edge cases', () => {
   it('keeps 練功 from a flawless 立身聽勁 after 練功起勢 expires', () => {
     const combat = createCombat(['rw_b128'], 'rock', 40, 40, getRelic('trainingStance'));
     executeEffects(combat, getCard('rw_b128'), [], () => {}, () => []);
-    expect(combat.flawlessTrainingPending).toBe(true);
+    expect(combat.flawlessTrainingPending).toBe(1);
     combat.block = 99;
     endTurn(combat);
     expect(combat.training).toBe(1);

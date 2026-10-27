@@ -26,6 +26,11 @@ import {
   showFlash,
 } from './runtime';
 
+/** Practice keeps the same teaching reveal on a wrong answer as on a correct one. */
+export function practiceRevealKind(correct: boolean): 'success' | 'correction' {
+  return correct ? 'success' : 'correction';
+}
+
 export function playSpellReveal(
   info: { word: string; emoji: string; spell: string },
   onDone: () => void,
@@ -94,11 +99,8 @@ export function playSpellReveal(
     if (finished) return;
     overlay.classList.add('can-continue');
     continueButton.focus();
-  }, kind === 'success' ? LEARNING_REVEAL_CONTINUE_MS : 800);
-  autoTimer = teachingTimers.set(
-    finish,
-    kind === 'success' ? LEARNING_REVEAL_TOTAL_MS - 180 : 1320,
-  );
+  }, LEARNING_REVEAL_CONTINUE_MS);
+  autoTimer = teachingTimers.set(finish, LEARNING_REVEAL_TOTAL_MS - 180);
   overlay.addEventListener('remove', () => teachingTimers.clear(removeTimer));
 }
 
@@ -137,11 +139,11 @@ export function submitSpell(): void {
       render();
     };
 
-    if (correct) {
-      playSpellReveal({ word: cue.text, emoji: cue.emoji, spell }, afterPractice);
-    } else {
-      teachingTimers.set(afterPractice, 320);
-    }
+    playSpellReveal(
+      { word: cue.text, emoji: cue.emoji, spell },
+      afterPractice,
+      practiceRevealKind(correct),
+    );
     return;
   }
 

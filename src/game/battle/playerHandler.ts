@@ -7,6 +7,7 @@ import {
   cardNeedsEnemyTarget,
   cardTargetType,
   executeEffects,
+  isEligibleHandChoice,
   livingEnemies,
 } from './effects';
 import { pushFx } from './fx';
@@ -43,7 +44,7 @@ export function beginPlay(
   const def = resolveCard(candidate.defId, candidate.upgradeLevel);
   if (def.handChoice) {
     const eligible = state.hand.filter((entry) => entry.uid !== uid &&
-      resolveCard(entry.defId, entry.upgradeLevel).type === def.handChoice);
+      isEligibleHandChoice(def, entry));
     if ((eligible.length > 0 || chosenHandUid !== undefined) &&
         !eligible.some((entry) => entry.uid === chosenHandUid)) {
       throw new Error('Choose a valid card before casting');
@@ -75,15 +76,16 @@ export function beginPlay(
   return def;
 }
 
-function effectiveCost(
+export function effectiveCost(
   state: CombatState,
   card: CombatState['hand'][number],
   def: CardDef,
 ): number {
   if ((def.basicAttack || card.basicOverride) && state.freeBasicsRemaining > 0) return 0;
-  if (def.designId === 'B065' && state.lastPlayedType === 'skill') return Math.min(1, def.cost);
-  if (def.designId === 'B132') return Math.max(0, def.cost - state.tempoCount);
-  return Math.max(0, def.cost - card.temporaryCostReduction);
+  let cost = def.cost;
+  if (def.designId === 'B065' && state.lastPlayedType === 'skill') cost = Math.min(1, cost);
+  else if (def.designId === 'B132') cost = Math.max(0, def.cost - state.tempoCount);
+  return Math.max(0, cost - card.temporaryCostReduction);
 }
 
 export function resolveCastSuccess(state: CombatState, def: CardDef): void {
@@ -115,8 +117,9 @@ export function resolveCastSuccess(state: CombatState, def: CardDef): void {
     delete card.chosenHandUid;
     if (def.type === 'power') {
       const powerId = def.designId ?? def.id;
-      state.activePowerIds.push(powerId);
-      state.activePowerLevels[powerId] = card.upgradeLevel;
+      if (!state.activePowerIds.includes(powerId)) state.activePowerIds.push(powerId);
+      const installed = state.activePowerLevels[powerId] ?? 0;
+      state.activePowerLevels[powerId] = Math.max(installed, card.upgradeLevel) as 0 | 1;
     } else if (def.exhaust) {
       state.exhaustPile.push(card);
     } else {
@@ -151,5 +154,9 @@ export function discardHandEndTurn(state: CombatState): void {
     pushFx(state, { type: 'discard', cards: discarded, reason: 'endTurn' });
   } else {
     state.hand = retained;
+  }
+  // "This turn" discounts end with the turn, including retained cards and anything discarded.
+  for (const card of [...state.hand, ...state.discardPile, ...state.drawPile, ...state.exhaustPile]) {
+    card.temporaryCostReduction = 0;
   }
 }

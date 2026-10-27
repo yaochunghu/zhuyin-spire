@@ -66,14 +66,17 @@ export function formatCardDescription(def: CardDef): string {
  * StS-style card face: cost · type · 注音 art · name plate · description box.
  * Still text/emoji — sized for 1080p combat hand readability.
  */
-export function cardFaceHtml(def: CardDef | ReturnType<typeof getCard>): string {
+export function cardFaceHtml(
+  def: CardDef | ReturnType<typeof getCard>,
+  cost = def.cost,
+): string {
   const emoji = def.icon ?? def.cues[0]?.emoji ?? '';
   const desc = formatCardDescription(def);
   const job = jobLabel(def.job);
   return `
     ${'upgraded' in def && def.upgraded ? '<div class="card-upgrade-badge" aria-label="已升級">+</div>' : ''}
     <div class="card-top">
-      <div class="cost" aria-hidden="true">${def.cost}</div>
+      <div class="cost" aria-hidden="true">${cost}</div>
       <div class="card-type-badge" aria-hidden="true" title="${typeLabel(def.type)}">${typeIcon(def.type)}</div>
     </div>
     <div class="card-art">

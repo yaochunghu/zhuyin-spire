@@ -8,8 +8,8 @@ at each score milestone while balancing the advanced tiers.
 
 | Source | Says |
 |--------|------|
-| `package.json` / `CHANGELOG.md` | **0.4.0** |
-| GitHub Releases | Latest published tag may still be **v0.2.2** until an owner cuts a release |
+| `package.json` / `CHANGELOG.md` | **0.4.1** |
+| GitHub Releases | Latest published tag is **v0.4.0** (`535af22`). Publish **v0.4.1** from `main` after this version lands. |
 
 ## What is live
 
@@ -23,7 +23,7 @@ at each score milestone while balancing the advanced tiers.
 
 ## Before expanding content
 
-Complete the integrated browser checks and physical-device/family gates in [STABILIZATION.md](STABILIZATION.md) and [BROWSER_SUPPORT.md](BROWSER_SUPPORT.md). The 75-card progression remains the baseline.
+The 75-card progression remains the baseline. Browser checks stay in [BROWSER_SUPPORT.md](BROWSER_SUPPORT.md) and [STABILIZATION.md](STABILIZATION.md). The physical-device checklist and the Act I family session are still open; run them from the kit in [PLAYTEST_GATE.md](PLAYTEST_GATE.md#playtest-kit). Relic work may be developed in parallel. Merge that relic work only after both playtests pass. Potions, events, and later content stay deferred.
 
 ## Relic pool (0.5) — implemented, waiting on playtest
 

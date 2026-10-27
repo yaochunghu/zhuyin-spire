@@ -104,6 +104,7 @@ export interface ResolvedCardDef extends CardDef {
  * - word starts with card 注音
  * - emoji matches word
  * - spell is complete first-syllable 注音 **including tone mark (聲調符號)** when not 一聲
+ * - glyph and reading follow 《重編國語辭典修訂本》 headwords
  */
 const CARD_CUE_OVERRIDES: Partial<Record<string, Cue[]>> = {
   bo: [
@@ -180,7 +181,7 @@ const CARD_CUE_OVERRIDES: Partial<Record<string, Cue[]>> = {
   qi: [
       { word: '氣球', emoji: '🎈', spell: 'ㄑㄧˋ' },
       { word: '青蛙', emoji: '🐸', spell: 'ㄑㄧㄥ' },
-      { word: '企鵝', emoji: '🐧', spell: 'ㄑㄧˇ' },
+      { word: '企鵝', emoji: '🐧', spell: 'ㄑㄧˋ' },
       { word: '鞦韆', emoji: '🎠', spell: 'ㄑㄧㄡ' }, // 公園
   ],
   xi: [

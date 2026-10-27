@@ -130,6 +130,8 @@ export function selectEnemy(state: CombatState, enemyInstanceId: string): void {
 export function applyEnemyIntent(state: CombatState, unit: EnemyUnit): void {
   const def = ENEMIES[unit.defId];
   if (!def) return;
+  // Enemy Block lasts until this enemy's next action, then a guard can grant a fresh shield.
+  unit.block = 0;
   const intent = intentAt(def, unit.intentIndex);
 
   // —— Defend ——
@@ -196,9 +198,9 @@ export function applyEnemyIntent(state: CombatState, unit: EnemyUnit): void {
       gainJin(state, 1, 'afterEnemies');
       state.gainedJinThisEnemyPhase = true;
       state.log.push(`完整化解攻擊：勁 +1（${state.jin}/9）`);
-      if (state.drawIfJinPending) {
-        state.bonusDrawNextTurn += 1;
-        state.drawIfJinPending = false;
+      if (state.drawIfJinPending > 0) {
+        state.bonusDrawNextTurn += state.drawIfJinPending;
+        state.drawIfJinPending = 0;
       }
       if (state.bonusJinNextEnemyPhase > 0) {
         gainJin(state, state.bonusJinNextEnemyPhase, 'afterEnemies');
@@ -248,17 +250,33 @@ export function runEnemyTurn(state: CombatState): void {
     applyEnemyIntent(state, unit);
     if (state.heroHp <= 0) break;
   }
-  if (state.flawlessTrainingPending) {
-    if (state.heroHp === hpBefore) state.training += 1;
-    state.flawlessTrainingPending = false;
+  if (state.flawlessTrainingPending > 0) {
+    if (state.heroHp === hpBefore) state.training += state.flawlessTrainingPending;
+    state.flawlessTrainingPending = 0;
   }
+  // "Next enemy phase" riders expire even when the full-block condition never happens.
+  state.drawIfJinPending = 0;
+  state.bonusJinNextEnemyPhase = 0;
 }
 
-/** Advance monster statuses exactly once when a new player turn begins. */
-export function advanceEnemyStatuses(state: CombatState): void {
+/**
+ * Advance monster statuses exactly once when a new player turn begins.
+ * Duration that already existed before the enemy phase ticks down.
+ * 易傷 applied during that phase (化勁留隙) stays up for the player turn that follows.
+ */
+export function advanceEnemyStatuses(
+  state: CombatState,
+  vulnerableAtPhaseStart?: ReadonlyMap<string, number>,
+): void {
   for (const unit of state.enemies) {
     if (!unit.alive) continue;
-    if (unit.vulnerableTurns > 0) unit.vulnerableTurns -= 1;
+    const before = vulnerableAtPhaseStart?.get(unit.id);
+    if (before === undefined) {
+      if (unit.vulnerableTurns > 0) unit.vulnerableTurns -= 1;
+    } else if (before > 0) {
+      const gained = Math.max(0, unit.vulnerableTurns - before);
+      unit.vulnerableTurns = Math.min(9, Math.max(0, before - 1) + gained);
+    }
     if (unit.weakTurns > 0) unit.weakTurns -= 1;
   }
 }

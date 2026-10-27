@@ -45,7 +45,7 @@ describe('Zhuyin casting provider', () => {
     const rows = Object.entries(PHRASES_BY_INITIAL).flatMap(([family, phrases]) =>
       phrases.map((phrase) => ({ family, phrase })),
     );
-    expect(rows.length).toBeGreaterThanOrEqual(1_300);
+    expect(rows.length).toBeGreaterThanOrEqual(1_296);
     const wrongFamilies: string[] = [];
     for (const { family, phrase } of rows) {
       expect(phrase.word.trim()).not.toBe('');
@@ -124,6 +124,48 @@ describe('Zhuyin casting provider', () => {
     recordCastingResult('zhuyin:initial:ㄇ', false, 1300);
     recordCastingResult('zhuyin:initial:ㄇ', false, 1500);
     expect(chooseZhuyinMode('initial:ㄇ', () => 0.97)).toBe('listen');
+  });
+
+  it('locks pictured phrases to the revised-dictionary headword', () => {
+    const rows = Object.values(PHRASES_BY_INITIAL).flat();
+    const spells = (word: string, emoji: string) =>
+      rows
+        .filter((phrase) => phrase.word === word && phrase.emoji === emoji)
+        .map((phrase) => phrase.spell);
+
+    expect(spells('幹', '🪵')).toEqual(['ㄍㄢˋ']);
+    expect(spells('干', '🪵')).toEqual([]);
+    expect(spells('更', '📈')).toEqual(['ㄍㄥˋ']);
+    expect(spells('還', '↩️')).toEqual(['ㄏㄨㄢˊ']);
+    expect(spells('卷', '📜')).toEqual(['ㄐㄩㄢˋ']);
+    expect(spells('期', '📅')).toEqual(['ㄑㄧˊ']);
+    expect(spells('傳', '📣')).toEqual(['ㄔㄨㄢˊ']);
+    expect(spells('甚', '❓')).toEqual(['ㄕㄣˊ']);
+    expect(spells('鑽', '💎')).toEqual(['ㄗㄨㄢˋ']);
+    expect(spells('撒', '🌱')).toEqual(['ㄙㄚˇ']);
+    expect(spells('微', '🔬')).toEqual(['ㄨㄟˊ']);
+    expect(rows.filter((phrase) => phrase.word === '桌')).toEqual([
+      expect.objectContaining({ emoji: '🍽️', spell: 'ㄓㄨㄛ' }),
+    ]);
+    // 余 already means 剩下、多餘 in 《重編國語辭典修訂本》, so the surplus picture stays 余.
+    expect(spells('余', '➕')).toEqual(['ㄩˊ']);
+    expect(spells('餘', '➕')).toEqual([]);
+
+    // Round 3: the revised dictionary's reading for each pictured phrase.
+    expect(spells('背', '🎒')).toEqual(['ㄅㄟ']);
+    expect(spells('表', '⌚')).toEqual(['ㄅㄧㄠˇ']);
+    expect(spells('鋪', '🛏️')).toEqual(['ㄆㄨˋ']);
+    expect(spells('量', '⚖️')).toEqual(['ㄌㄧㄤˋ']);
+    expect(spells('困', '😴')).toEqual(['ㄎㄨㄣˋ']);
+    expect(spells('將', '♟️')).toEqual(['ㄐㄧㄤ']);
+    expect(spells('閑', '😌')).toEqual(['ㄒㄧㄢˊ']);
+    expect(spells('興', '🎉')).toEqual(['ㄒㄧㄥˋ']);
+    expect(spells('血', '🩸')).toEqual(['ㄒㄧㄝˇ']);
+    expect(spells('熟', '🔥')).toEqual(['ㄕㄨˊ']);
+    expect(spells('掃', '🧹')).toEqual(['ㄙㄠˋ']);
+    expect(spells('艘', '⛵')).toEqual(['ㄙㄠ']);
+    expect(spells('應', '✅')).toEqual(['ㄧㄥˋ']);
+    expect(spells('于', '📍')).toEqual(['ㄩˊ']);
   });
 
   it('reports filters that would remove all prompts from obtainable cards', () => {

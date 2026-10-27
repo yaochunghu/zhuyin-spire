@@ -1,5 +1,5 @@
 import { createModalShell, showModalShell, dismissModalShell, lockPageScroll } from './modal';
-import { getCard, resolveCard } from '../data/cards';
+import { CARDS, getCard, resolveCard } from '../data/cards';
 import {
   ENEMIES,
   intentIsUrgent,
@@ -12,7 +12,9 @@ import {
 import { renderRelicBadges } from './relicBadges';
 import {
   canPlay,
+  effectiveCost,
   intentForUnit,
+  isEligibleHandChoice,
   livingEnemies,
   nextIntentForUnit,
   type CombatCard,
@@ -48,6 +50,13 @@ import {
 } from './runtime';
 import { artImageHtml, enemyArtKeyFor } from './assets';
 
+function activePowerLabels(ids: string[]): string {
+  return ids.map((id) => {
+    const card = Object.values(CARDS).find((entry) => entry.designId === id);
+    return card?.name ?? id;
+  }).join('、');
+}
+
 /** Group pile cards by defId for a compact grid (×N badge). */
 /** Inspect draw or discard pile (kid-friendly grid). */
 function renderPileViewer(kind: 'draw' | 'discard', cards: CombatCard[]): HTMLElement {
@@ -69,7 +78,7 @@ function renderPileViewer(kind: 'draw' | 'discard', cards: CombatCard[]): HTMLEl
     <div class="kid-prompt">${title} ×${cards.length}</div>
     <p class="adult-text">${
       kind === 'draw'
-        ? '接下來會抽到的牌（順序會洗牌，這裡只是內容）'
+        ? '抽牌堆裡現在有這些牌。下一張從後面抽出。'
         : '已經用過、棄掉的牌'
     }</p>
   `;
@@ -183,6 +192,11 @@ function waitForCombatFx(): Promise<void> {
  * A fight-ending cast must not cover the battlefield with the spelling card.
  * Hold the slain monster, play the hit, poof them, then the victory or faint beat.
  */
+/** A fatal end turn should play the battlefield outro before the defeat screen. */
+export function endTurnShouldPlayOutro(screen: string): boolean {
+  return screen === 'defeat' || screen === 'victory';
+}
+
 export async function presentBattleEnding(): Promise<void> {
   if (session.battleOutro || session.outcomeAnimPlaying) return;
   session.battleOutro = true;
@@ -256,8 +270,7 @@ function playCardFromUi(uid: string, targetIds: string[] = [], chosenHandUid?: s
   if (!combat || !card) return;
   const definition = resolveCard(card.defId, card.upgradeLevel);
   const choices = definition.handChoice
-    ? combat.hand.filter((entry) => entry.uid !== uid &&
-      resolveCard(entry.defId, entry.upgradeLevel).type === definition.handChoice)
+    ? combat.hand.filter((entry) => entry.uid !== uid && isEligibleHandChoice(definition, entry))
     : [];
   if (chosenHandUid === undefined && choices.length > 0) {
     cleanupDragUi();
@@ -321,8 +334,9 @@ function renderEnemySlot(
   const def = ENEMIES[unit.defId] ?? ENEMIES.slime!;
   const intent = intentForUnit(unit);
   const nextIntent = nextIntentForUnit(unit);
-  const multiHint = intentMultiHint(intent);
-  const intentTitle = intentLabel(intent);
+  const weak = unit.weakTurns > 0;
+  const multiHint = intentMultiHint(intent, weak);
+  const intentTitle = intentLabel(intent, weak);
   const hpPct = Math.max(0, (unit.hp / unit.maxHp) * 100);
   const selected = combat.selectedEnemyId === unit.id && unit.alive;
   const dead = !unit.alive || unit.hp <= 0;
@@ -331,9 +345,9 @@ function renderEnemySlot(
     session.battleOutro &&
     (session.battleOutroHoldIds.includes(unit.id));
   const holdPortrait = justSlain && !session.battleDeathCue;
-  const urgent = !dead && intentIsUrgent(intent, combat.heroHp, combat.block);
+  const urgent = !dead && intentIsUrgent(intent, combat.heroHp, combat.block, weak);
   const nextUrgent =
-    !dead && intentIsUrgent(nextIntent, combat.heroHp, combat.block);
+    !dead && intentIsUrgent(nextIntent, combat.heroHp, combat.block, weak);
   // Cap shield bar display relative to maxHp for readability
   const shieldPct = Math.min(100, (unit.block / Math.max(unit.maxHp, 1)) * 100);
 
@@ -370,12 +384,12 @@ function renderEnemySlot(
           ? ''
           : `<div class="intent intent-now intent-pulse intent-${intent.kind}${urgent ? ' intent-urgent' : ''}" title="本回合：${intentTitle}${urgent ? ' · 建議擋' : ''}">
         <span class="intent-badge adult-text">${urgent ? '⚠ 本回合' : '本回合'}</span>
-        <span class="intent-total">${intentTotalLabel(intent)}</span>
+        <span class="intent-total">${intentTotalLabel(intent, weak)}</span>
         ${multiHint ? `<span class="intent-multi-hint adult-text">${multiHint}</span>` : ''}
       </div>
-      <div class="intent intent-next intent-${nextIntent.kind}${nextUrgent ? ' intent-urgent-soft' : ''}" title="${intentNextHint(nextIntent)}">
+      <div class="intent intent-next intent-${nextIntent.kind}${nextUrgent ? ' intent-urgent-soft' : ''}" title="${intentNextHint(nextIntent, weak)}">
         <span class="intent-badge adult-text">下回合</span>
-        <span class="intent-total intent-next-total">${intentTotalLabel(nextIntent)}</span>
+        <span class="intent-total intent-next-total">${intentTotalLabel(nextIntent, weak)}</span>
       </div>`
       }
     </div>
@@ -391,6 +405,11 @@ function renderEnemySlot(
       !dead && unit.vulnerableTurns > 0
         ? `<button type="button" class="enemy-status vulnerable-status" data-enemy-status="${unit.id}" aria-expanded="${session.enemyStatusHelpId === unit.id}" title="易傷：攻擊傷害變成 1.5 倍">🎯 易傷 ${unit.vulnerableTurns}</button>
           ${session.enemyStatusHelpId === unit.id ? '<div class="enemy-status-help" role="status">攻擊傷害 ×1.5，無條件捨去小數。怪物行動後少 1 回合。</div>' : ''}`
+        : ''
+    }
+    ${
+      !dead && unit.weakTurns > 0
+        ? `<span class="enemy-status weak-status" title="虛弱：這隻怪物的攻擊每下變成 75%">😵 虛弱 ${unit.weakTurns}</span>`
         : ''
     }
     <div class="enemy-bars">
@@ -436,7 +455,7 @@ export function renderCombat(): HTMLElement {
   const c = run().combat!;
   const living = livingEnemies(c);
   const incoming = living.reduce(
-    (sum, unit) => sum + intentTotalDamage(intentForUnit(unit)),
+    (sum, unit) => sum + intentTotalDamage(intentForUnit(unit), unit.weakTurns > 0),
     0,
   );
   const el = document.createElement('div');
@@ -591,6 +610,9 @@ export function renderCombat(): HTMLElement {
       <div class="hero-combat-powers">
         ${c.firstAttackBonusDamage > 0 ? `<span class="combat-power relic-ready${c.firstAttackBonusReady ? '' : ' status-used'}" title="初心音叉：每回合第一次攻擊 +${c.firstAttackBonusDamage}">🎵 首擊 +${c.firstAttackBonusDamage}${c.firstAttackBonusReady ? '' : ' ✓'}</span>` : ''}
         ${c.training > 0 ? `<span class="combat-power" title="練功：基礎攻擊每一下追加傷害">🥋 基礎攻擊 +${c.training}</span>` : ''}
+        ${c.jin > 0 ? `<span class="combat-power" title="勁">💪 勁 ${c.jin}</span>` : ''}
+        ${c.tempoCount > 0 ? `<span class="combat-power" title="轉拍">🥁 轉拍 ${c.tempoCount}</span>` : ''}
+        ${c.activePowerIds.length > 0 ? `<span class="combat-power" title="能力">${activePowerLabels(c.activePowerIds)}</span>` : ''}
       </div>
     </div>
   `;
@@ -658,7 +680,7 @@ export function renderCombat(): HTMLElement {
     ) {
       btn.classList.add('tutorial-focus');
     }
-    btn.innerHTML = cardFaceHtml(def);
+    btn.innerHTML = cardFaceHtml(def, effectiveCost(c, card, def));
     btn.disabled = !energyPlayable || !tutorialPlayable || locked;
     btn.dataset.uid = card.uid;
     btn.setAttribute('aria-label', `注音 ${def.zhuyin}`);
@@ -715,11 +737,8 @@ export function renderCombat(): HTMLElement {
     const live = run().combat;
     if (!live || live.status !== 'playing') return;
     playerEndTurn(run());
-    if (run().screen === 'defeat') {
-      render();
-      playOutcomeOverlay('faint', { emoji: '🧒🥋' }, () => {
-        render();
-      });
+    if (endTurnShouldPlayOutro(run().screen)) {
+      void presentBattleEnding();
       return;
     }
     render();

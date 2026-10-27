@@ -122,9 +122,11 @@ export interface CombatState {
   nextAttackBonus: number;
   freeBasicsRemaining: number;
   bonusDrawNextTurn: number;
-  drawIfJinPending: boolean;
+  /** Copies of B076 waiting on the next enemy phase. */
+  drawIfJinPending: number;
   bonusJinNextEnemyPhase: number;
-  flawlessTrainingPending: boolean;
+  /** Copies of B128 waiting on the next enemy phase. */
+  flawlessTrainingPending: number;
   activePowerIds: string[];
   activePowerLevels: Record<string, 0 | 1>;
   powerTriggersThisTurn: Record<string, number>;

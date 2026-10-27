@@ -72,9 +72,9 @@ export function createCombat(
     nextAttackBonus: 0,
     freeBasicsRemaining: 0,
     bonusDrawNextTurn: 0,
-    drawIfJinPending: false,
+    drawIfJinPending: 0,
     bonusJinNextEnemyPhase: 0,
-    flawlessTrainingPending: false,
+    flawlessTrainingPending: 0,
     activePowerIds: [],
     activePowerLevels: {},
     powerTriggersThisTurn: {},
@@ -138,6 +138,9 @@ export function endTurn(state: CombatState): CombatState['status'] {
   discardHandEndTurn(state);
 
   state.phase = 'enemyTurn';
+  const vulnerableAtPhaseStart = new Map(
+    state.enemies.map((enemy) => [enemy.id, enemy.vulnerableTurns]),
+  );
   runEnemyTurn(state);
 
   if (state.heroHp <= 0) {
@@ -148,10 +151,11 @@ export function endTurn(state: CombatState): CombatState['status'] {
   }
 
   // Player turn start: leftover block expires (STS-style).
+  // 易傷 applied during the enemy phase (B100) is not part of this tick.
   // 聽勁護心's shield was withheld until after every enemy acted.
   state.block = 0;
   applyPendingListeningHeart(state);
-  advanceEnemyStatuses(state);
+  advanceEnemyStatuses(state, vulnerableAtPhaseStart);
   state.turn += 1;
   if (state.firstTurnTraining > 0) {
     const removed = Math.min(state.training, state.firstTurnTraining);
@@ -197,7 +201,9 @@ function drawCardOfType(state: CombatState, wantedType: 'attack' | 'skill'): voi
   let index = lastIndexWhere(state.drawPile, matches);
   if (index < 0 && state.discardPile.some(matches)) {
     const count = state.discardPile.length;
-    state.drawPile = shuffle(state.discardPile);
+    // Keep cards already in the draw pile. Shuffled discards go underneath
+    // (draw order pops from the end).
+    state.drawPile = [...shuffle(state.discardPile), ...state.drawPile];
     state.discardPile = [];
     state.log.push('洗牌！');
     pushFx(state, { type: 'shuffle', count });
