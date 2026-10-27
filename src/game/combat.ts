@@ -33,6 +33,7 @@ export {
   getEnemy,
   getEnemyUnit,
   intentForUnit,
+  intentStepForUnit,
   livingEnemies,
   makeCard,
   nextIntentForUnit,

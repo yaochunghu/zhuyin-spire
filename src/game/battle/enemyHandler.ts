@@ -171,6 +171,19 @@ export function nextIntentForUnit(unit: EnemyUnit, state?: CombatState): Intent 
   return intentForOffset(unit, 1, state);
 }
 
+/**
+ * Read-only view of the pattern step behind the 本回合 (0) or 下回合 (1) pill.
+ * The UI uses it for summon, strength, and boss phase-enter cues.
+ */
+export function intentStepForUnit(
+  unit: EnemyUnit,
+  offset: 0 | 1,
+): { step: IntentStep; phaseEnter: boolean } {
+  const step = rawStep(unit, offset);
+  const phase = ENEMIES[unit.defId]?.phases?.[0];
+  return { step, phaseEnter: !!phase && step === phase.enter };
+}
+
 /** A correct cast softens a listening enemy's later attack. Fizzles do not. */
 export function noteSuccessfulCast(state: CombatState): void {
   for (const unit of state.enemies) {

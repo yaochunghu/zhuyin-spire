@@ -94,6 +94,11 @@ Energy is per-combat; end turn discards remaining hand then enemy acts then redr
 - A boss `phases` entry replaces 下回合 with its `enter` step once hp is at or
   below `belowHp`. That enter step plays once, then the phase pattern cycles.
   The current pill stays put until the enemy acts.
+- UI cues for these (`ui/enemyCues.ts`, read-only via `intentStepForUnit`):
+  a 💪+N portrait badge for strength, a 💪 chip on attack pills that include
+  it, coloured pills with 📣 (summon) or 💪 (buff) chips, a 新來的 badge on the
+  player turn after a summon, and a 🛡️✨ portrait badge before the boss
+  phase-enter guard. Portrait badges stay visible on phones where 下回合 hides.
 - Legacy “primary” fields sync via `syncPrimaryEnemy` for older callers
 
 Encounters (1–3 enemies) come from `data/encounters.ts` or single-enemy node fields on the map.
