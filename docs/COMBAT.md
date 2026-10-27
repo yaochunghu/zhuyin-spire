@@ -148,6 +148,21 @@ Completion is written only in `finishFight` after victory.
 
 `cardNeedsEnemyTarget` / `collectDropTargets` drive UI highlights.
 
+## Potions
+
+A bottle is not a card. It spends no Energy and never opens 注音. Combat use is
+only in the player's actionable phase. The tutorial locks the belt.
+
+`dealBlockedDamage` is for potion text that does not say 直傷. Enemy Block
+absorbs it. 易傷, 練功, and attack relics do not. `dealTrueDamage` (the old
+`dealDirect` path) ignores Block and is only for text that says 直傷. The live
+six bottles do not use it.
+
+A killing bottle still goes through `finishFight`, so the strike and poof play
+before the reward screen. Drops roll on normal, elite, and boss fights. Treasure
+does not roll. The chance resets to 40 when that boss reward is left and the
+next act begins.
+
 ---
 
 ## FX pipeline

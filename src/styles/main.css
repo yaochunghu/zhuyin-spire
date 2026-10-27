@@ -2263,6 +2263,73 @@ button:disabled {
   outline-offset: 2px;
 }
 
+.potion-belt,
+.shop-potion-row,
+.potion-replace-row,
+.map-potion-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.map-potion-row,
+.potion-reward,
+.potion-replace-row,
+.shop-potion-row {
+  width: min(100%, 720px);
+  margin: 8px auto 0;
+}
+
+.potion-belt-mark {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.potion-slot.is-empty {
+  opacity: 0.45;
+}
+
+.potion-slot.is-aiming,
+.enemy-slot.potion-aim-target {
+  outline: 3px solid var(--toy-gold, #f0b429);
+  outline-offset: 2px;
+}
+
+.potion-aim-cancel,
+.shop-potion-button,
+.potion-replace-row .btn-secondary {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.potion-inspect-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.potion-inspect-actions .btn-primary,
+.potion-inspect-actions .btn-secondary,
+.potion-inspect-actions .relic-inspect-close {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.potion-reward {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+
+.potion-reward-name {
+  display: block;
+  font-size: 1.2rem;
+}
+
 .relic-reward {
   display: flex;
   align-items: center;

@@ -124,7 +124,7 @@ describe('act floor contract', () => {
 
     const migrated = parseSnapshot(legacy);
     expect(migrated).not.toBeNull();
-    expect(migrated!.v).toBe(3);
+    expect(migrated!.v).toBe(4);
     expect(migrated!.relicIds).toEqual(['tuningFork']);
     expect(migrated!.deck.every((card) => card.upgradeLevel === 0)).toBe(true);
     for (const act of migrated!.runMap.acts) {

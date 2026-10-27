@@ -1781,6 +1781,12 @@ html[data-screen='combat'] .global-control-btn {
   min-width: 0;
 }
 
+.combat-potion-belt {
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+  padding-bottom: 2px;
+}
+
 .combat-hud-location {
   gap: 8px;
   white-space: nowrap;
@@ -2467,7 +2473,12 @@ html[data-screen='combat'] .global-control-btn {
   .combat-hud-strip {
     grid-template-areas:
       'location resources'
-      'relics relics';
+      'relics relics'
+      'potions potions';
+  }
+
+  .combat-potion-belt {
+    grid-area: potions;
   }
 
   .combat-hud-location {

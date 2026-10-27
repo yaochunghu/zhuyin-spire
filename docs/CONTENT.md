@@ -202,8 +202,9 @@ progression migrate to score 300 and therefore begin with 33 cards unlocked.
 
 The live first-character specification and future upgrade constraints are in
 [DECK_DESIGN.md](./DECK_DESIGN.md). The live relic pool is the five 共鳴 drops
-in [NEXT_PHASE.md](./NEXT_PHASE.md) plus the starter 初心音叉. Do not restore
-the archived Echo-coupled 40-relic proposal. Potions stay gated.
+in [NEXT_PHASE.md](./NEXT_PHASE.md) plus the starter 初心音叉. The live potion
+belt is the six bottles in that same page. Do not restore the archived
+Echo-coupled 40-relic or 20-potion proposal.
 
 ---
 
