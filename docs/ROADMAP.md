@@ -5,10 +5,9 @@ The live version, obtainability rules, and next implementation slice live in
 
 ## Shipped on main
 
-`package.json` is 0.4.2. The published GitHub Release is still `v0.4.1` at
-`46f6486` (#49). **v0.4.2** is the release in progress (`[0.4.2]` in
-[CHANGELOG.md](../CHANGELOG.md), #44 and #50–#58). It is not tagged yet.
-Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
+`package.json` is 0.4.2. **v0.4.2** is the published GitHub Release, at
+`027961c`, 2026-10-27 15:00 UTC (`[0.4.2]` in [CHANGELOG.md](../CHANGELOG.md),
+#44 and #50–#58). Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
 
 - Vite + TypeScript SPA; touch-first preschool UI; adult coach strip  
 - Full first-syllable 注音 cast (including 聲調); listen mode (Web Speech zh-TW)  
@@ -53,17 +52,18 @@ Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
 
 Detail: [NEXT_PHASE.md](./NEXT_PHASE.md).
 
-1. **Claude UI polish pass** — in progress separately. Do not start it here
-2. **珠算武者 playable build** — first-grade math casting. Engine seams are in.
-   The character, deck, and math provider are not
-3. **#52's nine open questions** in
-   [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md#questions-for-yao)
-4. **The v0.4.2 release** — this is the release in progress. `package.json`
-   is 0.4.2 and `[0.4.2]` covers #44 and #50–#58. The published tag is still
-   `v0.4.1` at #49. Tagging and the GitHub Release are still open. Saves stay
+1. **珠算武者 playable build** — in progress. First-grade math casting. Engine
+   seams are in. The character, deck, and math provider are not.
+   珠算武者-specific relics, with a relic pool per character, are in progress
+   with this build
+2. **Claude design pass for 珠算武者** — character select and the answer pad
+3. **Full-run v0.4.2 playtest** of the published build at `027961c`. Saves stay
    on version 4
 
-Keys, Act IV, and a 20-level track stay later. Cast-on / debug-skip passes at
+Yao decided the #52 questions. See
+[ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md#questions-for-yao). Keys, Act IV, a
+20-level track, and a second boss per act stay later. The second boss comes
+after the v0.4.2 playtest. Cast-on / debug-skip passes at
 each score milestone stay in
 [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md).
 
