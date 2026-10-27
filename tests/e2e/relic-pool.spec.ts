@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { RELIC_TEST_MAP_SEED } from '../helpers/relicTestMap';
 
 const POOL_IDS = ['gapThumb', 'trainingWrap', 'tempoWood', 'listeningHeart', 'trainingStance'];
 const ALL_RELIC_IDS = ['tuningFork', ...POOL_IDS];
@@ -156,6 +157,26 @@ test('chests, elites, and bosses drop relics, and a badge opens the inspect dial
   await page.getByRole('button', { name: '開始爬塔' }).click();
   await page.getByRole('button', { name: /選擇共鳴武者/ }).click();
   await expect(page.locator('.map-stage')).toBeVisible();
+  await page.evaluate(async (seed) => {
+    const { generateRunMap } = await import('/src/data/map.ts');
+    const { run, render } = await import('/src/ui/runtime.ts');
+    let state = seed >>> 0;
+    const rng = () => {
+      state = (Math.imul(1664525, state) + 1013904223) >>> 0;
+      return state / 4294967296;
+    };
+    const next = run();
+    next.runMap = generateRunMap(rng);
+    next.actIndex = 0;
+    next.currentNodeId = null;
+    next.activeNodeId = null;
+    next.visitedIds = [];
+    next.pathIds = [];
+    if (!next.runMap.acts[0]!.nodes.some((node) => node.kind === 'elite')) {
+      throw new Error('Seeded Act I map has no elite');
+    }
+    render();
+  }, RELIC_TEST_MAP_SEED);
 
   await debugAction(page, 'Map', '💎');
   await page.locator('.debug-head .debug-btn-icon').click();
@@ -228,6 +249,28 @@ test('chests, elites, and bosses drop relics, and a badge opens the inspect dial
   await page.getByRole('button', { name: '關閉遺物說明' }).click();
   await expect(dialog).toBeHidden();
 
+  const earnedRelicIds = await page.evaluate(async () => {
+    const { run, render } = await import('/src/ui/runtime.ts');
+    const state = run();
+    const earned = [...state.relicIds];
+    state.relicIds = ['tuningFork', 'gapThumb', 'trainingWrap', 'tempoWood', 'listeningHeart', 'trainingStance'];
+    render();
+    return earned;
+  });
+  const sixBadges = page.locator('.map-relic-badges .relic-badge');
+  await expect(sixBadges).toHaveCount(6);
+  // Relics may wrap to a second row on phones; they just have to stay on screen.
+  const rights = await sixBadges.evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().right)));
+  const lefts = await sixBadges.evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().left)));
+  expect(Math.max(...rights)).toBeLessThanOrEqual(390);
+  expect(Math.min(...lefts)).toBeGreaterThanOrEqual(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+
+  await page.evaluate(async (earned) => {
+    const { run, render } = await import('/src/ui/runtime.ts');
+    run().relicIds = earned;
+    render();
+  }, earnedRelicIds);
   await expect(badges).toHaveCount(3);
 
   await page.evaluate(async () => {

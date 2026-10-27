@@ -77,7 +77,7 @@ export const RELICS: Record<string, RelicDef> = {
     emoji: '💛',
     name: '聽勁護心',
     blurb: '每場戰鬥第一次得到勁時，再獲得 3 點護盾',
-    adultNote: '勁仍然只在完整擋住一次攻擊時獲得。這面護盾加在擋完之後，不會因此多得到勁。',
+    adultNote: '擋住攻擊得到的勁，護盾下一回合才出現，不會因此再得到勁。破綻借力或剛柔並濟直接給的勁，會立刻多 3 點護盾。',
     source: 'pool',
     firstJinBlock: 3,
   },
@@ -181,7 +181,10 @@ export function combatModsFor(relics: readonly RelicDef[]): RelicCombatMods {
     firstJinBlock: 0,
     firstTurnTraining: 0,
   };
+  const seen = new Set<string>();
   for (const relic of relics) {
+    if (seen.has(relic.id)) continue;
+    seen.add(relic.id);
     mods.startBlock += relic.startBlock ?? 0;
     mods.startDraw += relic.startDraw ?? 0;
     mods.firstAttackBonusDamage += relic.firstAttackBonusDamage ?? 0;
