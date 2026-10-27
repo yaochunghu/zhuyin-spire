@@ -9,7 +9,7 @@ import {
   intentTotalDamage,
   intentTotalLabel,
 } from '../data/enemies';
-import { getRelic } from '../data/relics';
+import { renderRelicBadges } from './relicBadges';
 import {
   canPlay,
   effectiveCost,
@@ -27,6 +27,7 @@ import {
   canTutorialEndTurn,
   canTutorialPlayCard,
   consumeCombatFx,
+  getOwnedRelics,
   playerEndTurn,
   selectCombatEnemy,
   tryPlayCard,
@@ -498,8 +499,6 @@ export function renderCombat(): HTMLElement {
   }
 
   const actLabels = ['庭園', '圖書館', '觀測台'];
-  const relicId = run().relicId;
-  const relic = relicId ? getRelic(relicId) : null;
   const hud = document.createElement('div');
   hud.className = 'combat-hud-strip';
   hud.innerHTML = `
@@ -507,15 +506,14 @@ export function renderCombat(): HTMLElement {
       <span aria-hidden="true">${run().actIndex === 0 ? '🌿' : run().actIndex === 1 ? '📚' : '🔭'}</span>
       <strong>${actLabels[run().actIndex] ?? actLabels[0]} · 第 ${c.turn} 回合</strong>
     </div>
-    <div class="combat-hud-relics" aria-label="${relic ? `遺物：${relic.name}` : '沒有遺物'}">
-      ${relic ? `<span class="combat-relic-token" title="${relic.name}">${relic.emoji}</span>` : ''}
-    </div>
+    <div class="combat-hud-relics"></div>
     <div class="combat-hud-resources">
       ${incoming > 0 ? `<span class="combat-hud-counter combat-hud-incoming" aria-label="本回合敵人預計造成 ${incoming} 點傷害">⚔️ <strong>${incoming}</strong></span>` : ''}
       <span class="combat-hud-counter" aria-label="生命 ${c.heroHp} / ${c.heroMaxHp}">❤️ <strong>${c.heroHp}/${c.heroMaxHp}</strong></span>
       <span class="combat-hud-counter" aria-label="金幣 ${run().gold}">🪙 <strong>${run().gold}</strong></span>
     </div>
   `;
+  hud.querySelector('.combat-hud-relics')!.append(renderRelicBadges(getOwnedRelics(run())));
   stage.appendChild(hud);
 
   const battlefield = document.createElement('div');

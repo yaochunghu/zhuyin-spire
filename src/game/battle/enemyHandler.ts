@@ -12,6 +12,7 @@ import {
 } from '../../data/enemies';
 import { livingEnemies } from './effects';
 import { pushFx } from './fx';
+import { gainJin } from './resources';
 import type { CombatState, EnemyUnit } from './types';
 
 let enemyUid = 0;
@@ -202,7 +203,7 @@ export function applyEnemyIntent(state: CombatState, unit: EnemyUnit): void {
   } else if (totalBlocked > 0 && totalDamage === 0) {
     state.log.push(`${def.name} 的攻擊全被擋住了！`);
     if (state.jin < 9) {
-      state.jin += 1;
+      gainJin(state, 1, 'afterEnemies');
       state.gainedJinThisEnemyPhase = true;
       state.log.push(`完整化解攻擊：勁 +1（${state.jin}/9）`);
       if (state.drawIfJinPending > 0) {
@@ -210,7 +211,7 @@ export function applyEnemyIntent(state: CombatState, unit: EnemyUnit): void {
         state.drawIfJinPending = 0;
       }
       if (state.bonusJinNextEnemyPhase > 0) {
-        state.jin = Math.min(9, state.jin + state.bonusJinNextEnemyPhase);
+        gainJin(state, state.bonusJinNextEnemyPhase, 'afterEnemies');
         state.bonusJinNextEnemyPhase = 0;
       }
       if (

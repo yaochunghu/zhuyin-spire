@@ -1,7 +1,7 @@
 import {
   continueAfterActClear,
-  getActiveRelic,
   getAvailableMapNodes,
+  getOwnedRelics,
   getCurrentAct,
   getCurrentActNodes,
   selectMapNode,
@@ -11,6 +11,7 @@ import type { MapNode } from '../data/map';
 import { sfx } from '../game/audio';
 import { gameplayMs } from '../game/settings';
 import { openDeckViewer } from './deckViewer';
+import { renderRelicBadges } from './relicBadges';
 import { appendCoach, render, run, session } from './runtime';
 
 const SELECT_FLASH_MS = 480;
@@ -41,7 +42,6 @@ export function renderMap(): HTMLElement {
   const pathSet = new Set(run().pathIds.filter((id) => actIdSet.has(id)));
   const curId = run().currentNodeId;
   const currentOnThisAct = curId && actIdSet.has(curId) ? curId : null;
-  const relic = getActiveRelic(run());
 
   const stage = document.createElement('div');
   stage.className = 'map-stage';
@@ -76,13 +76,9 @@ export function renderMap(): HTMLElement {
     `目前第 ${currentFloor}/${totalFloors} 層`;
   top.querySelector<HTMLElement>('.map-phone-progress')!.textContent =
     `第${run().actIndex + 1}幕 · 第 ${currentFloor}/${totalFloors} 層`;
-  if (relic) {
-    const relicPill = document.createElement('span');
-    relicPill.className = 'kid-stat relic-pill';
-    relicPill.title = relic.name;
-    relicPill.textContent = relic.emoji;
-    top.querySelector('.map-status-bar')!.appendChild(relicPill);
-  }
+  const relicBadges = renderRelicBadges(getOwnedRelics(run()));
+  relicBadges.classList.add('map-relic-badges');
+  top.querySelector('.map-status-bar')!.appendChild(relicBadges);
   stage.appendChild(top);
 
   // —— Organic fitted graph (centered; side margins on stage) ——
