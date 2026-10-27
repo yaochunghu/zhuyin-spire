@@ -12,6 +12,13 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 - On a phone, each shop offer keeps its full card, price, and the remove-card button on screen. Short landscape no longer hides the price under the fold.
 
+### Cast prompt stream
+
+- Each run stores `castSeed` and `castCounter`. Mode rolls, shuffle-bag refills, and distractor banks read that stream, so a reloaded checkpoint replays the same later prompts
+- A save from before these fields still loads. The missing seed is filled in and the counter starts at 0
+- Learner shuffle bags stay on the profile
+- Debug score, tutorial start, and scene setup follow the run's character, or 共鳴武者 before one is chosen
+
 ### Encounter diversity
 
 - Each act gains native listeners, buffers or scalers, and summoners. Act II and Act III elites are no longer recycled Act I fights. Bosses telegraph a brace, then one heavier hit. A small friend arrives on the shield after that hit, and the Act III boss grows one point during the brace.

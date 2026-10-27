@@ -2,6 +2,7 @@
  * Debug mutations on RunState — no DOM.
  */
 
+import { FIRST_CHARACTER_ID, type PlayableCharacterId } from '../data/characters';
 import { ENCOUNTERS } from '../data/encounters';
 import { ENEMIES } from '../data/enemies';
 import { drawCards, livingEnemies } from '../game/combat';
@@ -29,17 +30,24 @@ import {
   getCastingPreferences,
   getCharacterCardProgress,
   saveCastingPreferences,
+  setCharacterScore,
   updateActiveProfile,
 } from '../game/profiles';
 import { getDebugSkipCast } from './debugFlags';
 
+/** The run's character, or 共鳴武者 before one is chosen. */
+export function debugCharacterId(state: RunState): PlayableCharacterId {
+  return state.characterId ?? FIRST_CHARACTER_ID;
+}
+
 export function debugInspect(state: RunState): string {
   const profile = getActiveProfile();
-  const cardProgress = getCharacterCardProgress(profile, 'echoMage');
+  const characterId = debugCharacterId(state);
+  const cardProgress = getCharacterCardProgress(profile, characterId);
   const lines: string[] = [
     `profile: ${profile.avatar} ${profile.name}`,
     `cast lessons: ${Object.keys(profile.castingHistory.lessons).length}`,
-    `meta: ${cardProgress.score} · cards ${cardProgress.unlockedCards}/${cardProgress.totalCards}`,
+    `meta: ${characterId} ${cardProgress.score} · cards ${cardProgress.unlockedCards}/${cardProgress.totalCards}`,
     `screen: ${state.screen}`,
     `act: ${state.actIndex + 1}`,
     `hp: ${state.heroHp}/${state.heroMaxHp}`,
@@ -176,7 +184,7 @@ export function debugResetTutorial(): void {
 export function debugStartTutorial(state: RunState): void {
   debugResetTutorial();
   startRun(state);
-  pickCharacter(state, 'echoMage');
+  pickCharacter(state, debugCharacterId(state));
   const first = getAvailableMapNodes(state).find(
     (node) => node.act === 1 && node.row === 0,
   );
@@ -199,14 +207,15 @@ export function debugSetCastingMode(mode: CastMode): void {
   });
 }
 
-/** Set the active learner's persisted card-unlock milestone for QA. */
-export function debugSetMetaProgress(score: CharacterCardUnlockTier): void {
+/** Set the active learner's persisted card-unlock milestone for the run's character. */
+export function debugSetMetaProgress(
+  score: CharacterCardUnlockTier,
+  state?: RunState,
+): void {
+  const characterId = state ? debugCharacterId(state) : FIRST_CHARACTER_ID;
   updateActiveProfile((profile) => ({
     ...profile,
-    characterProgress: {
-      ...profile.characterProgress,
-      echoMage: { score },
-    },
+    characterProgress: setCharacterScore(profile.characterProgress, characterId, score),
   }));
 }
 
@@ -258,7 +267,7 @@ export function debugPrepareVisualReview(
   startRun(state);
   if (screen === 'relicPick') return;
 
-  pickCharacter(state, 'echoMage');
+  pickCharacter(state, debugCharacterId(state));
   state.actIndex = Math.max(0, Math.min(2, options.actIndex ?? 0));
   state.gold = 240;
   state.heroHp = Math.max(1, state.heroMaxHp - 7);
