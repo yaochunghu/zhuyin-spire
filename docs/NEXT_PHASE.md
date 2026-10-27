@@ -11,8 +11,8 @@ each score milestone while balancing the advanced tiers.
 | Source | Says |
 |--------|------|
 | `package.json` | **0.4.2** |
-| `CHANGELOG.md` | **[0.4.2] — 2026-10-27** is the release in progress (#44 and #50–#58). **[0.4.1]** is the last published section. |
-| GitHub Releases | **v0.4.1** is still the published tag, at `46f6486` (#49). **v0.4.2** is the release in progress and is not tagged yet. |
+| `CHANGELOG.md` | **[0.4.2] — 2026-10-27** is the published release (#44 and #50–#58). |
+| GitHub Releases | **v0.4.2** is the published release, at `027961c`, 2026-10-27 15:00 UTC. |
 
 ## What is live
 
@@ -101,20 +101,23 @@ Event choices that say `{ op: 'gainPotion' }` fill that many empty slots from
 the same six bottles. A choice that needs more free slots than the belt has
 stays visible and says 藥水格已滿.
 
+## Encounter decisions
+
+Yao decided the nine questions in [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md#questions-for-yao).
+
+- Later acts never roll Act I elites or normals.
+- One boss per act for now. A second boss per act waits until after the v0.4.2 playtest, and that pass revisits this.
+- A correct cast soothes a listener. A fizzle does not punish. The current pill stays a promise.
+- Easy quota and anti-repeat stay baked when the map is built.
+- Enemy block still expires at that enemy's next action, as shipped in #50.
+- Act I keeps its four elites, including 和聲蛹.
+- 塔守護獸 keeps 軟軟史萊姆.
+- #58 gave the new enemies their own portraits, and added strength, summon, and brace cues.
+
 ## Next
 
-These four are the current slice. Keys and Act IV stay later. They are not this slice.
+These three are the current slice. Keys, Act IV, and a second boss per act stay later. The second boss revisits the one-boss decision above, after the v0.4.2 playtest.
 
-1. **Claude UI polish pass.** In progress separately. Do not start that UI work from this page. #52 left reused portraits and no strength, soothe, or summon icon; those cues belong to that pass. The pill number is the fight contract until then.
+1. **Claude design pass for 珠算武者.** Character select, the answer pad, and the remaining layout bugs from the #61 playtest (cast-question legibility, choice overlap at 640×360, character-select scroll). This page does not do that UI work.
 2. **珠算武者 follow-ups.** The character, 27-card pool, math provider, three-choice answers, and per-character relic pool are in this tree. Still later: the number pad and build tray, per-cell shuffle bags, the math tutorial, practice tabs, analytics, and the character-select art pass.
-3. **#52's open design questions.** Nine questions in [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md#questions-for-yao) are still open. They are not decided here:
-   - Keep Act II and Act III from rolling Act I elites and Act I normals.
-   - Keep one boss per act until each boss has its own portrait.
-   - A correct cast soothes a listener; a fizzle does not punish. The current pill stays a promise.
-   - New enemies reuse old portraits, for a later art pass.
-   - No new strength, soothe, or summon icon, for a later UI pass.
-   - Easy quota and anti-repeat stay baked when the map is built.
-   - Keep the enemy-block expiry shipped in #50.
-   - Act I has four elites after 和聲蛹. Keep four unless the pool must stay at three.
-   - 塔守護獸's friend is the shared 軟軟史萊姆. The first heavy is alone; a later heavy can share a turn with the slime if it is still alive.
-4. **The v0.4.2 release.** This is the release in progress. `package.json` is 0.4.2. `[0.4.2] — 2026-10-27` in [CHANGELOG.md](../CHANGELOG.md) covers #44 and #50–#58. The published GitHub Release is still `v0.4.1` at `46f6486` (#49). Tagging and the GitHub Release are still open. Saves stay on version 4.
+3. **The v0.4.2 release.** `package.json` is 0.4.2. `[0.4.2] — 2026-10-27` in [CHANGELOG.md](../CHANGELOG.md) covers #44 and #50–#58. The published GitHub Release is still `v0.4.1` at `46f6486` (#49). Tagging and the GitHub Release are still open. Saves stay on version 4.

@@ -15,6 +15,14 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - 算珠, 湊十, and 十串 are combat-only. There is no 勁. Direct damage from 木珠串 skips Block and 易傷. The 注音 tutorial stays on 共鳴武者
 - Chest, elite, boss, and random event relics roll the current character's pool. 共鳴武者 keeps the existing five. 珠算武者 rolls 算珠袋, 小尺子, 十響鈴, and 橡皮擦. Owning that pool still pays 20 gold. Legacy relics still load. Potions stay the shared six. Saves stay version 4
 
+### Playtest v0.4.2 layout fixes
+
+- Map: the 家長提示 coach now has its own space beside the map (above it in portrait) instead of floating over it. Collapsed or open, it never covers a room dot, so a tap on a dot's centre always enters the room. Opening or closing it scrolls the next rooms back into view.
+- Map at 640x360: the top bar fits on one line and the ☰ menu and tower rail get their own strip, so the visible map grows from about 84px to about 198px tall.
+- Campfire: the three choices (休息, 刪牌, 升級) sit side by side in landscape and are a little shorter, so all three are on screen without scrolling at 640x360, 844x390, 1280x720 and 390x844.
+- Shop: the 🗑️ remove-card button is disabled when you can't afford it, like the card and potion offers, and its label says there isn't enough gold.
+- New `tests/e2e/layout-fit.spec.ts` checks all of the above. No game rules or save data changed (saves stay on version 4).
+
 ---
 
 ## [0.4.2] — 2026-10-27

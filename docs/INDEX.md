@@ -36,11 +36,11 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [ENCOUNTER_RELIC_DESIGN_RESEARCH.md](./ENCOUNTER_RELIC_DESIGN_RESEARCH.md) | Review memo on StS/StS2 encounters, bosses, relic co-design, and a full-run design method |
 | [UPGRADE_BIBLE.md](./UPGRADE_BIBLE.md) | Live physical-copy foundation and all 75 score-gated upgrades |
 | [EVENT_ENCOUNTER_BIBLE.md](./EVENT_ENCOUNTER_BIBLE.md) | 30 live Act I–III events; difficulty variants, keys, and Act IV still proposed |
-| [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md) | Live normal, elite, and boss roster, and #52's nine open questions |
+| [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md) | Live normal, elite, and boss roster, and Yao's decisions on the #52 questions |
 | [BALANCE.md](./BALANCE.md) | Live economy / HP / hand numbers + design intent |
 | [DEBUG.md](./DEBUG.md) | Debug panel, flags, skip-cast testing |
 | [ROADMAP.md](./ROADMAP.md) | Shipped systems, next work, known pitfalls |
-| [NEXT_PHASE.md](./NEXT_PHASE.md) | Live tree after the Oct 27 merges, and the next four items |
+| [NEXT_PHASE.md](./NEXT_PHASE.md) | Published v0.4.2, and the next three items |
 
 Root companions:
 
@@ -49,15 +49,15 @@ Root companions:
 | [../README.md](../README.md) | Play, quick start, version control |
 | [../AGENTS.md](../AGENTS.md) | AI/human resume guide |
 | [../CHANGELOG.md](../CHANGELOG.md) | Human-readable version history |
-| [../RELEASE_NOTES_v0.4.2.md](../RELEASE_NOTES_v0.4.2.md) | Player-facing notes for the v0.4.2 release in progress |
+| [../RELEASE_NOTES_v0.4.2.md](../RELEASE_NOTES_v0.4.2.md) | Player-facing notes for the published v0.4.2 release |
 
 ---
 
 ## Snapshot (main, after the Oct 27 merges)
 
-`package.json` is **0.4.2**. The published GitHub Release is still `v0.4.1`
-at `46f6486` (#49). **v0.4.2** is the release in progress: #44 and #50–#58
-are `[0.4.2]` in [CHANGELOG.md](../CHANGELOG.md). That release is not tagged yet.
+`package.json` is **0.4.2**. **v0.4.2** is the published GitHub Release, at
+`027961c`, 2026-10-27 15:00 UTC. #44 and #50–#58 are `[0.4.2]` in
+[CHANGELOG.md](../CHANGELOG.md).
 
 - **Stack:** Vite + TypeScript SPA, no backend; localStorage save. Saves stay
   on version 4. `eventTrack`, `castSeed`, and `castCounter` are optional.
@@ -65,8 +65,8 @@ are `[0.4.2]` in [CHANGELOG.md](../CHANGELOG.md). That release is not tagged yet
   every act resolve once into an event, a fight, a shop, or a treasure.
 - **Combat:** modular `src/game/battle/*`, multi-enemy intents, drag-and-drop cards
 - **Fights:** act-native listeners, buffers or scalers, and summoners. Bosses
-  brace, then one heavier hit. 鐘粉蛾 is the event moth. Nine questions from
-  that pass are still open in [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md).
+  brace, then one heavier hit. 鐘粉蛾 is the event moth. Yao's decisions on
+  that pass are in [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md).
 - **Teaching:** full first-syllable 注音 cast, per-learner persistent shuffle bags,
   detailed curriculum controls, and a provider boundary. 注音 and 珠算 are
   registered. `english` is reserved. Each run's `castSeed` and `castCounter`

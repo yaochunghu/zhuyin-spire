@@ -5,9 +5,9 @@ Recognize or **listen** for the correct 注音 to cast. **Wrong answer = fizzle*
 
 **Version:** 0.4.2 in `package.json` · **Stack:** Vite + TypeScript (no backend)
 
-The published GitHub Release is still `v0.4.1` at commit `46f6486` (#49).
-**v0.4.2** is the release in progress. It covers #44 and #50–#58 and is
-`[0.4.2]` in [CHANGELOG.md](CHANGELOG.md). It is not tagged yet.
+**v0.4.2** is the published GitHub Release, at commit `027961c`, 2026-10-27
+15:00 UTC. It covers #44 and #50–#58 and is `[0.4.2]` in
+[CHANGELOG.md](CHANGELOG.md).
 Player notes: [RELEASE_NOTES_v0.4.2.md](RELEASE_NOTES_v0.4.2.md).
 
 **Play online:** [https://yaochunghu.github.io/zhuyin-spire/](https://yaochunghu.github.io/zhuyin-spire/)
@@ -149,7 +149,7 @@ CHANGELOG.md        version history
 | [docs/BALANCE.md](docs/BALANCE.md) | HP, gold, rest, hand rules |
 | [docs/DEBUG.md](docs/DEBUG.md) | Skip cast, jump fights, cheats for testing |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | What’s done / next |
-| [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) | What merged on Oct 27, and the next four items |
+| [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) | Published v0.4.2, and the next three items |
 
 ---
 
@@ -172,7 +172,7 @@ This folder is its **own git repository** (`zhuyin-spire/.git`).
 
 - Do **not** commit the game through a parent home-directory repo (e.g. unrelated remotes).
 - From this directory: `git status`, `git add`, `git commit` as usual.
-- Published release tag: `v0.4.1` at `46f6486` (#49). `package.json` is `0.4.2`. v0.4.2 is the release in progress (see [CHANGELOG.md](CHANGELOG.md) `[0.4.2]` and [RELEASE_NOTES_v0.4.2.md](RELEASE_NOTES_v0.4.2.md)). It is not tagged yet.
+- Published release tag: `v0.4.2` at `027961c`, 2026-10-27 15:00 UTC. `package.json` is `0.4.2` (see [CHANGELOG.md](CHANGELOG.md) `[0.4.2]` and [RELEASE_NOTES_v0.4.2.md](RELEASE_NOTES_v0.4.2.md)).
 - Dedicated remote: `https://github.com/yaochunghu/zhuyin-spire.git`.
 
 ```bash
