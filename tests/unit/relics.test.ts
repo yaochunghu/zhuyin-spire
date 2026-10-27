@@ -21,6 +21,7 @@ import {
 import { coachForScreen } from '../../src/game/coach';
 import { debugEnterAvailable } from '../../src/debug/debugActions';
 import { getDebugSkipCast } from '../../src/debug/debugFlags';
+import { relicTestMap } from '../helpers/relicTestMap';
 import {
   acquireRelic,
   createNewRun,
@@ -67,6 +68,7 @@ function playNext(combat: CombatState, success: boolean): void {
 function freshRun(): RunState {
   const state = createNewRun();
   startRun(state);
+  state.runMap = relicTestMap();
   pickCharacter(state, 'echoMage');
   state.tutorialEligibleRun = false;
   return state;
