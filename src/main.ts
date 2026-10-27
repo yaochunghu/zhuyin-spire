@@ -11,8 +11,9 @@ import {
   getAvailableMapNodes,
   type RunState,
 } from './game/state';
+import { closePotionInspectIfScreenChanged } from './ui/potionBelt';
 import { closeRelicInspectIfScreenChanged } from './ui/relicBadges';
-import { playPendingCombatFx, renderCombat } from './ui/combatView';
+import { playPendingCombatFx, presentBattleEnding, renderCombat } from './ui/combatView';
 import { renderCastCheck, renderPractice, submitSpell } from './ui/castView';
 import { renderActClear, renderMap } from './ui/mapView';
 import { playOutcomeOverlay } from './ui/outcome';
@@ -230,10 +231,12 @@ function render(): void {
   // Pile inspect only valid on combat screen
   if (runState.screen !== 'combat') {
     session.pileViewer = null;
+    session.potionAimSlot = null;
   }
 
   appEl.innerHTML = '';
   closeRelicInspectIfScreenChanged(document.documentElement.dataset.screen);
+  closePotionInspectIfScreenChanged(document.documentElement.dataset.screen);
   const visualTheme = applyVisualTheme(
     appEl,
     showBoard ? 'combat' : runState.screen,
@@ -318,6 +321,7 @@ bindUi({
   clearFloatSoon,
   playOutcomeOverlay,
   submitSpell,
+  playBattleEnding: presentBattleEnding,
 });
 
 applyGameSettingsToDocument();

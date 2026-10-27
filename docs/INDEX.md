@@ -62,6 +62,8 @@ Root companions:
   cumulative character score: 12 → 33 → 54 → all 75.
 - **Relics:** starter 初心音叉, plus five chest/elite 共鳴 relics. Legacy four
   remain loadable only. See [NEXT_PHASE.md](./NEXT_PHASE.md).
+- **Potions:** 3 belt slots and 6 bottles. Combat rewards and the shop can
+  give one. See [NEXT_PHASE.md](./NEXT_PHASE.md).
 - **Debug:** body-mounted panel for testing (not for kids in normal play)
 
 共鳴武者 Smith and all 75 physical-copy upgrades are live through score unlocks.

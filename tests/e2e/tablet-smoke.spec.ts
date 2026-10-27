@@ -195,7 +195,7 @@ test('character selection binds the simple starter deck and relic', async ({ pag
   expect(saved.characterId).toBe('echoMage');
   expect(saved.relicIds).toEqual(['tuningFork']);
   expect(saved.deck).toHaveLength(10);
-  expect(saved.v).toBe(3);
+  expect(saved.v).toBe(4);
   expect(saved.deck.every((card: { upgradeLevel: number }) => card.upgradeLevel === 0)).toBe(true);
   expect(saved.deck.filter((card: { defId: string }) => card.defId === 'bo')).toHaveLength(5);
   expect(saved.deck.filter((card: { defId: string }) => card.defId === 'mo')).toHaveLength(4);

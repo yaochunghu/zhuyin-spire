@@ -21,8 +21,16 @@ import {
   type RewardTier,
   type RunMap,
 } from '../data/map';
+import {
+  POTION_BELT_SLOTS,
+  POTION_DROP_MAX,
+  POTION_DROP_MIN,
+  POTION_DROP_START,
+  SHOP_POTION_COUNT,
+} from '../data/balance';
+import { emptyPotionBelt, isKnownPotionId } from '../data/potions';
 import { isKnownRelicId } from '../data/relics';
-import type { RunState, Screen, ShopOffer } from './state';
+import type { RunState, Screen, ShopOffer, ShopPotionOffer } from './state';
 import {
   isDeckCard,
   nextCardUid,
@@ -34,7 +42,8 @@ import { getActiveProfileId, isLegacyOwnerProfile } from './profiles';
 
 const LEGACY_SAVE_KEY = 'zhuyin-spire-run-v1';
 const SAVE_VERSION_V2 = 2 as const;
-const SAVE_VERSION = 3 as const;
+const SAVE_VERSION_V3 = 3 as const;
+const SAVE_VERSION = 4 as const;
 const MAX_SAVE_BYTES = 1_000_000;
 const LEGACY_BOSS_ROW = CLIMB_ROWS - 1;
 
@@ -74,6 +83,12 @@ export interface RunSnapshot {
   /** Acquisition order. v1 and v2 stored this as a single relicId. */
   relicIds: string[];
   pendingRelicId?: string | null;
+  /** Missing on v1–v3 saves. Migration fills an empty belt. */
+  potions: (string | null)[];
+  potionDropChance: number;
+  pendingPotionId: string | null;
+  pendingPotionUnplaced: boolean;
+  shopPotionOffers: ShopPotionOffer[];
   /** Optional so checkpoints saved before treasure headers still load. */
   rewardSource?: 'fight' | 'treasure' | null;
   runMap: RunMap;
@@ -134,6 +149,10 @@ export function snapshotRun(state: RunState): RunSnapshot | null {
     characterId: state.characterId,
     relicIds: [...state.relicIds],
     pendingRelicId: state.pendingRelicId,
+    potions: [...state.potions],
+    potionDropChance: state.potionDropChance,
+    pendingPotionId: state.pendingPotionId,
+    pendingPotionUnplaced: state.pendingPotionUnplaced,
     rewardSource: state.rewardSource,
     runMap: JSON.parse(JSON.stringify(state.runMap)) as RunMap,
     actIndex: state.actIndex,
@@ -146,6 +165,7 @@ export function snapshotRun(state: RunState): RunSnapshot | null {
     pendingGold: state.pendingGold,
     pendingHeal: state.pendingHeal,
     shopOffers: state.shopOffers.map((o) => ({ ...o })),
+    shopPotionOffers: state.shopPotionOffers.map((offer) => ({ ...offer })),
     shopRemoveUsed: state.shopRemoveUsed,
     listenSuccesses: state.listenSuccesses,
     lastClearedAct: state.lastClearedAct,
@@ -302,6 +322,31 @@ function isValidRunScoreStats(value: unknown): value is RunScoreStats {
   );
 }
 
+function isValidPotionBelt(value: unknown): value is (string | null)[] {
+  return (
+    Array.isArray(value) &&
+    value.length === POTION_BELT_SLOTS &&
+    value.every((id) => id === null || (typeof id === 'string' && isKnownPotionId(id)))
+  );
+}
+
+function isValidShopPotionOffer(value: unknown): value is ShopPotionOffer {
+  if (!isPlainObject(value)) return false;
+  return (
+    typeof value.potionId === 'string' &&
+    isKnownPotionId(value.potionId) &&
+    isIntIn(value.price, 0, 100_000) &&
+    typeof value.sold === 'boolean'
+  );
+}
+
+function isValidShopPotionOffers(value: unknown): value is ShopPotionOffer[] {
+  if (!Array.isArray(value) || value.length > SHOP_POTION_COUNT) return false;
+  if (!value.every((offer) => isValidShopPotionOffer(offer))) return false;
+  const ids = (value as ShopPotionOffer[]).map((offer) => offer.potionId);
+  return new Set(ids).size === ids.length;
+}
+
 function isValidRelicIdList(value: unknown): value is string[] {
   return (
     Array.isArray(value) &&
@@ -328,6 +373,15 @@ function isValidSnapshot(data: unknown): data is RunSnapshot {
       !isKnownRelicId(data.pendingRelicId) ||
       !data.relicIds.includes(data.pendingRelicId))
   ) return false;
+  if (!isValidPotionBelt(data.potions)) return false;
+  if (!isIntIn(data.potionDropChance, POTION_DROP_MIN, POTION_DROP_MAX)) return false;
+  if (
+    data.pendingPotionId !== null &&
+    (typeof data.pendingPotionId !== 'string' || !isKnownPotionId(data.pendingPotionId))
+  ) return false;
+  if (typeof data.pendingPotionUnplaced !== 'boolean') return false;
+  if (data.pendingPotionUnplaced && data.pendingPotionId === null) return false;
+  if (!isValidShopPotionOffers(data.shopPotionOffers)) return false;
   if (
     data.rewardSource !== undefined &&
     data.rewardSource !== null &&
@@ -399,7 +453,7 @@ function migrateLegacySnapshot(data: unknown): unknown {
 function migrateLegacyMapFloors(data: unknown): unknown {
   if (
     !isPlainObject(data) ||
-    (data.v !== SAVE_VERSION_V2 && data.v !== SAVE_VERSION) ||
+    (data.v !== SAVE_VERSION_V2 && data.v !== SAVE_VERSION_V3 && data.v !== SAVE_VERSION) ||
     !isPlainObject(data.runMap)
   ) {
     return data;
@@ -480,15 +534,30 @@ function migrateRelicCollection(data: unknown): unknown {
   }
   return {
     ...data,
-    v: SAVE_VERSION,
+    v: SAVE_VERSION_V3,
     relicIds,
+  };
+}
+
+/** v3 checkpoints have no belt. v4 adds an empty one and a fresh drop chance. */
+function migratePotionBelt(data: unknown): unknown {
+  if (!isPlainObject(data) || data.v !== SAVE_VERSION_V3) return data;
+  return {
+    ...data,
+    v: SAVE_VERSION,
+    potions: emptyPotionBelt(),
+    potionDropChance: POTION_DROP_START,
+    pendingPotionId: null,
+    pendingPotionUnplaced: false,
+    shopPotionOffers: [],
   };
 }
 
 export function parseSnapshot(data: unknown): RunSnapshot | null {
   const withCards = migrateLegacySnapshot(data);
   const withMap = migrateLegacyMapFloors(withCards);
-  const migrated = migrateRelicCollection(withMap);
+  const withRelics = migrateRelicCollection(withMap);
+  const migrated = migratePotionBelt(withRelics);
   return isValidSnapshot(migrated) ? migrated : null;
 }
 
@@ -533,6 +602,11 @@ export function applySnapshot(state: RunState, snap: RunSnapshot): void {
   }
   state.relicIds = [...snap.relicIds];
   state.pendingRelicId = snap.pendingRelicId ?? null;
+  state.potions = snap.potions.map((id) => id);
+  state.potionDropChance = snap.potionDropChance;
+  state.pendingPotionId = snap.pendingPotionId;
+  state.pendingPotionUnplaced = snap.pendingPotionUnplaced;
+  state.shopPotionOffers = snap.shopPotionOffers.map((offer) => ({ ...offer }));
   state.rewardSource = snap.rewardSource ?? null;
   state.runMap = JSON.parse(JSON.stringify(snap.runMap)) as RunMap;
   state.actIndex = snap.actIndex;

@@ -38,7 +38,10 @@ export { createCombat, endTurn } from './battleManager';
 export {
   cardNeedsEnemyTarget,
   cardTargetType,
+  dealBlockedDamage,
+  dealTrueDamage,
   executeEffects,
   isEligibleHandChoice,
   livingEnemies,
 } from './effects';
+export { applyCombatPotion, combatPotionBlock, healedAmount, type PotionApplyResult } from './potions';

@@ -65,7 +65,7 @@ Owned by `main.ts` as a single mutable object; UI modules reach it via `ui/runti
 
 Important fields:
 
-- **Hero:** `heroHp`, `heroMaxHp`, physical `deck[]`, `nextCardUid`, `gold`, `characterId`, `relicIds` (ordered; v1/v2 `relicId` migrates here)
+- **Hero:** `heroHp`, `heroMaxHp`, physical `deck[]`, `nextCardUid`, `gold`, `characterId`, `relicIds` (ordered; v1/v2 `relicId` migrates here), `potions` (3 slots; v3 checkpoints load an empty belt)
 - **Map:** `runMap` (3 acts), `actIndex`, `currentNodeId`, `activeNodeId`, `visitedIds`, `pathIds`
 - **Combat:** `combat: CombatState | null`
 - **Cast:** `cast: { prompt, cardDef } | null`
@@ -111,6 +111,7 @@ File: `src/game/save.ts`
 - Key: `zhuyin-spire-run-v1:<profile-id>`; the first profile mirrors the old
   `zhuyin-spire-run-v1` key for migration compatibility
 - **Stable screens only** (map, rest, shop, reward, actClear, relicPick, …) — **not** mid-combat or mid-cast
+- Current snapshot version is 4. v1 card ids, the old boss floor, a single `relicId`, and a v3 relic list each migrate forward. v3 gains an empty belt and drop chance 40
 - Title offers continue vs new game; new game clears save
 
 Other localStorage keys (non-run):

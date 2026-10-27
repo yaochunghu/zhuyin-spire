@@ -46,7 +46,7 @@ describe('relic save migration', () => {
     state.relicIds = ['coinPouch'];
     const migrated = parseSnapshot(asV2(snapshotRun(state)!, 'coinPouch'));
     expect(migrated).not.toBeNull();
-    expect(migrated!.v).toBe(3);
+    expect(migrated!.v).toBe(4);
     expect(migrated!.relicIds).toEqual(['coinPouch']);
     const restored = createNewRun();
     applySnapshot(restored, migrated!);
@@ -97,7 +97,7 @@ describe('relic save migration', () => {
     delete legacy.pendingRelicId;
     delete legacy.rewardSource;
     const migrated = parseSnapshot(legacy)!;
-    expect(migrated.v).toBe(3);
+    expect(migrated.v).toBe(4);
     expect(migrated.relicIds).toEqual(['luckyDraw']);
     expect(migrated.deck).toHaveLength(10);
     expect(migrated.deck.every((card) => card.upgradeLevel === 0)).toBe(true);
@@ -129,7 +129,7 @@ describe('relic save migration', () => {
     state.rewardSource = 'treasure';
     state.screen = 'reward';
     const snapshot = snapshotRun(state)!;
-    expect(snapshot.v).toBe(3);
+    expect(snapshot.v).toBe(4);
     expect(snapshot).not.toHaveProperty('relicId');
     const restored = createNewRun();
     applySnapshot(restored, parseSnapshot(snapshot)!);

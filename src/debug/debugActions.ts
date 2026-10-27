@@ -45,6 +45,8 @@ export function debugInspect(state: RunState): string {
     `hp: ${state.heroHp}/${state.heroMaxHp}`,
     `gold: ${state.gold}`,
     `relics: ${state.relicIds.join(', ') || '—'}`,
+    `potions: ${state.potions.map((id) => id ?? '—').join(' ')}`,
+    `potion chance: ${state.potionDropChance}`,
     `node: ${state.currentNodeId ?? '—'}`,
     `active: ${state.activeNodeId ?? '—'}`,
   ];
@@ -354,6 +356,8 @@ export function debugPrepareVisualReview(
       state.rewardTier = 'normal';
       state.rewardSource = 'fight';
       state.pendingRelicId = null;
+      state.pendingPotionId = null;
+      state.pendingPotionUnplaced = false;
       state.pendingGold = 18;
       state.gold += state.pendingGold;
       state.screen = 'reward';
