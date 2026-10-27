@@ -96,20 +96,23 @@ Event choices that say `{ op: 'gainPotion' }` fill that many empty slots from
 the same six bottles. A choice that needs more free slots than the belt has
 stays visible and says 藥水格已滿.
 
+## Encounter decisions
+
+Yao decided the nine questions in [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md#questions-for-yao).
+
+- Later acts never roll Act I elites or normals.
+- One boss per act for now. A second boss per act waits until after the v0.4.2 playtest, and that pass revisits this.
+- A correct cast soothes a listener. A fizzle does not punish. The current pill stays a promise.
+- Easy quota and anti-repeat stay baked when the map is built.
+- Enemy block still expires at that enemy's next action, as shipped in #50.
+- Act I keeps its four elites, including 和聲蛹.
+- 塔守護獸 keeps 軟軟史萊姆.
+- #58 gave the new enemies their own portraits, and added strength, summon, and brace cues.
+
 ## Next
 
-These four are the current slice. Keys and Act IV stay later. They are not this slice.
+These three are the current slice. Keys, Act IV, and a second boss per act stay later. The second boss revisits the one-boss decision above, after the v0.4.2 playtest.
 
-1. **珠算武者 playable build.** In progress. First-grade math casting. #51 landed the engine seams only: a casting-task registry, a math binding that no shipped card sets, per-character score buckets, and an attempt model for sequence, three-choice, number pad, and build. The cast screen still draws sequence and single choice. The catalog, deck, cards, and math provider are still to build.
+1. **珠算武者 playable build.** In progress. First-grade math casting. #51 landed the engine seams only: a casting-task registry, a math binding that no shipped card sets, per-character score buckets, and an attempt model for sequence, three-choice, number pad, and build. The cast screen still draws sequence and single choice. The catalog, deck, cards, and math provider are still to build. 珠算武者-specific relics, with a relic pool per character, are in progress with this build.
 2. **Claude design pass for 珠算武者.** Character select and the answer pad. This page does not do that UI work.
-3. **#52's open design questions.** Nine questions in [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md#questions-for-yao) are still open. They are not decided here:
-   - Keep Act II and Act III from rolling Act I elites and Act I normals.
-   - Keep one boss per act until each boss has its own portrait.
-   - A correct cast soothes a listener; a fizzle does not punish. The current pill stays a promise.
-   - New enemies reuse old portraits, for a later art pass.
-   - No new strength, soothe, or summon icon, for a later UI pass.
-   - Easy quota and anti-repeat stay baked when the map is built.
-   - Keep the enemy-block expiry shipped in #50.
-   - Act I has four elites after 和聲蛹. Keep four unless the pool must stay at three.
-   - 塔守護獸's friend is the shared 軟軟史萊姆. The first heavy is alone; a later heavy can share a turn with the slime if it is still alive.
-4. **Full-run v0.4.2 playtest.** Play the published build at `027961c` through a full run. The device checklist and the Act I family session stay in [PLAYTEST_GATE.md](PLAYTEST_GATE.md#playtest-kit). Saves stay on version 4.
+3. **Full-run v0.4.2 playtest.** Play the published build at `027961c` through a full run. The device checklist and the Act I family session stay in [PLAYTEST_GATE.md](PLAYTEST_GATE.md#playtest-kit). Saves stay on version 4.

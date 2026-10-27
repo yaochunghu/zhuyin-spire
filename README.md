@@ -149,7 +149,7 @@ CHANGELOG.md        version history
 | [docs/BALANCE.md](docs/BALANCE.md) | HP, gold, rest, hand rules |
 | [docs/DEBUG.md](docs/DEBUG.md) | Skip cast, jump fights, cheats for testing |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | What’s done / next |
-| [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) | Published v0.4.2, and the next four items |
+| [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) | Published v0.4.2, and the next three items |
 
 ---
 

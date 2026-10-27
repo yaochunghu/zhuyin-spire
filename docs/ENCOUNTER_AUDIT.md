@@ -175,7 +175,9 @@ Damage still goes through the existing enemy-intent pipeline. Block on an enemy 
 
 ## Left for a UI pass
 
-This pass does not add icons. New enemies reuse portraits:
+#58 gave each enemy below its own portrait, and added strength, summon, and brace cues. The table is what this fight pass reused before that art.
+
+This fight pass started without new icons. It reused these portraits:
 
 | Enemy | Reused art |
 | --- | --- |
@@ -192,16 +194,18 @@ This pass does not add icons. New enemies reuse portraits:
 | 慢拍鼓 | 重甲守護 |
 | 喚星使 | 暗影菁英 |
 
-Still missing, on purpose: a strength pip, a soothe mark, and a "friend arrived" cue beyond the new monster and its next-turn pill. The combat log line 「叫來了」 is adult text. Coach lines (with 注音) show when combat tips are on.
+Before #58 this pass left out a strength pip, a soothe mark, and a "friend arrived" cue beyond the new monster and its next-turn pill. #58 added the strength, summon, and brace cues. The combat log line 「叫來了」 is adult text. Coach lines (with 注音) show when combat tips are on.
 
 ## Questions for Yao
 
-1. Keep Act II and Act III from rolling Act I elites and Act I normals. Recommendation: yes. A later act should ask a new question.
-2. Keep one boss per act until each boss has its own portrait. Recommendation: yes. The bible's three-boss pools wait on art.
-3. A correct cast soothes a listener; a fizzle does not punish. Recommendation: keep that. The current pill stays a promise.
-4. New enemies reuse old portraits. Recommendation: a later art pass, not part of this fight pass.
-5. No new strength, soothe, or summon icon. Recommendation: a later UI pass. The pill number is the contract for now.
-6. Easy quota and anti-repeat are chosen when the map is built. Recommendation: keep them baked so continue does not reroll.
-7. This pass uses the enemy-block expiry from #50. Recommendation: leave that rule as shipped.
-8. Act I now has four elites, after adding 和聲蛹. Recommendation: keep four. Drop an older elite only if the pool must stay at three.
-9. 塔守護獸's friend is the shared 軟軟史萊姆, so a later heavy can share a turn with the slime's 3 or 4 if the slime is still alive. The first heavy is alone. Recommendation: keep the familiar slime. If a family playtest feels hot, give the boss its own shield-first friend instead of retuning 軟軟史萊姆.
+Yao decided these. 1, 2, 3, 6, 7, 8, and 9 are accepted as recommended. 4 and 5 were resolved by #58.
+
+1. Keep Act II and Act III from rolling Act I elites and Act I normals. Recommendation: yes. A later act should ask a new question. **Accepted.** Later acts never roll Act I elites or normals.
+2. Keep one boss per act until each boss has its own portrait. Recommendation: yes. The bible's three-boss pools wait on art. **Accepted for now.** One boss per act. A second boss per act comes after the v0.4.2 playtest, and that pass revisits this question.
+3. A correct cast soothes a listener; a fizzle does not punish. Recommendation: keep that. The current pill stays a promise. **Accepted.**
+4. New enemies reuse old portraits. Recommendation: a later art pass, not part of this fight pass. **Resolved by #58.** Each of these enemies has its own portrait.
+5. No new strength, soothe, or summon icon. Recommendation: a later UI pass. The pill number is the contract for now. **Resolved by #58.** The board shows strength, summon, and brace cues.
+6. Easy quota and anti-repeat are chosen when the map is built. Recommendation: keep them baked so continue does not reroll. **Accepted.** Easy quota and anti-repeat stay baked at map build.
+7. This pass uses the enemy-block expiry from #50. Recommendation: leave that rule as shipped. **Accepted.** Enemy block still expires at that enemy's next action.
+8. Act I now has four elites, after adding 和聲蛹. Recommendation: keep four. Drop an older elite only if the pool must stay at three. **Accepted.** Act I keeps four elites.
+9. 塔守護獸's friend is the shared 軟軟史萊姆, so a later heavy can share a turn with the slime's 3 or 4 if the slime is still alive. The first heavy is alone. Recommendation: keep the familiar slime. If a family playtest feels hot, give the boss its own shield-first friend instead of retuning 軟軟史萊姆. **Accepted.** 塔守護獸 keeps 軟軟史萊姆.

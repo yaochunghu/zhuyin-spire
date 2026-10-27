@@ -53,14 +53,17 @@ The live version, obtainability rules, and next implementation slice live in
 Detail: [NEXT_PHASE.md](./NEXT_PHASE.md).
 
 1. **珠算武者 playable build** — in progress. First-grade math casting. Engine
-   seams are in. The character, deck, and math provider are not
+   seams are in. The character, deck, and math provider are not.
+   珠算武者-specific relics, with a relic pool per character, are in progress
+   with this build
 2. **Claude design pass for 珠算武者** — character select and the answer pad
-3. **#52's nine open questions** in
-   [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md#questions-for-yao)
-4. **Full-run v0.4.2 playtest** of the published build at `027961c`. Saves stay
+3. **Full-run v0.4.2 playtest** of the published build at `027961c`. Saves stay
    on version 4
 
-Keys, Act IV, and a 20-level track stay later. Cast-on / debug-skip passes at
+Yao decided the #52 questions. See
+[ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md#questions-for-yao). Keys, Act IV, a
+20-level track, and a second boss per act stay later. The second boss comes
+after the v0.4.2 playtest. Cast-on / debug-skip passes at
 each score milestone stay in
 [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md).
 

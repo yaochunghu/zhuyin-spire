@@ -36,11 +36,11 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [ENCOUNTER_RELIC_DESIGN_RESEARCH.md](./ENCOUNTER_RELIC_DESIGN_RESEARCH.md) | Review memo on StS/StS2 encounters, bosses, relic co-design, and a full-run design method |
 | [UPGRADE_BIBLE.md](./UPGRADE_BIBLE.md) | Live physical-copy foundation and all 75 score-gated upgrades |
 | [EVENT_ENCOUNTER_BIBLE.md](./EVENT_ENCOUNTER_BIBLE.md) | 30 live Act I–III events; difficulty variants, keys, and Act IV still proposed |
-| [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md) | Live normal, elite, and boss roster, and #52's nine open questions |
+| [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md) | Live normal, elite, and boss roster, and Yao's decisions on the #52 questions |
 | [BALANCE.md](./BALANCE.md) | Live economy / HP / hand numbers + design intent |
 | [DEBUG.md](./DEBUG.md) | Debug panel, flags, skip-cast testing |
 | [ROADMAP.md](./ROADMAP.md) | Shipped systems, next work, known pitfalls |
-| [NEXT_PHASE.md](./NEXT_PHASE.md) | Published v0.4.2, and the next four items |
+| [NEXT_PHASE.md](./NEXT_PHASE.md) | Published v0.4.2, and the next three items |
 
 Root companions:
 
@@ -65,8 +65,8 @@ Root companions:
   every act resolve once into an event, a fight, a shop, or a treasure.
 - **Combat:** modular `src/game/battle/*`, multi-enemy intents, drag-and-drop cards
 - **Fights:** act-native listeners, buffers or scalers, and summoners. Bosses
-  brace, then one heavier hit. 鐘粉蛾 is the event moth. Nine questions from
-  that pass are still open in [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md).
+  brace, then one heavier hit. 鐘粉蛾 is the event moth. Yao's decisions on
+  that pass are in [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md).
 - **Teaching:** full first-syllable 注音 cast, per-learner persistent shuffle bags,
   detailed curriculum controls, and a provider boundary. 注音 is the only
   registered task. Each run's `castSeed` and `castCounter` replay later prompts.
