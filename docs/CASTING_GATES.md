@@ -27,13 +27,15 @@ correct: card effects resolve | wrong: card fizzles
 | File | Responsibility |
 |------|----------------|
 | `game/casting/types.ts` | Provider-neutral prompt, binding, preferences, and history contracts |
-| `game/casting/registry.ts` | Registered gate providers; currently only `zhuyin` |
+| `game/casting/registry.ts` | Game registry (注音 only) and `createCastingGateRegistry` for a test or future task |
+| `game/casting/binding.ts` | `getCardCastBinding` target. Zhuyin families stay `initial:` / `vowel:`. Math bindings are `family@tier` and require `CardDef.cast` |
+| `game/casting/input.ts` | Attempt model for `sequence`, `singleChoice`, `numberPad`, and `build` |
 | `game/casting/zhuyinProvider.ts` | Phrase filtering, modes, token bank, shuffle bags, validation, coverage audit |
 | `game/castCheck.ts` | Compatibility facade used by run state and older tests |
-| `data/characters.ts` | Chooses a character's gate with `castingGateId` |
+| `data/characters.ts` | Catalog and `selectPlayableFromCatalog`. The game passes `CHARACTERS` |
 | `data/cards.ts` | Maps a card to its stable lesson family with `getCardCastBinding` |
-| `ui/castView.ts` | Shared sequence/single-choice renderer, speech, hint, and answer reveal |
-| `game/profiles.ts` | Per-child curriculum, shuffle state, attempts, accuracy, and response time |
+| `ui/castView.ts` | Renders `sequence` and `singleChoice` only: speech, hint, and answer reveal |
+| `game/profiles.ts` | Per-child curriculum, shuffle state, attempts, accuracy, response time, and per-character score |
 
 `CastingPrompt` is deliberately subject-neutral. It carries stable content and
 lesson ids, presentation cues, answer tokens, choice tokens, input style, ambient
@@ -132,20 +134,65 @@ stages are derived from each character's published pool, so future reviewed
 waves can join score tiers without another profile migration. The current
 共鳴武者 release exposes all 12 published designs and no score-gated draft cards.
 
+`setCharacterScore` writes one character id and copies every other id through.
+`characterProgress` is the score namespace. On load, ids that are not in
+`CHARACTERS` are dropped, so a future character's score appears only after that
+id joins the catalog. Casting history is separate and stays one learner-wide
+map keyed by `gateId:lessonFamilyId` (`zhuyin:initial:ㄅ`, later `math:add20@3`).
+It is not copied per character. Practice still builds Zhuyin prompts from the
+title screen.
+
+A run save with an unknown `characterId` is rejected. A missing id on an
+already started run still resumes as 共鳴武者 (`FIRST_CHARACTER_ID`). A
+character-select save with a null id stays unselected.
+
+## Input modes
+
+`CastingInputMode` is `sequence`, `singleChoice`, `numberPad`, or `build`.
+`applyCastingInput` is the shared attempt editor. The cast screen does not call
+it yet, so 共鳴武者 play is unchanged.
+
+| Mode | Commit | Attempt passed to `validate` | Screen today |
+|------|--------|------------------------------|--------------|
+| `sequence` | Ready when every slot is filled; the view submits, including its short pause | One token per slot, in order | Rendered |
+| `singleChoice` | The tapped choice submits immediately | `[choice]` | Rendered. The future math default is three choices (`THREE_CHOICE_COUNT`) |
+| `numberPad` | Explicit submit. Empty entry cannot submit. A second digit replaces a lone `0`. A fourth digit is ignored | One element per digit, such as `['1','3']` for 13 | Not rendered |
+| `build` | Explicit submit. Empty tray cannot submit. Tray cap is 20 | Token ids in tap order. Removing one index drops that token | Not rendered |
+
+Backspace updates the attempt before submit and never appears in the list
+`validate` sees. `prompt.presentation` is an optional data-only picture
+(ten-frame, coins, clock, and the other closed kinds). Zhuyin prompts leave
+`presentation`, `tier`, and `retry` unset. `retry` is reserved for a future
+once-per-combat second try and no engine path reads it.
+
+Zhuyin bindings now include `tier` from card rarity (`basic` 1, `common` 2,
+`uncommon` 3, `rare` 4). Prompt creation ignores that field. A math binding
+uses `family@tier` and tier 5 only when the card is marked grade-two and the
+caller passes `{ gradeTwo: true }`. No shipped card sets `cast`.
+
 ## Adding a future English or math character
 
-English and math are reserved ids, not live providers. To ship one:
+English and math are reserved ids, not live providers. The game registry
+throws for both. A unit test fills `math` with a stub task that is not imported
+by `src/`. To ship a real subject:
 
 1. Add and register a `CastingGateProvider`; do not add subject logic to combat.
 2. Give every card in that character a stable `CastBinding` and lesson family.
+   Math cards set `CardDef.cast` and call `getCardCastBinding(def, 'math', prefs)`.
 3. Produce stable `contentId`s, answer/choice tokens, a correction string, and
-   either `sequence` or `singleChoice` input.
+   one shared input mode: `sequence`, `singleChoice`, `numberPad`, or `build`.
+   Each mode's attempt shape is the table above. `castView` renders modes, not
+   providers. `numberPad` and `build` still need a renderer before a live prompt
+   may use them.
 4. Add gate-specific profile preferences through a backward-compatible profile
-   migration; do not reinterpret Zhuyin settings.
+   migration; do not reinterpret Zhuyin settings. Score for the new character
+   goes in its own `characterProgress` key.
 5. Keep the same wrong-answer card/Energy cost and the same unscaled teaching
-   reveal unless the product rule is explicitly changed.
+   reveal unless the product rule is explicitly changed. A later math rule may
+   allow one scaffolded retry per combat. That exception is not implemented.
 6. Add per-family coverage validation, shuffle-bag tests, answer-cost tests, and
-   a complete tablet smoke path.
+   a complete tablet smoke path. Zhuyin coverage already ignores cards whose
+   `cast.gateId` is not `zhuyin`.
 
 Do not couple “mana quality” to quiz difficulty mechanically. It is a narrative
 explanation for randomized prompts, not a new combat economy.

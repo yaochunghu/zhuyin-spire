@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createNewRun, pickCharacter } from '../../src/game/state';
-import { parseSnapshot, snapshotRun, getSaveStatus, saveRunCheckpoint } from '../../src/game/save';
+import { FIRST_CHARACTER_ID } from '../../src/data/characters';
+import { createNewRun, pickCharacter, startRun } from '../../src/game/state';
+import { applySnapshot, parseSnapshot, snapshotRun, getSaveStatus, saveRunCheckpoint } from '../../src/game/save';
 
 beforeEach(() => {
   const values = new Map<string, string>();
@@ -35,5 +36,37 @@ describe('stable checkpoint compatibility', () => {
     state.screen = 'combat';
     saveRunCheckpoint(state);
     expect(getSaveStatus()).toBe('saved');
+  });
+
+  it('rejects an unknown character id and resumes a legacy id as 共鳴武者', () => {
+    const state = createNewRun();
+    expect(pickCharacter(state, 'echoMage')).toBe(true);
+    const saved = snapshotRun(state);
+    expect(saved).not.toBeNull();
+    expect(parseSnapshot({ ...saved!, characterId: 'abacusFist' })).toBeNull();
+    expect(parseSnapshot({ ...saved!, characterId: 'not-a-character' })).toBeNull();
+
+    const legacy = parseSnapshot({ ...saved!, characterId: undefined });
+    expect(legacy).not.toBeNull();
+    const restored = createNewRun();
+    applySnapshot(restored, legacy!);
+    expect(restored.characterId).toBe(FIRST_CHARACTER_ID);
+
+    const missing = parseSnapshot({ ...saved!, characterId: null });
+    expect(missing).not.toBeNull();
+    const restoredNull = createNewRun();
+    applySnapshot(restoredNull, missing!);
+    expect(restoredNull.characterId).toBe(FIRST_CHARACTER_ID);
+
+    const pickingState = createNewRun();
+    startRun(pickingState);
+    const picking = snapshotRun(pickingState);
+    expect(picking?.screen).toBe('relicPick');
+    expect(picking?.characterId ?? null).toBeNull();
+    const openPick = parseSnapshot({ ...picking!, characterId: null });
+    expect(openPick).not.toBeNull();
+    const pickState = createNewRun();
+    applySnapshot(pickState, openPick!);
+    expect(pickState.characterId).toBeNull();
   });
 });
