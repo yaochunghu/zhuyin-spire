@@ -338,7 +338,10 @@ test('horizontal card movement does not cast and the pause menu freezes auto-sub
   await page.waitForTimeout(700);
   await expect(page.locator('.spell-reveal-overlay')).toHaveCount(0);
   await page.getByRole('button', { name: '▶️ 繼續玩' }).click({ force: true });
-  await expect(page.locator('.spell-reveal-overlay')).toBeVisible({ timeout: 1_000 });
+  // The resumed auto-submit is 380ms, but phone WebKit has shown this reveal
+  // slightly after 1s. Wait on the overlay; the pause above already proved it
+  // stayed hidden while the menu was open.
+  await expect(page.locator('.spell-reveal-overlay')).toBeVisible();
 
   await page.getByRole('button', { name: '開啟暫停選單' }).click({ force: true });
   await page.waitForTimeout(2_100);

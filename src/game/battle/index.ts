@@ -20,6 +20,7 @@ export {
   getEnemyUnit,
   intentForUnit,
   nextIntentForUnit,
+  weakTurnsAfterEnemyAction,
   runEnemyTurn,
   selectEnemy,
   spawnEnemies,
