@@ -147,6 +147,28 @@ picture. `tests/unit/casting-gate.test.ts` fails if they drift.
 rewritten as 餘. One 桌 🍽️ ㄓㄨㄛ row remains beside 桌子. The later 桌 rows
 repeated that word and spelling, and `dedupe()` already dropped them at runtime.
 
+The fourteen rows that were left open use the same dictionary. Where several
+readings each have their own definitions, the row uses the reading of the
+pictured phrase. A cross-reference marked 「(一)之又音」, 「(一)之語音」, or
+「(一)之讀音」 is not the headword.
+
+| Word | Emoji | Spell | Dictionary sense used |
+|------|-------|-------|------------------------|
+| 背 | 🎒 | ㄅㄟ | 背包. ㄅㄟˋ is the body back. |
+| 表 | ⌚ | ㄅㄧㄠˇ | 手表 is defined on 表, which says 也作「錶」. |
+| 鋪 | 🛏️ | ㄆㄨˋ | 床鋪. 鋪床 is ㄆㄨ. |
+| 量 | ⚖️ | ㄌㄧㄤˋ | 重量. 量體重 is ㄌㄧㄤˊ. |
+| 困 | 😴 | ㄎㄨㄣˋ | 困倦. 睏 is the same tone. |
+| 將 | ♟️ | ㄐㄧㄤ | 將軍, the chess attack. 將帥 is ㄐㄧㄤˋ. |
+| 閑 | 😌 | ㄒㄧㄢˊ | 空暇無事. 閒 is the same tone. |
+| 興 | 🎉 | ㄒㄧㄥˋ | 高興. ㄒㄧㄥ is 興起. |
+| 血 | 🩸 | ㄒㄧㄝˇ | Blood is defined here. ㄒㄩㄝˋ is 「(一)之讀音」. |
+| 熟 | 🔥 | ㄕㄨˊ | 煮熟. ㄕㄡˊ is 「(一)之語音」. |
+| 掃 | 🧹 | ㄙㄠˋ | 掃帚 / 掃把. 掃地 is ㄙㄠˇ. |
+| 艘 | ⛵ | ㄙㄠ | 一艘船. ㄙㄡ is 「(一)之又音」. |
+| 應 | ✅ | ㄧㄥˋ | 答應. 應該 is ㄧㄥ. |
+| 于 | 📍 | ㄩˊ | The preposition 在. 於 is the same tone. |
+
 ---
 
 ## Characters and relics — `src/data/characters.ts`, `src/data/relics.ts`
