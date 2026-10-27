@@ -8,6 +8,7 @@
 
 import type { CombatCard, CombatFx } from '../game/combat';
 import { sfx } from '../game/audio';
+import { getRelic } from '../data/relics';
 import {
   gameplayMs,
   loadGameSettings,
@@ -334,9 +335,15 @@ async function playPlayerStrike(
   for (const impact of fx.impacts) {
     const target = impactTarget(impact.enemyId, anchors);
 
-    if ((impact.relicBonus ?? 0) > 0) {
+    const relicBonuses: [string, number | undefined][] = [
+      [getRelic('tuningFork').emoji, impact.relicBonus],
+      [getRelic('trainingWrap').emoji, impact.basicRelicBonus],
+      [getRelic('gapThumb').emoji, impact.vulnerableRelicBonus],
+    ];
+    for (const [emoji, bonus] of relicBonuses) {
+      if (!bonus) continue;
       sfx.fork();
-      spawnFloat(target.emoji, `🎵+${impact.relicBonus}`, 'strike-float-bonus');
+      spawnFloat(target.emoji, `${emoji}+${bonus}`, 'strike-float-bonus');
       target.emoji?.classList.add('first-hit-pop');
       await sleep(140);
     }

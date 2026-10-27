@@ -9,7 +9,8 @@ import {
   intentTotalDamage,
   intentTotalLabel,
 } from '../data/enemies';
-import { getRelic } from '../data/relics';
+import { drinkAimedPotion, renderPotionBelt } from './potionBelt';
+import { renderRelicBadges } from './relicBadges';
 import {
   canPlay,
   effectiveCost,
@@ -27,6 +28,7 @@ import {
   canTutorialEndTurn,
   canTutorialPlayCard,
   consumeCombatFx,
+  getOwnedRelics,
   playerEndTurn,
   selectCombatEnemy,
   tryPlayCard,
@@ -332,8 +334,8 @@ function renderEnemySlot(
   opts: { damaged: boolean; castOk: boolean },
 ): HTMLElement {
   const def = ENEMIES[unit.defId] ?? ENEMIES.slime!;
-  const intent = intentForUnit(unit);
-  const nextIntent = nextIntentForUnit(unit);
+  const intent = intentForUnit(unit, combat);
+  const nextIntent = nextIntentForUnit(unit, combat);
   const weak = unit.weakTurns > 0;
   // This action uses the current duration. The 下回合 pill uses whatever
   // remains after that action ticks Weak.
@@ -362,7 +364,8 @@ function renderEnemySlot(
     (justSlain && session.battleDeathCue ? ' enemy-just-defeated' : '') +
     (opts.damaged && !dead ? ' enemy-hurt' : '') +
     (unit.block > 0 && !dead ? ' has-block' : '') +
-    (urgent ? ' enemy-intent-urgent' : '');
+    (urgent ? ' enemy-intent-urgent' : '') +
+    (!dead && session.potionAimSlot !== null ? ' potion-aim-target' : '');
   slot.dataset.enemyId = unit.id;
   if (!dead) {
     slot.dataset.drop = 'enemy';
@@ -435,6 +438,7 @@ function renderEnemySlot(
     const pick = (): void => {
       if (session.combatFxPlaying || session.outcomeAnimPlaying) return;
       if (run().tutorial) return;
+      if (drinkAimedPotion(unit.id)) return;
       sfx.click();
       selectCombatEnemy(run(), unit.id);
       render();
@@ -458,7 +462,7 @@ export function renderCombat(): HTMLElement {
   const c = run().combat!;
   const living = livingEnemies(c);
   const incoming = living.reduce(
-    (sum, unit) => sum + intentTotalDamage(intentForUnit(unit), unit.weakTurns > 0),
+    (sum, unit) => sum + intentTotalDamage(intentForUnit(unit, c), unit.weakTurns > 0),
     0,
   );
   const el = document.createElement('div');
@@ -498,8 +502,6 @@ export function renderCombat(): HTMLElement {
   }
 
   const actLabels = ['庭園', '圖書館', '觀測台'];
-  const relicId = run().relicId;
-  const relic = relicId ? getRelic(relicId) : null;
   const hud = document.createElement('div');
   hud.className = 'combat-hud-strip';
   hud.innerHTML = `
@@ -507,15 +509,17 @@ export function renderCombat(): HTMLElement {
       <span aria-hidden="true">${run().actIndex === 0 ? '🌿' : run().actIndex === 1 ? '📚' : '🔭'}</span>
       <strong>${actLabels[run().actIndex] ?? actLabels[0]} · 第 ${c.turn} 回合</strong>
     </div>
-    <div class="combat-hud-relics" aria-label="${relic ? `遺物：${relic.name}` : '沒有遺物'}">
-      ${relic ? `<span class="combat-relic-token" title="${relic.name}">${relic.emoji}</span>` : ''}
-    </div>
+    <div class="combat-hud-relics"></div>
     <div class="combat-hud-resources">
       ${incoming > 0 ? `<span class="combat-hud-counter combat-hud-incoming" aria-label="本回合敵人預計造成 ${incoming} 點傷害">⚔️ <strong>${incoming}</strong></span>` : ''}
       <span class="combat-hud-counter" aria-label="生命 ${c.heroHp} / ${c.heroMaxHp}">❤️ <strong>${c.heroHp}/${c.heroMaxHp}</strong></span>
       <span class="combat-hud-counter" aria-label="金幣 ${run().gold}">🪙 <strong>${run().gold}</strong></span>
     </div>
   `;
+  hud.querySelector('.combat-hud-relics')!.append(renderRelicBadges(getOwnedRelics(run())));
+  const potionBelt = renderPotionBelt();
+  potionBelt.classList.add('combat-potion-belt');
+  hud.appendChild(potionBelt);
   stage.appendChild(hud);
 
   const battlefield = document.createElement('div');

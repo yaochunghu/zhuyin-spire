@@ -29,6 +29,9 @@ export function coachForScreen(
     node?: MapNode;
     castMode?: CastMode;
     act?: number;
+    /** Mechanic line for the enemy teaching this fight. */
+    combatTip?: string | null;
+    rewardSource?: 'fight' | 'treasure' | null;
   },
 ): { title: string; body: string } {
   switch (screen) {
@@ -50,7 +53,7 @@ export function coachForScreen(
     case 'map':
       return {
         title: '地圖（由下往上）',
-        body: `第 ${opts?.act ?? 1} 幕共 15 層×7 路。底下亮圈可走。🔥 營火回約四成血（戰鬥後不自動回血）、💎 寶箱給金幣＋選牌、🏪 商店、💀 菁英。到頂 Boss。`,
+        body: `第 ${opts?.act ?? 1} 幕共 15 層×7 路。底下亮圈可走。🔥 營火回約四成血（戰鬥後不自動回血）、💎 寶箱給金幣＋一件遺物、🏪 商店、💀 菁英。到頂 Boss，也給一件遺物。藥水腰帶有 3 格。戰鬥後可能掉一瓶。喝藥水不用能量，也不用念注音。蜂蜜暖茶在地圖上也能喝。`,
       };
     case 'actClear':
       return {
@@ -60,7 +63,7 @@ export function coachForScreen(
     case 'rest':
       return {
         title: '營火三選一',
-        body: '❤️ 回復約四成最大生命（戰鬥後不自動回血）、🗑️ 刪一張弱牌，或 🔨 升級一張牌。',
+        body: '❤️ 回復約四成最大生命（戰鬥後不自動回血）、🗑️ 刪一張弱牌，或 🔨 升級一張牌。藥水腰帶上的蜂蜜暖茶也可以在營火喝，比休息少很多。',
       };
     case 'smith':
       return {
@@ -75,7 +78,7 @@ export function coachForScreen(
     case 'shop':
       return {
         title: '商店',
-        body: '買牌，或花金幣 🗑️ 刪掉一張弱牌（每家店一次）。路徑更長了，商店與營火更重要。',
+        body: '買牌，或花金幣 🗑️ 刪掉一張弱牌（每家店一次）。店裡還有兩瓶不同的藥水，每瓶 18 金幣。腰帶滿了要先丟掉一瓶才能買。蜂蜜暖茶在商店也能喝。',
       };
     case 'shopRemove':
       return {
@@ -85,7 +88,9 @@ export function coachForScreen(
     case 'combat':
       return {
         title: '戰鬥',
-        body: '先看意圖。完整擋住一次敵方攻擊會得到 1 勁；易傷讓攻擊變成 1.5 倍；技能與攻擊交替成功會轉拍。攻擊拖到怪，技能拖到角色，✋ 結束回合。',
+        body: opts?.combatTip
+          ? `${opts.combatTip} 攻擊拖到怪，技能拖到角色，✋ 結束回合。藥水在上方腰帶，不用能量、不用注音。要選怪物的藥水，先點使用再點怪物。教學戰鬥先把藥水鎖住。`
+          : '先看意圖。完整擋住一次敵方攻擊會得到 1 勁；易傷讓攻擊變成 1.5 倍；技能與攻擊交替成功會轉拍。攻擊拖到怪，技能拖到角色，✋ 結束回合。藥水在上方腰帶，不用能量、不用注音。要選怪物的藥水，先點使用再點怪物。教學戰鬥先把藥水鎖住。',
       };
     case 'castCheck': {
       if (opts?.castMode === 'listen' || opts?.castMode === 'listenHard') {
@@ -100,9 +105,15 @@ export function coachForScreen(
       };
     }
     case 'reward':
+      if (opts?.rewardSource === 'treasure') {
+        return {
+          title: '寶箱',
+          body: '得到 🪙 金幣和一件遺物，沒有選牌。同一件不會再拿到。五件都有了就改給 20 金幣。寶箱不掉藥水。之後回地圖。',
+        };
+      }
       return {
         title: '選牌 + 金幣',
-        body: '得到 🪙 金幣。選一張牌加入牌組，或跳過。寶箱與戰鬥獎勵都是三選一。之後回地圖。',
+        body: '得到 🪙 金幣。選一張牌加入牌組，或跳過。菁英和 Boss 還會給一件遺物；五件都有了就改給 20 金幣。戰鬥也可能掉一瓶藥水。腰帶滿了要先換掉一瓶，或不要這瓶，才能拿牌。蜂蜜暖茶在這裡也能喝。之後回地圖。',
       };
     case 'defeat':
       return {

@@ -37,8 +37,15 @@ reasons for adapting them to this shorter, cast-gated game are in
 | `GOLD_DANGER_BONUS` | **8** | Hard path bonus |
 | `GOLD_TREASURE_BASE` | **32** | + treasure jitter |
 | `GOLD_TREASURE_JITTER` | **8** | |
+| `RELIC_POOL_EXHAUST_GOLD` | **20** | Chest, elite, or boss drop when all five pool relics are owned |
 | `SHOP_CARD_PRICES` | **22, 34, 46** | Three shop slots |
 | `SHOP_REMOVE_PRICE` | **38** | Once per shop visit |
+| `POTION_BELT_SLOTS` | **3** | Fixed belt. Not expandable |
+| `SHOP_POTION_COUNT` | **2** | Different bottles on one shelf |
+| `SHOP_POTION_PRICE` | **18** | Flat price, about one normal fight, under the cheapest card |
+| `POTION_DROP_START` | **40** | Percent. Resets when the next act starts |
+| `POTION_DROP_STEP` | **10** | Down after a drop, up after a miss |
+| `POTION_DROP_MIN` / `MAX` | **10 / 80** | Clamp |
 
 Helper: `restHealAmount(heroMaxHp)`.
 
@@ -52,7 +59,8 @@ Helper: `restHealAmount(heroMaxHp)`.
 | Enemy HP / intent damage | `data/enemies.ts` |
 | Multi-enemy recipes | `data/encounters.ts` |
 | Map density / room kinds | `data/map.ts` |
-| Relic strength | `data/relics.ts` |
+| Relic strength | `data/relics.ts` — starter, five pool relics, four legacy-only relics |
+| Potion effects | `data/potions.ts` — six bottles. Block-absorbing hits are not 直傷 |
 
 ---
 

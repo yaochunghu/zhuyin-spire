@@ -85,7 +85,7 @@ The test for the child is recognizing / listening for 注音 — not reading Chi
    - 聲母 + 韻母 + **聲調**（ˊˇˋ˙；一聲 usually unmarked）
    - Example: 爸爸 → `ㄅㄚˋ` (not just ㄅ)
 5. **🔊 再聽** for listen modes. ✋ ends the turn. Rest at campfires (**40% max HP**). **No free heal after every fight.**
-6. Rewards / shop / treasure use big icons; adult text stays secondary.
+6. Rewards / shop / treasure use big icons; adult text stays secondary. A chest pays gold and one relic. An elite or boss still offers a card and also drops a relic.
 
 The first character starts with exactly 10 cards: 5 one-energy 基礎攻擊,
 4 one-energy shields, and 1 two-energy attack that applies 易傷. Act I adds a

@@ -12,6 +12,31 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 - On a phone, each shop offer keeps its full card, price, and the remove-card button on screen. Short landscape no longer hides the price under the fold.
 
+### Encounter diversity
+
+- Each act gains native listeners, buffers or scalers, and summoners. Act II and Act III elites are no longer recycled Act I fights. Bosses telegraph a brace, then one heavier hit. A small friend arrives on the shield after that hit, and the Act III boss grows one point during the brace.
+- A correct 注音 cast softens a listening enemy's later attack. The current intent number stays put. Fizzles are not punished.
+- Map fights use an easy opening quota and do not repeat a normal recipe across the next two fights on a path.
+
+### Potion belt
+
+- Added a 3-slot belt and six bottles: 護盾泡泡, 音波小石, 蜂蜜暖茶, 火花汽水, 翻頁果汁, and 合唱爆泡
+- Combat, elite, and boss rewards can drop one bottle. Chance starts at 40 each act and steps by 10 inside 10–80. Treasure does not drop a bottle
+- Shops sell two different bottles at 18 gold. A full belt must replace or leave a reward bottle before taking a card, and must discard before buying
+- Potion damage that is not marked 直傷 still loses to Block and is not an Attack. No live bottle is 直傷, and none stops HP 0 from ending the run
+- Moved saves to version 4. A v3 checkpoint loads with an empty belt
+
+### Relic pool
+
+- Added five 共鳴 relics for chests, elites, and bosses: 尋隙指套, 練功護腕, 換拍木魚, 聽勁護心, and 練功起勢
+- Chests give gold and one relic. Elites and bosses still offer a card and also drop a relic. A repeated drop pays 20 gold
+- 練功起勢 adds 練功 only for the first player turn, then that point is removed
+- 聽勁護心 gives 3 Block the first time the run gains 勁. Block from a full defense arrives on the next player turn, so it cannot create another 勁. Block from a card arrives with that card. The parent note names 破綻借力 and 剛柔並濟 as immediate cases.
+- Kept 初心音叉 as the starter. The four legacy relics still load for old saves and are not offered
+- Moved saves to version 3. A v1 or v2 `relicId` becomes the ordered `relicIds` list
+- Added tappable relic badges that show the Chinese name and effect. No relic skips casting
+- On a short landscape screen the combat badges sit on their own full-width row, so six tokens stay on screen at 640×360
+
 ### Combat and campfire fixes
 
 - Searching the discard for a card type no longer deletes the cards still in the draw pile.

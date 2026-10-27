@@ -24,6 +24,22 @@ export interface EnemyUnit {
   alive: boolean;
   vulnerableTurns: number;
   weakTurns: number;
+  /** Damage added to each later attack hit. Already included in the intent number. */
+  strength?: number;
+  /** Strength gained this enemy phase. It applies only after the phase ends. */
+  bankedStrength?: number;
+  /** Soothe already aimed at the current attack. */
+  armedSoothe?: number;
+  /** Soothe from casts this player turn. It aims at a later attack. */
+  pendingSoothe?: number;
+  /** 0 = opening pattern. 1 = the fight has finished its one phase-enter action. */
+  phase?: number;
+  /** The next action is the phase-enter step, not the opening pattern. */
+  queuedEnter?: boolean;
+  /** This unit already used its one summon. */
+  summoned?: boolean;
+  /** Appeared during the current enemy phase and does not act until the next one. */
+  justSummoned?: boolean;
 }
 
 /** One ordered hit, including the monster shield state before and after it. */
@@ -37,6 +53,8 @@ export interface PlayerImpact {
   killed: boolean;
   /** Optional damage additions, kept separate so feedback can explain them. */
   relicBonus?: number;
+  basicRelicBonus?: number;
+  vulnerableRelicBonus?: number;
 }
 
 /** Visual / motion events for UI */
@@ -88,10 +106,28 @@ export interface CombatState {
   block: number;
   energy: number;
   maxEnergy: number;
-  /** Character relic: spent by the first damaging hit of this combat. */
+  /** Character relic: spent by the first Attack hit of each player turn. */
   firstAttackBonusDamage: number;
   firstAttackBonusReady: boolean;
+  /** First 基礎攻擊 hit of each player turn. */
+  basicHitBonus: number;
+  basicHitBonusReady: boolean;
+  /** First Attack hit each turn against an enemy that already has 易傷. */
+  vulnerableHitBonus: number;
+  vulnerableHitBonusReady: boolean;
+  /** Block from the first 轉拍 of each player turn. */
+  tempoRelicBlock: number;
+  tempoRelicReady: boolean;
+  /** Block the first time this combat a full block grants 勁. Not reset each turn. */
+  jinGuardBlock: number;
+  jinGuardReady: boolean;
+  /** 聽勁護心 shield earned during the enemy phase, applied after block expires. */
+  jinGuardBlockPending: number;
+  /** 聽勁護心 shield earned by a card, applied at the end of that card. */
+  jinGuardBlockImmediate: number;
   training: number;
+  /** 練功起勢 still to remove when the second player turn begins. */
+  firstTurnTraining: number;
   jin: number;
   gainedJinLastEnemyPhase: boolean;
   gainedJinThisEnemyPhase: boolean;

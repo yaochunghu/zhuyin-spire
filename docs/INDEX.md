@@ -36,6 +36,7 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [ENCOUNTER_RELIC_DESIGN_RESEARCH.md](./ENCOUNTER_RELIC_DESIGN_RESEARCH.md) | Review memo on StS/StS2 encounters, bosses, relic co-design, and a full-run design method |
 | [UPGRADE_BIBLE.md](./UPGRADE_BIBLE.md) | Live physical-copy foundation and all 75 score-gated upgrades |
 | [EVENT_ENCOUNTER_BIBLE.md](./EVENT_ENCOUNTER_BIBLE.md) | Proposed 30 events, per-act encounters, difficulty variants, and Act IV |
+| [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md) | Live normal, elite, and boss roster, gaps, and the diversity pass |
 | [BALANCE.md](./BALANCE.md) | Live economy / HP / hand numbers + design intent |
 | [DEBUG.md](./DEBUG.md) | Debug panel, flags, skip-cast testing |
 | [ROADMAP.md](./ROADMAP.md) | Shipped systems, next work, known pitfalls |
@@ -60,6 +61,10 @@ Root companions:
   detailed curriculum controls, and a provider boundary for future subjects
 - **Cards:** Act I uses the 12-design teaching pool. Later acts expand by
   cumulative character score: 12 → 33 → 54 → all 75.
+- **Relics:** starter 初心音叉, plus five chest/elite 共鳴 relics. Legacy four
+  remain loadable only. See [NEXT_PHASE.md](./NEXT_PHASE.md).
+- **Potions:** 3 belt slots and 6 bottles. Combat rewards and the shop can
+  give one. See [NEXT_PHASE.md](./NEXT_PHASE.md).
 - **Debug:** body-mounted panel for testing (not for kids in normal play)
 
 共鳴武者 Smith and all 75 physical-copy upgrades are live through score unlocks.

@@ -54,9 +54,29 @@ export const GOLD_TREASURE_BASE = 32;
 export const GOLD_TREASURE_JITTER = 8;
 
 /**
+ * Paid when a chest, elite, or boss would drop a relic but every pool relic
+ * is already owned. About one normal fight's gold, not a second relic.
+ */
+export const RELIC_POOL_EXHAUST_GOLD = 20;
+
+/**
  * Shop prices — still buyable after a few fights + treasure.
  */
 export const SHOP_CARD_PRICES = [22, 34, 46] as const;
 
 /** Pay gold at shop to remove one card from the deck (once per shop visit) */
 export const SHOP_REMOVE_PRICE = 38;
+
+/**
+ * Potion belt. Three slots sit on their own row, so relic badges keep the phone scroll row.
+ * A one-use bottle should cost about one normal fight, under the cheapest card.
+ */
+export const POTION_BELT_SLOTS = 3;
+export const SHOP_POTION_COUNT = 2;
+export const SHOP_POTION_PRICE = 18;
+
+/** Combat drop chance, in percent. Starts at 40 each act, steps by 10, clamps here. */
+export const POTION_DROP_START = 40;
+export const POTION_DROP_STEP = 10;
+export const POTION_DROP_MIN = 10;
+export const POTION_DROP_MAX = 80;

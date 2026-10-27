@@ -3,6 +3,7 @@ import './styles/main.css';
 import './styles/toy-board.css';
 import './styles/browser.css';
 import { sfx } from './game/audio';
+import { coachBodyForEnemies } from './data/enemies';
 import { coachForScreen, getCompletedRunCount, isEarlyLearningRuns } from './game/coach';
 import type { CastMode } from './game/castCheck';
 import {
@@ -11,7 +12,9 @@ import {
   getAvailableMapNodes,
   type RunState,
 } from './game/state';
-import { playPendingCombatFx, renderCombat } from './ui/combatView';
+import { closePotionInspectIfScreenChanged } from './ui/potionBelt';
+import { closeRelicInspectIfScreenChanged } from './ui/relicBadges';
+import { playPendingCombatFx, presentBattleEnding, renderCombat } from './ui/combatView';
 import { renderCastCheck, renderPractice, submitSpell } from './ui/castView';
 import { renderActClear, renderMap } from './ui/mapView';
 import { playOutcomeOverlay } from './ui/outcome';
@@ -134,10 +137,15 @@ function appendCoach(parent: HTMLElement, castMode?: CastMode): void {
   const screen = session.battleOutro ? 'combat' : runState.screen;
   if (screen === 'combat' && !loadGameSettings().combatTipsEnabled) return;
   const node = getActiveNode(runState) ?? getAvailableMapNodes(runState)[0] ?? undefined;
+  const livingTeachers = runState.combat?.enemies
+    .filter((enemy) => enemy.alive && enemy.hp > 0)
+    .map((enemy) => enemy.defId) ?? [];
   const tip = coachForScreen(screen, {
     node,
     castMode,
     act: runState.actIndex + 1,
+    combatTip: screen === 'combat' ? coachBodyForEnemies(livingTeachers) : null,
+    rewardSource: runState.rewardSource,
   });
   if (!tip.body) return;
 
@@ -228,9 +236,12 @@ function render(): void {
   // Pile inspect only valid on combat screen
   if (runState.screen !== 'combat') {
     session.pileViewer = null;
+    session.potionAimSlot = null;
   }
 
   appEl.innerHTML = '';
+  closeRelicInspectIfScreenChanged(document.documentElement.dataset.screen);
+  closePotionInspectIfScreenChanged(document.documentElement.dataset.screen);
   const visualTheme = applyVisualTheme(
     appEl,
     showBoard ? 'combat' : runState.screen,
@@ -315,6 +326,7 @@ bindUi({
   clearFloatSoon,
   playOutcomeOverlay,
   submitSpell,
+  playBattleEnding: presentBattleEnding,
 });
 
 applyGameSettingsToDocument();

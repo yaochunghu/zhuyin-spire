@@ -32,7 +32,10 @@ import {
   GOLD_TREASURE_BASE,
   GOLD_TREASURE_JITTER,
   HERO_MAX_HP,
+  POTION_DROP_START,
+  RELIC_POOL_EXHAUST_GOLD,
   restHealAmount,
+  SHOP_POTION_PRICE,
   SHOP_REMOVE_PRICE,
 } from '../data/balance';
 import {
@@ -46,11 +49,24 @@ import {
   type RewardTier,
   type RunMap,
 } from '../data/map';
-import { getRelic, type RelicDef } from '../data/relics';
+import { getRelic, rollRelicDrop, type RelicDef } from '../data/relics';
 import {
+  emptyPotionBelt,
+  firstEmptyPotionSlot,
+  getPotion,
+  isKnownPotionId,
+  potionNeedsEnemy,
+  rollCombatPotion,
+  rollShopPotions,
+} from '../data/potions';
+import {
+  applyCombatPotion,
   beginPlay,
+  combatPotionBlock,
   createCombat,
   endTurn,
+  healedAmount,
+  livingEnemies,
   makeCard,
   pickRewardIds,
   resolveCastFizzle,
@@ -111,6 +127,12 @@ export interface ShopOffer extends CardOffer {
   sold: boolean;
 }
 
+export interface ShopPotionOffer {
+  potionId: string;
+  price: number;
+  sold: boolean;
+}
+
 export type TutorialStep = 'shield' | 'endTurn' | 'attack' | 'free';
 
 /** Ephemeral: deliberately omitted from run saves. */
@@ -127,7 +149,19 @@ export interface RunState {
   nextCardUid: number;
   gold: number;
   characterId: PlayableCharacterId | null;
-  relicId: string | null;
+  /** Owned relics in acquisition order. The starter is first on a new run. */
+  relicIds: string[];
+  /** Relic just awarded on the reward screen. Already included in relicIds. */
+  pendingRelicId: string | null;
+  /** Three belt slots. Null is an empty loop. Order stays put when one is discarded. */
+  potions: (string | null)[];
+  /** Percent chance the next eligible fight drops a potion. Resets each act. */
+  potionDropChance: number;
+  /** Bottle shown on the reward screen. In the belt unless the belt was full. */
+  pendingPotionId: string | null;
+  /** The reward stays until this bottle is swapped in or left behind. */
+  pendingPotionUnplaced: boolean;
+  shopPotionOffers: ShopPotionOffer[];
   /** Full 3-act branching map for this run */
   runMap: RunMap;
   /** 0 = Act I, 1 = Act II, 2 = Act III */
@@ -234,8 +268,21 @@ function emptyRunMap(): RunMap {
   return generateRunMap(() => 0.5);
 }
 
-export function getActiveRelic(state: RunState): RelicDef | null {
-  return state.relicId ? getRelic(state.relicId) : null;
+export function getOwnedRelics(state: RunState): RelicDef[] {
+  return state.relicIds.map((id) => getRelic(id));
+}
+
+/** Adds a relic once. Start-of-run gold is applied here and is not repeated on load. */
+export function acquireRelic(state: RunState, relicId: string, showPending = false): boolean {
+  if (state.relicIds.includes(relicId)) return false;
+  const relic = getRelic(relicId);
+  state.relicIds.push(relicId);
+  if (relic.startGold) {
+    state.gold += relic.startGold;
+    if (showPending) state.pendingGold += relic.startGold;
+  }
+  if (showPending) state.pendingRelicId = relicId;
+  return true;
 }
 
 export function getActiveCharacter(state: RunState): PlayableCharacterDef | null {
@@ -285,7 +332,12 @@ export function createNewRun(): RunState {
     nextCardUid: initialUid,
     gold: 0,
     characterId: null,
-    relicId: null,
+    relicIds: [],
+    pendingRelicId: null,
+    potions: emptyPotionBelt(),
+    potionDropChance: POTION_DROP_START,
+    pendingPotionId: null,
+    pendingPotionUnplaced: false,
     runMap: emptyRunMap(),
     actIndex: 0,
     currentNodeId: null,
@@ -303,6 +355,7 @@ export function createNewRun(): RunState {
     listenSuccesses: 0,
     floatText: null,
     shopOffers: [],
+    shopPotionOffers: [],
     shopRemoveUsed: false,
     practiceStreak: 0,
     practiceSessionCorrect: 0,
@@ -338,7 +391,12 @@ export function startRun(state: RunState): void {
   state.deck = STARTER_DECK_IDS.map((id) => addCardInstance(state, id));
   state.gold = 0;
   state.characterId = null;
-  state.relicId = null;
+  state.relicIds = [];
+  state.pendingRelicId = null;
+  state.potions = emptyPotionBelt();
+  state.potionDropChance = POTION_DROP_START;
+  state.pendingPotionId = null;
+  state.pendingPotionUnplaced = false;
   state.runMap = generateRunMap();
   state.actIndex = 0;
   state.currentNodeId = null;
@@ -356,6 +414,7 @@ export function startRun(state: RunState): void {
   state.listenSuccesses = 0;
   state.floatText = null;
   state.shopOffers = [];
+  state.shopPotionOffers = [];
   state.shopRemoveUsed = false;
   state.practiceStreak = 0;
   state.practiceSessionCorrect = 0;
@@ -441,8 +500,9 @@ export function pickCharacter(state: RunState, characterId: string): boolean {
   state.characterId = characterId;
   state.nextCardUid = 1;
   state.deck = character.starterDeckIds.map((id) => addCardInstance(state, id));
-  state.relicId = relic.id;
-  if (relic.startGold) state.gold += relic.startGold;
+  state.relicIds = [];
+  state.pendingRelicId = null;
+  acquireRelic(state, relic.id);
   state.screen = 'map';
   saveRunCheckpoint(state);
   return true;
@@ -468,7 +528,7 @@ function createTutorialCombat(state: RunState): CombatState {
     'tutorialSlime',
     state.heroHp,
     state.heroMaxHp,
-    getActiveRelic(state),
+    getOwnedRelics(state),
   );
 
   // This ordering is local to the tutorial combat. The player's saved deck is
@@ -532,7 +592,7 @@ export function selectMapNode(state: RunState, nodeId: string): void {
         node.enemyId ?? 'slime',
         state.heroHp,
         state.heroMaxHp,
-        getActiveRelic(state),
+        getOwnedRelics(state),
         node.encounterId,
       );
   state.tutorial = tutorial ? { step: 'shield', wrongAttempts: 0 } : null;
@@ -643,12 +703,29 @@ function openShop(state: RunState): void {
     price: SHOP_CARD_PRICES[i] ?? 45,
     sold: false,
   }));
+  state.shopPotionOffers = rollShopPotions(secureRandomInt).map((potionId) => ({
+    potionId,
+    price: SHOP_POTION_PRICE,
+    sold: false,
+  }));
   state.shopRemoveUsed = false;
   state.screen = 'shop';
   saveRunCheckpoint(state);
 }
 
-/** Treasure chest: gold + pick 1 of 3 cards (reuse reward screen). */
+/** One unowned pool relic, or exhaust gold when the pool is already owned. */
+function grantRelicReward(state: RunState): void {
+  const relicId = rollRelicDrop(state.relicIds, secureRandomInt);
+  if (!relicId) {
+    state.gold += RELIC_POOL_EXHAUST_GOLD;
+    state.pendingGold += RELIC_POOL_EXHAUST_GOLD;
+    state.pendingRelicId = null;
+    return;
+  }
+  acquireRelic(state, relicId, true);
+}
+
+/** Treasure chest: gold plus one relic. Cards stay on fight rewards. */
 function openTreasure(state: RunState): void {
   const gold = GOLD_TREASURE_BASE + secureRandomInt(GOLD_TREASURE_JITTER);
   state.gold += gold;
@@ -656,10 +733,27 @@ function openTreasure(state: RunState): void {
   state.pendingHeal = 0;
   state.rewardSource = 'treasure';
   state.rewardTier = 'normal';
-  state.rewardOptions = pickRewardIds(rewardPoolFor(state, 'normal'), 3)
-    .map((id) => makeOffer(state, id, 'reward'));
+  state.rewardOptions = [];
+  state.pendingRelicId = null;
+  state.pendingPotionId = null;
+  state.pendingPotionUnplaced = false;
+  grantRelicReward(state);
   state.screen = 'reward';
   saveRunCheckpoint(state);
+}
+
+/** Debug: open an unvisited chest in this act, even when it is not the next room. */
+export function debugOpenActTreasure(state: RunState): boolean {
+  const treasures = getCurrentActNodes(state).filter((node) => node.kind === 'treasure');
+  const treasure = treasures.find((node) => !state.visitedIds.includes(node.id)) ?? treasures[0];
+  if (!treasure) return false;
+  state.combat = null;
+  state.cast = null;
+  state.floatText = null;
+  state.activeNodeId = treasure.id;
+  state.rewardTier = treasure.rewardTier ?? 'normal';
+  openTreasure(state);
+  return true;
 }
 
 export function buyShopCard(state: RunState, offerIndex: number): void {
@@ -675,6 +769,27 @@ export function buyShopCard(state: RunState, offerIndex: number): void {
   offer.sold = true;
   state.flash = '🛒✨';
   saveRunCheckpoint(state);
+}
+
+export function buyShopPotion(state: RunState, offerIndex: number): boolean {
+  if (state.screen !== 'shop') return false;
+  const offer = state.shopPotionOffers[offerIndex];
+  if (!offer || offer.sold) return false;
+  if (state.gold < offer.price) {
+    state.flash = '🪙×';
+    return false;
+  }
+  const slot = firstEmptyPotionSlot(state.potions);
+  if (slot < 0) {
+    state.flash = '🧪滿';
+    return false;
+  }
+  state.gold -= offer.price;
+  state.potions[slot] = offer.potionId;
+  offer.sold = true;
+  state.flash = '🧪✨';
+  saveRunCheckpoint(state);
+  return true;
 }
 
 /** Open paid remove-card picker (once per shop). */
@@ -737,6 +852,9 @@ function completeNode(state: RunState): void {
   state.rewardOptions = [];
   state.pendingGold = 0;
   state.pendingHeal = 0;
+  state.pendingRelicId = null;
+  state.pendingPotionId = null;
+  state.pendingPotionUnplaced = false;
   state.rewardSource = null;
 
   if (nodeId) {
@@ -775,6 +893,7 @@ function finishBoss(state: RunState, act: number): void {
   state.flash = '❤️ 回滿';
   state.lastClearedAct = act;
   state.actIndex = act; // act 1 clear → index 1 (Act II)
+  state.potionDropChance = POTION_DROP_START;
   state.currentNodeId = null;
   state.activeNodeId = null;
   // Drop prior-act path so the map never paints old rooms
@@ -919,12 +1038,13 @@ export function debugStartEncounter(
 ): void {
   state.cast = null;
   state.tutorial = null;
+  state.activeNodeId = null;
   state.combat = createCombat(
     state.deck,
     enemyId,
     state.heroHp,
     state.heroMaxHp,
-    getActiveRelic(state),
+    getOwnedRelics(state),
     encounterId,
   );
   state.scoreStats.currentCombatHpLost = 0;
@@ -1050,6 +1170,7 @@ function finishFight(state: RunState): void {
   syncHeroHpFromCombat(state);
   // No ordinary post-combat heal — campfires restore 40% max HP.
   state.pendingHeal = 0;
+  state.pendingRelicId = null;
   const node = getActiveNode(state);
   if (node?.kind === 'boss') {
     state.scoreStats.bossWins += 1;
@@ -1072,6 +1193,8 @@ function finishFight(state: RunState): void {
     state.rewardTier = 'elite';
     state.rewardOptions = pickRewardIds(rewardPoolFor(state, 'elite'), 3)
       .map((id) => makeOffer(state, id, 'reward'));
+    grantRelicReward(state);
+    resolvePotionDrop(state, secureRandomInt);
     state.screen = 'reward';
     saveRunCheckpoint(state);
     return;
@@ -1088,6 +1211,8 @@ function finishFight(state: RunState): void {
   const pool = rewardPoolFor(state, tier);
   state.rewardTier = tier;
   state.rewardOptions = pickRewardIds(pool, 3).map((id) => makeOffer(state, id, 'reward'));
+  if (node?.kind === 'elite') grantRelicReward(state);
+  resolvePotionDrop(state, secureRandomInt);
   state.screen = 'reward';
   saveRunCheckpoint(state);
 }
@@ -1125,7 +1250,150 @@ export function commitRunScore(state: RunState, victory: boolean): void {
   state.scoreCommitted = true;
 }
 
+export function potionOfferBlocksReward(state: RunState): boolean {
+  return state.pendingPotionUnplaced && !!state.pendingPotionId;
+}
+
+/** One fight's potion roll. Treasure does not call this. */
+export function resolvePotionDrop(
+  state: RunState,
+  randomIndex: (exclusiveMax: number) => number,
+): void {
+  const roll = rollCombatPotion(state.potionDropChance, randomIndex);
+  state.potionDropChance = roll.nextChance;
+  state.pendingPotionId = roll.potionId;
+  state.pendingPotionUnplaced = false;
+  if (!roll.potionId) return;
+  const slot = firstEmptyPotionSlot(state.potions);
+  if (slot >= 0) {
+    state.potions[slot] = roll.potionId;
+    return;
+  }
+  state.pendingPotionUnplaced = true;
+}
+
+export function replacePendingPotion(state: RunState, slot: number): boolean {
+  if (!potionOfferBlocksReward(state)) return false;
+  if (slot < 0 || slot >= state.potions.length) return false;
+  state.potions[slot] = state.pendingPotionId;
+  state.pendingPotionUnplaced = false;
+  state.flash = '🧪✨';
+  saveRunCheckpoint(state);
+  return true;
+}
+
+export function declinePendingPotion(state: RunState): boolean {
+  if (!potionOfferBlocksReward(state)) return false;
+  state.pendingPotionId = null;
+  state.pendingPotionUnplaced = false;
+  state.flash = '🧪↩';
+  saveRunCheckpoint(state);
+  return true;
+}
+
+/** A hole opened while a reward bottle was waiting. Put that bottle in the hole. */
+function settlePendingPotion(state: RunState): void {
+  if (!state.pendingPotionUnplaced || !state.pendingPotionId) return;
+  const slot = firstEmptyPotionSlot(state.potions);
+  if (slot < 0) return;
+  state.potions[slot] = state.pendingPotionId;
+  state.pendingPotionUnplaced = false;
+}
+
+const POTION_BELT_SCREENS = new Set<Screen>(['map', 'rest', 'shop', 'reward']);
+
+export function potionChangeBlock(state: RunState): 'tutorial' | 'phase' | 'screen' | null {
+  if (state.tutorial && (state.screen === 'combat' || state.screen === 'castCheck')) return 'tutorial';
+  if (state.screen === 'combat') {
+    const combat = state.combat;
+    if (!combat || combat.status !== 'playing') return 'phase';
+    if (combat.phase !== 'playerAction' && combat.phase !== 'playerStart') return 'phase';
+    return null;
+  }
+  if (state.screen === 'castCheck') return 'screen';
+  return POTION_BELT_SCREENS.has(state.screen) ? null : 'screen';
+}
+
+function beltCanChange(state: RunState): boolean {
+  return potionChangeBlock(state) === null;
+}
+
+/** Why 使用 is unavailable. `aim` means the bottle still needs a monster. */
+export function previewPotionUse(
+  state: RunState,
+  slot: number,
+): 'aim' | 'empty' | 'tutorial' | 'screen' | 'phase' | 'full-hp' | 'no-draw' | 'target' | null {
+  const potionId = state.potions[slot];
+  if (!potionId || !isKnownPotionId(potionId)) return 'empty';
+  const change = potionChangeBlock(state);
+  if (change) return change;
+  const potion = getPotion(potionId);
+  if (state.screen === 'combat' && state.combat) {
+    const reason = combatPotionBlock(state.combat, potion, null);
+    if (reason === 'target' && potionNeedsEnemy(potion) && livingEnemies(state.combat).length > 0) {
+      return 'aim';
+    }
+    return reason;
+  }
+  if (potion.where !== 'anywhere') return 'screen';
+  if (potion.heal && healedAmount(state.heroHp, state.heroMaxHp, potion.heal) <= 0) return 'full-hp';
+  return null;
+}
+
+export type PotionUseResult =
+  | { ok: true; endedFight: boolean }
+  | { ok: false; reason: 'empty' | 'tutorial' | 'screen' | 'phase' | 'full-hp' | 'no-draw' | 'target' };
+
+export function usePotion(state: RunState, slot: number, targetId?: string): PotionUseResult {
+  const potionId = state.potions[slot];
+  if (!potionId || !isKnownPotionId(potionId)) return { ok: false, reason: 'empty' };
+  if (state.tutorial && (state.screen === 'combat' || state.screen === 'castCheck')) {
+    return { ok: false, reason: 'tutorial' };
+  }
+  const potion = getPotion(potionId);
+  const inCombat = state.screen === 'combat' && !!state.combat;
+  if (!inCombat && !(potion.where === 'anywhere' && POTION_BELT_SCREENS.has(state.screen))) {
+    return { ok: false, reason: 'screen' };
+  }
+  if (inCombat && state.combat) {
+    const applied = applyCombatPotion(state.combat, potion, targetId);
+    if (!applied.ok) return { ok: false, reason: applied.reason ?? 'phase' };
+    state.potions[slot] = null;
+    settlePendingPotion(state);
+    state.flash = potion.emoji;
+    drainCombatFx(state);
+    syncHeroHpFromCombat(state);
+    if (applied.endedFight) {
+      finishFight(state);
+      return { ok: true, endedFight: true };
+    }
+    return { ok: true, endedFight: false };
+  }
+  const gained = potion.heal ? healedAmount(state.heroHp, state.heroMaxHp, potion.heal) : 0;
+  if (!potion.heal || gained <= 0) return { ok: false, reason: potion.heal ? 'full-hp' : 'screen' };
+  state.heroHp += gained;
+  state.potions[slot] = null;
+  settlePendingPotion(state);
+  state.flash = potion.emoji;
+  saveRunCheckpoint(state);
+  return { ok: true, endedFight: false };
+}
+
+export function discardPotion(state: RunState, slot: number): boolean {
+  if (!beltCanChange(state)) return false;
+  if (!state.potions[slot]) return false;
+  state.potions[slot] = null;
+  settlePendingPotion(state);
+  state.flash = '🗑️';
+  if (state.screen !== 'combat') saveRunCheckpoint(state);
+  return true;
+}
+
 export function pickReward(state: RunState, cardId: string | null): void {
+  if (potionOfferBlocksReward(state)) {
+    state.flash = '🧪先選';
+    return;
+  }
   const offer = cardId ? state.rewardOptions.find((candidate) => candidate.uid === cardId) : null;
   if (offer) {
     state.deck.push({ uid: offer.uid, defId: offer.defId, upgradeLevel: offer.upgradeLevel });

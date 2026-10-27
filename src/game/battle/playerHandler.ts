@@ -12,7 +12,7 @@ import {
 } from './effects';
 import { pushFx } from './fx';
 import { drawCards } from './piles';
-import { syncPrimaryEnemy } from './enemyHandler';
+import { noteSuccessfulCast, syncPrimaryEnemy } from './enemyHandler';
 import type { CombatState } from './types';
 
 export function canPlay(state: CombatState, uid: string): boolean {
@@ -96,6 +96,12 @@ export function resolveCastSuccess(state: CombatState, def: CardDef): void {
   if (isTempo) {
     state.tempoCount += 1;
     pushFx(state, { type: 'playerTempo', count: state.tempoCount });
+    if (state.tempoRelicReady && state.tempoRelicBlock > 0) {
+      state.tempoRelicReady = false;
+      state.block += state.tempoRelicBlock;
+      pushFx(state, { type: 'playerBlock', amount: state.tempoRelicBlock });
+      state.log.push(`換拍木魚：護盾 +${state.tempoRelicBlock}`);
+    }
   }
   if (def.type === 'attack' || def.type === 'skill') state.lastPlayedType = def.type;
 
@@ -122,6 +128,7 @@ export function resolveCastSuccess(state: CombatState, def: CardDef): void {
       pushFx(state, { type: 'discard', cards: [card], reason: 'play' });
     }
   }
+  noteSuccessfulCast(state);
   syncPrimaryEnemy(state);
 }
 

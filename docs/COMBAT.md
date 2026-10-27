@@ -54,7 +54,19 @@ Energy is per-combat; end turn discards remaining hand then enemy acts then redr
 - 🥋 **勁:** fully blocking one enemy attack action grants 1 勁, capped at 9.
   Authored spenders consume fixed or bounded amounts.
 - 🎵 **初心音叉:** the first resolved Attack hit each player turn gains +1
-  before 易傷. `PlayerImpact.relicBonus` keeps the feedback explainable.
+  before 易傷. `PlayerImpact.relicBonus` keeps that fork bonus explainable.
+- **尋隙指套:** the first Attack hit each turn against an enemy that already
+  has 易傷 gains +2 before the multiplier.
+- **練功護腕:** the first 基礎攻擊 hit each turn gains +1 before 易傷.
+- **換拍木魚:** the first successful 轉拍 each turn gains 2 Block. A failed
+  cast does not count as 轉拍 and does not grant the Block.
+- **聽勁護心:** the first time 勁 increases in a combat, gain 3 Block. A full block's
+  shield arrives at the start of the next player turn, after leftover Block
+  expires, so it cannot fully block a later enemy in the same enemy phase.
+  勁 from a card grants the shield with that card.
+- **練功起勢:** +1 練功 during the first player turn. It is removed when turn 2
+  starts, and card-granted 練功 stays.
+  None of these skip the cast. Numbers live on `RelicDef` in `data/relics.ts`.
 - Powers leave draw/discard circulation and remain active for the combat.
 
 ---
@@ -69,6 +81,19 @@ Energy is per-combat; end turn discards remaining hand then enemy acts then redr
   that enemy's next action. `applyEnemyIntent` sets that unit's block to 0
   before resolving the intent, so a block intent grants a fresh shield and an
   attack does not keep the old one. Another enemy acting does not clear it.
+- A listening enemy (`listens`) treats each successful cast as −1 to a later
+  attack, minimum 1 before Weak. The current intent pill does not change. A
+  fizzle does not soften or punish. Block turns hold that soothe for the next
+  attack.
+- Strength from a buff step is added to later attack hits and is already inside
+  the intent number. It commits after the whole enemy phase, so the attack
+  shown this turn does not grow. Only enemies with `strengthCap` can keep it.
+- A summon step adds one enemy if the row has fewer than three. The new enemy
+  shows an intent on the next player turn and does not act in the phase it
+  appeared.
+- A boss `phases` entry replaces 下回合 with its `enter` step once hp is at or
+  below `belowHp`. That enter step plays once, then the phase pattern cycles.
+  The current pill stays put until the enemy acts.
 - Legacy “primary” fields sync via `syncPrimaryEnemy` for older callers
 
 Encounters (1–3 enemies) come from `data/encounters.ts` or single-enemy node fields on the map.
@@ -122,6 +147,21 @@ Completion is written only in `finishFight` after victory.
 | Explicit `target` on `CardDef` | overrides default | matching zones |
 
 `cardNeedsEnemyTarget` / `collectDropTargets` drive UI highlights.
+
+## Potions
+
+A bottle is not a card. It spends no Energy and never opens 注音. Combat use is
+only in the player's actionable phase. The tutorial locks the belt.
+
+`dealBlockedDamage` is for potion text that does not say 直傷. Enemy Block
+absorbs it. 易傷, 練功, and attack relics do not. `dealTrueDamage` (the old
+`dealDirect` path) ignores Block and is only for text that says 直傷. The live
+six bottles do not use it.
+
+A killing bottle still goes through `finishFight`, so the strike and poof play
+before the reward screen. Drops roll on normal, elite, and boss fights. Treasure
+does not roll. The chance resets to 40 when that boss reward is left and the
+next act begins.
 
 ---
 
