@@ -150,6 +150,22 @@ describe('Zhuyin casting provider', () => {
     // 余 already means 剩下、多餘 in 《重編國語辭典修訂本》, so the surplus picture stays 余.
     expect(spells('余', '➕')).toEqual(['ㄩˊ']);
     expect(spells('餘', '➕')).toEqual([]);
+
+    // Round 3: the revised dictionary's reading for each pictured phrase.
+    expect(spells('背', '🎒')).toEqual(['ㄅㄟ']);
+    expect(spells('表', '⌚')).toEqual(['ㄅㄧㄠˇ']);
+    expect(spells('鋪', '🛏️')).toEqual(['ㄆㄨˋ']);
+    expect(spells('量', '⚖️')).toEqual(['ㄌㄧㄤˋ']);
+    expect(spells('困', '😴')).toEqual(['ㄎㄨㄣˋ']);
+    expect(spells('將', '♟️')).toEqual(['ㄐㄧㄤ']);
+    expect(spells('閑', '😌')).toEqual(['ㄒㄧㄢˊ']);
+    expect(spells('興', '🎉')).toEqual(['ㄒㄧㄥˋ']);
+    expect(spells('血', '🩸')).toEqual(['ㄒㄧㄝˇ']);
+    expect(spells('熟', '🔥')).toEqual(['ㄕㄨˊ']);
+    expect(spells('掃', '🧹')).toEqual(['ㄙㄠˋ']);
+    expect(spells('艘', '⛵')).toEqual(['ㄙㄠ']);
+    expect(spells('應', '✅')).toEqual(['ㄧㄥˋ']);
+    expect(spells('于', '📍')).toEqual(['ㄩˊ']);
   });
 
   it('reports filters that would remove all prompts from obtainable cards', () => {
