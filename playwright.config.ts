@@ -25,7 +25,7 @@ export default defineConfig({
     },
     {
       name: 'landscape-wide',
-      testMatch: /tablet-smoke\.spec\.ts|relic-pool\.spec\.ts/,
+      testMatch: /tablet-smoke\.spec\.ts|relic-pool\.spec\.ts|potion-belt\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 720 } },
     },
     {

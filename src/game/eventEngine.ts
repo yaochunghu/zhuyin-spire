@@ -102,6 +102,7 @@ export interface EventRun {
   nextCardUid: number;
   characterId: PlayableCharacterId | null;
   relicIds: string[];
+  potions: (string | null)[];
   eventTrack: EventTrack;
   flash: string | null;
 }
@@ -235,7 +236,7 @@ function conditionReason(state: EventRun, condition: EventCondition): string | n
         ? null
         : '沒有新的遺物';
     case 'potionSlots':
-      return potionBlockReason(condition.count);
+      return potionBlockReason(state.potions, condition.count);
     case 'bindable':
       return state.deck.some((card) => isBindable(card.defId)) ? null : '沒有可綁定的牌';
     default: {
@@ -289,7 +290,7 @@ function effectReason(state: EventRun, effect: EventEffect): string | null {
     case 'loseMaxHp':
       return state.heroMaxHp - effect.amount >= 1 ? null : '最大心會太少';
     case 'gainPotion':
-      return potionBlockReason(effect.count);
+      return potionBlockReason(state.potions, effect.count);
     case 'gainRelic':
       return ownedRelicIds(state).includes(effect.relicId) ? '已經有了' : null;
     case 'gainRandomRelic':
@@ -882,8 +883,12 @@ function applyEffect(state: EventRun, effect: EventEffect): void {
       break;
     }
     case 'gainPotion': {
-      const granted = grantPotions({ rarity: 'common', count: effect.count });
-      lines.push(granted.ok ? `得到 ${effect.count} 瓶藥水` : (granted.reason ?? '藥水還沒準備好'));
+      const names = grantPotions(
+        state.potions,
+        effect.count,
+        (max) => rollIndex(state.eventTrack, max),
+      );
+      lines.push(names.length > 0 ? `得到 ${names.join('、')}` : '藥水格已滿');
       break;
     }
     case 'bind': {

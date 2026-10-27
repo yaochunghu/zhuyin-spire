@@ -162,7 +162,7 @@ export const EVENTS: EventDef[] = [
     title: '調音噴泉',
     icon: '⛲',
     presentation: '噴泉會把心補到新的高度。',
-    rationale: '洗臉補心。裝瓶會少一點最大心，換一瓶藥水。藥水還沒到時，裝瓶會說原因。',
+    rationale: '洗臉補心。裝瓶會少一點最大心，換一瓶藥水。腰帶滿了就不能裝。',
     eligibility: [[{ op: 'damaged' }], [{ op: 'potionSlots', count: 1 }]],
     choices: [
       choice('wash', '洗洗臉', [heal(10)], [heal(7)]),

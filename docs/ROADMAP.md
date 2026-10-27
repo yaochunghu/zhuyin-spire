@@ -39,12 +39,11 @@ Ordered by “resume playtest” value — not a binding schedule. Detail:
 
 1. **Playtest all score milestones** — cast-on / debug-skip matrix in
    [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md)
-2. **Relic pool is in the tree** — five 共鳴 relics from chests, elites, bosses,
-   and random event rewards. The starter 初心音叉 stays. Named event relics are
-   granted by id. Legacy four stay loadable but are not dropped. Do not import
-   the Echo-era 40/20 bible wholesale
-3. **A small potion belt, then encounter rewrites one act at a time** — Act I–III
-   events are already in
+2. **Relic pool and the first potion belt are in the tree.** Five 共鳴 relics
+   come from chests, elites, bosses, and random event rewards. The starter
+   初心音叉 stays. The belt has 3 slots and 6 bottles, and event potion choices
+   fill empty slots. Do not import the Echo-era 40/20 bible wholesale
+3. **Encounter rewrites one act at a time** — Act I–III events are already in
 4. **Keys, Act IV, and a 20-level track last**
 5. Optional later: second character using a reviewed English or math provider,
    plus recorded audio

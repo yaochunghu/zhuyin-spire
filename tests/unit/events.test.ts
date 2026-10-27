@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { isCardId } from '../../src/data/cards';
+import { POTION_POOL_IDS } from '../../src/data/potions';
 import { RELIC_POOL_IDS } from '../../src/data/relics';
 import { EVENTS, effectsNeedConfirm, eventsForAct, getEvent } from '../../src/data/events';
 import {
@@ -220,7 +221,23 @@ describe('event results', () => {
     state.gold = 5;
     expect(choiceReason(state, getEvent('event_a1_lantern_choir').choices[0]!)).toBe('還差 15🪙');
     openEvent(state, state.activeNodeId, 'event_a1_tuning_fountain');
-    expect(choiceReason(state, getEvent('event_a1_tuning_fountain').choices[1]!)).toBe('藥水還沒準備好');
+    expect(choiceReason(state, getEvent('event_a1_tuning_fountain').choices[1]!)).toBeNull();
+    state.potions = ['guardBubble', 'warmHoney', 'sparkSoda'];
+    expect(choiceReason(state, getEvent('event_a1_tuning_fountain').choices[1]!)).toBe('藥水格已滿');
+  });
+
+  it('puts a pool bottle in an empty belt slot without touching the starter relic', () => {
+    const state = prepare();
+    const startMax = state.heroMaxHp;
+    state.activeNodeId = room(state).id;
+    openEvent(state, state.activeNodeId, 'event_a1_tuning_fountain');
+    state.screen = 'event';
+    chooseEventChoice(state, 'bottle');
+    confirmEventChoice(state);
+    expect(state.heroMaxHp).toBe(startMax - 2);
+    expect(state.potions.filter((id) => id !== null)).toHaveLength(1);
+    expect(POTION_POOL_IDS).toContain(state.potions.find((id) => id !== null));
+    expect(state.relicIds).toEqual(['tuningFork']);
   });
 
   it('lowers current HP only when max HP drops below it, and adds an unplayable curse', () => {

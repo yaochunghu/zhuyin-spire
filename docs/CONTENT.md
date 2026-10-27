@@ -196,8 +196,9 @@ The live first-character specification and future upgrade constraints are in
 [DECK_DESIGN.md](./DECK_DESIGN.md). The live relic pool is the five 共鳴 drops
 in [NEXT_PHASE.md](./NEXT_PHASE.md) plus the starter 初心音叉. Random event
 relic rewards use that pool. Named event relics are granted by id and are not
-chest drops. Do not restore the archived Echo-coupled 40-relic proposal.
-Potions stay gated.
+chest drops. The live potion belt is the six bottles on that same page, and
+event potion rewards fill its empty slots. Do not restore the archived
+Echo-coupled 40-relic or 20-potion proposal.
 
 ---
 
@@ -211,8 +212,8 @@ engine in `src/game/eventEngine.ts` applies those effects; do not invent a
 second outcome path in the UI. A ? room resolves through `ensureUnknownResolution`.
 
 A random relic reward calls `rollRelicDrop` and appends the result. It does
-not replace 初心音叉. Potions still have no belt. `{ op: 'gainPotion' }` is a
-typed hook that reports `藥水還沒準備好` until that belt exists.
+not replace 初心音叉. `{ op: 'gainPotion' }` fills empty belt slots from
+`POTION_POOL_IDS`. A full belt keeps the choice visible and says `藥水格已滿`.
 
 ## Balance constants
 

@@ -16,8 +16,13 @@ export type {
 export {
   beginPlay,
   canPlay,
+  applyCombatPotion,
+  combatPotionBlock,
+  healedAmount,
   cardNeedsEnemyTarget,
   cardTargetType,
+  dealBlockedDamage,
+  dealTrueDamage,
   effectiveCost,
   isEligibleHandChoice,
   createCombat,

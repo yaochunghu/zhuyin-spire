@@ -8,6 +8,14 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+### Potion belt
+
+- Added a 3-slot belt and six bottles: 護盾泡泡, 音波小石, 蜂蜜暖茶, 火花汽水, 翻頁果汁, and 合唱爆泡
+- Combat, elite, and boss rewards can drop one bottle. Chance starts at 40 each act and steps by 10 inside 10–80. Treasure does not drop a bottle
+- Shops sell two different bottles at 18 gold. A full belt must replace or leave a reward bottle before taking a card, and must discard before buying
+- Potion damage that is not marked 直傷 still loses to Block and is not an Attack. No live bottle is 直傷, and none stops HP 0 from ending the run
+- Moved saves to version 4. A v3 checkpoint loads with an empty belt
+
 ### Relic pool
 
 - Added five 共鳴 relics for chests, elites, and bosses: 尋隙指套, 練功護腕, 換拍木魚, 聽勁護心, and 練功起勢
@@ -33,7 +41,8 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - Ship the 30 events from the event bible, including act pools, shared events, and difficulty-15 results.
 - Keep mid-event progress in the run save. Older saves still load.
 - Random event relic rewards draw the five-relic pool and leave 初心音叉 in place. Named event relics are granted by id.
-- Leave potion rewards as a typed hook until the belt exists.
+- Event potion rewards fill empty slots on the three-slot belt. A full belt stays visible and says the slots are full.
+- Saves stay on version 4. Event progress is optional, so older checkpoints still load.
 
 ### Zhuyin corrections
 

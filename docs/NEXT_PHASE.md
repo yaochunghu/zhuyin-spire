@@ -20,11 +20,12 @@ at each score milestone while balancing the advanced tiers.
 - Debug Meta controls can set every score milestone on the active profile
 - Smith and later-act `+` rolls for unlocked non-basic cards
 - A chest gives gold and one relic. Elites and bosses still offer a card and also drop one relic. When the five relics are already owned, that drop pays 20 gold
-- Act I–III ? rooms and all 30 bible events. A random relic reward draws that same pool and never replaces 初心音叉. Named event relics are granted by id
+- A 3-slot potion belt with six bottles. Event choices that ask for a bottle fill empty slots from that pool
+- Act I–III ? rooms and all 30 bible events. A random relic reward draws the relic pool and never replaces 初心音叉. Named event relics are granted by id
 
 ## Before expanding content
 
-The 75-card progression remains the baseline. Browser checks stay in [BROWSER_SUPPORT.md](BROWSER_SUPPORT.md) and [STABILIZATION.md](STABILIZATION.md). The physical-device checklist and the Act I family session are still open; run them from the kit in [PLAYTEST_GATE.md](PLAYTEST_GATE.md#playtest-kit). Potions stay deferred. Act I–III events and the relic pool are in the tree.
+The 75-card progression remains the baseline. Browser checks stay in [BROWSER_SUPPORT.md](BROWSER_SUPPORT.md) and [STABILIZATION.md](STABILIZATION.md). The physical-device checklist and the Act I family session are still open; run them from the kit in [PLAYTEST_GATE.md](PLAYTEST_GATE.md#playtest-kit). The relic pool, the first potion belt, and Act I–III events are in the tree.
 
 ## Relic pool (0.5)
 
@@ -48,15 +49,47 @@ on the map, in combat, and on the reward screen. No relic skips casting.
 
 The four legacy relics (小盾符, 零錢袋, 晨光火花, 幸運抽) stay in
 `src/data/relics.ts` so old saves keep their effects. They are not in the drop
-pool. Saves are version 3: a v1 or v2 `relicId` becomes `relicIds`. Event
-progress is optional on that snapshot, so a save from before events still loads.
+pool. Saves are version 4. A v1 or v2 `relicId` becomes `relicIds`, then a v3
+checkpoint gains an empty belt. Event progress is optional on that snapshot,
+so a save from before events still loads.
 
 Event choices that name 口袋節拍器, 月光音樂盒, 雨聲筒, or 合唱緞帶 grant that
 relic by id. Choices that ask for a random common, uncommon, or rare relic all
 draw one unowned relic from the five-relic pool above.
 
-Next: a 3-slot potion belt with 4–6 potions. Wire those rewards into the
-existing `{ op: 'gainPotion' }` hook.
+## Potion belt — first six bottles
+
+Three slots, not an expandable sash. Six bottles is the top of the build-first
+4–6 range: one blocked hit, one single-target hit, a small heal, energy, draw,
+and a smaller hit on every monster. Echo-only bottles, cleanse, retain,
+double-cast, and anything that stops HP 0 from ending the run stay out.
+
+| Id | Name | Effect |
+|----|------|--------|
+| `guardBubble` | 護盾泡泡 | +8 Block, this turn |
+| `soundPebble` | 音波小石 | 6 damage to one enemy. Block absorbs it. Not an Attack and not 直傷 |
+| `warmHoney` | 蜂蜜暖茶 | Heal 5. Combat, map, rest, shop, or reward. No drink at full HP |
+| `sparkSoda` | 火花汽水 | +2 Energy this turn. Unused energy is gone at end of turn |
+| `pageJuice` | 翻頁果汁 | Draw 3. Refuses when that draw would be 0 |
+| `chorusBurst` | 合唱爆泡 | 4 damage to each living enemy. Block absorbs each hit. Not an Attack and not 直傷 |
+
+Combat, elite, and boss rewards roll one bottle. The chance starts at 40 each
+act, moves by 10, and stays inside 10–80. Treasure does not roll. Every bottle
+is equally likely until a real rare exists. A drop lands in the first empty
+slot. A full belt stays on the reward screen until the player replaces one
+slot or leaves the bottle. Discarding or drinking to open a hole places the
+waiting bottle in that hole.
+
+A shop shows two different bottles at 18 gold. A full belt cannot buy one;
+the player discards first. Drinking spends no Energy and never opens 注音.
+`dealDirect` / 直傷 is only for text that says 直傷. Nothing in this pool does.
+
+Event choices that say `{ op: 'gainPotion' }` fill that many empty slots from
+the same six bottles. A choice that needs more free slots than the belt has
+stays visible and says 藥水格已滿.
+
+Saves are version 4. A v3 checkpoint loads with an empty belt and chance 40.
+Events did not need a fifth save version: `eventTrack` stays optional.
 
 ## Still gated
 
