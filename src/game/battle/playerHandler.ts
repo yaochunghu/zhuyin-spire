@@ -12,7 +12,7 @@ import {
 } from './effects';
 import { pushFx } from './fx';
 import { drawCards } from './piles';
-import { syncPrimaryEnemy } from './enemyHandler';
+import { noteSuccessfulCast, syncPrimaryEnemy } from './enemyHandler';
 import type { CombatState } from './types';
 
 export function canPlay(state: CombatState, uid: string): boolean {
@@ -128,6 +128,7 @@ export function resolveCastSuccess(state: CombatState, def: CardDef): void {
       pushFx(state, { type: 'discard', cards: [card], reason: 'play' });
     }
   }
+  noteSuccessfulCast(state);
   syncPrimaryEnemy(state);
 }
 
