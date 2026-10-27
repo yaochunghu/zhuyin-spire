@@ -201,9 +201,9 @@ waves at scores 300, 1000, and 2000. Profiles saved before character
 progression migrate to score 300 and therefore begin with 33 cards unlocked.
 
 The live first-character specification and future upgrade constraints are in
-[DECK_DESIGN.md](./DECK_DESIGN.md). Relic and potion work is deliberately
-gated by [NEXT_PHASE.md](./NEXT_PHASE.md); do not restore the archived
-Echo-coupled proposal.
+[DECK_DESIGN.md](./DECK_DESIGN.md). The live relic pool is the five 共鳴 drops
+in [NEXT_PHASE.md](./NEXT_PHASE.md) plus the starter 初心音叉. Do not restore
+the archived Echo-coupled 40-relic proposal. Potions stay gated.
 
 ---
 

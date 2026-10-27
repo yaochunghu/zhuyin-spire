@@ -31,6 +31,7 @@ export function coachForScreen(
     act?: number;
     /** Mechanic line for the enemy teaching this fight. */
     combatTip?: string | null;
+    rewardSource?: 'fight' | 'treasure' | null;
   },
 ): { title: string; body: string } {
   switch (screen) {
@@ -52,7 +53,7 @@ export function coachForScreen(
     case 'map':
       return {
         title: '地圖（由下往上）',
-        body: `第 ${opts?.act ?? 1} 幕共 15 層×7 路。底下亮圈可走。🔥 營火回約四成血（戰鬥後不自動回血）、💎 寶箱給金幣＋選牌、🏪 商店、💀 菁英。到頂 Boss。`,
+        body: `第 ${opts?.act ?? 1} 幕共 15 層×7 路。底下亮圈可走。🔥 營火回約四成血（戰鬥後不自動回血）、💎 寶箱給金幣＋一件遺物、🏪 商店、💀 菁英。到頂 Boss，也給一件遺物。`,
       };
     case 'actClear':
       return {
@@ -104,9 +105,15 @@ export function coachForScreen(
       };
     }
     case 'reward':
+      if (opts?.rewardSource === 'treasure') {
+        return {
+          title: '寶箱',
+          body: '得到 🪙 金幣和一件遺物，沒有選牌。同一件不會再拿到。五件都有了就改給 20 金幣。之後回地圖。',
+        };
+      }
       return {
         title: '選牌 + 金幣',
-        body: '得到 🪙 金幣。選一張牌加入牌組，或跳過。寶箱與戰鬥獎勵都是三選一。之後回地圖。',
+        body: '得到 🪙 金幣。選一張牌加入牌組，或跳過。菁英和 Boss 還會給一件遺物；五件都有了就改給 20 金幣。之後回地圖。',
       };
     case 'defeat':
       return {

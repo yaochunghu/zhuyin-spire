@@ -13,7 +13,7 @@ import {
   pickReward,
   startRun,
 } from '../../src/game/state';
-import { parseSnapshot, snapshotRun, type RunSnapshotV1 } from '../../src/game/save';
+import { parseSnapshot, snapshotRun, type RunSnapshot } from '../../src/game/save';
 
 class MemoryStorage implements Storage {
   private values = new Map<string, string>();
@@ -40,7 +40,7 @@ function seededRng(seed: number): () => number {
   };
 }
 
-function downgradeToLegacyBossFloor(snapshot: RunSnapshotV1) {
+function downgradeToLegacyBossFloor(snapshot: RunSnapshot) {
   for (const act of snapshot.runMap.acts) {
     const rests = act.nodes.filter((node) => node.row === 14);
     const restIds = new Set(rests.map((node) => node.id));
@@ -124,7 +124,8 @@ describe('act floor contract', () => {
 
     const migrated = parseSnapshot(legacy);
     expect(migrated).not.toBeNull();
-    expect(migrated!.v).toBe(2);
+    expect(migrated!.v).toBe(3);
+    expect(migrated!.relicIds).toEqual(['tuningFork']);
     expect(migrated!.deck.every((card) => card.upgradeLevel === 0)).toBe(true);
     for (const act of migrated!.runMap.acts) {
       expect(act.maxRow).toBe(15);
@@ -144,8 +145,8 @@ describe('boss recovery', () => {
     const boss = state.runMap.acts[0]!.nodes.find((node) => node.kind === 'boss')!;
 
     state.heroHp = 7;
-    state.activeNodeId = boss.id;
     debugStartEncounter(state, boss.enemyId!);
+    state.activeNodeId = boss.id;
     debugFinishFight(state);
 
     expect(state.screen).toBe('reward');

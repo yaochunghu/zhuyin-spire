@@ -12,6 +12,7 @@ import {
   getAvailableMapNodes,
   type RunState,
 } from './game/state';
+import { closeRelicInspectIfScreenChanged } from './ui/relicBadges';
 import { playPendingCombatFx, renderCombat } from './ui/combatView';
 import { renderCastCheck, renderPractice, submitSpell } from './ui/castView';
 import { renderActClear, renderMap } from './ui/mapView';
@@ -143,6 +144,7 @@ function appendCoach(parent: HTMLElement, castMode?: CastMode): void {
     castMode,
     act: runState.actIndex + 1,
     combatTip: screen === 'combat' ? coachBodyForEnemies(livingTeachers) : null,
+    rewardSource: runState.rewardSource,
   });
   if (!tip.body) return;
 
@@ -236,6 +238,7 @@ function render(): void {
   }
 
   appEl.innerHTML = '';
+  closeRelicInspectIfScreenChanged(document.documentElement.dataset.screen);
   const visualTheme = applyVisualTheme(
     appEl,
     showBoard ? 'combat' : runState.screen,

@@ -65,7 +65,7 @@ Owned by `main.ts` as a single mutable object; UI modules reach it via `ui/runti
 
 Important fields:
 
-- **Hero:** `heroHp`, `heroMaxHp`, physical `deck[]`, `nextCardUid`, `gold`, `characterId`, `relicId`
+- **Hero:** `heroHp`, `heroMaxHp`, physical `deck[]`, `nextCardUid`, `gold`, `characterId`, `relicIds` (ordered; v1/v2 `relicId` migrates here)
 - **Map:** `runMap` (3 acts), `actIndex`, `currentNodeId`, `activeNodeId`, `visitedIds`, `pathIds`
 - **Combat:** `combat: CombatState | null`
 - **Cast:** `cast: { prompt, cardDef } | null`
