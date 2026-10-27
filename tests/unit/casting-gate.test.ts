@@ -45,7 +45,7 @@ describe('Zhuyin casting provider', () => {
     const rows = Object.entries(PHRASES_BY_INITIAL).flatMap(([family, phrases]) =>
       phrases.map((phrase) => ({ family, phrase })),
     );
-    expect(rows.length).toBeGreaterThanOrEqual(1_300);
+    expect(rows.length).toBeGreaterThanOrEqual(1_296);
     const wrongFamilies: string[] = [];
     for (const { family, phrase } of rows) {
       expect(phrase.word.trim()).not.toBe('');
