@@ -25,7 +25,7 @@ export default defineConfig({
     },
     {
       name: 'landscape-wide',
-      testMatch: /tablet-smoke\.spec\.ts|relic-pool\.spec\.ts|potion-belt\.spec\.ts/,
+      testMatch: /tablet-smoke\.spec\.ts|relic-pool\.spec\.ts|potion-belt\.spec\.ts|layout-fit\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 720 } },
     },
     {
@@ -40,12 +40,12 @@ export default defineConfig({
     },
     {
       name: 'phone-portrait-chromium',
-      testMatch: /phone-smoke\.spec\.ts/,
+      testMatch: /phone-smoke\.spec\.ts|layout-fit\.spec\.ts/,
       use: { ...devices['Pixel 5'], viewport: { width: 360, height: 640 } },
     },
     {
       name: 'phone-landscape-chromium',
-      testMatch: /phone-smoke\.spec\.ts/,
+      testMatch: /phone-smoke\.spec\.ts|layout-fit\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 640, height: 360 },
@@ -54,12 +54,12 @@ export default defineConfig({
     },
     {
       name: 'phone-portrait-webkit',
-      testMatch: /phone-smoke\.spec\.ts/,
+      testMatch: /phone-smoke\.spec\.ts|layout-fit\.spec\.ts/,
       use: { ...devices['iPhone 13'], viewport: { width: 390, height: 844 } },
     },
     {
       name: 'phone-landscape-webkit',
-      testMatch: /phone-smoke\.spec\.ts/,
+      testMatch: /phone-smoke\.spec\.ts|layout-fit\.spec\.ts/,
       use: { ...devices['iPhone 13 landscape'], viewport: { width: 844, height: 390 } },
     },
   ],

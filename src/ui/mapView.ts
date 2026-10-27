@@ -236,17 +236,19 @@ export function renderMap(): HTMLElement {
 
   stage.appendChild(bottom);
 
-  // Floating coach (collapsed by default — does not steal graph space)
+  // The coach has its own grid cell beside the panel, never over the dots.
   appendCoach(stage);
 
   el.appendChild(stage);
 
-  requestAnimationFrame(() => {
+  const showNextRooms = () =>
     panel.querySelector<HTMLElement>('.map-dot.available')?.scrollIntoView({
       block: 'center',
       inline: 'center',
     });
-  });
+  requestAnimationFrame(showNextRooms);
+  // Opening or closing the coach resizes the panel; keep the next rooms in view.
+  stage.querySelector('.adult-coach-head')?.addEventListener('click', showNextRooms);
 
   return el;
 }
