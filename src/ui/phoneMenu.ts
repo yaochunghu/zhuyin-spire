@@ -17,7 +17,8 @@ let root: HTMLDialogElement | null = null;
 
 function screenLabel(screen: Screen): string {
   if (screen === 'combat') return '戰鬥暫停';
-  if (screen === 'castCheck' || screen === 'practice') return '注音暫停';
+  if (screen === 'castCheck' || screen === 'practice' || screen === 'eventCast') return '注音暫停';
+  if (screen === 'event') return '奇遇選單';
   if (screen === 'map') return '爬塔選單';
   return '遊戲選單';
 }

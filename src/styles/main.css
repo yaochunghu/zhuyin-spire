@@ -997,11 +997,14 @@ button:disabled {
 }
 
 .fork-screen,
-.rest-screen {
+.rest-screen,
+.event-screen {
   align-items: center;
   justify-content: center;
   text-align: center;
   gap: 16px;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .fork-screen h2,
@@ -2092,12 +2095,78 @@ button:disabled {
 }
 
 .relic-choices,
-.rest-choices {
+.rest-choices,
+.event-choices {
   display: flex;
   flex-direction: column;
   gap: 12px;
   width: 100%;
   max-width: 400px;
+}
+
+.event-icon {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.event-presentation,
+.event-result {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.event-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  min-height: var(--tap);
+  padding: 10px 14px;
+  border-radius: 18px;
+  border: 3px solid var(--panel-border);
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+.event-choice:disabled {
+  opacity: 1;
+  cursor: not-allowed;
+  border-style: dashed;
+}
+
+.event-choice-label {
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.event-chip,
+.event-choice-reason {
+  font-size: 0.95rem;
+}
+
+.event-card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.event-card {
+  width: 132px;
+  min-height: var(--tap);
+  padding: 0;
+  background: transparent;
+  border: 3px solid transparent;
+}
+
+.event-card.is-selected {
+  border-color: var(--accent);
+  border-radius: 16px;
 }
 
 .relic-card,
@@ -2712,6 +2781,11 @@ button:disabled {
 .map-dot.kind-treasure.available {
   border-color: #9ad4ff;
   box-shadow: 0 0 0 3px rgba(154, 212, 255, 0.4);
+}
+
+.map-dot.kind-unknown.available {
+  border-color: #c9a6ff;
+  box-shadow: 0 0 0 3px rgba(201, 166, 255, 0.4);
 }
 
 .map-legend {
@@ -5149,6 +5223,7 @@ body.modal-open {
   .title-screen,
   .end-screen,
   .rest-screen,
+  .event-screen,
   .relic-screen,
   .shop-screen,
   .remove-screen,
@@ -5218,6 +5293,7 @@ body.modal-open {
   }
 
   .rest-choices,
+  .event-choices,
   .relic-choices {
     max-width: none;
   }

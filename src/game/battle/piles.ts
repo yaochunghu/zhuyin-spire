@@ -56,6 +56,9 @@ export function drawCards(state: CombatState, n: number): CombatCard[] {
     if (card) {
       state.hand.push(card);
       drawn.push(card);
+      if (card.defId === 'cu_heavy_beat') {
+        state.drawPenaltyNextTurn = (state.drawPenaltyNextTurn ?? 0) + 1;
+      }
     }
   }
   if (skippedFull && drawn.length < n) {

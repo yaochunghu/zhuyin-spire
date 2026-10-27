@@ -6,6 +6,7 @@ import {
   type MathGatePrefs,
 } from '../game/casting/binding';
 import type { CastBinding, CastingGateId } from '../game/casting/types';
+import { CURSES } from './curses';
 import {
   RESONANCE_CARD_IDS,
   RESONANCE_CARDS,
@@ -96,6 +97,8 @@ export interface CardDef {
   basicAttack?: boolean;
   exhaust?: boolean;
   retain?: boolean;
+  /** Persistent curse. Unplayable, and kept out of reward pools. */
+  curse?: boolean;
   upgrade?: CardUpgradeDef;
   /** Cumulative per-character score needed before this card enters run pools. */
   unlockScore?: 300 | 1000 | 2000;
@@ -792,8 +795,13 @@ export const ZHUYIN_SYMBOL_POOL = [
   '˙',
 ];
 
+export function isCardId(id: string): boolean {
+  return Object.prototype.hasOwnProperty.call(CARDS, id)
+    || Object.prototype.hasOwnProperty.call(CURSES, id);
+}
+
 export function getCard(id: string): CardDef {
-  const card = CARDS[id];
+  const card = CARDS[id] ?? CURSES[id];
   if (!card) throw new Error(`Unknown card: ${id}`);
   return card;
 }

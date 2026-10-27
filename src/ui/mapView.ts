@@ -6,6 +6,8 @@ import {
   getCurrentActNodes,
   selectMapNode,
 } from '../game/state';
+import { getRelic } from '../data/relics';
+import { ownedRelicIds } from '../game/relicOwnership';
 import { actTransitionArtKeyFor, artImageHtml } from './assets';
 import type { MapNode } from '../data/map';
 import { sfx } from '../game/audio';
@@ -76,12 +78,29 @@ export function renderMap(): HTMLElement {
     `目前第 ${currentFloor}/${totalFloors} 層`;
   top.querySelector<HTMLElement>('.map-phone-progress')!.textContent =
     `第${run().actIndex + 1}幕 · 第 ${currentFloor}/${totalFloors} 層`;
-  if (relic) {
+  const bar = top.querySelector('.map-status-bar')!;
+  const relicIds = ownedRelicIds(run());
+  for (const relicId of relicIds) {
+    const owned = getRelic(relicId);
+    const relicPill = document.createElement('span');
+    relicPill.className = 'kid-stat relic-pill';
+    relicPill.title = owned.name;
+    relicPill.textContent = owned.emoji;
+    bar.appendChild(relicPill);
+  }
+  if (relic && relicIds.length === 0) {
     const relicPill = document.createElement('span');
     relicPill.className = 'kid-stat relic-pill';
     relicPill.title = relic.name;
     relicPill.textContent = relic.emoji;
-    top.querySelector('.map-status-bar')!.appendChild(relicPill);
+    bar.appendChild(relicPill);
+  }
+  if (relicIds.includes('choirRibbon')) {
+    const ribbon = document.createElement('span');
+    ribbon.className = 'kid-stat relic-pill';
+    ribbon.title = '合唱緞帶';
+    ribbon.textContent = `🎀${run().eventTrack.ribbonVictories}/3`;
+    bar.appendChild(ribbon);
   }
   stage.appendChild(top);
 
@@ -194,7 +213,7 @@ export function renderMap(): HTMLElement {
   const legend = document.createElement('div');
   legend.className = 'map-legend adult-text';
   legend.textContent =
-    '⚔️戰鬥  💀菁英  🔥休息  🏪商店  💎寶箱  🐉Boss · 亮圈＝可點';
+    '⚔️戰鬥  ❓奇遇  💀菁英  🔥休息  🏪商店  💎寶箱  🐉Boss · 亮圈＝可點';
   bottom.appendChild(legend);
 
   const actions = document.createElement('div');

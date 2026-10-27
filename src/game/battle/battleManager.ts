@@ -111,6 +111,10 @@ export function endTurn(state: CombatState): CombatState['status'] {
   const vulnerableAtPhaseStart = new Map(
     state.enemies.map((enemy) => [enemy.id, enemy.vulnerableTurns]),
   );
+  if ((state.relicRainBlock ?? 0) > 0 && state.block === 0) {
+    state.block += state.relicRainBlock ?? 0;
+    state.log.push(`雨聲筒 +${state.relicRainBlock} 護盾`);
+  }
   runEnemyTurn(state);
 
   if (state.heroHp <= 0) {
@@ -136,7 +140,12 @@ export function endTurn(state: CombatState): CombatState['status'] {
   state.nextAttackBonus = 0;
   state.freeBasicsRemaining = 0;
   state.phase = 'playerStart';
-  drawCards(state, DRAW_PER_TURN);
+  state.metronomePlayed = 0;
+  state.metronomeUsed = false;
+  state.stageFrightUsed = false;
+  const drawPenalty = state.drawPenaltyNextTurn ?? 0;
+  state.drawPenaltyNextTurn = 0;
+  drawCards(state, Math.max(0, DRAW_PER_TURN - drawPenalty));
   if (state.activePowerIds.includes('B129') && state.hand.length < MAX_HAND_SIZE) {
     const wantsSkill = state.enemies
       .filter((enemy) => enemy.alive)

@@ -254,6 +254,7 @@ export type EnemyArtDefId =
   | 'eliteBoom'
   | 'eliteStorm'
   | 'eliteShadow'
+  | 'bellMoth'
   | 'boss1'
   | 'boss2'
   | 'boss3'
@@ -280,6 +281,7 @@ export const ENEMY_ART_BY_DEF_ID = {
   eliteBoom: 'enemyEliteBoom',
   eliteStorm: 'enemyEliteStorm',
   eliteShadow: 'enemyEliteShadow',
+  bellMoth: 'enemyEliteBee',
   boss1: 'enemyBoss1',
   boss2: 'enemyBoss2',
   boss3: 'enemyBoss3',

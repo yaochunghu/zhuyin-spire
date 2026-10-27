@@ -91,6 +91,15 @@ export interface CombatState {
   /** Character relic: spent by the first damaging hit of this combat. */
   firstAttackBonusDamage: number;
   firstAttackBonusReady: boolean;
+  /** Event relics. Absent on combats created before this feature. */
+  relicRainBlock?: number;
+  relicMetronome?: boolean;
+  metronomePlayed?: number;
+  metronomeUsed?: boolean;
+  musicBoxSourceUid?: string | null;
+  musicBoxUsed?: boolean;
+  drawPenaltyNextTurn?: number;
+  stageFrightUsed?: boolean;
   training: number;
   jin: number;
   gainedJinLastEnemyPhase: boolean;

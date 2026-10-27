@@ -7,13 +7,16 @@ import { coachForScreen, getCompletedRunCount, isEarlyLearningRuns } from './gam
 import type { CastMode } from './game/castCheck';
 import {
   createNewRun,
+  ensureEventCast,
   getActiveNode,
   getAvailableMapNodes,
   type RunState,
 } from './game/state';
+import { getEvent } from './data/events';
 import { playPendingCombatFx, renderCombat } from './ui/combatView';
 import { renderCastCheck, renderPractice, submitSpell } from './ui/castView';
 import { renderActClear, renderMap } from './ui/mapView';
+import { renderEvent } from './ui/eventView';
 import { playOutcomeOverlay } from './ui/outcome';
 import { openOptions } from './ui/options';
 import { cancelSpeech, speakCue } from './game/speech';
@@ -94,6 +97,7 @@ function globalControls(): HTMLElement {
       'relicPick',
       'castCheck',
       'practice',
+      'eventCast',
       'defeat',
       'victory',
     ];
@@ -134,10 +138,14 @@ function appendCoach(parent: HTMLElement, castMode?: CastMode): void {
   const screen = session.battleOutro ? 'combat' : runState.screen;
   if (screen === 'combat' && !loadGameSettings().combatTipsEnabled) return;
   const node = getActiveNode(runState) ?? getAvailableMapNodes(runState)[0] ?? undefined;
+  const eventId = runState.eventTrack.active?.eventId;
+  const event = eventId ? getEvent(eventId) : null;
   const tip = coachForScreen(screen, {
     node,
     castMode,
     act: runState.actIndex + 1,
+    eventTitle: event?.title,
+    eventBody: event?.rationale,
   });
   if (!tip.body) return;
 
@@ -295,6 +303,13 @@ function render(): void {
       break;
     case 'reward':
       appEl.appendChild(renderReward());
+      break;
+    case 'event':
+      appEl.appendChild(renderEvent());
+      break;
+    case 'eventCast':
+      ensureEventCast(runState);
+      appEl.appendChild(renderCastCheck());
       break;
     case 'defeat':
       appEl.appendChild(renderEnd(false));

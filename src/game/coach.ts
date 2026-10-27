@@ -29,6 +29,8 @@ export function coachForScreen(
     node?: MapNode;
     castMode?: CastMode;
     act?: number;
+    eventTitle?: string;
+    eventBody?: string;
   },
 ): { title: string; body: string } {
   switch (screen) {
@@ -50,7 +52,7 @@ export function coachForScreen(
     case 'map':
       return {
         title: '地圖（由下往上）',
-        body: `第 ${opts?.act ?? 1} 幕共 15 層×7 路。底下亮圈可走。🔥 營火回約四成血（戰鬥後不自動回血）、💎 寶箱給金幣＋選牌、🏪 商店、💀 菁英。到頂 Boss。`,
+        body: `第 ${opts?.act ?? 1} 幕共 15 層×7 路。底下亮圈可走。❓ 奇遇會先決定是故事、戰鬥、商店或寶箱。🔥 營火回約四成血（戰鬥後不自動回血）、💎 寶箱給金幣＋選牌、🏪 商店、💀 菁英。到頂 Boss。`,
       };
     case 'actClear':
       return {
@@ -99,6 +101,16 @@ export function coachForScreen(
         body: '請您念出國字。孩子拼出整個音（例：爸爸→ㄅㄚˋ）。填滿自動送出。💡 本場可亮答案一次。',
       };
     }
+    case 'event':
+      return {
+        title: opts?.eventTitle ?? '奇遇',
+        body: opts?.eventBody ?? '按鈕上的數字就是代價。可以離開。',
+      };
+    case 'eventCast':
+      return {
+        title: opts?.eventTitle ?? '注音神龕',
+        body: `${opts?.eventBody ?? ''} 請念出國字，孩子拼出整個音。拼錯會少一點心。`.trim(),
+      };
     case 'reward':
       return {
         title: '選牌 + 金幣',

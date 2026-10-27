@@ -16,6 +16,13 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - The next-turn intent pill applies Weak only when that status is still up after this enemy action ticks.
 - Ambiguous single-character prompts for 了, 覺, and 樂 are removed. Pictured 還 and 傳 readings from the dictionary cleanup stay as they are.
 
+### Act I–III events
+
+- Add ? rooms to every act and resolve each one once into an event, a normal fight, a shop, or a treasure.
+- Ship the 30 events from the event bible, including act pools, shared events, and difficulty-15 results.
+- Keep mid-event progress in the run save. Older saves still load.
+- Leave potion rewards as a typed hook until the belt exists.
+
 ### Zhuyin corrections
 
 - Point pictured phrases at the 《重編國語辭典修訂本》 headword for that picture: 幹 ㄍㄢˋ, 更 ㄍㄥˋ, 卷 ㄐㄩㄢˋ, 期 ㄑㄧˊ, 甚 ㄕㄣˊ, 鑽 ㄗㄨㄢˋ, 撒 ㄙㄚˇ, and 微 ㄨㄟˊ.

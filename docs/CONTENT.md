@@ -199,6 +199,18 @@ Echo-coupled proposal.
 
 ---
 
+## Events — `src/data/events.ts`
+
+The 30 events in [EVENT_ENCOUNTER_BIBLE.md](./EVENT_ENCOUNTER_BIBLE.md) are the
+live tables: 7 per act plus 9 shared. Add a new event by appending one `EventDef`
+with an act, a one-sentence read-aloud `presentation`, parent `rationale`, and
+at most three choices plus 離開. Put the difficulty-15 result in `a15`. The
+engine in `src/game/eventEngine.ts` applies those effects; do not invent a
+second outcome path in the UI. A ? room resolves through `ensureUnknownResolution`.
+
+Potions still have no belt. `{ op: 'gainPotion' }` is a typed hook that reports
+`藥水還沒準備好` until that belt exists.
+
 ## Balance constants
 
 Do not hardcode economy in UI. Edit `src/data/balance.ts` and document intent in [BALANCE.md](./BALANCE.md).

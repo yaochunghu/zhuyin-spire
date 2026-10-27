@@ -351,6 +351,21 @@ export const ENEMIES: Record<string, EnemyDef> = {
     ],
     isBoss: true,
   },
+  /**
+   * Event-only moth. Not in ACT_NORMAL_POOL.
+   * The bible's 雜音 status card is omitted until combat has status cards.
+   */
+  bellMoth: {
+    id: 'bellMoth',
+    name: '鐘粉蛾',
+    emoji: '🦋',
+    maxHp: 19,
+    role: 'striker',
+    act: 2,
+    tier: 'normal',
+    behaviorNote: '事件限定：傷害與護盾照聖經，雜音還沒進戰鬥',
+    pattern: [atk(4), guard(6), multi(2, 3), atk(6)],
+  },
   /** @deprecated alias → boss1 */
   boss: {
     id: 'boss',

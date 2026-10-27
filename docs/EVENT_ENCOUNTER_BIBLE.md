@@ -1,7 +1,8 @@
 # Event and encounter bible
 
-> **Status:** review specification, not implemented content. This document is the
-> source of truth for the first complete event and encounter pass. Values are
+> **Status:** the 30 events below are implemented. Encounter quotas, per-act
+> enemy rewrites, and Act IV are still specification. This document remains the
+> source of truth for the event pass. Values are
 > scaled for a 40-HP hero, three Energy, five cards per turn, persistent HP, and
 > a full 注音 cast before every playable card. Names, prose, and mechanics are
 > original to **注音之塔**.

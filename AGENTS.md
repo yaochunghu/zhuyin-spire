@@ -34,6 +34,7 @@ npm run test:security:e2e # production build, then security smoke tests
 | Monsters / intents / roles | `src/data/enemies.ts` → [docs/EVENT_ENCOUNTER_BIBLE.md](docs/EVENT_ENCOUNTER_BIBLE.md) |
 | Multi-enemy packs | `src/data/encounters.ts` |
 | Map topology / room kinds | `src/data/map.ts` → [docs/MAP.md](docs/MAP.md) |
+| Events / ? rooms | `src/data/events.ts`, `src/game/eventEngine.ts` → [docs/EVENT_ENCOUNTER_BIBLE.md](docs/EVENT_ENCOUNTER_BIBLE.md) |
 | Phrases / packs / profiles | `src/data/phrases.ts`, `src/game/profiles.ts` → [docs/CASTING_GATES.md](docs/CASTING_GATES.md) |
 | Combat rules | `src/game/battle/*` via `src/game/combat.ts` → [docs/COMBAT.md](docs/COMBAT.md) |
 | Cast providers / spell check | `src/game/casting/*`, `src/game/castCheck.ts`, `src/ui/castView.ts` |

@@ -110,6 +110,21 @@ export const ENCOUNTERS: Record<string, EncounterDef> = {
     recipe: 'striker + swarm',
     act: 3,
   },
+  // Event fights. Kept out of ACT_MULTI_ENCOUNTERS so maps never roll them.
+  eventBellPair: {
+    id: 'eventBellPair',
+    enemyDefIds: ['bellMoth', 'bellMoth'],
+    label: '鐘粉蛾二重奏',
+    recipe: 'event moth pair',
+    act: 2,
+  },
+  eventBellTrio: {
+    id: 'eventBellTrio',
+    enemyDefIds: ['bellMoth', 'bellMoth', 'bellMoth'],
+    label: '鐘粉蛾三重奏',
+    recipe: 'event moth trio',
+    act: 2,
+  },
 };
 
 /** Weighted multi-enemy packs by act (map ~35% multi). */

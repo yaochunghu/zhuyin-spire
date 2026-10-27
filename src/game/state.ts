@@ -8,6 +8,7 @@ import {
   STARTER_DECK_IDS,
   getCardCastBinding,
   getCard,
+  isCardId,
   resolveCard,
   canUpgradeCard,
   type CardDef,
@@ -46,6 +47,7 @@ import {
   type RewardTier,
   type RunMap,
 } from '../data/map';
+import { getEnemyDef } from '../data/enemies';
 import { getRelic, type RelicDef } from '../data/relics';
 import {
   beginPlay,
@@ -88,6 +90,27 @@ import {
   type RunScoreStats,
 } from './progression';
 import { recordPlaytestEvent } from './playtestTelemetry';
+import {
+  beginEventChoice,
+  cancelEventPending,
+  clearActiveEvent,
+  confirmEventPending,
+  confirmEventPick,
+  createEventTrack,
+  decorateCombat,
+  ensureUnknownResolution,
+  finishEventFight,
+  isEventFight,
+  nextEventUnit,
+  noteChoirVictory,
+  noteShrineAnswer,
+  openEvent,
+  takeEventOffer,
+  toggleEventPick,
+  type EventStep,
+  type EventTrack,
+} from './eventEngine';
+import { acquireRelic } from './relicOwnership';
 
 export type Screen =
   | 'title'
@@ -103,6 +126,8 @@ export type Screen =
   | 'practice'
   | 'reward'
   | 'actClear'
+  | 'event'
+  | 'eventCast'
   | 'defeat'
   | 'victory';
 
@@ -128,6 +153,10 @@ export interface RunState {
   gold: number;
   characterId: PlayableCharacterId | null;
   relicId: string | null;
+  /** Owned relics. relicId stays the starter so combat still reads one RelicDef. */
+  relicIds: string[];
+  /** Unknown-room rolls and the event in progress. */
+  eventTrack: EventTrack;
   /** Full 3-act branching map for this run */
   runMap: RunMap;
   /** 0 = Act I, 1 = Act II, 2 = Act III */
@@ -286,6 +315,8 @@ export function createNewRun(): RunState {
     gold: 0,
     characterId: null,
     relicId: null,
+    relicIds: [],
+    eventTrack: createEventTrack(1),
     runMap: emptyRunMap(),
     actIndex: 0,
     currentNodeId: null,
@@ -339,6 +370,8 @@ export function startRun(state: RunState): void {
   state.gold = 0;
   state.characterId = null;
   state.relicId = null;
+  state.relicIds = [];
+  state.eventTrack = createEventTrack(secureRandomUint32() || 1);
   state.runMap = generateRunMap();
   state.actIndex = 0;
   state.currentNodeId = null;
@@ -441,8 +474,9 @@ export function pickCharacter(state: RunState, characterId: string): boolean {
   state.characterId = characterId;
   state.nextCardUid = 1;
   state.deck = character.starterDeckIds.map((id) => addCardInstance(state, id));
-  state.relicId = relic.id;
-  if (relic.startGold) state.gold += relic.startGold;
+  state.relicId = null;
+  state.relicIds = [];
+  acquireRelic(state, relic.id);
   state.screen = 'map';
   saveRunCheckpoint(state);
   return true;
@@ -489,6 +523,151 @@ function createTutorialCombat(state: RunState): CombatState {
   return combat;
 }
 
+function applyEventStep(state: RunState, step: EventStep): void {
+  if (step === 'done') {
+    completeNode(state);
+    return;
+  }
+  if (step === 'defeat' || state.heroHp <= 0) {
+    commitRunScore(state, false);
+    state.screen = 'defeat';
+    state.combat = null;
+    state.cast = null;
+    clearSavedRun();
+    return;
+  }
+  if (step === 'shrine' || state.eventTrack.active?.phase === 'shrine') {
+    state.cast = null;
+    state.screen = 'eventCast';
+    ensureEventCast(state);
+    saveRunCheckpoint(state);
+    return;
+  }
+  state.screen = 'event';
+  saveRunCheckpoint(state);
+}
+
+function enterUnknownNode(state: RunState, node: MapNode): void {
+  const resolution = ensureUnknownResolution(state, node);
+  if (resolution.outcome === 'shop') {
+    openShop(state);
+    return;
+  }
+  if (resolution.outcome === 'treasure') {
+    openTreasure(state);
+    return;
+  }
+  if (resolution.outcome === 'event' && resolution.eventId) {
+    openEvent(state, node.id, resolution.eventId);
+    state.screen = 'event';
+    saveRunCheckpoint(state);
+    return;
+  }
+  // Persist the rolled fight before combat. Combat itself is not a save screen,
+  // so a reload returns here and starts the same encounter again.
+  saveRunCheckpoint(state);
+  state.combat = createCombat(
+    state.deck,
+    resolution.enemyId ?? 'slime',
+    state.heroHp,
+    state.heroMaxHp,
+    getActiveRelic(state),
+    resolution.encounterId,
+  );
+  decorateCombat(state, state.combat, { normalFight: true, boss: false });
+  state.tutorial = null;
+  state.scoreStats.currentCombatHpLost = 0;
+  drainCombatFx(state);
+  state.screen = 'combat';
+}
+
+/** Rebuild the shrine prompt when a save resumes mid-question. */
+export function ensureEventCast(state: RunState): void {
+  if (state.screen !== 'eventCast' || state.cast) return;
+  const preferred = state.eventTrack.active?.shrineCardId;
+  const fallback = state.deck.find((card) => !getCard(card.defId).curse)?.defId ?? 'bo';
+  const cardId = preferred && isCardId(preferred) && !getCard(preferred).curse ? preferred : fallback;
+  const cardDef = getCard(cardId);
+  state.cast = {
+    prompt: buildCastPrompt(
+      cardDef,
+      'recognize',
+      () => nextEventUnit(state.eventTrack),
+      'early',
+      'zhuyin',
+    ),
+    cardDef,
+  };
+}
+
+export function chooseEventChoice(state: RunState, choiceId: string): void {
+  if (state.screen !== 'event') return;
+  applyEventStep(state, beginEventChoice(state, choiceId));
+}
+
+export function confirmEventChoice(state: RunState): void {
+  if (state.screen !== 'event') return;
+  applyEventStep(state, confirmEventPending(state));
+}
+
+export function cancelEventChoice(state: RunState): void {
+  if (state.screen !== 'event') return;
+  cancelEventPending(state);
+  saveRunCheckpoint(state);
+}
+
+export function toggleEventCard(state: RunState, uid: string): void {
+  if (state.screen !== 'event') return;
+  toggleEventPick(state, uid);
+}
+
+export function confirmEventCard(state: RunState): void {
+  if (state.screen !== 'event') return;
+  applyEventStep(state, confirmEventPick(state));
+}
+
+export function takeEventOfferCard(state: RunState, defId: string | null): void {
+  if (state.screen !== 'event') return;
+  applyEventStep(state, takeEventOffer(state, defId));
+}
+
+export function continueEventResult(state: RunState): void {
+  if (state.screen !== 'event' || state.eventTrack.active?.phase !== 'result') return;
+  completeNode(state);
+}
+
+/** Save the fight phase, then enter combat. A reload shows the same start. */
+export function startEventCombat(state: RunState): void {
+  const active = state.eventTrack.active;
+  if (state.screen !== 'event' || !active?.fightEncounterId) return;
+  saveRunCheckpoint(state);
+  state.combat = createCombat(
+    state.deck,
+    'slime',
+    state.heroHp,
+    state.heroMaxHp,
+    getActiveRelic(state),
+    active.fightEncounterId,
+  );
+  decorateCombat(state, state.combat, { normalFight: false, boss: false });
+  state.scoreStats.currentCombatHpLost = 0;
+  drainCombatFx(state);
+  state.screen = 'combat';
+}
+
+export function answerEventShrine(state: RunState, correct: boolean): void {
+  if (state.screen !== 'eventCast') return;
+  state.cast = null;
+  const step = noteShrineAnswer(state, correct);
+  if (step === 'shrine') {
+    state.screen = 'eventCast';
+    ensureEventCast(state);
+    saveRunCheckpoint(state);
+    return;
+  }
+  applyEventStep(state, step);
+}
+
 /** Player clicked a lit node on the map web. */
 export function selectMapNode(state: RunState, nodeId: string): void {
   const available = getAvailableMapNodes(state);
@@ -519,6 +698,11 @@ export function selectMapNode(state: RunState, nodeId: string): void {
     return;
   }
 
+  if (node.kind === 'unknown') {
+    enterUnknownNode(state, node);
+    return;
+  }
+
   // fight / elite / boss
   if (!node.enemyId && !node.encounterId) {
     throw new Error(`Node ${node.id} missing enemyId/encounterId`);
@@ -535,6 +719,12 @@ export function selectMapNode(state: RunState, nodeId: string): void {
         getActiveRelic(state),
         node.encounterId,
       );
+  if (state.combat && !tutorial) {
+    decorateCombat(state, state.combat, {
+      normalFight: node.kind === 'fight',
+      boss: node.kind === 'boss',
+    });
+  }
   state.tutorial = tutorial ? { step: 'shield', wrongAttempts: 0 } : null;
   state.scoreStats.currentCombatHpLost = 0;
   drainCombatFx(state);
@@ -739,9 +929,10 @@ function completeNode(state: RunState): void {
   state.pendingHeal = 0;
   state.rewardSource = null;
 
+  clearActiveEvent(state);
   if (nodeId) {
     if (!state.visitedIds.includes(nodeId)) state.visitedIds.push(nodeId);
-    state.pathIds.push(nodeId);
+    if (!state.pathIds.includes(nodeId)) state.pathIds.push(nodeId);
     state.currentNodeId = nodeId;
     state.scoreStats.roomsCompleted += 1;
   }
@@ -927,6 +1118,10 @@ export function debugStartEncounter(
     getActiveRelic(state),
     encounterId,
   );
+  decorateCombat(state, state.combat, {
+    normalFight: false,
+    boss: !!getEnemyDef(enemyId).isBoss,
+  });
   state.scoreStats.currentCombatHpLost = 0;
   drainCombatFx(state);
   state.screen = 'combat';
@@ -1048,6 +1243,16 @@ function finishFight(state: RunState): void {
     state.tutorial = null;
   }
   syncHeroHpFromCombat(state);
+  const ribbon = noteChoirVictory(state);
+  if (isEventFight(state)) {
+    const step = finishEventFight(state);
+    if (ribbon && state.eventTrack.active) state.eventTrack.active.resultLines.push(ribbon);
+    state.combat = null;
+    state.pendingHeal = 0;
+    applyEventStep(state, step);
+    return;
+  }
+  if (ribbon) state.flash = ribbon;
   // No ordinary post-combat heal — campfires restore 40% max HP.
   state.pendingHeal = 0;
   const node = getActiveNode(state);
@@ -1057,7 +1262,7 @@ function finishFight(state: RunState): void {
   } else if (node?.kind === 'elite') {
     state.scoreStats.eliteWins += 1;
     if (state.scoreStats.currentCombatHpLost === 0) state.scoreStats.flawlessElites += 1;
-  } else if (node?.kind === 'fight') {
+  } else if (node?.kind === 'fight' || node?.kind === 'unknown') {
     state.scoreStats.normalWins += 1;
   }
 
