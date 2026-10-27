@@ -65,6 +65,16 @@ act-specific roll.
 The canonical 75-row catalog and reusable migration rules live in
 [UPGRADE_BIBLE.md](./UPGRADE_BIBLE.md).
 
+## Second character
+
+珠算武者 is not a deck. #51 added engine seams for a first-grade math caster:
+a casting-task registry that installs 注音 only, a math binding that no shipped
+card sets, one score bucket per character id, and an attempt model for
+sequence, three-choice, number pad, and build. The cast screen still draws
+sequence and single choice. `math` and `english` throw if the game asks for
+them. No 珠算武者 row, starter, or card pool is in the catalog. The playable
+build is the next character slice in [NEXT_PHASE.md](./NEXT_PHASE.md).
+
 ## Evidence gate
 
 The catalog generator audits 75 unique definitions. All 75 designs are
