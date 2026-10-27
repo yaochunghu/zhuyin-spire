@@ -30,6 +30,7 @@ import {
 } from '../data/balance';
 import { emptyPotionBelt, isKnownPotionId } from '../data/potions';
 import { isKnownRelicId } from '../data/relics';
+import { createCastSeed } from './castRng';
 import type { RunState, Screen, ShopOffer, ShopPotionOffer } from './state';
 import {
   isDeckCard,
@@ -109,6 +110,9 @@ export interface RunSnapshot {
   tutorialEligibleRun?: boolean;
   scoreStats?: RunScoreStats;
   scoreCommitted?: boolean;
+  /** Optional so checkpoints saved before seeded prompt draws still load. */
+  castSeed?: number | null;
+  castCounter?: number | null;
 }
 
 function isStableScreen(screen: Screen): boolean {
@@ -172,6 +176,8 @@ export function snapshotRun(state: RunState): RunSnapshot | null {
     tutorialEligibleRun: state.tutorialEligibleRun,
     scoreStats: { ...state.scoreStats },
     scoreCommitted: state.scoreCommitted,
+    castSeed: state.castSeed,
+    castCounter: state.castCounter,
   };
 }
 
@@ -210,6 +216,14 @@ function isIntIn(value: unknown, min: number, max: number): value is number {
 
 function isFiniteIn(value: unknown, min: number, max: number): value is number {
   return typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max;
+}
+
+function isUint32(value: unknown): value is number {
+  return isIntIn(value, 0, 0xffff_ffff);
+}
+
+function isOptionalUint32(value: unknown): boolean {
+  return value === undefined || value === null || isUint32(value);
 }
 
 function isSafeDisplay(value: unknown, maxLength: number): value is string {
@@ -406,6 +420,7 @@ function isValidSnapshot(data: unknown): data is RunSnapshot {
   if (data.tutorialEligibleRun !== undefined && typeof data.tutorialEligibleRun !== 'boolean') return false;
   if (data.scoreStats !== undefined && !isValidRunScoreStats(data.scoreStats)) return false;
   if (data.scoreCommitted !== undefined && typeof data.scoreCommitted !== 'boolean') return false;
+  if (!isOptionalUint32(data.castSeed) || !isOptionalUint32(data.castCounter)) return false;
   return true;
 }
 
@@ -635,6 +650,8 @@ export function applySnapshot(state: RunState, snap: RunSnapshot): void {
   state.scoreStats = snap.scoreStats ? { ...snap.scoreStats } : createRunScoreStats();
   state.scoreCommitted = snap.scoreCommitted ?? false;
   state.scoreResult = null;
+  state.castSeed = isUint32(snap.castSeed) ? snap.castSeed : createCastSeed();
+  state.castCounter = isUint32(snap.castCounter) ? snap.castCounter : 0;
 }
 
 export function resumeSavedRun(state: RunState): boolean {

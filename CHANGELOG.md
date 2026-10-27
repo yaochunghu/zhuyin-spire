@@ -8,6 +8,13 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+### Cast prompt stream
+
+- Each run stores `castSeed` and `castCounter`. Mode rolls, shuffle-bag refills, and distractor banks read that stream, so a reloaded checkpoint replays the same later prompts
+- A save from before these fields still loads. The missing seed is filled in and the counter starts at 0
+- Learner shuffle bags stay on the profile
+- Debug score, tutorial start, and scene setup follow the run's character, or 共鳴武者 before one is chosen
+
 ### Potion belt
 
 - Added a 3-slot belt and six bottles: 護盾泡泡, 音波小石, 蜂蜜暖茶, 火花汽水, 翻頁果汁, and 合唱爆泡

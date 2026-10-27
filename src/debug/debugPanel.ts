@@ -129,10 +129,10 @@ function buildPanel(opts: DebugMountOpts): HTMLElement {
 
   panel.appendChild(
     row('Meta', [
-      btn('0', () => runAction(opts, () => debugSetMetaProgress(0))),
-      btn('300', () => runAction(opts, () => debugSetMetaProgress(300))),
-      btn('1k', () => runAction(opts, () => debugSetMetaProgress(1000))),
-      btn('2k', () => runAction(opts, () => debugSetMetaProgress(2000))),
+      btn('0', () => runAction(opts, (s) => debugSetMetaProgress(0, s))),
+      btn('300', () => runAction(opts, (s) => debugSetMetaProgress(300, s))),
+      btn('1k', () => runAction(opts, (s) => debugSetMetaProgress(1000, s))),
+      btn('2k', () => runAction(opts, (s) => debugSetMetaProgress(2000, s))),
     ]),
   );
 
