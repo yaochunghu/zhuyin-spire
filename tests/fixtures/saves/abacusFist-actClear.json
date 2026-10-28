@@ -1,0 +1,3080 @@
+{
+  "v": 4,
+  "screen": "actClear",
+  "heroHp": 40,
+  "heroMaxHp": 40,
+  "deck": [
+    {
+      "uid": "d1",
+      "defId": "ab_m001",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d2",
+      "defId": "ab_m001",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d3",
+      "defId": "ab_m001",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d4",
+      "defId": "ab_m001",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d5",
+      "defId": "ab_m001",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d6",
+      "defId": "ab_m002",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d7",
+      "defId": "ab_m002",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d8",
+      "defId": "ab_m002",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d9",
+      "defId": "ab_m002",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d10",
+      "defId": "ab_m003",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d11",
+      "defId": "ab_m006",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d14",
+      "defId": "ab_m009",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d20",
+      "defId": "ab_m004",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d23",
+      "defId": "ab_m005",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d26",
+      "defId": "ab_m027",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d29",
+      "defId": "ab_m004",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d32",
+      "defId": "ab_m004",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d35",
+      "defId": "ab_m009",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d38",
+      "defId": "ab_m006",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d41",
+      "defId": "ab_m010",
+      "upgradeLevel": 0
+    }
+  ],
+  "nextCardUid": 44,
+  "gold": 337,
+  "characterId": "abacusFist",
+  "relicIds": [
+    "woodBeads",
+    "beadPouch",
+    "tenBell",
+    "rulerCharm",
+    "eraser"
+  ],
+  "pendingRelicId": null,
+  "potions": [
+    "pageJuice",
+    "sparkSoda",
+    "sparkSoda"
+  ],
+  "potionDropChance": 40,
+  "pendingPotionId": null,
+  "pendingPotionUnplaced": false,
+  "rewardSource": null,
+  "eventTrack": {
+    "seed": 754236273,
+    "cursor": 694327991,
+    "difficulty": 0,
+    "nonEventUnknownStreak": 0,
+    "seenEventIds": [
+      "event_a1_tuning_fountain"
+    ],
+    "recentEventIds": [
+      "event_a1_tuning_fountain"
+    ],
+    "resolutions": {
+      "a1-r9-c3": {
+        "outcome": "event",
+        "eventId": "event_a1_tuning_fountain"
+      }
+    },
+    "active": null,
+    "musicBoxUid": null,
+    "ribbonVictories": 0,
+    "bossOpeningEnergy": 0,
+    "normalHpBonusPercent": 0,
+    "normalHpBonusFights": 0
+  },
+  "runMap": {
+    "acts": [
+      {
+        "act": 1,
+        "title": "第一幕 · 入門塔",
+        "emoji": "🌱",
+        "cols": 7,
+        "maxRow": 15,
+        "nodes": [
+          {
+            "id": "a1-r0-c0",
+            "act": 1,
+            "row": 0,
+            "col": 0,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 1",
+            "castStage": "early",
+            "nextIds": [
+              "a1-r1-c1",
+              "a1-r1-c0"
+            ],
+            "layoutX": 12,
+            "layoutY": 6,
+            "enemyId": "bat",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a1-r0-c2",
+            "act": 1,
+            "row": 0,
+            "col": 2,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 1",
+            "castStage": "early",
+            "nextIds": [
+              "a1-r1-c3"
+            ],
+            "layoutX": -11,
+            "layoutY": 10,
+            "enemyId": "bat",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a1-r0-c5",
+            "act": 1,
+            "row": 0,
+            "col": 5,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 1",
+            "castStage": "early",
+            "nextIds": [
+              "a1-r1-c6"
+            ],
+            "layoutX": -3,
+            "layoutY": 3,
+            "enemyId": "slime",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a1-r0-c6",
+            "act": 1,
+            "row": 0,
+            "col": 6,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 1",
+            "castStage": "early",
+            "nextIds": [
+              "a1-r1-c6"
+            ],
+            "layoutX": -5,
+            "layoutY": 5,
+            "enemyId": "slimeWeak",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a1-r1-c0",
+            "act": 1,
+            "row": 1,
+            "col": 0,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "early",
+            "nextIds": [
+              "a1-r2-c0"
+            ],
+            "layoutX": -14,
+            "layoutY": -3
+          },
+          {
+            "id": "a1-r1-c1",
+            "act": 1,
+            "row": 1,
+            "col": 1,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "early",
+            "nextIds": [
+              "a1-r2-c1"
+            ],
+            "layoutX": 8,
+            "layoutY": -3
+          },
+          {
+            "id": "a1-r1-c3",
+            "act": 1,
+            "row": 1,
+            "col": 3,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 2",
+            "castStage": "early",
+            "nextIds": [
+              "a1-r2-c2"
+            ],
+            "layoutX": -7,
+            "layoutY": 3,
+            "rewardTier": "normal",
+            "encounterId": "slimePair"
+          },
+          {
+            "id": "a1-r1-c6",
+            "act": 1,
+            "row": 1,
+            "col": 6,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 2",
+            "castStage": "early",
+            "nextIds": [
+              "a1-r2-c5",
+              "a1-r2-c6"
+            ],
+            "layoutX": 6,
+            "layoutY": 9,
+            "rewardTier": "elite",
+            "encounterId": "slimePair",
+            "goldBonus": 8
+          },
+          {
+            "id": "a1-r2-c0",
+            "act": 1,
+            "row": 2,
+            "col": 0,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "early",
+            "nextIds": [
+              "a1-r3-c1"
+            ],
+            "layoutX": 7,
+            "layoutY": 4
+          },
+          {
+            "id": "a1-r2-c1",
+            "act": 1,
+            "row": 2,
+            "col": 1,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 3",
+            "castStage": "early",
+            "nextIds": [
+              "a1-r3-c1"
+            ],
+            "layoutX": -2,
+            "layoutY": 6,
+            "enemyId": "slimeWeak",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a1-r2-c2",
+            "act": 1,
+            "row": 2,
+            "col": 2,
+            "kind": "shop",
+            "emoji": "🏪",
+            "label": "商店",
+            "castStage": "early",
+            "nextIds": [
+              "a1-r3-c3"
+            ],
+            "layoutX": 6,
+            "layoutY": -10
+          },
+          {
+            "id": "a1-r2-c5",
+            "act": 1,
+            "row": 2,
+            "col": 5,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "early",
+            "nextIds": [
+              "a1-r3-c5",
+              "a1-r3-c4"
+            ],
+            "layoutX": 1,
+            "layoutY": -9
+          },
+          {
+            "id": "a1-r2-c6",
+            "act": 1,
+            "row": 2,
+            "col": 6,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "early",
+            "nextIds": [
+              "a1-r3-c5"
+            ],
+            "layoutX": 3,
+            "layoutY": -8
+          },
+          {
+            "id": "a1-r3-c1",
+            "act": 1,
+            "row": 3,
+            "col": 1,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "early",
+            "nextIds": [
+              "a1-r4-c2"
+            ],
+            "layoutX": 6,
+            "layoutY": 7
+          },
+          {
+            "id": "a1-r3-c3",
+            "act": 1,
+            "row": 3,
+            "col": 3,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 4",
+            "castStage": "early",
+            "nextIds": [
+              "a1-r4-c4"
+            ],
+            "layoutX": 7,
+            "layoutY": 2,
+            "rewardTier": "normal",
+            "encounterId": "slimePair"
+          },
+          {
+            "id": "a1-r3-c4",
+            "act": 1,
+            "row": 3,
+            "col": 4,
+            "kind": "elite",
+            "emoji": "💀",
+            "label": "菁英",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r4-c4"
+            ],
+            "layoutX": -8,
+            "layoutY": -1,
+            "enemyId": "eliteBee",
+            "rewardTier": "elite"
+          },
+          {
+            "id": "a1-r3-c5",
+            "act": 1,
+            "row": 3,
+            "col": 5,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 4",
+            "castStage": "early",
+            "nextIds": [
+              "a1-r4-c6"
+            ],
+            "layoutX": 11,
+            "layoutY": -3,
+            "enemyId": "slimeWeak",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a1-r4-c2",
+            "act": 1,
+            "row": 4,
+            "col": 2,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "early",
+            "nextIds": [
+              "a1-r5-c1",
+              "a1-r5-c2"
+            ],
+            "layoutX": -7,
+            "layoutY": 0
+          },
+          {
+            "id": "a1-r4-c4",
+            "act": 1,
+            "row": 4,
+            "col": 4,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 5",
+            "castStage": "early",
+            "nextIds": [
+              "a1-r5-c4",
+              "a1-r5-c3"
+            ],
+            "layoutX": 1,
+            "layoutY": 1,
+            "enemyId": "slimeWeak",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a1-r4-c6",
+            "act": 1,
+            "row": 4,
+            "col": 6,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "early",
+            "nextIds": [
+              "a1-r5-c6",
+              "a1-r5-c5"
+            ],
+            "layoutX": 12,
+            "layoutY": -9
+          },
+          {
+            "id": "a1-r5-c1",
+            "act": 1,
+            "row": 5,
+            "col": 1,
+            "kind": "elite",
+            "emoji": "💀",
+            "label": "菁英",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r6-c1"
+            ],
+            "layoutX": 8,
+            "layoutY": 8,
+            "enemyId": "eliteBee",
+            "rewardTier": "elite"
+          },
+          {
+            "id": "a1-r5-c2",
+            "act": 1,
+            "row": 5,
+            "col": 2,
+            "kind": "elite",
+            "emoji": "💀",
+            "label": "菁英",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r6-c1"
+            ],
+            "layoutX": 9,
+            "layoutY": 7,
+            "enemyId": "eliteChorus",
+            "rewardTier": "elite"
+          },
+          {
+            "id": "a1-r5-c3",
+            "act": 1,
+            "row": 5,
+            "col": 3,
+            "kind": "elite",
+            "emoji": "💀",
+            "label": "菁英",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r6-c3"
+            ],
+            "layoutX": 1,
+            "layoutY": -4,
+            "enemyId": "eliteChorus",
+            "rewardTier": "elite"
+          },
+          {
+            "id": "a1-r5-c4",
+            "act": 1,
+            "row": 5,
+            "col": 4,
+            "kind": "treasure",
+            "emoji": "💎",
+            "label": "寶箱",
+            "castStage": "mid",
+            "nextIds": [
+              "a1-r6-c3",
+              "a1-r6-c4"
+            ],
+            "layoutX": 3,
+            "layoutY": -10,
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a1-r5-c5",
+            "act": 1,
+            "row": 5,
+            "col": 5,
+            "kind": "elite",
+            "emoji": "💀",
+            "label": "菁英",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r6-c4"
+            ],
+            "layoutX": 0,
+            "layoutY": -3,
+            "enemyId": "eliteChorus",
+            "rewardTier": "elite"
+          },
+          {
+            "id": "a1-r5-c6",
+            "act": 1,
+            "row": 5,
+            "col": 6,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 6",
+            "castStage": "mid",
+            "nextIds": [
+              "a1-r6-c6"
+            ],
+            "layoutX": 3,
+            "layoutY": 7,
+            "rewardTier": "normal",
+            "encounterId": "slimeTriple"
+          },
+          {
+            "id": "a1-r6-c1",
+            "act": 1,
+            "row": 6,
+            "col": 1,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 7",
+            "castStage": "mid",
+            "nextIds": [
+              "a1-r7-c0"
+            ],
+            "layoutX": 7,
+            "layoutY": -8,
+            "enemyId": "slime",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a1-r6-c3",
+            "act": 1,
+            "row": 6,
+            "col": 3,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 7",
+            "castStage": "mid",
+            "nextIds": [
+              "a1-r7-c3"
+            ],
+            "layoutX": -5,
+            "layoutY": 0,
+            "rewardTier": "normal",
+            "encounterId": "heavyFodder"
+          },
+          {
+            "id": "a1-r6-c4",
+            "act": 1,
+            "row": 6,
+            "col": 4,
+            "kind": "shop",
+            "emoji": "🏪",
+            "label": "商店",
+            "castStage": "mid",
+            "nextIds": [
+              "a1-r7-c4",
+              "a1-r7-c3"
+            ],
+            "layoutX": 4,
+            "layoutY": 6
+          },
+          {
+            "id": "a1-r6-c6",
+            "act": 1,
+            "row": 6,
+            "col": 6,
+            "kind": "shop",
+            "emoji": "🏪",
+            "label": "商店",
+            "castStage": "mid",
+            "nextIds": [
+              "a1-r7-c5"
+            ],
+            "layoutX": -11,
+            "layoutY": -9
+          },
+          {
+            "id": "a1-r7-c0",
+            "act": 1,
+            "row": 7,
+            "col": 0,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "mid",
+            "nextIds": [
+              "a1-r8-c0"
+            ],
+            "layoutX": -2,
+            "layoutY": 8
+          },
+          {
+            "id": "a1-r7-c3",
+            "act": 1,
+            "row": 7,
+            "col": 3,
+            "kind": "treasure",
+            "emoji": "💎",
+            "label": "寶箱",
+            "castStage": "mid",
+            "nextIds": [
+              "a1-r8-c2"
+            ],
+            "layoutX": 10,
+            "layoutY": -9,
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a1-r7-c4",
+            "act": 1,
+            "row": 7,
+            "col": 4,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "mid",
+            "nextIds": [
+              "a1-r8-c4"
+            ],
+            "layoutX": 7,
+            "layoutY": -4
+          },
+          {
+            "id": "a1-r7-c5",
+            "act": 1,
+            "row": 7,
+            "col": 5,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "mid",
+            "nextIds": [
+              "a1-r8-c6"
+            ],
+            "layoutX": -8,
+            "layoutY": 6
+          },
+          {
+            "id": "a1-r8-c0",
+            "act": 1,
+            "row": 8,
+            "col": 0,
+            "kind": "treasure",
+            "emoji": "💎",
+            "label": "寶箱",
+            "castStage": "mid",
+            "nextIds": [
+              "a1-r9-c1"
+            ],
+            "layoutX": 5,
+            "layoutY": 10,
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a1-r8-c2",
+            "act": 1,
+            "row": 8,
+            "col": 2,
+            "kind": "treasure",
+            "emoji": "💎",
+            "label": "寶箱",
+            "castStage": "mid",
+            "nextIds": [
+              "a1-r9-c3",
+              "a1-r9-c2"
+            ],
+            "layoutX": 5,
+            "layoutY": 5,
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a1-r8-c4",
+            "act": 1,
+            "row": 8,
+            "col": 4,
+            "kind": "treasure",
+            "emoji": "💎",
+            "label": "寶箱",
+            "castStage": "mid",
+            "nextIds": [
+              "a1-r9-c4"
+            ],
+            "layoutX": 12,
+            "layoutY": -3,
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a1-r8-c6",
+            "act": 1,
+            "row": 8,
+            "col": 6,
+            "kind": "treasure",
+            "emoji": "💎",
+            "label": "寶箱",
+            "castStage": "mid",
+            "nextIds": [
+              "a1-r9-c5"
+            ],
+            "layoutX": 5,
+            "layoutY": -7,
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a1-r9-c1",
+            "act": 1,
+            "row": 9,
+            "col": 1,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "mid",
+            "nextIds": [
+              "a1-r10-c1",
+              "a1-r10-c0"
+            ],
+            "layoutX": -2,
+            "layoutY": 6
+          },
+          {
+            "id": "a1-r9-c2",
+            "act": 1,
+            "row": 9,
+            "col": 2,
+            "kind": "elite",
+            "emoji": "💀",
+            "label": "菁英",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r10-c2"
+            ],
+            "layoutX": 12,
+            "layoutY": -1,
+            "enemyId": "eliteArmor",
+            "rewardTier": "elite"
+          },
+          {
+            "id": "a1-r9-c3",
+            "act": 1,
+            "row": 9,
+            "col": 3,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "mid",
+            "nextIds": [
+              "a1-r10-c4"
+            ],
+            "layoutX": -14,
+            "layoutY": 7
+          },
+          {
+            "id": "a1-r9-c4",
+            "act": 1,
+            "row": 9,
+            "col": 4,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "mid",
+            "nextIds": [
+              "a1-r10-c5",
+              "a1-r10-c4"
+            ],
+            "layoutX": 11,
+            "layoutY": -10
+          },
+          {
+            "id": "a1-r9-c5",
+            "act": 1,
+            "row": 9,
+            "col": 5,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "mid",
+            "nextIds": [
+              "a1-r10-c5"
+            ],
+            "layoutX": 3,
+            "layoutY": -6
+          },
+          {
+            "id": "a1-r10-c0",
+            "act": 1,
+            "row": 10,
+            "col": 0,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 11",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r11-c1",
+              "a1-r11-c0"
+            ],
+            "layoutX": 1,
+            "layoutY": -6,
+            "enemyId": "bat",
+            "rewardTier": "elite",
+            "goldBonus": 8
+          },
+          {
+            "id": "a1-r10-c1",
+            "act": 1,
+            "row": 10,
+            "col": 1,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 11",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r11-c1"
+            ],
+            "layoutX": -13,
+            "layoutY": -4,
+            "enemyId": "bat",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a1-r10-c2",
+            "act": 1,
+            "row": 10,
+            "col": 2,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r11-c2"
+            ],
+            "layoutX": -6,
+            "layoutY": 10
+          },
+          {
+            "id": "a1-r10-c4",
+            "act": 1,
+            "row": 10,
+            "col": 4,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 11",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r11-c3",
+              "a1-r11-c5",
+              "a1-r11-c4"
+            ],
+            "layoutX": -10,
+            "layoutY": 9,
+            "enemyId": "fang",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a1-r10-c5",
+            "act": 1,
+            "row": 10,
+            "col": 5,
+            "kind": "shop",
+            "emoji": "🏪",
+            "label": "商店",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r11-c5"
+            ],
+            "layoutX": -14,
+            "layoutY": -4
+          },
+          {
+            "id": "a1-r11-c0",
+            "act": 1,
+            "row": 11,
+            "col": 0,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 12",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r12-c1"
+            ],
+            "layoutX": -7,
+            "layoutY": -2,
+            "enemyId": "echoBug",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a1-r11-c1",
+            "act": 1,
+            "row": 11,
+            "col": 1,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 12",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r12-c2",
+              "a1-r12-c1"
+            ],
+            "layoutX": -3,
+            "layoutY": -1,
+            "enemyId": "rock",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a1-r11-c2",
+            "act": 1,
+            "row": 11,
+            "col": 2,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r12-c2"
+            ],
+            "layoutX": 2,
+            "layoutY": 4
+          },
+          {
+            "id": "a1-r11-c3",
+            "act": 1,
+            "row": 11,
+            "col": 3,
+            "kind": "elite",
+            "emoji": "💀",
+            "label": "菁英",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r12-c2"
+            ],
+            "layoutX": -5,
+            "layoutY": 3,
+            "enemyId": "eliteArmor",
+            "rewardTier": "elite"
+          },
+          {
+            "id": "a1-r11-c4",
+            "act": 1,
+            "row": 11,
+            "col": 4,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r12-c3"
+            ],
+            "layoutX": 10,
+            "layoutY": -5
+          },
+          {
+            "id": "a1-r11-c5",
+            "act": 1,
+            "row": 11,
+            "col": 5,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 12",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r12-c4"
+            ],
+            "layoutX": -6,
+            "layoutY": 6,
+            "rewardTier": "normal",
+            "encounterId": "swarmFodder"
+          },
+          {
+            "id": "a1-r12-c1",
+            "act": 1,
+            "row": 12,
+            "col": 1,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r13-c1"
+            ],
+            "layoutX": -1,
+            "layoutY": 7
+          },
+          {
+            "id": "a1-r12-c2",
+            "act": 1,
+            "row": 12,
+            "col": 2,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 13",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r13-c1",
+              "a1-r13-c2"
+            ],
+            "layoutX": 7,
+            "layoutY": 4,
+            "rewardTier": "normal",
+            "encounterId": "strikerFodder"
+          },
+          {
+            "id": "a1-r12-c3",
+            "act": 1,
+            "row": 12,
+            "col": 3,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 13",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r13-c2"
+            ],
+            "layoutX": 12,
+            "layoutY": -5,
+            "enemyId": "rock",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a1-r12-c4",
+            "act": 1,
+            "row": 12,
+            "col": 4,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 13",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r13-c3"
+            ],
+            "layoutX": 11,
+            "layoutY": 5,
+            "enemyId": "rock",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a1-r13-c1",
+            "act": 1,
+            "row": 13,
+            "col": 1,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 14",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r14-c0"
+            ],
+            "layoutX": 1,
+            "layoutY": -1,
+            "enemyId": "rock",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a1-r13-c2",
+            "act": 1,
+            "row": 13,
+            "col": 2,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 14",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r14-c1",
+              "a1-r14-c2"
+            ],
+            "layoutX": 8,
+            "layoutY": -9,
+            "rewardTier": "normal",
+            "encounterId": "echoPair"
+          },
+          {
+            "id": "a1-r13-c3",
+            "act": 1,
+            "row": 13,
+            "col": 3,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 14",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-r14-c2"
+            ],
+            "layoutX": -9,
+            "layoutY": -10,
+            "enemyId": "echoBug",
+            "rewardTier": "elite",
+            "goldBonus": 8
+          },
+          {
+            "id": "a1-r14-c0",
+            "act": 1,
+            "row": 14,
+            "col": 0,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-boss"
+            ],
+            "layoutX": -10,
+            "layoutY": -10
+          },
+          {
+            "id": "a1-r14-c1",
+            "act": 1,
+            "row": 14,
+            "col": 1,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-boss"
+            ],
+            "layoutX": 13,
+            "layoutY": 4
+          },
+          {
+            "id": "a1-r14-c2",
+            "act": 1,
+            "row": 14,
+            "col": 2,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "elite",
+            "nextIds": [
+              "a1-boss"
+            ],
+            "layoutX": -12,
+            "layoutY": -6
+          },
+          {
+            "id": "a1-boss",
+            "act": 1,
+            "row": 15,
+            "col": 3,
+            "kind": "boss",
+            "emoji": "🐉",
+            "label": "Boss",
+            "castStage": "mid",
+            "nextIds": [],
+            "layoutX": 0,
+            "layoutY": -8,
+            "enemyId": "boss1",
+            "rewardTier": "elite"
+          }
+        ],
+        "startIds": [
+          "a1-r0-c0",
+          "a1-r0-c2",
+          "a1-r0-c5",
+          "a1-r0-c6"
+        ],
+        "bossId": "a1-boss"
+      },
+      {
+        "act": 2,
+        "title": "第二幕 · 中層",
+        "emoji": "🔥",
+        "cols": 7,
+        "maxRow": 15,
+        "nodes": [
+          {
+            "id": "a2-r0-c1",
+            "act": 2,
+            "row": 0,
+            "col": 1,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 1",
+            "castStage": "mid",
+            "nextIds": [
+              "a2-r1-c2"
+            ],
+            "layoutX": -9,
+            "layoutY": -3,
+            "enemyId": "bellMoth",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a2-r0-c2",
+            "act": 2,
+            "row": 0,
+            "col": 2,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 1",
+            "castStage": "mid",
+            "nextIds": [
+              "a2-r1-c3"
+            ],
+            "layoutX": 7,
+            "layoutY": 0,
+            "enemyId": "toad",
+            "rewardTier": "elite",
+            "goldBonus": 8
+          },
+          {
+            "id": "a2-r0-c5",
+            "act": 2,
+            "row": 0,
+            "col": 5,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 1",
+            "castStage": "mid",
+            "nextIds": [
+              "a2-r1-c6",
+              "a2-r1-c4"
+            ],
+            "layoutX": -5,
+            "layoutY": -1,
+            "enemyId": "bellMoth",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a2-r1-c2",
+            "act": 2,
+            "row": 1,
+            "col": 2,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "mid",
+            "nextIds": [
+              "a2-r2-c1"
+            ],
+            "layoutX": 3,
+            "layoutY": 6
+          },
+          {
+            "id": "a2-r1-c3",
+            "act": 2,
+            "row": 1,
+            "col": 3,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 2",
+            "castStage": "mid",
+            "nextIds": [
+              "a2-r2-c3",
+              "a2-r2-c4"
+            ],
+            "layoutX": 0,
+            "layoutY": 3,
+            "enemyId": "bellMoth",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a2-r1-c4",
+            "act": 2,
+            "row": 1,
+            "col": 4,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 2",
+            "castStage": "mid",
+            "nextIds": [
+              "a2-r2-c5"
+            ],
+            "layoutX": 0,
+            "layoutY": -8,
+            "enemyId": "armor",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a2-r1-c6",
+            "act": 2,
+            "row": 1,
+            "col": 6,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "mid",
+            "nextIds": [
+              "a2-r2-c6"
+            ],
+            "layoutX": 8,
+            "layoutY": 10
+          },
+          {
+            "id": "a2-r2-c1",
+            "act": 2,
+            "row": 2,
+            "col": 1,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 3",
+            "castStage": "mid",
+            "nextIds": [
+              "a2-r3-c1"
+            ],
+            "layoutX": -11,
+            "layoutY": -10,
+            "enemyId": "armor",
+            "rewardTier": "elite",
+            "goldBonus": 8
+          },
+          {
+            "id": "a2-r2-c3",
+            "act": 2,
+            "row": 2,
+            "col": 3,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 3",
+            "castStage": "mid",
+            "nextIds": [
+              "a2-r3-c4"
+            ],
+            "layoutX": 8,
+            "layoutY": -6,
+            "enemyId": "littleConductor",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a2-r2-c4",
+            "act": 2,
+            "row": 2,
+            "col": 4,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "mid",
+            "nextIds": [
+              "a2-r3-c5"
+            ],
+            "layoutX": -9,
+            "layoutY": 0
+          },
+          {
+            "id": "a2-r2-c5",
+            "act": 2,
+            "row": 2,
+            "col": 5,
+            "kind": "shop",
+            "emoji": "🏪",
+            "label": "商店",
+            "castStage": "mid",
+            "nextIds": [
+              "a2-r3-c6"
+            ],
+            "layoutX": -5,
+            "layoutY": -4
+          },
+          {
+            "id": "a2-r2-c6",
+            "act": 2,
+            "row": 2,
+            "col": 6,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 3",
+            "castStage": "mid",
+            "nextIds": [
+              "a2-r3-c6"
+            ],
+            "layoutX": -3,
+            "layoutY": -1,
+            "enemyId": "armor",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a2-r3-c1",
+            "act": 2,
+            "row": 3,
+            "col": 1,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 4",
+            "castStage": "mid",
+            "nextIds": [
+              "a2-r4-c2"
+            ],
+            "layoutX": -13,
+            "layoutY": -6,
+            "enemyId": "fangHard",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a2-r3-c4",
+            "act": 2,
+            "row": 3,
+            "col": 4,
+            "kind": "elite",
+            "emoji": "💀",
+            "label": "菁英",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r4-c4"
+            ],
+            "layoutX": 12,
+            "layoutY": 7,
+            "enemyId": "eliteStorm",
+            "rewardTier": "elite"
+          },
+          {
+            "id": "a2-r3-c5",
+            "act": 2,
+            "row": 3,
+            "col": 5,
+            "kind": "elite",
+            "emoji": "💀",
+            "label": "菁英",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r4-c4",
+              "a2-r4-c5"
+            ],
+            "layoutX": 10,
+            "layoutY": -4,
+            "enemyId": "eliteConductor",
+            "rewardTier": "elite"
+          },
+          {
+            "id": "a2-r3-c6",
+            "act": 2,
+            "row": 3,
+            "col": 6,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "mid",
+            "nextIds": [
+              "a2-r4-c5"
+            ],
+            "layoutX": 10,
+            "layoutY": 7
+          },
+          {
+            "id": "a2-r4-c2",
+            "act": 2,
+            "row": 4,
+            "col": 2,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "mid",
+            "nextIds": [
+              "a2-r5-c2"
+            ],
+            "layoutX": -4,
+            "layoutY": -4
+          },
+          {
+            "id": "a2-r4-c4",
+            "act": 2,
+            "row": 4,
+            "col": 4,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "mid",
+            "nextIds": [
+              "a2-r5-c4"
+            ],
+            "layoutX": 8,
+            "layoutY": 4
+          },
+          {
+            "id": "a2-r4-c5",
+            "act": 2,
+            "row": 4,
+            "col": 5,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 5",
+            "castStage": "mid",
+            "nextIds": [
+              "a2-r5-c6",
+              "a2-r5-c4",
+              "a2-r5-c5"
+            ],
+            "layoutX": 9,
+            "layoutY": -7,
+            "enemyId": "spike",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a2-r5-c2",
+            "act": 2,
+            "row": 5,
+            "col": 2,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "mid",
+            "nextIds": [
+              "a2-r6-c1"
+            ],
+            "layoutX": 1,
+            "layoutY": 2
+          },
+          {
+            "id": "a2-r5-c4",
+            "act": 2,
+            "row": 5,
+            "col": 4,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "mid",
+            "nextIds": [
+              "a2-r6-c4"
+            ],
+            "layoutX": 0,
+            "layoutY": 6
+          },
+          {
+            "id": "a2-r5-c5",
+            "act": 2,
+            "row": 5,
+            "col": 5,
+            "kind": "elite",
+            "emoji": "💀",
+            "label": "菁英",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r6-c5"
+            ],
+            "layoutX": -9,
+            "layoutY": 4,
+            "enemyId": "eliteStorm",
+            "rewardTier": "elite"
+          },
+          {
+            "id": "a2-r5-c6",
+            "act": 2,
+            "row": 5,
+            "col": 6,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 6",
+            "castStage": "mid",
+            "nextIds": [
+              "a2-r6-c6"
+            ],
+            "layoutX": 7,
+            "layoutY": -2,
+            "enemyId": "littleConductor",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a2-r6-c1",
+            "act": 2,
+            "row": 6,
+            "col": 1,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 7",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r7-c2"
+            ],
+            "layoutX": -6,
+            "layoutY": -5,
+            "rewardTier": "normal",
+            "encounterId": "midPair"
+          },
+          {
+            "id": "a2-r6-c4",
+            "act": 2,
+            "row": 6,
+            "col": 4,
+            "kind": "treasure",
+            "emoji": "💎",
+            "label": "寶箱",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r7-c4"
+            ],
+            "layoutX": -14,
+            "layoutY": 1,
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a2-r6-c5",
+            "act": 2,
+            "row": 6,
+            "col": 5,
+            "kind": "shop",
+            "emoji": "🏪",
+            "label": "商店",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r7-c5"
+            ],
+            "layoutX": 11,
+            "layoutY": -6
+          },
+          {
+            "id": "a2-r6-c6",
+            "act": 2,
+            "row": 6,
+            "col": 6,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r7-c5"
+            ],
+            "layoutX": 7,
+            "layoutY": -2
+          },
+          {
+            "id": "a2-r7-c2",
+            "act": 2,
+            "row": 7,
+            "col": 2,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r8-c3"
+            ],
+            "layoutX": -1,
+            "layoutY": 1
+          },
+          {
+            "id": "a2-r7-c4",
+            "act": 2,
+            "row": 7,
+            "col": 4,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 8",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r8-c4",
+              "a2-r8-c5"
+            ],
+            "layoutX": 12,
+            "layoutY": -5,
+            "rewardTier": "normal",
+            "encounterId": "midPair"
+          },
+          {
+            "id": "a2-r7-c5",
+            "act": 2,
+            "row": 7,
+            "col": 5,
+            "kind": "elite",
+            "emoji": "💀",
+            "label": "菁英",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r8-c5"
+            ],
+            "layoutX": 2,
+            "layoutY": 9,
+            "enemyId": "eliteMuteDrum",
+            "rewardTier": "elite"
+          },
+          {
+            "id": "a2-r8-c3",
+            "act": 2,
+            "row": 8,
+            "col": 3,
+            "kind": "treasure",
+            "emoji": "💎",
+            "label": "寶箱",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r9-c3"
+            ],
+            "layoutX": 11,
+            "layoutY": -6,
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a2-r8-c4",
+            "act": 2,
+            "row": 8,
+            "col": 4,
+            "kind": "treasure",
+            "emoji": "💎",
+            "label": "寶箱",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r9-c3"
+            ],
+            "layoutX": -5,
+            "layoutY": 2,
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a2-r8-c5",
+            "act": 2,
+            "row": 8,
+            "col": 5,
+            "kind": "treasure",
+            "emoji": "💎",
+            "label": "寶箱",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r9-c5"
+            ],
+            "layoutX": -5,
+            "layoutY": -1,
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a2-r9-c3",
+            "act": 2,
+            "row": 9,
+            "col": 3,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r10-c4",
+              "a2-r10-c3",
+              "a2-r10-c2"
+            ],
+            "layoutX": 3,
+            "layoutY": -7
+          },
+          {
+            "id": "a2-r9-c5",
+            "act": 2,
+            "row": 9,
+            "col": 5,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 10",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r10-c5"
+            ],
+            "layoutX": 13,
+            "layoutY": 5,
+            "enemyId": "spike",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a2-r10-c2",
+            "act": 2,
+            "row": 10,
+            "col": 2,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 11",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r11-c3"
+            ],
+            "layoutX": -10,
+            "layoutY": -4,
+            "rewardTier": "normal",
+            "encounterId": "a2_drum_toad"
+          },
+          {
+            "id": "a2-r10-c3",
+            "act": 2,
+            "row": 10,
+            "col": 3,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r11-c3"
+            ],
+            "layoutX": 9,
+            "layoutY": -3
+          },
+          {
+            "id": "a2-r10-c4",
+            "act": 2,
+            "row": 10,
+            "col": 4,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 11",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r11-c3",
+              "a2-r11-c4"
+            ],
+            "layoutX": 12,
+            "layoutY": -2,
+            "rewardTier": "normal",
+            "encounterId": "a2_armor_moth"
+          },
+          {
+            "id": "a2-r10-c5",
+            "act": 2,
+            "row": 10,
+            "col": 5,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r11-c4",
+              "a2-r11-c5"
+            ],
+            "layoutX": 5,
+            "layoutY": -8
+          },
+          {
+            "id": "a2-r11-c3",
+            "act": 2,
+            "row": 11,
+            "col": 3,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r12-c4",
+              "a2-r12-c2"
+            ],
+            "layoutX": 7,
+            "layoutY": -6
+          },
+          {
+            "id": "a2-r11-c4",
+            "act": 2,
+            "row": 11,
+            "col": 4,
+            "kind": "shop",
+            "emoji": "🏪",
+            "label": "商店",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r12-c4"
+            ],
+            "layoutX": 13,
+            "layoutY": 6
+          },
+          {
+            "id": "a2-r11-c5",
+            "act": 2,
+            "row": 11,
+            "col": 5,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 12",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r12-c4"
+            ],
+            "layoutX": -10,
+            "layoutY": -1,
+            "enemyId": "dustDrum",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a2-r12-c2",
+            "act": 2,
+            "row": 12,
+            "col": 2,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 13",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r13-c1"
+            ],
+            "layoutX": 1,
+            "layoutY": 2,
+            "enemyId": "fangHard",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a2-r12-c4",
+            "act": 2,
+            "row": 12,
+            "col": 4,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 13",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r13-c4",
+              "a2-r13-c5"
+            ],
+            "layoutX": -5,
+            "layoutY": -5,
+            "rewardTier": "normal",
+            "encounterId": "midPair"
+          },
+          {
+            "id": "a2-r13-c1",
+            "act": 2,
+            "row": 13,
+            "col": 1,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r14-c1"
+            ],
+            "layoutX": -11,
+            "layoutY": -5
+          },
+          {
+            "id": "a2-r13-c4",
+            "act": 2,
+            "row": 13,
+            "col": 4,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r14-c5"
+            ],
+            "layoutX": 8,
+            "layoutY": -6
+          },
+          {
+            "id": "a2-r13-c5",
+            "act": 2,
+            "row": 13,
+            "col": 5,
+            "kind": "treasure",
+            "emoji": "💎",
+            "label": "寶箱",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-r14-c6"
+            ],
+            "layoutX": -12,
+            "layoutY": 5,
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a2-r14-c1",
+            "act": 2,
+            "row": 14,
+            "col": 1,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-boss"
+            ],
+            "layoutX": 1,
+            "layoutY": -5
+          },
+          {
+            "id": "a2-r14-c5",
+            "act": 2,
+            "row": 14,
+            "col": 5,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-boss"
+            ],
+            "layoutX": 1,
+            "layoutY": 9
+          },
+          {
+            "id": "a2-r14-c6",
+            "act": 2,
+            "row": 14,
+            "col": 6,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "elite",
+            "nextIds": [
+              "a2-boss"
+            ],
+            "layoutX": 7,
+            "layoutY": -5
+          },
+          {
+            "id": "a2-boss",
+            "act": 2,
+            "row": 15,
+            "col": 3,
+            "kind": "boss",
+            "emoji": "🦅",
+            "label": "Boss",
+            "castStage": "elite",
+            "nextIds": [],
+            "layoutX": 0,
+            "layoutY": -8,
+            "enemyId": "boss2",
+            "rewardTier": "elite"
+          }
+        ],
+        "startIds": [
+          "a2-r0-c1",
+          "a2-r0-c2",
+          "a2-r0-c5"
+        ],
+        "bossId": "a2-boss"
+      },
+      {
+        "act": 3,
+        "title": "第三幕 · 塔頂",
+        "emoji": "👑",
+        "cols": 7,
+        "maxRow": 15,
+        "nodes": [
+          {
+            "id": "a3-r0-c0",
+            "act": 3,
+            "row": 0,
+            "col": 0,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 1",
+            "castStage": "elite",
+            "nextIds": [
+              "a3-r1-c0"
+            ],
+            "layoutX": 1,
+            "layoutY": -1,
+            "enemyId": "wraith",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a3-r0-c3",
+            "act": 3,
+            "row": 0,
+            "col": 3,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 1",
+            "castStage": "elite",
+            "nextIds": [
+              "a3-r1-c4",
+              "a3-r1-c2"
+            ],
+            "layoutX": -1,
+            "layoutY": 10,
+            "enemyId": "wraith",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a3-r0-c5",
+            "act": 3,
+            "row": 0,
+            "col": 5,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 1",
+            "castStage": "elite",
+            "nextIds": [
+              "a3-r1-c6"
+            ],
+            "layoutX": -9,
+            "layoutY": 0,
+            "enemyId": "mirrorNote",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a3-r1-c0",
+            "act": 3,
+            "row": 1,
+            "col": 0,
+            "kind": "shop",
+            "emoji": "🏪",
+            "label": "商店",
+            "castStage": "elite",
+            "nextIds": [
+              "a3-r2-c1",
+              "a3-r2-c0"
+            ],
+            "layoutX": 0,
+            "layoutY": 8
+          },
+          {
+            "id": "a3-r1-c2",
+            "act": 3,
+            "row": 1,
+            "col": 2,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 2",
+            "castStage": "elite",
+            "nextIds": [
+              "a3-r2-c1"
+            ],
+            "layoutX": -6,
+            "layoutY": -8,
+            "enemyId": "owl",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a3-r1-c4",
+            "act": 3,
+            "row": 1,
+            "col": 4,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 2",
+            "castStage": "elite",
+            "nextIds": [
+              "a3-r2-c4"
+            ],
+            "layoutX": -14,
+            "layoutY": 5,
+            "enemyId": "mirrorNote",
+            "rewardTier": "elite",
+            "goldBonus": 8
+          },
+          {
+            "id": "a3-r1-c6",
+            "act": 3,
+            "row": 1,
+            "col": 6,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 2",
+            "castStage": "elite",
+            "nextIds": [
+              "a3-r2-c6"
+            ],
+            "layoutX": -4,
+            "layoutY": -9,
+            "enemyId": "owl",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a3-r2-c0",
+            "act": 3,
+            "row": 2,
+            "col": 0,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 3",
+            "castStage": "elite",
+            "nextIds": [
+              "a3-r3-c0"
+            ],
+            "layoutX": 4,
+            "layoutY": -1,
+            "enemyId": "owl",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a3-r2-c1",
+            "act": 3,
+            "row": 2,
+            "col": 1,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 3",
+            "castStage": "elite",
+            "nextIds": [
+              "a3-r3-c0"
+            ],
+            "layoutX": -1,
+            "layoutY": 10,
+            "enemyId": "mirrorNote",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a3-r2-c4",
+            "act": 3,
+            "row": 2,
+            "col": 4,
+            "kind": "shop",
+            "emoji": "🏪",
+            "label": "商店",
+            "castStage": "elite",
+            "nextIds": [
+              "a3-r3-c5"
+            ],
+            "layoutX": -2,
+            "layoutY": 8
+          },
+          {
+            "id": "a3-r2-c6",
+            "act": 3,
+            "row": 2,
+            "col": 6,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 3",
+            "castStage": "elite",
+            "nextIds": [
+              "a3-r3-c6"
+            ],
+            "layoutX": -11,
+            "layoutY": -3,
+            "enemyId": "crystal",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a3-r3-c0",
+            "act": 3,
+            "row": 3,
+            "col": 0,
+            "kind": "shop",
+            "emoji": "🏪",
+            "label": "商店",
+            "castStage": "elite",
+            "nextIds": [
+              "a3-r4-c0",
+              "a3-r4-c1"
+            ],
+            "layoutX": 4,
+            "layoutY": -4
+          },
+          {
+            "id": "a3-r3-c5",
+            "act": 3,
+            "row": 3,
+            "col": 5,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "elite",
+            "nextIds": [
+              "a3-r4-c4"
+            ],
+            "layoutX": -5,
+            "layoutY": -11
+          },
+          {
+            "id": "a3-r3-c6",
+            "act": 3,
+            "row": 3,
+            "col": 6,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 4",
+            "castStage": "elite",
+            "nextIds": [
+              "a3-r4-c6"
+            ],
+            "layoutX": 6,
+            "layoutY": 10,
+            "rewardTier": "normal",
+            "encounterId": "a3_crown_mirror"
+          },
+          {
+            "id": "a3-r4-c0",
+            "act": 3,
+            "row": 4,
+            "col": 0,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "elite",
+            "nextIds": [
+              "a3-r5-c1"
+            ],
+            "layoutX": 11,
+            "layoutY": 3
+          },
+          {
+            "id": "a3-r4-c1",
+            "act": 3,
+            "row": 4,
+            "col": 1,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 5",
+            "castStage": "elite",
+            "nextIds": [
+              "a3-r5-c2"
+            ],
+            "layoutX": -8,
+            "layoutY": -2,
+            "enemyId": "crystal",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a3-r4-c4",
+            "act": 3,
+            "row": 4,
+            "col": 4,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "elite",
+            "nextIds": [
+              "a3-r5-c5"
+            ],
+            "layoutX": 0,
+            "layoutY": -8
+          },
+          {
+            "id": "a3-r4-c6",
+            "act": 3,
+            "row": 4,
+            "col": 6,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "elite",
+            "nextIds": [
+              "a3-r5-c5"
+            ],
+            "layoutX": -1,
+            "layoutY": -3
+          },
+          {
+            "id": "a3-r5-c1",
+            "act": 3,
+            "row": 5,
+            "col": 1,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 6",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r6-c1"
+            ],
+            "layoutX": -12,
+            "layoutY": 8,
+            "enemyId": "crownBell",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a3-r5-c2",
+            "act": 3,
+            "row": 5,
+            "col": 2,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r6-c2",
+              "a3-r6-c3"
+            ],
+            "layoutX": 7,
+            "layoutY": 11
+          },
+          {
+            "id": "a3-r5-c5",
+            "act": 3,
+            "row": 5,
+            "col": 5,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 6",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r6-c5"
+            ],
+            "layoutX": 2,
+            "layoutY": -7,
+            "enemyId": "crownBell",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a3-r6-c1",
+            "act": 3,
+            "row": 6,
+            "col": 1,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r7-c0"
+            ],
+            "layoutX": -6,
+            "layoutY": 2
+          },
+          {
+            "id": "a3-r6-c2",
+            "act": 3,
+            "row": 6,
+            "col": 2,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 7",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r7-c3"
+            ],
+            "layoutX": 7,
+            "layoutY": 10,
+            "rewardTier": "normal",
+            "encounterId": "lateMix"
+          },
+          {
+            "id": "a3-r6-c3",
+            "act": 3,
+            "row": 6,
+            "col": 3,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r7-c3"
+            ],
+            "layoutX": 5,
+            "layoutY": -7
+          },
+          {
+            "id": "a3-r6-c5",
+            "act": 3,
+            "row": 6,
+            "col": 5,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r7-c5",
+              "a3-r7-c4"
+            ],
+            "layoutX": -4,
+            "layoutY": -8
+          },
+          {
+            "id": "a3-r7-c0",
+            "act": 3,
+            "row": 7,
+            "col": 0,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r8-c1"
+            ],
+            "layoutX": 12,
+            "layoutY": 1
+          },
+          {
+            "id": "a3-r7-c3",
+            "act": 3,
+            "row": 7,
+            "col": 3,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 8",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r8-c2",
+              "a3-r8-c3"
+            ],
+            "layoutX": 7,
+            "layoutY": 4,
+            "enemyId": "crownBell",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a3-r7-c4",
+            "act": 3,
+            "row": 7,
+            "col": 4,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r8-c3"
+            ],
+            "layoutX": 11,
+            "layoutY": -10
+          },
+          {
+            "id": "a3-r7-c5",
+            "act": 3,
+            "row": 7,
+            "col": 5,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 8",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r8-c6"
+            ],
+            "layoutX": -11,
+            "layoutY": -9,
+            "enemyId": "crystal",
+            "rewardTier": "elite",
+            "goldBonus": 8
+          },
+          {
+            "id": "a3-r8-c1",
+            "act": 3,
+            "row": 8,
+            "col": 1,
+            "kind": "treasure",
+            "emoji": "💎",
+            "label": "寶箱",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r9-c2"
+            ],
+            "layoutX": -12,
+            "layoutY": -10,
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a3-r8-c2",
+            "act": 3,
+            "row": 8,
+            "col": 2,
+            "kind": "treasure",
+            "emoji": "💎",
+            "label": "寶箱",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r9-c2"
+            ],
+            "layoutX": 11,
+            "layoutY": 1,
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a3-r8-c3",
+            "act": 3,
+            "row": 8,
+            "col": 3,
+            "kind": "treasure",
+            "emoji": "💎",
+            "label": "寶箱",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r9-c2",
+              "a3-r9-c3"
+            ],
+            "layoutX": 13,
+            "layoutY": -6,
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a3-r8-c6",
+            "act": 3,
+            "row": 8,
+            "col": 6,
+            "kind": "treasure",
+            "emoji": "💎",
+            "label": "寶箱",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r9-c5"
+            ],
+            "layoutX": -11,
+            "layoutY": 3,
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a3-r9-c2",
+            "act": 3,
+            "row": 9,
+            "col": 2,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 10",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r10-c1",
+              "a3-r10-c2"
+            ],
+            "layoutX": 5,
+            "layoutY": 10,
+            "enemyId": "crystal",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a3-r9-c3",
+            "act": 3,
+            "row": 9,
+            "col": 3,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 10",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r10-c2",
+              "a3-r10-c4"
+            ],
+            "layoutX": -6,
+            "layoutY": -1,
+            "rewardTier": "normal",
+            "encounterId": "a3_crown_mirror"
+          },
+          {
+            "id": "a3-r9-c5",
+            "act": 3,
+            "row": 9,
+            "col": 5,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r10-c6"
+            ],
+            "layoutX": -11,
+            "layoutY": 10
+          },
+          {
+            "id": "a3-r10-c1",
+            "act": 3,
+            "row": 10,
+            "col": 1,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r11-c1"
+            ],
+            "layoutX": 9,
+            "layoutY": 9
+          },
+          {
+            "id": "a3-r10-c2",
+            "act": 3,
+            "row": 10,
+            "col": 2,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 11",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r11-c1",
+              "a3-r11-c3"
+            ],
+            "layoutX": -8,
+            "layoutY": 8,
+            "enemyId": "crownBell",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a3-r10-c4",
+            "act": 3,
+            "row": 10,
+            "col": 4,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r11-c5"
+            ],
+            "layoutX": -5,
+            "layoutY": 2
+          },
+          {
+            "id": "a3-r10-c6",
+            "act": 3,
+            "row": 10,
+            "col": 6,
+            "kind": "elite",
+            "emoji": "💀",
+            "label": "菁英",
+            "castStage": "elite",
+            "nextIds": [
+              "a3-r11-c6"
+            ],
+            "layoutX": 14,
+            "layoutY": -9,
+            "enemyId": "eliteShadow",
+            "rewardTier": "elite"
+          },
+          {
+            "id": "a3-r11-c1",
+            "act": 3,
+            "row": 11,
+            "col": 1,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 12",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r12-c2",
+              "a3-r12-c1"
+            ],
+            "layoutX": -8,
+            "layoutY": 2,
+            "rewardTier": "elite",
+            "encounterId": "a3_crystal_mirror",
+            "goldBonus": 8
+          },
+          {
+            "id": "a3-r11-c3",
+            "act": 3,
+            "row": 11,
+            "col": 3,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r12-c4"
+            ],
+            "layoutX": 1,
+            "layoutY": -10
+          },
+          {
+            "id": "a3-r11-c5",
+            "act": 3,
+            "row": 11,
+            "col": 5,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r12-c6",
+              "a3-r12-c5"
+            ],
+            "layoutX": -14,
+            "layoutY": 5
+          },
+          {
+            "id": "a3-r11-c6",
+            "act": 3,
+            "row": 11,
+            "col": 6,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r12-c6"
+            ],
+            "layoutX": 2,
+            "layoutY": -10
+          },
+          {
+            "id": "a3-r12-c1",
+            "act": 3,
+            "row": 12,
+            "col": 1,
+            "kind": "shop",
+            "emoji": "🏪",
+            "label": "商店",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r13-c0"
+            ],
+            "layoutX": 7,
+            "layoutY": -8
+          },
+          {
+            "id": "a3-r12-c2",
+            "act": 3,
+            "row": 12,
+            "col": 2,
+            "kind": "elite",
+            "emoji": "💀",
+            "label": "菁英",
+            "castStage": "elite",
+            "nextIds": [
+              "a3-r13-c3"
+            ],
+            "layoutX": -11,
+            "layoutY": 7,
+            "enemyId": "elitePrism",
+            "rewardTier": "elite"
+          },
+          {
+            "id": "a3-r12-c4",
+            "act": 3,
+            "row": 12,
+            "col": 4,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r13-c5"
+            ],
+            "layoutX": 8,
+            "layoutY": -4
+          },
+          {
+            "id": "a3-r12-c5",
+            "act": 3,
+            "row": 12,
+            "col": 5,
+            "kind": "shop",
+            "emoji": "🏪",
+            "label": "商店",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r13-c6",
+              "a3-r13-c5"
+            ],
+            "layoutX": -10,
+            "layoutY": -4
+          },
+          {
+            "id": "a3-r12-c6",
+            "act": 3,
+            "row": 12,
+            "col": 6,
+            "kind": "treasure",
+            "emoji": "💎",
+            "label": "寶箱",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r13-c6"
+            ],
+            "layoutX": -11,
+            "layoutY": 11,
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a3-r13-c0",
+            "act": 3,
+            "row": 13,
+            "col": 0,
+            "kind": "fight",
+            "emoji": "⚔️",
+            "label": "戰鬥 14",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r14-c0"
+            ],
+            "layoutX": -13,
+            "layoutY": 5,
+            "enemyId": "crystal",
+            "rewardTier": "normal"
+          },
+          {
+            "id": "a3-r13-c3",
+            "act": 3,
+            "row": 13,
+            "col": 3,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r14-c4"
+            ],
+            "layoutX": 4,
+            "layoutY": 10
+          },
+          {
+            "id": "a3-r13-c5",
+            "act": 3,
+            "row": 13,
+            "col": 5,
+            "kind": "unknown",
+            "emoji": "❓",
+            "label": "奇遇",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r14-c6",
+              "a3-r14-c4"
+            ],
+            "layoutX": -5,
+            "layoutY": -4
+          },
+          {
+            "id": "a3-r13-c6",
+            "act": 3,
+            "row": 13,
+            "col": 6,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-r14-c6"
+            ],
+            "layoutX": 5,
+            "layoutY": 0
+          },
+          {
+            "id": "a3-r14-c0",
+            "act": 3,
+            "row": 14,
+            "col": 0,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-boss"
+            ],
+            "layoutX": -5,
+            "layoutY": 3
+          },
+          {
+            "id": "a3-r14-c4",
+            "act": 3,
+            "row": 14,
+            "col": 4,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-boss"
+            ],
+            "layoutX": -6,
+            "layoutY": -1
+          },
+          {
+            "id": "a3-r14-c6",
+            "act": 3,
+            "row": 14,
+            "col": 6,
+            "kind": "rest",
+            "emoji": "🔥",
+            "label": "營火",
+            "castStage": "boss",
+            "nextIds": [
+              "a3-boss"
+            ],
+            "layoutX": -3,
+            "layoutY": 2
+          },
+          {
+            "id": "a3-boss",
+            "act": 3,
+            "row": 15,
+            "col": 3,
+            "kind": "boss",
+            "emoji": "👑",
+            "label": "Boss",
+            "castStage": "boss",
+            "nextIds": [],
+            "layoutX": 0,
+            "layoutY": -8,
+            "enemyId": "boss3",
+            "rewardTier": "elite"
+          }
+        ],
+        "startIds": [
+          "a3-r0-c0",
+          "a3-r0-c3",
+          "a3-r0-c5"
+        ],
+        "bossId": "a3-boss"
+      }
+    ]
+  },
+  "actIndex": 1,
+  "currentNodeId": null,
+  "activeNodeId": null,
+  "visitedIds": [],
+  "pathIds": [],
+  "rewardOptions": [],
+  "rewardTier": "elite",
+  "pendingGold": 0,
+  "pendingHeal": 0,
+  "shopOffers": [
+    {
+      "uid": "d17",
+      "defId": "ab_m027",
+      "upgradeLevel": 0,
+      "price": 22,
+      "sold": false
+    },
+    {
+      "uid": "d18",
+      "defId": "ab_m011",
+      "upgradeLevel": 0,
+      "price": 34,
+      "sold": false
+    },
+    {
+      "uid": "d19",
+      "defId": "ab_m026",
+      "upgradeLevel": 0,
+      "price": 46,
+      "sold": false
+    }
+  ],
+  "shopPotionOffers": [
+    {
+      "potionId": "warmHoney",
+      "price": 18,
+      "sold": false
+    },
+    {
+      "potionId": "chorusBurst",
+      "price": 18,
+      "sold": false
+    }
+  ],
+  "shopRemoveUsed": false,
+  "listenSuccesses": 0,
+  "lastClearedAct": 1,
+  "tutorialEligibleRun": true,
+  "scoreStats": {
+    "roomsCompleted": 16,
+    "normalWins": 8,
+    "eliteWins": 1,
+    "bossWins": 1,
+    "flawlessElites": 1,
+    "flawlessBosses": 1,
+    "currentCombatHpLost": 0
+  },
+  "scoreCommitted": false,
+  "castSeed": 1067704970,
+  "castCounter": 46
+}

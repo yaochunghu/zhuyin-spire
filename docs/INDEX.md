@@ -89,6 +89,9 @@ v0.4.3 at `e3813ee` (#63), 2026-10-28 02:17 UTC. Two characters are playable.
   fit on screen. The math cast and the 注音 cast dock fit at the checked
   phone sizes.
 - **Debug:** body-mounted panel for testing (not for kids in normal play)
+- **Save fixtures:** ten version-4 checkpoints and a seeded choice replay under
+  `tests/fixtures/`. Regenerate with `npm run generate:save-fixtures`. Saves
+  stay version 4
 
 共鳴武者 Smith and all 75 physical-copy upgrades are live through score unlocks.
 Rejected and pre-共鳴 design records are quarantined under `docs/archive/`;
