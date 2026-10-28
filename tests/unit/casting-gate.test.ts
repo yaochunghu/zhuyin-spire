@@ -1,3 +1,6 @@
+import { readdirSync, readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CARDS, STARTER_DECK_IDS, getCard } from '../../src/data/cards';
 import { CURSES } from '../../src/data/curses';
@@ -26,6 +29,15 @@ class MemoryStorage implements Storage {
   key(index: number): string | null { return [...this.values.keys()][index] ?? null; }
   removeItem(key: string): void { this.values.delete(key); }
   setItem(key: string, value: string): void { this.values.set(key, value); }
+}
+
+function readTree(dir: string): string {
+  return readdirSync(dir, { withFileTypes: true })
+    .map((entry) => {
+      const full = path.join(dir, entry.name);
+      return entry.isDirectory() ? readTree(full) : readFileSync(full, 'utf8');
+    })
+    .join('\n');
 }
 
 function seededRandom(seed = 12345): () => number {
@@ -152,9 +164,9 @@ describe('Zhuyin casting provider', () => {
     expect(rows.filter((phrase) => phrase.word === '桌')).toEqual([
       expect.objectContaining({ emoji: '🍽️', spell: 'ㄓㄨㄛ' }),
     ]);
-    // 余 already means 剩下、多餘 in 《重編國語辭典修訂本》, so the surplus picture stays 余.
-    expect(spells('余', '➕')).toEqual(['ㄩˊ']);
-    expect(spells('餘', '➕')).toEqual([]);
+    // Standard Taiwan forms. 餘, 於, and 閒 replace 余, 于, and 閑.
+    expect(spells('餘', '➕')).toEqual(['ㄩˊ']);
+    expect(spells('余', '➕')).toEqual([]);
 
     // Round 3: the revised dictionary's reading for each pictured phrase.
     expect(spells('背', '🎒')).toEqual(['ㄅㄟ']);
@@ -163,17 +175,56 @@ describe('Zhuyin casting provider', () => {
     expect(spells('量', '⚖️')).toEqual(['ㄌㄧㄤˋ']);
     expect(spells('困', '😴')).toEqual(['ㄎㄨㄣˋ']);
     expect(spells('將', '♟️')).toEqual(['ㄐㄧㄤ']);
-    expect(spells('閑', '😌')).toEqual(['ㄒㄧㄢˊ']);
+    expect(spells('閒', '😌')).toEqual(['ㄒㄧㄢˊ']);
     expect(spells('興', '🎉')).toEqual(['ㄒㄧㄥˋ']);
     expect(spells('血', '🩸')).toEqual(['ㄒㄧㄝˇ']);
     expect(spells('熟', '🔥')).toEqual(['ㄕㄨˊ']);
     expect(spells('掃', '🧹')).toEqual(['ㄙㄠˋ']);
     expect(spells('艘', '⛵')).toEqual(['ㄙㄠ']);
     expect(spells('應', '✅')).toEqual(['ㄧㄥˋ']);
-    expect(spells('于', '📍')).toEqual(['ㄩˊ']);
+    expect(spells('於', '📍')).toEqual(['ㄩˊ']);
     expect(spells('仔', '👶')).toEqual(['ㄗㄞˇ']);
     expect(spells('為什麼', '❓')).toEqual(['ㄨㄟˋ']);
     expect(spells('種子', '🌱')).toEqual(['ㄓㄨㄥˇ']);
+  });
+
+  it('pins 餘, 於, and 閒 and keeps the variant glyphs out of play data', () => {
+    const phrases = Object.values(PHRASES_BY_INITIAL).flat();
+    const row = (word: string, emoji: string) =>
+      phrases.find((phrase) => phrase.word === word && phrase.emoji === emoji);
+
+    expect(row('餘', '➕')).toMatchObject({ spell: 'ㄩˊ', packs: ['core'] });
+    expect(row('於', '📍')).toMatchObject({ spell: 'ㄩˊ', packs: ['core'] });
+    expect(row('閒', '😌')).toMatchObject({ spell: 'ㄒㄧㄢˊ', packs: ['core'] });
+    expect(phrases.filter((phrase) => phrase.word === '餘')).toHaveLength(1);
+    expect(phrases.filter((phrase) => phrase.word === '於')).toHaveLength(1);
+    expect(phrases.filter((phrase) => phrase.word === '閒')).toHaveLength(1);
+
+    const catalogs = [
+      ...phrases.map((phrase) => phrase.word),
+      ...Object.values(CARDS).flatMap((card) => [
+        card.id,
+        card.name,
+        ...card.cues.map((cue) => `${cue.word}${cue.emoji ?? ''}${cue.spell}`),
+      ]),
+      ...Object.values(CURSES).flatMap((card) => [
+        card.id,
+        card.name,
+        ...card.cues.map((cue) => `${cue.word}${cue.emoji ?? ''}${cue.spell}`),
+      ]),
+      ...Object.values(ABACUS_CARDS).flatMap((card) => [card.id, card.name]),
+      ...Object.values(CHARACTERS).map((character) => `${character.name}${character.theme}`),
+      ...STARTER_DECK_IDS,
+      ...ABACUS_STARTER_DECK_IDS,
+    ].join('\n');
+    const files = [
+      readTree(fileURLToPath(new URL('../../src/data', import.meta.url))),
+      readTree(fileURLToPath(new URL('../fixtures', import.meta.url))),
+    ].join('\n');
+    for (const glyph of ['余', '于', '閑']) {
+      expect(catalogs.includes(glyph), glyph).toBe(false);
+      expect(files.includes(glyph), glyph).toBe(false);
+    }
   });
 
   it('writes every 輕聲 entry with the dot before the syllable', () => {

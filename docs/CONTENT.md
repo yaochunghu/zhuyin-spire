@@ -152,8 +152,10 @@ picture. `tests/unit/casting-gate.test.ts` fails if they drift.
 | 撒 | 🌱 | ㄙㄚˇ | 撒種. ㄙㄚ is 撒手 or 撒嬌. |
 | 微 | 🔬 | ㄨㄟˊ | 細小, as in 顯微鏡. ㄨㄟ is only 「(一)之又音」. |
 
-余 ➕ stays 余 ㄩˊ. The same dictionary defines 剩下、多餘 on 余, so it is not
-rewritten as 餘. One 桌 🍽️ ㄓㄨㄛ row remains beside 桌子. The later 桌 rows
+餘 ➕ is the standard Taiwan form 餘 ㄩˊ. This reverses the earlier decision
+to keep 余. 《國語辭典簡編本》44154 and 異體字字典 51031 are the references
+for that surplus sense. MOE reads 餘 as ㄩˊ, the same as the old row, so the
+注音 stays. One 桌 🍽️ ㄓㄨㄛ row remains beside 桌子. The later 桌 rows
 repeated that word and spelling, and `dedupe()` already dropped them at runtime.
 
 The fourteen rows that were left open use the same dictionary. Where several
@@ -169,14 +171,14 @@ pictured phrase. A cross-reference marked 「(一)之又音」, 「(一)之語�
 | 量 | ⚖️ | ㄌㄧㄤˋ | 重量. 量體重 is ㄌㄧㄤˊ. |
 | 困 | 😴 | ㄎㄨㄣˋ | 困倦. 睏 is the same tone. |
 | 將 | ♟️ | ㄐㄧㄤ | 將軍, the chess attack. 將帥 is ㄐㄧㄤˋ. |
-| 閑 | 😌 | ㄒㄧㄢˊ | 空暇無事. 閒 is the same tone. |
+| 閒 | 😌 | ㄒㄧㄢˊ | 空暇無事. This reverses the earlier 閑 row. 《國語辭典簡編本》27362 and 27364 read 閒 as ㄒㄧㄢˊ, so the 注音 stays. |
 | 興 | 🎉 | ㄒㄧㄥˋ | 高興. ㄒㄧㄥ is 興起. |
 | 血 | 🩸 | ㄒㄧㄝˇ | Blood is defined here. ㄒㄩㄝˋ is 「(一)之讀音」. |
 | 熟 | 🔥 | ㄕㄨˊ | 煮熟. ㄕㄡˊ is 「(一)之語音」. |
 | 掃 | 🧹 | ㄙㄠˋ | 掃帚 / 掃把. 掃地 is ㄙㄠˇ. |
 | 艘 | ⛵ | ㄙㄠ | 一艘船. ㄙㄡ is 「(一)之又音」. |
 | 應 | ✅ | ㄧㄥˋ | 答應. 應該 is ㄧㄥ. |
-| 于 | 📍 | ㄩˊ | The preposition 在. 於 is the same tone. |
+| 於 | 📍 | ㄩˊ | The preposition 在. This reverses the earlier 于 row. 《重編國語辭典修訂本》11582. MOE also reads the surname 於 as ㄨ; that reading does not match this picture, so the row stays ㄩˊ. |
 
 ---
 
