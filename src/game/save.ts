@@ -165,7 +165,7 @@ export function snapshotRun(state: RunState): RunSnapshot | null {
     pendingPotionId: state.pendingPotionId,
     pendingPotionUnplaced: state.pendingPotionUnplaced,
     rewardSource: state.rewardSource,
-    eventTrack: JSON.parse(JSON.stringify(state.eventTrack)) as EventTrack,
+    eventTrack: checkpointEventTrack(state.eventTrack),
     runMap: JSON.parse(JSON.stringify(state.runMap)) as RunMap,
     actIndex: state.actIndex,
     currentNodeId: state.currentNodeId,
@@ -187,6 +187,17 @@ export function snapshotRun(state: RunState): RunSnapshot | null {
     castSeed: state.castSeed,
     castCounter: state.castCounter,
   };
+}
+
+/**
+ * v4 checkpoints store the shrine hint only after it is spent.
+ * An unused hint is absent, matching an event that has never set the flag.
+ * A stored `false` from an earlier checkpoint is dropped on the next save.
+ */
+function checkpointEventTrack(track: EventTrack): EventTrack {
+  const copy = JSON.parse(JSON.stringify(track)) as EventTrack;
+  if (copy.active && copy.active.parentHintUsed !== true) delete copy.active.parentHintUsed;
+  return copy;
 }
 
 export type SaveStatus = 'idle' | 'saved' | 'unavailable';
@@ -784,7 +795,7 @@ export function applySnapshot(state: RunState, snap: RunSnapshot): void {
   state.shopPotionOffers = snap.shopPotionOffers.map((offer) => ({ ...offer }));
   state.rewardSource = snap.rewardSource ?? null;
   state.eventTrack = snap.eventTrack
-    ? JSON.parse(JSON.stringify(snap.eventTrack)) as EventTrack
+    ? checkpointEventTrack(snap.eventTrack)
     : createEventTrack(1);
   state.runMap = JSON.parse(JSON.stringify(snap.runMap)) as RunMap;
   state.actIndex = snap.actIndex;

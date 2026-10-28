@@ -441,6 +441,7 @@ describe('event saves', () => {
     expect(state.screen).toBe('eventCast');
     const spelling = state.cast?.prompt.correctionText ?? '';
     expect(spelling.length).toBeGreaterThan(0);
+    expect(snapshotRun(state)?.eventTrack?.active).not.toHaveProperty('parentHintUsed');
     expect(useParentHint(state)).toBe(spelling);
     expect(state.eventTrack.active?.parentHintUsed).toBe(true);
     expect(useParentHint(state)).toBeNull();
@@ -457,6 +458,13 @@ describe('event saves', () => {
     const legacy = structuredClone(snapshot) as { eventTrack?: { active?: { parentHintUsed?: boolean } } };
     delete legacy.eventTrack?.active?.parentHintUsed;
     expect(parseSnapshot(legacy)).not.toBeNull();
+
+    const storedFalse = structuredClone(snapshot) as { eventTrack?: { active?: { parentHintUsed?: boolean } } };
+    if (storedFalse.eventTrack?.active) storedFalse.eventTrack.active.parentHintUsed = false;
+    const loadedFalse = createNewRun();
+    applySnapshot(loadedFalse, parseSnapshot(storedFalse)!);
+    expect(loadedFalse.eventTrack.active).not.toHaveProperty('parentHintUsed');
+    expect(snapshotRun(loadedFalse)?.eventTrack?.active).not.toHaveProperty('parentHintUsed');
   });
 
   it('loads a save from before events existed', () => {

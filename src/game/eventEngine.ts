@@ -72,8 +72,8 @@ export interface ActiveEvent {
   shrineHpPerMiss: number;
   shrineThen: EventEffect[];
   shrineCardId: string;
-  /** 家長協助 is one reveal for the whole event, including every shrine question. */
-  parentHintUsed: boolean;
+  /** Set only after 家長協助 is used. Absent means this event has not spent it. */
+  parentHintUsed?: boolean;
   fightEncounterId: string | null;
   fightReward: EventEffect[];
   offerIds: string[];
@@ -542,7 +542,6 @@ function blankActive(eventId: string, nodeId: string, rolls: EventRolls): Active
     shrineHpPerMiss: 0,
     shrineThen: [],
     shrineCardId: 'bo',
-    parentHintUsed: false,
     fightEncounterId: null,
     fightReward: [],
     offerIds: rolls.libraryIds,
