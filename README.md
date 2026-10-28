@@ -3,14 +3,14 @@
 A **preschool** browser deckbuilder inspired by *Slay the Spire*: climb a colorful tower with **注音符號** spell cards.  
 Recognize or **listen** for the correct 注音 to cast. **Wrong answer = fizzle** (energy spent). **HP → 0 ends the run.**
 
-**Version:** 0.4.3 in `package.json` · **Stack:** Vite + TypeScript (no backend)
+**Version:** 0.4.4 in `package.json` · **Stack:** Vite + TypeScript (no backend)
 
-The published GitHub Release is still **v0.4.2** at commit `027961c` (#59),
-2026-10-27 15:00 UTC. **v0.4.3** is the release being published. It covers
-#60–#62 and is `[0.4.3]` in [CHANGELOG.md](CHANGELOG.md). It is not tagged yet.
+The current GitHub Release is **v0.4.4**: the 注音 cast dock fits small
+landscape screens (#64), `[0.4.4]` in [CHANGELOG.md](CHANGELOG.md). The previous
+release is v0.4.3 at `e3813ee` (#63), 2026-10-28 02:17 UTC.
 Two characters are playable: 共鳴武者 and 珠算武者.
-Player notes: [RELEASE_NOTES_v0.4.3.md](RELEASE_NOTES_v0.4.3.md).
-Published notes: [RELEASE_NOTES_v0.4.2.md](RELEASE_NOTES_v0.4.2.md).
+Player notes: [RELEASE_NOTES_v0.4.4.md](RELEASE_NOTES_v0.4.4.md).
+Previous notes: [RELEASE_NOTES_v0.4.3.md](RELEASE_NOTES_v0.4.3.md).
 
 **Play online:** [https://yaochunghu.github.io/zhuyin-spire/](https://yaochunghu.github.io/zhuyin-spire/)
 
@@ -151,7 +151,7 @@ CHANGELOG.md        version history
 | [docs/BALANCE.md](docs/BALANCE.md) | HP, gold, rest, hand rules |
 | [docs/DEBUG.md](docs/DEBUG.md) | Skip cast, jump fights, cheats for testing |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | What’s done / next |
-| [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) | v0.4.3 being published, and the next two items |
+| [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) | v0.4.4 current release, and what comes next |
 
 ---
 
@@ -174,7 +174,7 @@ This folder is its **own git repository** (`zhuyin-spire/.git`).
 
 - Do **not** commit the game through a parent home-directory repo (e.g. unrelated remotes).
 - From this directory: `git status`, `git add`, `git commit` as usual.
-- Published release tag: `v0.4.2` at `027961c` (#59), 2026-10-27 15:00 UTC. `package.json` is `0.4.3`. v0.4.3 is the release being published (see [CHANGELOG.md](CHANGELOG.md) `[0.4.3]` and [RELEASE_NOTES_v0.4.3.md](RELEASE_NOTES_v0.4.3.md)). It is not tagged yet. Two characters are playable.
+- Current release tag: `v0.4.4` (see [CHANGELOG.md](CHANGELOG.md) `[0.4.4]` and [RELEASE_NOTES_v0.4.4.md](RELEASE_NOTES_v0.4.4.md)). `package.json` is `0.4.4`. Previous release: `v0.4.3` at `e3813ee` (#63), 2026-10-28 02:17 UTC. Two characters are playable.
 - Dedicated remote: `https://github.com/yaochunghu/zhuyin-spire.git`.
 
 ```bash
