@@ -9,6 +9,7 @@ import {
   getCardCastBinding,
   getCard,
   isCardId,
+  rarityTierFor,
   resolveCard,
   canUpgradeCard,
   type CardDef,
@@ -111,7 +112,7 @@ import {
   type RunScoreResult,
   type RunScoreStats,
 } from './progression';
-import { recordPlaytestEvent } from './playtestTelemetry';
+import { priorErrorTagFor, recordPlaytestEvent, recordResolvedCast } from './playtestTelemetry';
 import {
   beginEventChoice,
   cancelEventPending,
@@ -517,6 +518,7 @@ export function answerPractice(state: RunState, attempt: string[]): boolean {
   const { prompt } = state.cast;
   const correct = isCastAnswerCorrect(prompt, attempt);
   recordCastResult(prompt, correct);
+  recordGateCast(prompt, state.cast.cardDef, attempt, correct);
   if (correct) {
     state.practiceStreak += 1;
     state.practiceSessionCorrect += 1;
@@ -741,6 +743,8 @@ export function startEventCombat(state: RunState): void {
 
 export function answerEventShrine(state: RunState, correct: boolean): void {
   if (state.screen !== 'eventCast') return;
+  const cast = state.cast;
+  if (cast) recordGateCast(cast.prompt, cast.cardDef, null, correct);
   state.cast = null;
   const step = noteShrineAnswer(state, correct);
   if (step === 'shrine') {
@@ -1283,12 +1287,17 @@ export function answerCast(state: RunState, attempt: string[]): 'success' | 'fiz
     && !prompt.hintRevealedAnswer
     && getMathCastingPreferences().scaffoldedRetry;
   if (mathRetry) {
+    const priorErrorTag = priorErrorTagFor(prompt, attempt);
     state.combat.mathRetryUsed = true;
-    state.cast = { prompt: { ...prompt, retry: true }, cardDef };
+    state.cast = {
+      prompt: { ...prompt, retry: true, ...(priorErrorTag ? { priorErrorTag } : {}) },
+      cardDef,
+    };
     state.screen = 'castCheck';
     return 'retry';
   }
   recordCastResult(prompt, correct);
+  recordGateCast(prompt, cardDef, attempt, correct);
   if (prompt.gateId === 'math') {
     state.combat.mathMissStreak = correct ? 0 : state.combat.mathMissStreak + 1;
   }
@@ -1331,13 +1340,18 @@ export function answerCast(state: RunState, attempt: string[]): 'success' | 'fiz
 export function useParentHint(state: RunState): string | null {
   if (!state.cast) return null;
   if (state.screen === 'practice') {
+    noteCastHint(state.cast.prompt);
     return state.cast.prompt.correctionText;
   }
   if (!state.combat) return null;
   // The first-run lesson is allowed to help on every guided spelling.
-  if (state.tutorial) return state.cast.prompt.correctionText;
+  if (state.tutorial) {
+    noteCastHint(state.cast.prompt);
+    return state.cast.prompt.correctionText;
+  }
   if (state.combat.parentHintUsed) return null;
   state.combat.parentHintUsed = true;
+  noteCastHint(state.cast.prompt);
   if (!state.cast.prompt.retry) {
     state.cast = {
       prompt: { ...state.cast.prompt, hintRevealedAnswer: true },
@@ -1345,6 +1359,25 @@ export function useParentHint(state: RunState): string | null {
     };
   }
   return state.cast.prompt.correctionText;
+}
+
+/** Telemetry mark for 💡. Combat still decides the retry from `hintRevealedAnswer`. */
+function noteCastHint(prompt: CastPrompt): void {
+  prompt.hintLevel = Math.max(prompt.hintLevel ?? 0, 1);
+}
+
+function recordGateCast(
+  prompt: CastPrompt,
+  card: CardDef,
+  attempt: readonly string[] | null,
+  correct: boolean,
+): void {
+  recordResolvedCast({
+    prompt,
+    attempt,
+    correct,
+    tier: typeof prompt.tier === 'number' ? prompt.tier : rarityTierFor(card.rarity ?? 'basic'),
+  });
 }
 
 export function playerEndTurn(state: RunState): void {
@@ -1476,6 +1509,7 @@ function recordCombatTelemetry(state: RunState, won: boolean): void {
     hpLost: state.scoreStats.currentCombatHpLost,
     act: state.actIndex + 1,
     deck: state.deck.map(({ defId, upgradeLevel }) => ({ defId, upgradeLevel })),
+    characterId: state.characterId ?? '',
   });
 }
 
