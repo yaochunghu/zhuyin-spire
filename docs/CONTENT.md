@@ -52,7 +52,7 @@ until playtesting asks for it.
 1. Word **starts with** that card’s 注音  
 2. Emoji depicts **that word**  
 3. `spell` is the **full first syllable** including 聲調 when not first tone  
-4. Glyph and reading follow 《重編國語辭典修訂本》 headwords. Neutral tone keeps a trailing ˙ so the cast parser can see it.
+4. Glyph and reading follow 《重編國語辭典修訂本》 headwords. A 輕聲 mark leads the syllable (˙ㄇㄣ). Slots, the hint, and the accepted answer use that same order.
 5. A 破音字 uses the headword reading whose definition matches the picture. If that word and picture are already in the bank, do not keep a second row.
 
 Example: 爸爸 → `ㄅㄚˋ`.

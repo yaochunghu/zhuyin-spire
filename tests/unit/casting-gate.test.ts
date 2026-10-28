@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { getCard } from '../../src/data/cards';
+import { CARDS, STARTER_DECK_IDS, getCard } from '../../src/data/cards';
+import { CURSES } from '../../src/data/curses';
+import { CHARACTERS } from '../../src/data/characters';
+import { ABACUS_CARDS, ABACUS_STARTER_DECK_IDS } from '../../src/data/abacusCards';
 import { PHRASES_BY_INITIAL } from '../../src/data/phrases';
-import { buildCastPrompt } from '../../src/game/castCheck';
+import { buildCastPrompt, isCastAnswerCorrect } from '../../src/game/castCheck';
 import {
   chooseZhuyinMode,
   countEligibleZhuyinPhrases,
@@ -45,12 +48,14 @@ describe('Zhuyin casting provider', () => {
     const rows = Object.entries(PHRASES_BY_INITIAL).flatMap(([family, phrases]) =>
       phrases.map((phrase) => ({ family, phrase })),
     );
-    expect(rows.length).toBeGreaterThanOrEqual(1_296);
+    expect(rows.length).toBeGreaterThanOrEqual(1_295);
     const wrongFamilies: string[] = [];
     for (const { family, phrase } of rows) {
       expect(phrase.word.trim()).not.toBe('');
       expect(phrase.emoji.trim()).not.toBe('');
-      if ([...phrase.spell][0] !== family) {
+      const symbols = [...phrase.spell.normalize('NFC')];
+      const head = symbols[0] === '˙' ? symbols[1] : symbols[0];
+      if (head !== family) {
         wrongFamilies.push(`${family}: ${phrase.word}/${phrase.spell}`);
       }
       expect(phrase.vocabulary).toMatch(/^(core|broad)$/);
@@ -166,6 +171,76 @@ describe('Zhuyin casting provider', () => {
     expect(spells('艘', '⛵')).toEqual(['ㄙㄠ']);
     expect(spells('應', '✅')).toEqual(['ㄧㄥˋ']);
     expect(spells('于', '📍')).toEqual(['ㄩˊ']);
+    expect(spells('仔', '👶')).toEqual(['ㄗㄞˇ']);
+    expect(spells('為什麼', '❓')).toEqual(['ㄨㄟˋ']);
+    expect(spells('種子', '🌱')).toEqual(['ㄓㄨㄥˇ']);
+  });
+
+  it('writes every 輕聲 entry with the dot before the syllable', () => {
+    const phrases = Object.entries(PHRASES_BY_INITIAL).flatMap(([family, rows]) =>
+      rows.map((phrase) => ({ family, ...phrase })),
+    );
+    const cues = [...Object.values(CARDS), ...Object.values(CURSES)].flatMap((card) =>
+      card.cues.map((cue) => ({ family: card.zhuyin, word: cue.word, spell: cue.spell })),
+    );
+    const neutral = [...phrases, ...cues].filter((entry) => entry.spell.includes('˙'));
+    expect(neutral.map((entry) => `${entry.word}:${entry.spell}`).sort()).toEqual([
+      '們:˙ㄇㄣ',
+      '呢:˙ㄋㄜ',
+    ]);
+    for (const entry of neutral) {
+      const symbols = [...entry.spell.normalize('NFC')];
+      expect(symbols[0], entry.word).toBe('˙');
+      expect(symbols.filter((symbol) => symbol === '˙'), entry.word).toHaveLength(1);
+      expect(symbols.slice(1).some((symbol) => 'ˊˇˋ˙'.includes(symbol)), entry.word).toBe(false);
+      expect(symbols[1], entry.word).toBe(entry.family);
+    }
+    const defaults = defaultCastingPreferences();
+    expect(countEligibleZhuyinPhrases({ ...defaults, tones: [5] })).toBe(2);
+    expect(countEligibleZhuyinPhrases({ ...defaults, tones: [1, 2, 3, 4] })).toBe(
+      countEligibleZhuyinPhrases(defaults) - 2,
+    );
+  });
+
+  it('shows and accepts 輕聲 in MOE order', () => {
+    const defaults = defaultCastingPreferences();
+    saveCastingPreferences({ ...defaults, includeWords: ['們'], tones: [5] });
+    const men = buildCastPrompt(getCard('mo'), 'recognize', seededRandom(1));
+    expect(men.cue.word).toBe('們');
+    expect(men.cue.spell).toBe('˙ㄇㄣ');
+    expect(men.correctSpell).toBe('˙ㄇㄣ');
+    expect(men.correctionText).toBe('˙ㄇㄣ');
+    expect(men.answerTokens).toEqual(['˙', 'ㄇ', 'ㄣ']);
+    expect(isCastAnswerCorrect(men, ['˙', 'ㄇ', 'ㄣ'])).toBe(true);
+    expect(isCastAnswerCorrect(men, ['ㄇ', 'ㄣ', '˙'])).toBe(false);
+
+    saveCastingPreferences({ ...defaults, includeWords: ['呢'], tones: [5] });
+    const ne = buildCastPrompt(getCard('ne'), 'recognize', seededRandom(2));
+    expect(ne.cue.spell).toBe('˙ㄋㄜ');
+    expect(ne.correctionText).toBe('˙ㄋㄜ');
+    expect(ne.answerTokens).toEqual(['˙', 'ㄋ', 'ㄜ']);
+    expect(isCastAnswerCorrect(ne, ['˙', 'ㄋ', 'ㄜ'])).toBe(true);
+    expect(isCastAnswerCorrect(ne, ['ㄋ', 'ㄜ', '˙'])).toBe(false);
+  });
+
+  it('drops 采 and keeps 彩 on the same reading', () => {
+    const phrases = Object.values(PHRASES_BY_INITIAL).flat();
+    const words = [
+      ...phrases.map((phrase) => phrase.word),
+      ...Object.values(CARDS).flatMap((card) => [card.id, card.name, ...card.cues.map((cue) => cue.word)]),
+      ...Object.values(CURSES).flatMap((card) => [card.id, card.name, ...card.cues.map((cue) => cue.word)]),
+      ...Object.values(ABACUS_CARDS).flatMap((card) => [card.id, card.name]),
+      ...STARTER_DECK_IDS,
+      ...ABACUS_STARTER_DECK_IDS,
+    ];
+    expect(words.some((word) => [...word].includes('采'))).toBe(false);
+    expect(phrases.filter((phrase) => phrase.spell === 'ㄘㄞˇ').map((phrase) => phrase.word).sort())
+      .toEqual(['彩', '彩虹', '踩']);
+  });
+
+  it('names the vulnerable window as 空檔 on the character card', () => {
+    expect(CHARACTERS.echoMage.theme).toBe('完整防守累積「勁」，在「易傷」空檔用攻守換拍反擊。');
+    expect(CHARACTERS.echoMage.theme.includes('窗口')).toBe(false);
   });
 
   it('reports filters that would remove all prompts from obtainable cards', () => {

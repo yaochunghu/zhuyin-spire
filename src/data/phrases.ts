@@ -4,7 +4,7 @@
  *
  * Rules (same as card cues):
  * - First syllable starts with the given 注音
- * - spell = full first syllable including 聲調 (omit mark for 一聲; trailing ˙ for 輕聲)
+ * - spell = full first syllable including 聲調 (omit mark for 一聲; ˙ leads a 輕聲)
  * - glyph and reading follow 《重編國語辭典修訂本》 headwords
  * - a 破音字 uses the headword reading whose definition matches the picture
  * - emoji depicts the word
@@ -161,7 +161,7 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
     p('美', '🌸', 'ㄇㄟˇ', ['nature']),
     p('妹', '👧', 'ㄇㄟˋ', ['family']),
     p('門', '🚪', 'ㄇㄣˊ', ['home', 'core']),
-    p('們', '👥', 'ㄇㄣ˙', ['core']),
+    p('們', '👥', '˙ㄇㄣ', ['core']),
     p('夢', '💭', 'ㄇㄥˋ', ['core']),
     p('米', '🍚', 'ㄇㄧˇ', ['food'], 'core'),
     p('密', '🔐', 'ㄇㄧˋ', ['core']),
@@ -341,7 +341,7 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
     p('難', '😰', 'ㄋㄢˊ', ['school']),
     p('腦', '🧠', 'ㄋㄠˇ', ['body']),
     p('鬧', '📢', 'ㄋㄠˋ', ['core']),
-    p('呢', '❓', 'ㄋㄜ˙', ['core']),
+    p('呢', '❓', '˙ㄋㄜ', ['core']),
     p('內', '📥', 'ㄋㄟˋ', ['core']),
     p('能', '💪', 'ㄋㄥˊ', ['body']),
     p('你', '👆', 'ㄋㄧˇ', ['core']),
@@ -841,7 +841,7 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
     p('中', '🎯', 'ㄓㄨㄥ', ['core']),
     p('終', '🔚', 'ㄓㄨㄥ', ['core']),
     p('鐘', '🔔', 'ㄓㄨㄥ', ['home', 'core']),
-    p('種', '🌱', 'ㄓㄨㄥˇ', ['nature']),
+    p('種子', '🌱', 'ㄓㄨㄥˇ', ['nature']),
     p('眾', '👥', 'ㄓㄨㄥˋ', ['core']),
     p('重', '⚖️', 'ㄓㄨㄥˋ', ['core']),
     p('週', '📅', 'ㄓㄡ', ['core']),
@@ -1056,7 +1056,7 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
     p('弱', '🐣', 'ㄖㄨㄛˋ', ['animals']),
   ],
   ㄗ: [
-    p('仔', '👶', 'ㄗˇ', ['family']),
+    p('仔', '👶', 'ㄗㄞˇ', ['family']),
     p('子', '🧒', 'ㄗˇ', ['family']),
     p('字', '🔤', 'ㄗˋ', ['school', 'core']),
     p('自', '🪞', 'ㄗˋ', ['core']),
@@ -1108,7 +1108,6 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
     p('材', '🪵', 'ㄘㄞˊ', ['nature']),
     p('財', '💰', 'ㄘㄞˊ', ['core']),
     p('裁', '✂️', 'ㄘㄞˊ', ['home']),
-    p('采', '🌸', 'ㄘㄞˇ', ['nature']),
     p('彩', '🌈', 'ㄘㄞˇ', ['nature']),
     p('彩虹', '🌈', 'ㄘㄞˇ', ['nature', 'core']),
     p('踩', '👣', 'ㄘㄞˇ', ['body']),
@@ -1311,7 +1310,7 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
     p('威', '💪', 'ㄨㄟ', ['core']),
     p('微', '🔬', 'ㄨㄟˊ', ['school']),
     p('危', '⚠️', 'ㄨㄟˊ', ['core']),
-    p('為', '👉', 'ㄨㄟˊ', ['core']),
+    p('為什麼', '❓', 'ㄨㄟˋ', ['core']),
     p('圍', '⭕', 'ㄨㄟˊ', ['core']),
     p('唯', '1️⃣', 'ㄨㄟˊ', ['numbers']),
     p('維', '🧵', 'ㄨㄟˊ', ['core']),
