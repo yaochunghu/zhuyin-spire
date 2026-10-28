@@ -29,6 +29,7 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [MAP.md](./MAP.md) | Spire map gen (15×7), layout constraints |
 | [CONTENT.md](./CONTENT.md) | How to add cards, enemies, encounters, phrases |
 | [CASTING_GATES.md](./CASTING_GATES.md) | Reusable education gate, phrase bags, learner profiles, future subjects |
+| [TELEMETRY.md](./TELEMETRY.md) | Local playtest export: `cast`, schema v2, synthetic runs |
 | [DESIGN_PLAYBOOK.md](./DESIGN_PLAYBOOK.md) | Governing design funnel, evidence ladder, complexity budget, and release gates |
 | [DECK_DESIGN.md](./DECK_DESIGN.md) | Live 共鳴武者 foundation, directions, starter, and upgrades |
 | [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md) | Locked 共鳴武者 75-card roster, score progression, simulation, and review checks |

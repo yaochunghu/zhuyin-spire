@@ -40,6 +40,7 @@ npm run test:security:e2e # production build, then security smoke tests
 | Phrases / packs / profiles | `src/data/phrases.ts`, `src/game/profiles.ts` → [docs/CASTING_GATES.md](docs/CASTING_GATES.md) |
 | Combat rules | `src/game/battle/*` via `src/game/combat.ts` → [docs/COMBAT.md](docs/COMBAT.md) |
 | Cast providers / spell check | `src/game/casting/*`, `src/game/castCheck.ts`, `src/ui/castView.ts` |
+| Playtest telemetry | `src/game/playtestTelemetry.ts` → [docs/TELEMETRY.md](docs/TELEMETRY.md) |
 | Run flow / screens | `src/game/state.ts`, `src/main.ts` |
 | Save / continue | `src/game/save.ts` |
 | Map / combat / shop UI | `src/ui/mapView.ts`, `combatView.ts`, `screens.ts` |

@@ -158,6 +158,13 @@ Full contract and future-provider checklist: [CASTING_GATES.md](./CASTING_GATES.
 
 ---
 
+## Local playtest telemetry
+
+Offer, pick, smith, remove, skip, combat end, and cast events stay in
+`localStorage` under `zhuyin-spire-playtest-v1`. The export file says
+`zhuyin-spire-playtest-v2`. A `cast` event is a bucket and a few ids. It does
+not store the attempt. See [TELEMETRY.md](./TELEMETRY.md).
+
 ## Related
 
 - Map generation: [MAP.md](./MAP.md)
