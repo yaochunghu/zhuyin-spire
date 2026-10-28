@@ -1,22 +1,24 @@
-# Next phase — after the Oct 27 merges
+# Next phase — v0.4.3 being published
 
 The complete score-gated card pool is implemented. The relic pool, potion belt,
-Act I–III events, act-native fights, cast-prompt seed, shop layout fix, and
-the 珠算武者 engine seams are on `main`. This page records what is live and
-what to do next. Keep running both debug-skip and cast-on Act II passes at
-each score milestone while balancing the advanced tiers.
+Act I–III events, act-native fights, cast-prompt seed, shop layout, and both
+playable characters are on `main`. This page records what is live and what to
+do next. Keep running both debug-skip and cast-on Act II passes at each score
+milestone while balancing the advanced tiers.
 
 ## Current version
 
 | Source | Says |
 |--------|------|
-| `package.json` | **0.4.2** |
-| `CHANGELOG.md` | **[0.4.2] — 2026-10-27** is the published release (#44 and #50–#58). |
-| GitHub Releases | **v0.4.2** is the published release, at `027961c`, 2026-10-27 15:00 UTC. |
+| `package.json` | **0.4.3** |
+| `CHANGELOG.md` | **[0.4.3] — 2026-10-28** is the release being published (#60–#62). **[0.4.2]** is the last published section. |
+| GitHub Releases | **v0.4.2** is still the published tag, at `027961c` (#59), 2026-10-27 15:00 UTC. **v0.4.3** is the release being published and is not tagged yet. |
 
 ## What is live
 
-- Two playable characters. 共鳴武者 (`echoMage`) keeps the 注音 gate. 珠算武者 (`abacusFist`) is playable with a 27-card pool, starter 木珠串, and the math provider. `english` stays reserved. Practice still builds Zhuyin prompts. 珠算武者 skips the 注音 tutorial.
+Two characters are playable.
+
+- 共鳴武者 (`echoMage`) keeps the 注音 gate. 珠算武者 (`abacusFist`) is playable with a 27-card pool, starter 木珠串, and the math provider. `english` stays reserved. Practice still builds Zhuyin prompts. 珠算武者 skips the 注音 tutorial.
 - Act I: 12 teaching designs (starter 5/4/1 + 9 rewards)
 - Later acts / shop / treasure: 12 → 33 → 54 → 75 cards at character scores
   0 / 300 / 1,000 / 2,000
@@ -27,7 +29,8 @@ each score milestone while balancing the advanced tiers.
 - Act I–III ? rooms and all 30 bible events. A random relic reward draws the relic pool and never replaces 初心音叉. Named event relics are granted by id
 - Act-native fights from #52. Each act has a listener, a buffer or scaler, and a summoner. Act II and Act III elites are not recycled Act I fights. Bosses brace, then one heavier hit, then a shield calls one friend that does not act on the turn it appears. The Act III boss gains one point during the brace. A correct cast softens a listener's later attack; the current intent number stays; a fizzle is not punished. Easy-opening quotas and the two-fight anti-repeat are chosen when the map is built. Event moth fights use the act-native 鐘粉蛾. Patterns are in [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md)
 - Each run stores `castSeed` and `castCounter` (#55). Mode rolls, shuffle-bag refills, and distractor banks read that stream. 注音神龕 draws from it too. The question on screen is not stored, so a reload shows the next prompt
-- On a phone, each shop offer keeps its card, price, and the remove-card button on screen. Short landscape no longer hides the price (#56)
+- On a phone, each shop offer keeps its card, price, and the remove-card button on screen. Short landscape no longer hides the price (#56). The remove button is disabled when gold is short (#62)
+- The parent coach no longer covers a map dot. Campfire choices fit on screen (#62). The math question and its three answers fit at 640×360 (#61). The 注音 dock is unchanged
 - #50: searching the discard for a card type no longer deletes cards still in the draw pile. The campfire remove screen can return to rest without deleting a card. Attack damage that is not marked 直傷 respects block and 易傷. Enemy block expires at that enemy's next action
 
 Saves stay on version 4. `eventTrack`, `castSeed`, and `castCounter` are optional, so a checkpoint from before those fields still loads. A missing event record starts empty. A missing seed is filled in and the counter starts at 0. A v1 or v2 `relicId` becomes `relicIds`. A v3 checkpoint loads with an empty belt and chance 40.
@@ -106,7 +109,7 @@ stays visible and says 藥水格已滿.
 Yao decided the nine questions in [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md#questions-for-yao).
 
 - Later acts never roll Act I elites or normals.
-- One boss per act for now. A second boss per act waits until after the v0.4.2 playtest, and that pass revisits this.
+- One boss per act for now. A second boss per act is approved for after the playtest and is on the Next list. That pass revisits this.
 - A correct cast soothes a listener. A fizzle does not punish. The current pill stays a promise.
 - Easy quota and anti-repeat stay baked when the map is built.
 - Enemy block still expires at that enemy's next action, as shipped in #50.
@@ -116,8 +119,10 @@ Yao decided the nine questions in [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md#ques
 
 ## Next
 
-These three are the current slice. Keys, Act IV, and a second boss per act stay later. The second boss revisits the one-boss decision above, after the v0.4.2 playtest.
+These two are the current slice. Keys, Act IV, the 20-level track, and the
+remaining 珠算武者 follow-ups (number pad, build tray, per-cell shuffle bags,
+math tutorial, practice tabs, analytics, and the character-select art pass)
+stay later. Saves stay on version 4.
 
-1. **Claude design pass for 珠算武者.** Character select, the answer pad, and the remaining layout bugs from the #61 playtest (cast-question legibility, choice overlap at 640×360, character-select scroll). This page does not do that UI work.
-2. **珠算武者 follow-ups.** The character, 27-card pool, math provider, three-choice answers, and per-character relic pool are in this tree. Still later: the number pad and build tray, per-cell shuffle bags, the math tutorial, practice tabs, analytics, and the character-select art pass.
-3. **The v0.4.2 release.** `package.json` is 0.4.2. `[0.4.2] — 2026-10-27` in [CHANGELOG.md](../CHANGELOG.md) covers #44 and #50–#58. The published GitHub Release is still `v0.4.1` at `46f6486` (#49). Tagging and the GitHub Release are still open. Saves stay on version 4.
+1. **注音 answer-dock fix at 640×360.** The math question and its three answers already fit at that size. The 注音 dock is unchanged and still needs this fix.
+2. **A second boss per act.** Approved for after the playtest. This revisits the one-boss decision above.

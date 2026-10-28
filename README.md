@@ -3,12 +3,14 @@
 A **preschool** browser deckbuilder inspired by *Slay the Spire*: climb a colorful tower with **注音符號** spell cards.  
 Recognize or **listen** for the correct 注音 to cast. **Wrong answer = fizzle** (energy spent). **HP → 0 ends the run.**
 
-**Version:** 0.4.2 in `package.json` · **Stack:** Vite + TypeScript (no backend)
+**Version:** 0.4.3 in `package.json` · **Stack:** Vite + TypeScript (no backend)
 
-**v0.4.2** is the published GitHub Release, at commit `027961c`, 2026-10-27
-15:00 UTC. It covers #44 and #50–#58 and is `[0.4.2]` in
-[CHANGELOG.md](CHANGELOG.md).
-Player notes: [RELEASE_NOTES_v0.4.2.md](RELEASE_NOTES_v0.4.2.md).
+The published GitHub Release is still **v0.4.2** at commit `027961c` (#59),
+2026-10-27 15:00 UTC. **v0.4.3** is the release being published. It covers
+#60–#62 and is `[0.4.3]` in [CHANGELOG.md](CHANGELOG.md). It is not tagged yet.
+Two characters are playable: 共鳴武者 and 珠算武者.
+Player notes: [RELEASE_NOTES_v0.4.3.md](RELEASE_NOTES_v0.4.3.md).
+Published notes: [RELEASE_NOTES_v0.4.2.md](RELEASE_NOTES_v0.4.2.md).
 
 **Play online:** [https://yaochunghu.github.io/zhuyin-spire/](https://yaochunghu.github.io/zhuyin-spire/)
 
@@ -141,7 +143,7 @@ CHANGELOG.md        version history
 | [docs/CONTENT.md](docs/CONTENT.md) | Add cards / enemies / phrases |
 | [docs/CASTING_GATES.md](docs/CASTING_GATES.md) | Casting metaphor, anti-repeat pools, profiles, future subjects |
 | [docs/DESIGN_PLAYBOOK.md](docs/DESIGN_PLAYBOOK.md) | Character design funnel, evidence ladder, and release gates |
-| [docs/DECK_DESIGN.md](docs/DECK_DESIGN.md) | Live 共鳴武者 deck. 珠算武者 has engine seams and no cards |
+| [docs/DECK_DESIGN.md](docs/DECK_DESIGN.md) | Live decks for both playable characters |
 | [docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md](docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md) | Locked 共鳴武者 75-card roster, meta progression, simulation, and review checks |
 | [docs/STS_DESIGN_REFERENCE.md](docs/STS_DESIGN_REFERENCE.md) | StS systems reference and what to copy, adapt, or defer |
 | [docs/UPGRADE_BIBLE.md](docs/UPGRADE_BIBLE.md) | Physical-copy migration contract and live 75-card upgrades |
@@ -149,7 +151,7 @@ CHANGELOG.md        version history
 | [docs/BALANCE.md](docs/BALANCE.md) | HP, gold, rest, hand rules |
 | [docs/DEBUG.md](docs/DEBUG.md) | Skip cast, jump fights, cheats for testing |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | What’s done / next |
-| [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) | Published v0.4.2, and the next three items |
+| [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) | v0.4.3 being published, and the next two items |
 
 ---
 
@@ -172,7 +174,7 @@ This folder is its **own git repository** (`zhuyin-spire/.git`).
 
 - Do **not** commit the game through a parent home-directory repo (e.g. unrelated remotes).
 - From this directory: `git status`, `git add`, `git commit` as usual.
-- Published release tag: `v0.4.2` at `027961c`, 2026-10-27 15:00 UTC. `package.json` is `0.4.2` (see [CHANGELOG.md](CHANGELOG.md) `[0.4.2]` and [RELEASE_NOTES_v0.4.2.md](RELEASE_NOTES_v0.4.2.md)).
+- Published release tag: `v0.4.2` at `027961c` (#59), 2026-10-27 15:00 UTC. `package.json` is `0.4.3`. v0.4.3 is the release being published (see [CHANGELOG.md](CHANGELOG.md) `[0.4.3]` and [RELEASE_NOTES_v0.4.3.md](RELEASE_NOTES_v0.4.3.md)). It is not tagged yet. Two characters are playable.
 - Dedicated remote: `https://github.com/yaochunghu/zhuyin-spire.git`.
 
 ```bash

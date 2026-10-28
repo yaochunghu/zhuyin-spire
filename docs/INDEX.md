@@ -40,7 +40,7 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [BALANCE.md](./BALANCE.md) | Live economy / HP / hand numbers + design intent |
 | [DEBUG.md](./DEBUG.md) | Debug panel, flags, skip-cast testing |
 | [ROADMAP.md](./ROADMAP.md) | Shipped systems, next work, known pitfalls |
-| [NEXT_PHASE.md](./NEXT_PHASE.md) | Published v0.4.2, and the next three items |
+| [NEXT_PHASE.md](./NEXT_PHASE.md) | v0.4.3 being published, and the next two items |
 
 Root companions:
 
@@ -49,15 +49,17 @@ Root companions:
 | [../README.md](../README.md) | Play, quick start, version control |
 | [../AGENTS.md](../AGENTS.md) | AI/human resume guide |
 | [../CHANGELOG.md](../CHANGELOG.md) | Human-readable version history |
+| [../RELEASE_NOTES_v0.4.3.md](../RELEASE_NOTES_v0.4.3.md) | Player-facing notes for the v0.4.3 release being published |
 | [../RELEASE_NOTES_v0.4.2.md](../RELEASE_NOTES_v0.4.2.md) | Player-facing notes for the published v0.4.2 release |
 
 ---
 
-## Snapshot (main, after the Oct 27 merges)
+## Snapshot (main, v0.4.3 being published)
 
-`package.json` is **0.4.2**. **v0.4.2** is the published GitHub Release, at
-`027961c`, 2026-10-27 15:00 UTC. #44 and #50–#58 are `[0.4.2]` in
-[CHANGELOG.md](../CHANGELOG.md).
+`package.json` is **0.4.3**. The published GitHub Release is still **v0.4.2**
+at `027961c` (#59), 2026-10-27 15:00 UTC. **v0.4.3** is the release being
+published: #60–#62 are `[0.4.3]` in [CHANGELOG.md](../CHANGELOG.md). That
+release is not tagged yet. Two characters are playable.
 
 - **Stack:** Vite + TypeScript SPA, no backend; localStorage save. Saves stay
   on version 4. `eventTrack`, `castSeed`, and `castCounter` are optional.
@@ -82,7 +84,10 @@ Root companions:
 - **Potions:** 3 belt slots and 6 bottles. Combat rewards and the shop can
   give one. See [NEXT_PHASE.md](./NEXT_PHASE.md).
 - **Shop:** on a phone, each offer keeps its card, price, and the remove-card
-  button on screen.
+  button on screen. The remove button is disabled when gold is short.
+- **Layout:** the parent coach no longer covers map dots. Campfire choices
+  fit on screen. The math cast fits at the checked phone sizes. The 注音 dock
+  is unchanged.
 - **Debug:** body-mounted panel for testing (not for kids in normal play)
 
 共鳴武者 Smith and all 75 physical-copy upgrades are live through score unlocks.
