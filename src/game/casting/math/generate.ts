@@ -14,6 +14,8 @@ const GRADE_TWO = new Set<string>([
   'g2ClockMin',
   'g2Money1000',
   'g2Missing',
+  // Parked for a later grade-2 layer. No live card asks it.
+  'length',
 ]);
 
 const SUPPORTED: Record<string, readonly CastingTier[]> = {
@@ -30,7 +32,7 @@ const SUPPORTED: Record<string, readonly CastingTier[]> = {
   clock: [2, 3],
   calendar: [2],
   money: [3, 4],
-  length: [2, 3],
+  length: [5],
   shapes: [2],
   sort: [1, 2],
   word: [2, 3, 4],
@@ -197,8 +199,9 @@ function make10Question(rng: Rng, tier: CastingTier): MathQuestion {
     return numeric(`10 可以分成 ${part} 和幾？`, 10 - part, rng);
   }
   if (tier === 2) {
-    const have = irand(rng, 1, 9);
-    return numeric(`已經有 ${have} 顆，再幾顆就湊成 10？`, 10 - have, rng);
+    const part = irand(rng, 1, 9);
+    const rest = 10 - part;
+    return numeric(`10 可以分成 ${part} 和幾？ ${part} 和幾合起來是 10。`, rest, rng);
   }
   if (rng() < 0.5) {
     const front = irand(rng, 2, 9);
@@ -324,16 +327,24 @@ function add100Question(rng: Rng, tier: CastingTier): MathQuestion {
   return numeric(`${left} - ${right} = ？`, left - right, rng);
 }
 
+const WHOLE_HOUR_FACES = ['🕐', '🕑', '🕒', '🕓', '🕔', '🕕', '🕖', '🕗', '🕘', '🕙', '🕚', '🕛'] as const;
+const HALF_HOUR_FACES = ['🕜', '🕝', '🕞', '🕟', '🕠', '🕡', '🕢', '🕣', '🕤', '🕥', '🕦', '🕧'] as const;
+
+function clockFace(hour: number, half: boolean): string {
+  const faces = half ? HALF_HOUR_FACES : WHOLE_HOUR_FACES;
+  return faces[hour - 1] ?? faces[0];
+}
+
 function clockQuestion(rng: Rng, tier: CastingTier): MathQuestion {
   const hour = irand(rng, 1, 12);
   if (tier <= 2) {
     const answer = `${hour}點`;
     const neighbors = [`${hour === 1 ? 12 : hour - 1}點`, `${hour === 12 ? 1 : hour + 1}點`, `${hour}點半`];
-    return labeled(`短針指著 ${hour}，長針指著 12。現在是幾點？`, answer, neighbors, rng, '🕐');
+    return labeled(`短針指著 ${hour}，長針指著 12。現在是幾點？`, answer, neighbors, rng, clockFace(hour, false));
   }
   const answer = `${hour}點半`;
   const neighbors = [`${hour}點`, `${hour === 12 ? 1 : hour + 1}點半`, `${hour === 1 ? 12 : hour - 1}點半`];
-  return labeled(`短針在 ${hour} 和下一格中間，長針指著 6。現在是什麼時候？`, answer, neighbors, rng, '🕐');
+  return labeled(`短針在 ${hour} 和下一格中間，長針指著 6。現在是什麼時候？`, answer, neighbors, rng, clockFace(hour, true));
 }
 
 function calendarQuestion(rng: Rng): MathQuestion {
@@ -368,12 +379,8 @@ function moneyQuestion(rng: Rng, tier: CastingTier): MathQuestion {
 }
 
 function lengthQuestion(rng: Rng, tier: CastingTier): MathQuestion {
-  if (tier <= 2) {
-    const left = irand(rng, 1, 10);
-    let right = irand(rng, 1, 10);
-    if (right === left) right = left === 10 ? 1 : left + 1;
-    return numeric(`紅筆 ${left} 格，藍筆 ${right} 格，比較長的是幾格？`, Math.max(left, right), rng, '📏');
-  }
+  // 公分 is N-2-11. Below tier 5, ask 比較 so a grade-1 call cannot name a length unit.
+  if (tier < 5) return compareQuestion(rng, tier);
   const longer = irand(rng, 2, 20);
   const shorter = irand(rng, 1, longer - 1);
   return numeric(`紅筆 ${longer} 公分，藍筆 ${shorter} 公分，紅筆比藍筆長幾公分？`, longer - shorter, rng, '📏');
@@ -381,13 +388,13 @@ function lengthQuestion(rng: Rng, tier: CastingTier): MathQuestion {
 
 function shapesQuestion(rng: Rng): MathQuestion {
   const scenes = [
-    ['球', '圓形'],
-    ['紅旗', '三角形'],
-    ['窗戶', '正方形'],
-    ['書本', '長方形'],
+    ['球', '圓形', '🔺'],
+    ['三角飯糰', '三角形', '🍙'],
+    ['魔術方塊的一面', '正方形', '🔺'],
+    ['書本', '長方形', '🔺'],
   ] as const;
   const scene = scenes[irand(rng, 0, scenes.length - 1)]!;
-  return labeled(`${scene[0]}是什麼形狀？`, scene[1], ['圓形', '三角形', '正方形', '長方形'], rng, '🔺');
+  return labeled(`${scene[0]}是什麼形狀？`, scene[1], ['圓形', '三角形', '正方形', '長方形'], rng, scene[2]);
 }
 
 function sortQuestion(rng: Rng, tier: CastingTier): MathQuestion {
@@ -527,7 +534,7 @@ export function generateMathQuestion(family: string, tier: CastingTier, rng: Rng
     case 'g2Times':
       return timesQuestion(rng);
     case 'g2Cm':
-      return cmQuestion(rng);
+      return asked >= 5 ? cmQuestion(rng) : compareQuestion(rng, asked);
     case 'g2ClockMin':
       return clockMinQuestion(rng);
     case 'g2Money1000':

@@ -86,6 +86,16 @@ export interface CastingPrompt {
    * A later miss fizzles and does not spend 再算一次. A hint on another card does not set this.
    */
   hintRevealedAnswer?: boolean;
+  /**
+   * Highest assist step used on this prompt. Telemetry only.
+   * 1 is the live 💡 家長協助 button. Combat rules read `hintRevealedAnswer`, not this number.
+   */
+  hintLevel?: number;
+  /**
+   * Diagnosis code from the first wrong attempt while 再算一次 is open.
+   * A short identifier such as `offByOne`. Never the attempt. Telemetry only.
+   */
+  priorErrorTag?: string;
 }
 
 export interface CastingPromptContext {

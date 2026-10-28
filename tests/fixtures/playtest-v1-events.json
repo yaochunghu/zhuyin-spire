@@ -1,0 +1,29 @@
+[
+  {
+    "kind": "offer",
+    "at": 1700000000000,
+    "uid": "card-1",
+    "defId": "bo",
+    "upgradeLevel": 0,
+    "act": 1,
+    "source": "reward"
+  },
+  {
+    "kind": "pick",
+    "at": 1700000000500,
+    "uid": "card-1",
+    "defId": "bo",
+    "upgradeLevel": 0
+  },
+  {
+    "kind": "combatEnd",
+    "at": 1700000001000,
+    "won": true,
+    "hpLost": 4,
+    "act": 1,
+    "deck": [
+      { "defId": "bo", "upgradeLevel": 0 },
+      { "defId": "mo", "upgradeLevel": 1 }
+    ]
+  }
+]

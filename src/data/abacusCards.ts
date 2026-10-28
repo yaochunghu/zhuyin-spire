@@ -412,7 +412,8 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     direction: 'couShi',
     target: 'allEnemies',
     unlockScore: 1000,
-    cast: { gateId: 'math', family: 'length' },
+    // Comparing amounts stays inside 一年級. 公分 lives on the tier-5 length generator.
+    cast: { gateId: 'math', family: 'compare' },
     effects: [{ kind: 'damage', amount: 5 }, { kind: 'beads', amount: 3 }],
     description: '對所有怪物造成 5 點傷害。撥 3 珠。',
     upgrade: {

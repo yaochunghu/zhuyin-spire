@@ -29,6 +29,7 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [MAP.md](./MAP.md) | Spire map gen (15×7), layout constraints |
 | [CONTENT.md](./CONTENT.md) | How to add cards, enemies, encounters, phrases |
 | [CASTING_GATES.md](./CASTING_GATES.md) | Reusable education gate, phrase bags, learner profiles, future subjects |
+| [TELEMETRY.md](./TELEMETRY.md) | Local playtest export: `cast`, schema v2, synthetic runs |
 | [DESIGN_PLAYBOOK.md](./DESIGN_PLAYBOOK.md) | Governing design funnel, evidence ladder, complexity budget, and release gates |
 | [DECK_DESIGN.md](./DECK_DESIGN.md) | Live 共鳴武者 foundation, directions, starter, and upgrades |
 | [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md) | Locked 共鳴武者 75-card roster, score progression, simulation, and review checks |
@@ -89,6 +90,9 @@ v0.4.3 at `e3813ee` (#63), 2026-10-28 02:17 UTC. Two characters are playable.
   fit on screen. The math cast and the 注音 cast dock fit at the checked
   phone sizes.
 - **Debug:** body-mounted panel for testing (not for kids in normal play)
+- **Save fixtures:** ten version-4 checkpoints and a seeded choice replay under
+  `tests/fixtures/`. Regenerate with `npm run generate:save-fixtures`. Saves
+  stay version 4
 
 共鳴武者 Smith and all 75 physical-copy upgrades are live through score unlocks.
 Rejected and pre-共鳴 design records are quarantined under `docs/archive/`;

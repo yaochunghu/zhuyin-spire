@@ -114,6 +114,7 @@ File: `src/game/save.ts`
 - **Stable screens only** (map, rest, shop, reward, actClear, relicPick, event, eventCast, …) — **not** mid-combat or a combat cast
 - Current snapshot version is 4. v1 card ids, the old boss floor, a single `relicId`, and a v3 relic list each migrate forward. v3 gains an empty belt and drop chance 40
 - Checkpoints store `castSeed` and `castCounter` beside the optional `eventTrack`. A save missing the cast fields still loads: the seed is filled in and the counter starts at 0. A save missing `eventTrack` still loads an empty event record. Reloading 注音神龕 keeps the question count and draws the next prompt
+- Committed v4 fixtures for both characters live in `tests/fixtures/saves/`. `npm run generate:save-fixtures` rewrites them from the live run. The unit replay loads a checkpoint with `parseSnapshot` / `resumeSavedRun` and continues the same choices
 - Title offers continue vs new game; new game clears save
 
 Other localStorage keys (non-run):
@@ -157,6 +158,13 @@ Learner score lives on `characterProgress`, keyed by character id. 珠算武者 
 Full contract and future-provider checklist: [CASTING_GATES.md](./CASTING_GATES.md).
 
 ---
+
+## Local playtest telemetry
+
+Offer, pick, smith, remove, skip, combat end, and cast events stay in
+`localStorage` under `zhuyin-spire-playtest-v1`. The export file says
+`zhuyin-spire-playtest-v2`. A `cast` event is a bucket and a few ids. It does
+not store the attempt. See [TELEMETRY.md](./TELEMETRY.md).
 
 ## Related
 

@@ -179,7 +179,9 @@ Zhuyin bindings include `tier` from card rarity (`basic` 1, `common` 2,
 `uncommon` 3, `rare` 4). Zhuyin prompt creation ignores that field. A math
 binding uses `family@tier`. 珠算武者 cards set `cast`. Tier 5 is used only for
 倍數連拳 when Options has 二年級 on. With it off, that card asks its grade-1
-fallback (`add100`).
+fallback (`add100`). The `length` family is the same kind of later layer: it
+asks 公分 only at tier 5, and no live card binds to it. 長尺掃 asks `compare`,
+which stays inside 一年級.
 
 ## 珠算 provider
 
@@ -201,6 +203,10 @@ the first attempt. A hint on an earlier card leaves the retry available. A
 hint during the retry reveals the answer. The coach names whichever of those
 states is actually open, and it does not promise a retry when
 `scaffoldedRetry` is off.
+
+A resolved prompt also appends one local `cast` event. Opening 再算一次 does
+not. The event stores the gate, the asked family, the tier, and a response-time
+bucket. It does not store the attempt. See [TELEMETRY.md](./TELEMETRY.md).
 
 Rarity sets the nominal tier inside the parent floor and ceiling (defaults 1
 and 4). Adaptivity only lowers that tier, by card family, at most 4 steps.
@@ -239,6 +245,10 @@ Math is live. English is still a reserved id. To ship another subject:
 6. Add per-family coverage validation, shuffle-bag tests, answer-cost tests, and
    a complete tablet smoke path. Zhuyin coverage already ignores cards whose
    `cast.gateId` is not `zhuyin`.
+
+The playtest `cast` event already accepts any `gateId` and `family` string.
+This character records through that same event. Do not bump the export schema
+for the new id. See [TELEMETRY.md](./TELEMETRY.md).
 
 Do not couple “mana quality” to quiz difficulty mechanically. It is a narrative
 explanation for randomized prompts, not a new combat economy.

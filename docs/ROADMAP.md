@@ -49,6 +49,8 @@ v0.4.3 at `e3813ee` (#63), 2026-10-28 02:17 UTC. Two characters are playable. Li
 - The parent coach no longer covers map dots, and campfire choices fit on
   screen. The math cast and the 注音 cast dock fit at the checked phone
   sizes (#61, #64)
+- Save/replay harness: committed v4 checkpoints for both characters, plus a
+  seeded choice replay inside `npm test`. Saves stay version 4
 
 ---
 
