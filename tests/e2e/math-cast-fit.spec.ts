@@ -227,6 +227,9 @@ test('a hint and the speech note leave the three answers on screen', async ({ pa
   const clippedBy = await note.evaluate((el) => {
     const r = el.getBoundingClientRect();
     for (let parent = el.parentElement; parent; parent = parent.parentElement) {
+      // The fight is position:fixed and wider than the 1024px app frame.
+      // That frame does not clip it.
+      if (parent.id === 'app') break;
       const style = getComputedStyle(parent);
       if (style.display === 'contents') continue;
       if (style.overflowX === 'visible' && style.overflowY === 'visible') continue;

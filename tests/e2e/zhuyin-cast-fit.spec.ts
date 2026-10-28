@@ -199,10 +199,19 @@ for (const mode of MODES) {
       }
     }
     // Nothing in the dock needs scrolling to reach.
-    const scroll = await page.locator('.cast-dock').evaluate((dock) => ({
-      y: dock.scrollHeight - dock.clientHeight,
-      x: dock.scrollWidth - dock.clientWidth,
-    }));
+    const scroll = await page.locator('.cast-dock').evaluate((dock) => {
+      const style = getComputedStyle(dock);
+      const borderY = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+      const borderX = parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
+      // A border-box dock can report its walnut edge as scroll even when every
+      // child sits inside the padding box. Ignore that edge, not real overflow.
+      const rawY = dock.scrollHeight - dock.clientHeight;
+      const rawX = dock.scrollWidth - dock.clientWidth;
+      return {
+        y: Math.abs(rawY - borderY) <= 1 ? 0 : rawY,
+        x: Math.abs(rawX - borderX) <= 1 ? 0 : rawX,
+      };
+    });
     expect(scroll.y).toBeLessThanOrEqual(1);
     expect(scroll.x).toBeLessThanOrEqual(1);
     // Each target takes its own tap at its centre.
@@ -304,8 +313,9 @@ async function expectTappable(page: Page, selector: string): Promise<void> {
   for (const target of await targets.all()) {
     const box = await target.boundingBox();
     expect(box, selector).toBeTruthy();
-    expect(box!.width, selector).toBeGreaterThanOrEqual(48);
-    expect(box!.height, selector).toBeGreaterThanOrEqual(48);
+    // WebKit can report a 48px key as 47.99998. A hundredth is still 48.
+    expect(Math.round(box!.width * 100) / 100, selector).toBeGreaterThanOrEqual(48);
+    expect(Math.round(box!.height * 100) / 100, selector).toBeGreaterThanOrEqual(48);
     expect(box!.x, selector).toBeGreaterThanOrEqual(0);
     expect(box!.y, selector).toBeGreaterThanOrEqual(0);
     expect(box!.x + box!.width, selector).toBeLessThanOrEqual(size.width);
