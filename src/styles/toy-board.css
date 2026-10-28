@@ -3170,6 +3170,336 @@ html[data-screen='combat'] .global-control-btn {
 }
 
 /*
+ * 共鳴武者 注音 dock: the panes dissolve into one grid so the word, coach,
+ * and speech note sit on the left and every slot, key, and control sits on
+ * a key-sized grid on the right. Nothing scrolls; every key is a full tap.
+ */
+.combat-casting > .combat-stage > .cast-dock:not(.cast-math) {
+  --zk: 60px;
+  --zg: 8px;
+  max-height: min(54dvh, 480px);
+  padding-inline: max(10px, calc((100% - 980px) / 2));
+  grid-template-columns: minmax(0, 1fr) auto repeat(5, var(--zk));
+  grid-template-rows: repeat(4, auto);
+  grid-template-areas:
+    "head  head   slots slots slots slots slots"
+    "cue   replay keys  keys  keys  keys  keys"
+    "coach coach  keys  keys  keys  keys  keys"
+    "note  note   ctrl  ctrl  ctrl  hint  hint";
+  justify-content: center;
+  align-content: start;
+  gap: var(--zg);
+}
+
+.combat-casting .cast-dock:not(.cast-math) .cast-layout,
+.combat-casting .cast-dock:not(.cast-math) .cast-cue-pane,
+.combat-casting .cast-dock:not(.cast-math) .cast-answer-pane,
+.combat-casting .cast-dock:not(.cast-math) .spell-bank {
+  display: contents;
+}
+
+.combat-casting .cast-dock:not(.cast-math) .cast-layout * {
+  min-width: 0;
+  margin: 0;
+}
+
+.combat-casting .cast-dock:not(.cast-math) .cast-header {
+  grid-area: head;
+  align-self: center;
+  flex-wrap: wrap;
+}
+
+.combat-casting .cast-dock:not(.cast-math) .cue-box {
+  grid-area: cue;
+  display: grid;
+  grid-template-columns: auto minmax(0, auto);
+  justify-content: center;
+  align-items: center;
+  align-self: start;
+  column-gap: 8px;
+  height: auto;
+  min-height: min-content;
+  max-height: none;
+  padding: 4px 12px;
+  overflow: visible;
+  border-width: 5px;
+  border-radius: 18px;
+}
+
+.combat-casting .cast-dock:not(.cast-math) .cue-emoji {
+  grid-row: 1;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.combat-casting .cast-dock:not(.cast-math) .cue-word {
+  grid-row: 1;
+  color: var(--toy-walnut-dark);
+  font-size: 2.3rem;
+  line-height: 1.15;
+  letter-spacing: 0.04em;
+  text-shadow: none;
+  opacity: 1;
+}
+
+.combat-casting .cast-dock:not(.cast-math) .cue-word.listen-hidden {
+  color: var(--toy-walnut);
+}
+
+.combat-casting .cast-dock:not(.cast-math) .cast-kid-prompt {
+  grid-column: 1 / -1;
+  color: var(--toy-walnut);
+  font-size: 0.95rem;
+}
+
+.combat-casting .cast-dock:not(.cast-math) .replay-btn {
+  grid-area: replay;
+  align-self: start;
+  width: var(--zk);
+  min-width: 48px;
+  max-width: none;
+  height: var(--zk);
+  min-height: 48px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.combat-casting .cast-dock:not(.cast-math) .replay-btn .btn-emoji {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.combat-casting .cast-dock:not(.cast-math) .replay-btn .replay-label {
+  font-size: 0.7rem;
+  line-height: 1.1;
+}
+
+.combat-casting .cast-dock:not(.cast-math) .adult-coach {
+  grid-area: coach;
+  align-self: start;
+}
+
+.combat-casting .cast-dock:not(.cast-math) .speech-fallback-note {
+  grid-area: note;
+  align-self: start;
+  max-width: none;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+/* The adult's answer covers the mana header rather than pushing keys down. */
+.combat-casting .cast-dock:not(.cast-math) .spell-hint-reveal {
+  grid-area: head;
+  z-index: 1;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--toy-panel);
+}
+
+.combat-casting .cast-dock:not(.cast-math) .spell-slots {
+  grid-area: slots;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 4px;
+}
+
+.combat-casting .cast-dock:not(.cast-math) .spell-slot {
+  flex: none;
+  width: var(--zk);
+  height: var(--zk);
+  font-size: 1.6rem;
+}
+
+.combat-casting .cast-dock:not(.cast-math) .spell-bank-wrap {
+  grid-area: keys;
+  display: flex;
+  flex-flow: row wrap;
+  align-content: flex-start;
+  justify-content: flex-start;
+  gap: var(--zg);
+}
+
+.combat-casting .cast-dock:not(.cast-math) .tone-row-label {
+  display: none;
+}
+
+.combat-casting .cast-dock:not(.cast-math) .spell-key {
+  flex: none;
+  width: var(--zk);
+  min-width: 0;
+  height: var(--zk);
+  min-height: 0;
+  padding: 0;
+  font-size: 1.6rem;
+}
+
+.combat-casting .cast-dock:not(.cast-math) .spell-ctrl {
+  width: 100%;
+  height: var(--zk);
+  min-height: 0;
+  padding: 0;
+  font-size: 1.4rem;
+}
+
+.combat-casting .cast-dock:not(.cast-math) .spell-controls {
+  grid-area: ctrl;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--zg);
+  width: 100%;
+  max-width: none;
+}
+
+.combat-casting .cast-dock:not(.cast-math) .hint-btn {
+  grid-area: hint;
+  width: 100%;
+  min-height: var(--zk);
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  line-height: 1.25;
+}
+
+/* Phone portrait: word and coach on one row, then slots with ⌫ 🗑️ ✓,
+   then a seven-wide key grid, then the adult help and speech note. */
+@media (max-width: 600px) and (orientation: portrait) {
+  .combat-casting > .combat-stage > .cast-dock:not(.cast-math) {
+    --zk: 48px;
+    --zg: 5px;
+    max-height: min(54dvh, 480px);
+    padding-inline: 8px;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-rows: repeat(6, auto);
+    grid-template-areas:
+      "head  head  head  head  head  head  head"
+      "cue   cue   cue   cue   coach coach coach"
+      "slots slots slots slots ctrl  ctrl  ctrl"
+      "keys  keys  keys  keys  keys  keys  keys"
+      "hint  hint  hint  hint  hint  hint  hint"
+      "note  note  note  note  note  note  note";
+    justify-content: stretch;
+  }
+
+  .combat-casting > .combat-stage > .cast-dock:not(.cast-math):has(.replay-btn) {
+    grid-template-areas:
+      "head  head  head  head   head  head  head"
+      "cue   cue   cue   replay coach coach coach"
+      "slots slots slots slots  ctrl  ctrl  ctrl"
+      "keys  keys  keys  keys   keys  keys  keys"
+      "hint  hint  hint  hint   hint  hint  hint"
+      "note  note  note  note   note  note  note";
+  }
+
+  .combat-casting .cast-dock:not(.cast-math) .cast-kid-prompt {
+    display: none;
+  }
+
+  .combat-casting .cast-dock:not(.cast-math) .cue-box {
+    align-self: stretch;
+  }
+
+  .combat-casting .cast-dock:not(.cast-math) .replay-btn {
+    width: 100%;
+  }
+
+  .combat-casting .cast-dock:not(.cast-math) .spell-slots,
+  .combat-casting .cast-dock:not(.cast-math) .spell-bank-wrap {
+    justify-content: center;
+  }
+}
+
+/* Short landscape phones: like the math dock, take the right column. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .combat-casting > .combat-stage:has(> .cast-dock:not(.cast-math)) {
+    grid-template-columns: minmax(0, 1fr) min(70%, 500px);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .combat-casting > .combat-stage > .cast-dock:not(.cast-math) {
+    --zk: 48px;
+    --zg: 6px;
+    grid-row: 2;
+    height: 100%;
+    max-height: none;
+    padding: 6px 8px max(6px, env(safe-area-inset-bottom));
+    border-radius: 22px 0 0 0;
+    grid-template-columns: minmax(0, 1fr) auto repeat(5, var(--zk));
+    grid-template-areas:
+      "head  head   slots slots slots slots back"
+      "cue   replay keys  keys  keys  keys  keys"
+      "coach coach  keys  keys  keys  keys  keys"
+      "note  note   trash ok    hint  hint  hint";
+    justify-content: stretch;
+  }
+
+  /* No height for a controls row: ⌫ joins the slots, 🗑️ ✓ join the hint. */
+  .combat-casting .cast-dock:not(.cast-math) .spell-controls {
+    display: contents;
+  }
+
+  .combat-casting .cast-dock:not(.cast-math) .spell-ctrl:nth-child(1) {
+    grid-area: back;
+  }
+
+  .combat-casting .cast-dock:not(.cast-math) .spell-ctrl:nth-child(2) {
+    grid-area: trash;
+  }
+
+  .combat-casting .cast-dock:not(.cast-math) .spell-ctrl:nth-child(3) {
+    grid-area: ok;
+  }
+
+  .combat-casting .cast-dock:not(.cast-math) .mana-condition {
+    min-height: 30px;
+    padding: 2px 8px;
+  }
+
+  .combat-casting .cast-dock:not(.cast-math) .cast-kid-prompt {
+    display: none;
+  }
+
+  .combat-casting .cast-dock:not(.cast-math) .cue-box {
+    padding: 2px 8px;
+    border-width: 4px;
+  }
+
+  .combat-casting .cast-dock:not(.cast-math) .cue-emoji {
+    font-size: 1.6rem;
+  }
+
+  .combat-casting .cast-dock:not(.cast-math) .cue-word {
+    font-size: 1.9rem;
+  }
+
+  .combat-casting .cast-dock:not(.cast-math) .speech-fallback-note {
+    padding: 3px 6px;
+    font-size: 0.7rem;
+    line-height: 1.25;
+  }
+
+  .combat-casting .cast-dock:not(.cast-math) .hint-btn {
+    padding: 2px 4px;
+    font-size: 0.68rem;
+  }
+}
+
+@media (max-height: 500px) and (min-height: 380px) and (orientation: landscape) {
+  .combat-casting > .combat-stage > .cast-dock:not(.cast-math) {
+    --zk: 52px;
+  }
+}
+
+/*
  * Character select on short landscape phones: both heroes side by side on
  * one screen, each card trimmed to figure, name, theme, starter pills,
  * starting relic, and the pick button. Card progress stays on the profile
