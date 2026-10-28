@@ -204,6 +204,10 @@ hint during the retry reveals the answer. The coach names whichever of those
 states is actually open, and it does not promise a retry when
 `scaffoldedRetry` is off.
 
+A resolved prompt also appends one local `cast` event. Opening 再算一次 does
+not. The event stores the gate, the asked family, the tier, and a response-time
+bucket. It does not store the attempt. See [TELEMETRY.md](./TELEMETRY.md).
+
 Rarity sets the nominal tier inside the parent floor and ceiling (defaults 1
 and 4). Adaptivity only lowers that tier, by card family, at most 4 steps.
 Two misses in the last five results of the cell just asked, with the newest
@@ -241,6 +245,10 @@ Math is live. English is still a reserved id. To ship another subject:
 6. Add per-family coverage validation, shuffle-bag tests, answer-cost tests, and
    a complete tablet smoke path. Zhuyin coverage already ignores cards whose
    `cast.gateId` is not `zhuyin`.
+
+The playtest `cast` event already accepts any `gateId` and `family` string.
+This character records through that same event. Do not bump the export schema
+for the new id. See [TELEMETRY.md](./TELEMETRY.md).
 
 Do not couple “mana quality” to quiz difficulty mechanically. It is a narrative
 explanation for randomized prompts, not a new combat economy.
