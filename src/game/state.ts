@@ -1330,7 +1330,8 @@ export function answerCast(state: RunState, attempt: string[]): 'success' | 'fiz
 
 export function useParentHint(state: RunState): string | null {
   if (!state.cast) return null;
-  if (state.screen === 'practice') {
+  // Practice and the shrine have no combat belt, but the help button is live.
+  if (state.screen === 'practice' || state.screen === 'eventCast') {
     return state.cast.prompt.correctionText;
   }
   if (!state.combat) return null;

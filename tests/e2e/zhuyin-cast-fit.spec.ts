@@ -5,7 +5,15 @@ import { expect, test, type Page } from '@playwright/test';
 // scrolling, and the speech-fallback note in full, in both recognize and
 // listen modes.
 
-const SIZES = ['landscape-wide', 'phone-landscape-chromium', 'phone-landscape-webkit', 'phone-portrait-webkit'];
+const SIZES = [
+  'landscape-wide',
+  'tablet-landscape',
+  'short-landscape',
+  'phone-landscape-chromium',
+  'phone-landscape-webkit',
+  'phone-portrait-webkit',
+  'phone-narrow',
+];
 const MODES = ['recognize', 'listen'] as const;
 const TARGETS = [
   '.cast-dock .spell-slot',
@@ -230,4 +238,166 @@ for (const mode of MODES) {
     });
     expect(clippedBy, 'container clipping the note').toBeNull();
   });
+
+  test(`${mode}: a hint keeps 送出 on screen with the speech note`, async ({ page }, testInfo) => {
+    test.skip(!SIZES.includes(testInfo.project.name));
+    await openZhuyinCast(page, mode);
+    await page.locator('.cast-dock .hint-btn').click();
+    await expect(page.locator('.spell-hint-reveal')).toBeVisible();
+    await page.evaluate(async () => {
+      const { run } = await import('/src/ui/runtime.ts');
+      window.dispatchEvent(
+        new CustomEvent('zhuyin-speech-fallback', { detail: { text: run().cast!.prompt.cue.speechText } }),
+      );
+    });
+    await expect(page.locator('.speech-fallback-note')).toContainText('仍需拼出完整注音');
+    const size = page.viewportSize()!;
+    for (const selector of ['.cast-dock .spell-ctrl', '.cast-dock .hint-btn']) {
+      for (const target of await page.locator(selector).all()) {
+        const box = await target.boundingBox();
+        expect(box, selector).toBeTruthy();
+        expect(box!.width).toBeGreaterThanOrEqual(48);
+        expect(box!.height).toBeGreaterThanOrEqual(48);
+        expect(box!.x).toBeGreaterThanOrEqual(0);
+        expect(box!.y).toBeGreaterThanOrEqual(0);
+        expect(box!.x + box!.width).toBeLessThanOrEqual(size.width);
+        expect(box!.y + box!.height).toBeLessThanOrEqual(size.height);
+        const hit = await target.evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+          return !!top && el.contains(top);
+        });
+        expect(hit, selector).toBe(true);
+      }
+    }
+    const revealInside = await page.evaluate(() => {
+      const reveal = document.querySelector('.spell-hint-reveal')!;
+      const dock = document.querySelector('.cast-dock')!;
+      const r = reveal.getBoundingClientRect();
+      const d = dock.getBoundingClientRect();
+      return r.top >= d.top - 1 && r.bottom <= d.bottom + 1 && r.left >= d.left - 1 && r.right <= d.right + 1;
+    });
+    expect(revealInside, 'hinted answer inside the dock').toBe(true);
+    await expect(page.locator('.speech-fallback-note')).toBeInViewport({ ratio: 1 });
+  });
 }
+
+async function foldDebug(page: Page): Promise<void> {
+  const fold = page.locator('.debug-panel .debug-head .debug-btn-icon');
+  if (await fold.isVisible()) await fold.click();
+  await expect(page.locator('.debug-panel')).toBeHidden();
+}
+
+async function showSpeechFallback(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    const { run } = await import('/src/ui/runtime.ts');
+    window.dispatchEvent(
+      new CustomEvent('zhuyin-speech-fallback', { detail: { text: run().cast!.prompt.cue.speechText } }),
+    );
+  });
+}
+
+async function expectTappable(page: Page, selector: string): Promise<void> {
+  const size = page.viewportSize()!;
+  const targets = page.locator(selector);
+  expect(await targets.count(), selector).toBeGreaterThan(0);
+  for (const target of await targets.all()) {
+    const box = await target.boundingBox();
+    expect(box, selector).toBeTruthy();
+    expect(box!.width, selector).toBeGreaterThanOrEqual(48);
+    expect(box!.height, selector).toBeGreaterThanOrEqual(48);
+    expect(box!.x, selector).toBeGreaterThanOrEqual(0);
+    expect(box!.y, selector).toBeGreaterThanOrEqual(0);
+    expect(box!.x + box!.width, selector).toBeLessThanOrEqual(size.width);
+    expect(box!.y + box!.height, selector).toBeLessThanOrEqual(size.height);
+    const hit = await target.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      return !!top && el.contains(top);
+    });
+    expect(hit, selector).toBe(true);
+  }
+}
+
+test('practice cast controls stay on screen, including after the answer is shown', async ({ page }, testInfo) => {
+  test.skip(!SIZES.includes(testInfo.project.name));
+  await page.goto('/?debug=1');
+  await page.getByRole('button', { name: '開始爬塔' }).click();
+  await page.getByRole('button', { name: /選擇共鳴武者/ }).click();
+  await expect(page.locator('.map-stage')).toBeVisible();
+  await foldDebug(page);
+  await page.evaluate(async () => {
+    const { run, render } = await import('/src/ui/runtime.ts');
+    const { enterPractice } = await import('/src/game/state.ts');
+    enterPractice(run());
+    run().cast!.prompt.mode = 'recognize';
+    render();
+  });
+  await expect(page.locator('.practice-screen .spell-key').first()).toBeVisible();
+  await showSpeechFallback(page);
+  await page.waitForTimeout(400);
+  await expectTappable(page, '.practice-screen .spell-key');
+  await expectTappable(page, '.practice-screen .spell-ctrl');
+  await expectTappable(page, '.practice-screen .hint-btn');
+  await expectTappable(page, '.practice-screen .practice-leave-btn');
+  await expect(page.locator('.speech-fallback-note')).toBeInViewport({ ratio: 1 });
+  const toneOverlap = await page.evaluate(() => {
+    const label = document.querySelector('.tone-row-label');
+    if (!label || getComputedStyle(label).display === 'none') return false;
+    const box = label.getBoundingClientRect();
+    return [...document.querySelectorAll('.spell-key')].some((key) => {
+      const k = key.getBoundingClientRect();
+      return box.left < k.right && k.left < box.right && box.top < k.bottom && k.top < box.bottom && k.width > 0;
+    });
+  });
+  expect(toneOverlap, '聲調 label overlapping tone marks').toBe(false);
+  await page.locator('.practice-screen .hint-btn').click();
+  await expect(page.locator('.spell-hint-reveal')).toBeVisible();
+  await showSpeechFallback(page);
+  await expectTappable(page, '.practice-screen .spell-submit');
+  await expectTappable(page, '.practice-screen .hint-btn');
+  await expectTappable(page, '.practice-screen .practice-leave-btn');
+  await expect(page.locator('.speech-fallback-note')).toBeInViewport({ ratio: 1 });
+});
+
+test('shrine cast keeps 家長協助 tappable, including after the hint', async ({ page }, testInfo) => {
+  test.skip(!SIZES.includes(testInfo.project.name));
+  await page.goto('/?debug=1');
+  await page.getByRole('button', { name: '開始爬塔' }).click();
+  await page.getByRole('button', { name: /選擇共鳴武者/ }).click();
+  await expect(page.locator('.map-stage')).toBeVisible();
+  await foldDebug(page);
+  await page.evaluate(async () => {
+    const { run, render } = await import('/src/ui/runtime.ts');
+    const { debugOpenEvent } = await import('/src/debug/debugActions.ts');
+    const { chooseEventChoice, confirmEventChoice } = await import('/src/game/state.ts');
+    debugOpenEvent(run(), 'event_shared_phonetic_shrine');
+    render();
+    chooseEventChoice(run(), 'practice');
+    confirmEventChoice(run());
+    if (run().cast) run().cast.prompt.mode = 'recognize';
+    render();
+  });
+  await expect(page.locator('.cast-dock .hint-btn')).toBeVisible();
+  await showSpeechFallback(page);
+  await page.waitForTimeout(400);
+  await expectTappable(page, '.cast-dock .hint-btn');
+  await expectTappable(page, '.cast-dock .spell-ctrl');
+  await expectTappable(page, '.cast-dock .spell-key');
+  const toneOverlap = await page.evaluate(() => {
+    const label = document.querySelector('.tone-row-label');
+    if (!label || getComputedStyle(label).display === 'none') return false;
+    const box = label.getBoundingClientRect();
+    return [...document.querySelectorAll('.spell-key')].some((key) => {
+      const k = key.getBoundingClientRect();
+      return box.left < k.right && k.left < box.right && box.top < k.bottom && k.top < box.bottom && k.width > 0;
+    });
+  });
+  expect(toneOverlap, '聲調 label overlapping tone marks').toBe(false);
+  await page.locator('.cast-dock .hint-btn').click();
+  await expect(page.locator('.spell-hint-reveal')).toBeVisible();
+  await showSpeechFallback(page);
+  await expectTappable(page, '.cast-dock .spell-submit');
+  await expectTappable(page, '.cast-dock .hint-btn');
+  await expect(page.locator('.speech-fallback-note')).toBeInViewport({ ratio: 1 });
+});

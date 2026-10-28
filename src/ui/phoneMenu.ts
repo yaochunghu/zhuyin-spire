@@ -1,7 +1,9 @@
 import { getSaveStatus } from '../game/save';
 import { getVolume, setVolume, sfx, type VolLevel } from '../game/audio';
-import type { Screen } from '../game/state';
+import { castPauseTitle } from '../game/coach';
+import { getActiveCharacter, type Screen } from '../game/state';
 import { isDebugEnabled } from '../debug/debugFlags';
+import { run } from './runtime';
 import { lockPageScroll, trapModalFocus, createModalShell, showModalShell, dismissModalShell } from './modal';
 
 export interface PhoneMenuOptions {
@@ -17,7 +19,10 @@ let root: HTMLDialogElement | null = null;
 
 function screenLabel(screen: Screen): string {
   if (screen === 'combat') return '戰鬥暫停';
-  if (screen === 'castCheck' || screen === 'practice' || screen === 'eventCast') return '注音暫停';
+  if (screen === 'castCheck' || screen === 'practice' || screen === 'eventCast') {
+    const state = run();
+    return castPauseTitle(state.cast?.prompt.gateId ?? getActiveCharacter(state)?.castingGateId);
+  }
   if (screen === 'event') return '奇遇選單';
   if (screen === 'map') return '爬塔選單';
   return '遊戲選單';
