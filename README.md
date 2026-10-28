@@ -38,6 +38,7 @@ listens only on your machine. To try a phone on your trusted LAN, opt in with
 npm run build       # typecheck + production bundle
 npm run test:setup  # once per machine: Chromium, Firefox, and WebKit
 npm test            # Vitest unit suite
+npm run generate:save-fixtures  # rewrite tests/fixtures from the live run code
 npm run test:e2e    # tablet and phone smoke tests
 npm run test:security:e2e # production build, then security smoke tests
 npm run preview     # serve dist/
@@ -45,6 +46,13 @@ npm run preview     # serve dist/
 
 The published GitHub Pages build uses `/zhuyin-spire/` as Vite's production
 asset base; local development remains at `/`.
+
+`tests/fixtures/saves/` holds ten version-4 checkpoints, one map, shop, event,
+reward, and act-clear save for 共鳴武者 and one for 珠算武者.
+`tests/fixtures/replays/` holds the seed and the choice list that produced them.
+`npm run generate:save-fixtures` plays both characters through the real run
+code and rewrites those files. `npm test` loads each file through the save
+parser and replays the choices with a save in between. Do not hand-edit the JSON.
 
 ## Privacy and security
 
