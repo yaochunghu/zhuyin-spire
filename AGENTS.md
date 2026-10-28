@@ -43,6 +43,7 @@ npm run test:security:e2e # production build, then security smoke tests
 | Playtest telemetry | `src/game/playtestTelemetry.ts` → [docs/TELEMETRY.md](docs/TELEMETRY.md) |
 | Run flow / screens | `src/game/state.ts`, `src/main.ts` |
 | Save / continue | `src/game/save.ts` |
+| Save fixtures / seed replay | `scripts/generate-save-fixtures.ts`, `tests/support/saveReplayHarness.ts`, `tests/fixtures/` |
 | Map / combat / shop UI | `src/ui/mapView.ts`, `combatView.ts`, `screens.ts` |
 | Drag / card fly FX | `src/ui/dragPlay.ts`, `cardFx.ts` |
 | Debug cheats | `src/debug/*` → [docs/DEBUG.md](docs/DEBUG.md) |
