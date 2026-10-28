@@ -49,10 +49,11 @@ function shuffle<T>(items: T[], rng: () => number): T[] {
 }
 
 function toneClass(spell: string): ToneClass {
-  if (spell.endsWith('ˊ')) return 2;
-  if (spell.endsWith('ˇ')) return 3;
-  if (spell.endsWith('ˋ')) return 4;
-  if (spell.endsWith('˙')) return 5;
+  const text = spell.normalize('NFC');
+  if (text.startsWith('˙')) return 5;
+  if (text.endsWith('ˊ')) return 2;
+  if (text.endsWith('ˇ')) return 3;
+  if (text.endsWith('ˋ')) return 4;
   return 1;
 }
 

@@ -14,6 +14,7 @@ import { coachForScreen } from '../../src/game/coach';
 import { cardAriaLabel } from '../../src/ui/cards';
 import {
   DEFAULT_MATH_PREFS,
+  MATH_FAMILY_IDS,
   effectiveMathTier,
   nextAdaptiveDrop,
   type MathCastingPreferences,
@@ -78,7 +79,6 @@ const GRADE_ONE: Array<[string, CastingTier]> = [
   ['clock', 2], ['clock', 3],
   ['calendar', 2],
   ['money', 3], ['money', 4],
-  ['length', 2], ['length', 3],
   ['shapes', 2],
   ['sort', 1], ['sort', 2],
   ['word', 2], ['word', 3], ['word', 4],
@@ -145,6 +145,16 @@ function expectBand(family: string, tier: CastingTier, draft: MathQuestion): voi
   if (family === 'shapes') {
     expect(['圓形', '三角形', '正方形', '長方形']).toContain(answer);
     expect(question.includes(answer)).toBe(false);
+    expect(question).not.toMatch(/紅旗|窗戶/);
+  }
+  if (family === 'make10' && tier <= 2) {
+    expect(question).not.toMatch(/已經有|再幾顆/);
+    const partsOfTen = /10 可以分成 (\d+) 和幾？/.exec(question);
+    expect(partsOfTen).not.toBeNull();
+    expect(value).toBe(10 - Number(partsOfTen![1]));
+  }
+  if (family === 'make10' && tier === 2) {
+    expect(question).toMatch(/^10 可以分成 (\d+) 和幾？ \1 和幾合起來是 10。$/);
   }
   if (family === 'clock') expect(answer).toMatch(/點/);
   if (family === 'g2Missing') {
@@ -179,6 +189,102 @@ describe('math prompt generation', () => {
         expectBand(family, 5, draft);
       }
     }
+  });
+
+  it('keeps 公分 off every grade-1 tier and leaves the length generator at tier 5', () => {
+    const lengthUnit = /公分|公尺|毫米|公厘|公寸|公丈|公里|厘米|英寸|英吋|英尺|英呎|英哩|英里|幾格|比較長|迴紋針/;
+    for (const family of MATH_FAMILY_IDS) {
+      for (const tier of [1, 2, 3, 4] as const) {
+        for (let seed = 1; seed <= 12; seed += 1) {
+          const draft = ask(family, tier, seed * 19 + tier);
+          const text = `${draft.question}\n${draft.answer}\n${draft.choices.join('\n')}`;
+          expect(text, `${family}@${tier} seed ${seed}`).not.toMatch(lengthUnit);
+          expect(text, `${family}@${tier}`).not.toMatch(/已經有|再幾顆就/);
+        }
+      }
+    }
+    expect(Object.values(ABACUS_CARDS).map((card) => card.cast?.family)).not.toContain('length');
+    expect(ABACUS_CARDS.ab_m017?.cast).toMatchObject({ gateId: 'math', family: 'compare' });
+    const binding = getCardCastBinding(getCard('ab_m017'), 'math', DEFAULT_MATH_PREFS);
+    expect(binding).toMatchObject({ adaptiveFamily: 'compare', tier: 3 });
+    const parked = resolveMathTask(
+      {
+        gateId: 'math',
+        lessonFamilyId: 'length@3',
+        displayGlyph: '📏',
+        tier: 3,
+        adaptiveFamily: 'length',
+      },
+      DEFAULT_MATH_PREFS,
+    );
+    expect(parked).toEqual({ cardFamily: 'length', family: 'add100', tier: 3 });
+    const kept = ask('length', 5, 4);
+    expect(kept.question).toContain('公分');
+    expect(kept.question).toMatch(/長幾公分/);
+    expect(Number(kept.answer)).toBeGreaterThan(0);
+  });
+
+  it('asks make10 tier 2 as a shown split and join', () => {
+    for (let seed = 1; seed <= 40; seed += 1) {
+      const draft = ask('make10', 2, seed);
+      const match = /^10 可以分成 (\d+) 和幾？ \1 和幾合起來是 10。$/.exec(draft.question);
+      expect(match).not.toBeNull();
+      const part = Number(match![1]);
+      expect(part).toBeGreaterThanOrEqual(1);
+      expect(part).toBeLessThanOrEqual(9);
+      expect(Number(draft.answer)).toBe(10 - part);
+      expect(draft.choices).toHaveLength(3);
+      expect(draft.question).not.toMatch(/已經有|再幾顆/);
+    }
+  });
+
+  it('matches every clock face to the hour it asks', () => {
+    const wholeFaces = ['🕐', '🕑', '🕒', '🕓', '🕔', '🕕', '🕖', '🕗', '🕘', '🕙', '🕚', '🕛'];
+    const halfFaces = ['🕜', '🕝', '🕞', '🕟', '🕠', '🕡', '🕢', '🕣', '🕤', '🕥', '🕦', '🕧'];
+    const hourRng = (hour: number) => {
+      const bucket = (hour - 1 + 0.5) / 12;
+      let first = true;
+      return () => {
+        if (first) {
+          first = false;
+          return bucket;
+        }
+        return 0.2;
+      };
+    };
+    for (const tier of [1, 2, 3, 4] as const) {
+      const half = tier > 2;
+      const seen = new Set<string>();
+      for (let hour = 1; hour <= 12; hour += 1) {
+        const draft = generateMathQuestion('clock', tier, hourRng(hour));
+        const expected = (half ? halfFaces : wholeFaces)[hour - 1]!;
+        expect(draft.answer).toBe(half ? `${hour}點半` : `${hour}點`);
+        expect(draft.question).toContain(half ? `短針在 ${hour}` : `短針指著 ${hour}`);
+        expect(draft.emoji).toBe(expected);
+        seen.add(draft.emoji);
+      }
+      expect(seen.size).toBe(12);
+    }
+  });
+
+  it('uses unambiguous shape objects', () => {
+    const scenes = [
+      ['球是什麼形狀？', '圓形', '🔺'],
+      ['三角飯糰是什麼形狀？', '三角形', '🍙'],
+      ['魔術方塊的一面是什麼形狀？', '正方形', '🔺'],
+      ['書本是什麼形狀？', '長方形', '🔺'],
+    ] as const;
+    const seen = new Set<string>();
+    for (let index = 0; index < scenes.length; index += 1) {
+      const draft = generateMathQuestion('shapes', 2, () => (index + 0.5) / 4);
+      const [question, answer, emoji] = scenes[index]!;
+      expect(draft.question).toBe(question);
+      expect(draft.answer).toBe(answer);
+      expect(draft.emoji).toBe(emoji);
+      expect(draft.question).not.toMatch(/紅旗|窗戶/);
+      seen.add(draft.question);
+    }
+    expect(seen.size).toBe(4);
   });
 
   it('draws the same question from the same cast stream', () => {
