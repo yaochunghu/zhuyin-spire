@@ -50,7 +50,7 @@ export const CHARACTERS = {
     emoji: '🥋',
     name: '共鳴武者',
     title: '以聲辨位，攻守換拍',
-    theme: '完整防守累積「勁」，在「易傷」窗口用攻守換拍反擊。',
+    theme: '完整防守累積「勁」，在「易傷」空檔用攻守換拍反擊。',
     teachingNote: '先讀意圖、完整防守，再把累積的力量化成反擊。',
     starterDeckIds: [
       'bo', 'bo', 'bo', 'bo', 'bo',

@@ -69,7 +69,7 @@ export interface CardUpgradeDef {
 /**
  * Teaching phrase for a card.
  * `spell` = full 注音 for the **first syllable** (聲母 + 介音/韻母 + 聲調符號).
- * 一聲通常不標調；二ˊ 三ˇ 四ˋ 輕˙ 要寫上。
+ * 一聲通常不標調；二ˊ 三ˇ 四ˋ 寫在音節後，輕聲 ˙ 寫在音節前。
  */
 export interface Cue {
   word: string;

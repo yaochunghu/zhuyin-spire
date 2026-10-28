@@ -179,7 +179,9 @@ Zhuyin bindings include `tier` from card rarity (`basic` 1, `common` 2,
 `uncommon` 3, `rare` 4). Zhuyin prompt creation ignores that field. A math
 binding uses `family@tier`. 珠算武者 cards set `cast`. Tier 5 is used only for
 倍數連拳 when Options has 二年級 on. With it off, that card asks its grade-1
-fallback (`add100`).
+fallback (`add100`). The `length` family is the same kind of later layer: it
+asks 公分 only at tier 5, and no live card binds to it. 長尺掃 asks `compare`,
+which stays inside 一年級.
 
 ## 珠算 provider
 
