@@ -47,6 +47,7 @@ npm run test:security:e2e # production build, then security smoke tests
 | Map / combat / shop UI | `src/ui/mapView.ts`, `combatView.ts`, `screens.ts` |
 | Drag / card fly FX | `src/ui/dragPlay.ts`, `cardFx.ts` |
 | Debug cheats | `src/debug/*` → [docs/DEBUG.md](docs/DEBUG.md) |
+| Child-error model / Act I sim | `src/debug/childModel.ts`, `scripts/simulate-act.ts` → [docs/sim/CHILD_MODEL.md](docs/sim/CHILD_MODEL.md) |
 | Responsive phone/tablet stages | `src/styles/main.css`, `src/ui/responsive.ts` |
 
 ## Architecture in one breath

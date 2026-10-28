@@ -39,3 +39,21 @@ test('privacy control clears game keys but preserves unrelated storage', async (
   expect(await page.evaluate(() => localStorage.getItem('zhuyin-spire-test-private'))).toBeNull();
   expect(await page.evaluate(() => localStorage.getItem('unrelated-test-key'))).toBe('keep');
 });
+
+test('production bundle has no child-error model and ignores ?childModel', async ({ page }) => {
+  await page.goto('?debug=1&childModel=firstGrader&seed=1');
+  await expect(page.locator('.title-screen')).toBeVisible();
+  expect(await page.evaluate(() => {
+    const host = window as Window & { __zsDebug?: unknown; __zsChildModelGate?: unknown };
+    return { api: host.__zsDebug ?? null, gate: host.__zsChildModelGate ?? null };
+  })).toEqual({ api: null, gate: null });
+
+  const sources = await page.evaluate(() => [
+    ...document.querySelectorAll('script[src], link[rel="modulepreload"]'),
+  ].map((node) => (node as HTMLScriptElement).src || (node as HTMLLinkElement).href));
+  expect(sources.some((source) => source.endsWith('.js'))).toBe(true);
+  for (const source of sources) {
+    const body = await (await page.request.get(source)).text();
+    expect(body).not.toMatch(/childModel|ChildModel|__zsDebug|firstGrader/);
+  }
+});

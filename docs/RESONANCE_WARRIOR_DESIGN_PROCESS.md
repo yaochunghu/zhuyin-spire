@@ -101,11 +101,14 @@ These rules replace a live list of rejected card names:
 
 ## Balance evidence
 
-`scripts/simulate-resonance-pool.mjs` parses only the Final 75 below. Its seeded
-proxy drafts report offer/pick rates, containing-deck outcomes, Smith priority,
-cohort spread, and static roster errors. It is useful for outliers and package
-starvation, but it does not model 注音 mistakes, exact pile play, or every
-trigger. It is evidence levels 1–2 from `DESIGN_PLAYBOOK.md`, not player data.
+With no `--` flag, `scripts/simulate-resonance-pool.mjs` parses only the Final
+75 below. Its seeded proxy drafts report offer/pick rates, containing-deck
+outcomes, Smith priority, cohort spread, and static roster errors. It is useful
+for outliers and package starvation, but it does not model 注音 mistakes, exact
+pile play, or every trigger. It is evidence levels 1–2 from `DESIGN_PLAYBOOK.md`,
+not player data. A `--` flag runs the shared child-error model for both
+characters instead. Rates and the A2–A4 commands are in
+[sim/CHILD_MODEL.md](./sim/CHILD_MODEL.md).
 
 The last equal-cohort pass split 160,000 drafts across 聽隙爆發, 百鍊連環,
 聽勁反擊, and hybrid policies. The 5.4-point proxy-win spread is a watch list,

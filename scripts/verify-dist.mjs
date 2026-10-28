@@ -35,8 +35,11 @@ if (hasForbiddenFontHost) {
 }
 if (/\/Users\/|C:\\\\Users\\/u.test(bundle)) failures.push('local personal path is present');
 if (/debugPanel|zhuyin-debug-root|DEBUG · 測試用/u.test(executable)) failures.push('debug UI is present');
+if (/childModel|ChildModel|__zsDebug|firstGrader/u.test(executable)) {
+  failures.push('child-error model is present');
+}
 
 if (failures.length) {
   throw new Error(`Unsafe production artifact: ${failures.join('; ')}`);
 }
-console.log(`Verified ${files.length} production files: no source maps, external fonts, local paths, or debug UI.`);
+console.log(`Verified ${files.length} production files: no source maps, external fonts, local paths, debug UI, or child-error model.`);

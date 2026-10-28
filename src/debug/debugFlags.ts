@@ -12,13 +12,25 @@ let skipCast = false;
 export const DEBUG_BUILD_ENABLED =
   import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEBUG_TOOLS === 'true';
 
+/**
+ * True for `?debug`, `?debug=1`, and `?debug=true`.
+ * A bare `?debug` matches the agent-tester URL. Other values stay off.
+ */
+export function debugSearchEnabled(search: string): boolean {
+  try {
+    const query = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
+    if (!query.has('debug')) return false;
+    const value = (query.get('debug') ?? '').trim().toLowerCase();
+    return value === '' || value === '1' || value === 'true';
+  } catch {
+    return false;
+  }
+}
+
 export function isDebugEnabled(): boolean {
   if (!DEBUG_BUILD_ENABLED) return false;
   try {
-    if (typeof window !== 'undefined') {
-      const q = new URLSearchParams(window.location.search);
-      if (q.get('debug') === '1' || q.get('debug') === 'true') return true;
-    }
+    if (typeof window !== 'undefined' && debugSearchEnabled(window.location.search)) return true;
   } catch {
     /* ignore */
   }
