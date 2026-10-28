@@ -351,7 +351,9 @@ test('horizontal card movement does not cast and the pause menu freezes auto-sub
   await expect(page.locator('.tutorial-step-endTurn')).toBeVisible();
 });
 
-test('phone menu opens the current deck without changing the run', async ({ page }) => {
+test('phone menu opens the current deck without changing the run', async ({ page }, testInfo) => {
+  // Renders all 75 card designs; WebKit on a shared CI runner can need more than 30s.
+  test.slow(testInfo.project.name.includes('webkit'));
   await page.goto('/?debug=1');
   await debugAction(page, 'Run', 'Map');
   await closeDebug(page);
@@ -370,6 +372,7 @@ test('phone menu opens the current deck without changing the run', async ({ page
   await expect(page.getByText('設計 ID')).toBeVisible();
   await expect(page.getByText('B001', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: '關閉卡牌檢視器' }).click();
+  await expect(page.locator('.designer-viewer')).toBeHidden();
   await expect(page.locator('.map-dot')).toHaveCount(before);
 });
 
