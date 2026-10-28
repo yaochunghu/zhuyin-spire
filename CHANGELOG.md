@@ -8,6 +8,13 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+### 共鳴武者 注音 cast dock
+
+- The 注音 word sits in a parchment box with dark walnut ink (about 14:1 contrast), and the box grows to fit the word instead of clipping it at 30px. Listen mode keeps the hidden 「？」, now legible
+- Every slot, 注音 key, tone key, ⌫ 🗑️ ✓, 🔊 再聽 and 💡 家長協助 is at least 48px, fully on screen and not overlapping at 640×360, 844×390, 1280×720 and 390×844, with no scrolling inside the dock. On short landscape phones the dock takes the right half of the screen: the word, coach and note on the left, the slots, keys and controls on the right
+- The 語音暫時無法播放… note for adults is fully visible at all four sizes
+- The 珠算武者 math dock, the practice screen, game logic and saves (version 4) are unchanged. Screenshots are in docs/screenshots/zhuyin-dock/
+
 ---
 
 ## [0.4.3] — 2026-10-28

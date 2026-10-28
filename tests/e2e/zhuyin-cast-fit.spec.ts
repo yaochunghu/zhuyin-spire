@@ -1,0 +1,233 @@
+import { expect, test, type Page } from '@playwright/test';
+
+// The 共鳴武者 注音 dock must show a readable word inside its box, every slot,
+// key, and control as a separate full-size tap target on screen without
+// scrolling, and the speech-fallback note in full, in both recognize and
+// listen modes.
+
+const SIZES = ['landscape-wide', 'phone-landscape-chromium', 'phone-landscape-webkit', 'phone-portrait-webkit'];
+const MODES = ['recognize', 'listen'] as const;
+const TARGETS = [
+  '.cast-dock .spell-slot',
+  '.cast-dock .spell-key',
+  '.cast-dock .spell-ctrl',
+  '.cast-dock .replay-btn',
+  '.cast-dock .hint-btn',
+].join(', ');
+
+const consoleErrors = new WeakMap<Page, string[]>();
+
+test.beforeEach(async ({ page }) => {
+  const errors: string[] = [];
+  consoleErrors.set(page, errors);
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.addInitScript(() => {
+    if (sessionStorage.getItem('zhuyin-cast-fit-keep')) return;
+    localStorage.clear();
+    sessionStorage.clear();
+    sessionStorage.setItem('zhuyin-cast-fit-keep', '1');
+  });
+});
+
+test.afterEach(async ({ page }) => {
+  expect(consoleErrors.get(page) ?? []).toEqual([]);
+});
+
+function sizeLabel(page: Page): string {
+  const size = page.viewportSize()!;
+  return `${size.width}x${size.height}`;
+}
+
+async function openZhuyinCast(page: Page, mode: (typeof MODES)[number]): Promise<void> {
+  await page.goto('/?debug=1');
+  await page.getByRole('button', { name: '開始爬塔' }).click();
+  await page.getByRole('button', { name: /選擇共鳴武者/ }).click();
+  await expect(page.locator('.map-stage')).toBeVisible();
+  // The debug panel opens on its own only where there is room; fold it away.
+  const fold = page.locator('.debug-panel .debug-head .debug-btn-icon');
+  if (await fold.isVisible()) await fold.click();
+  await expect(page.locator('.debug-panel')).toBeHidden();
+  await page.evaluate(async () => {
+    const { run, render } = await import('/src/ui/runtime.ts');
+    const { debugStartEncounter } = await import('/src/game/state.ts');
+    debugStartEncounter(run(), 'slime');
+    render();
+  });
+  await expect(page.locator('.hand .card').first()).toBeVisible();
+  await page.evaluate(async (castMode) => {
+    const { run, render } = await import('/src/ui/runtime.ts');
+    const { tryPlayCard } = await import('/src/game/state.ts');
+    const state = run();
+    const combat = state.combat!;
+    tryPlayCard(state, combat.hand[0].uid, [combat.enemies[0].id]);
+    // The mode is drawn at random; pin it so both layouts are measured.
+    state.cast!.prompt.mode = castMode;
+    render();
+  }, mode);
+  await expect(page.locator('.cast-dock:not(.cast-math) .spell-key').first()).toBeVisible();
+  await expect(page.locator('.cast-cue-pane .cue-word')).toBeVisible();
+  await expect(page.locator('.cast-dock .replay-btn')).toHaveCount(mode === 'listen' ? 1 : 0);
+  await page.evaluate(async () => {
+    const { run } = await import('/src/ui/runtime.ts');
+    window.dispatchEvent(
+      new CustomEvent('zhuyin-speech-fallback', { detail: { text: run().cast!.prompt.cue.speechText } }),
+    );
+  });
+  await expect(page.locator('.cast-cue-pane .speech-fallback-note')).toBeVisible();
+  // Let the dock's open transition settle before measuring.
+  await page.waitForTimeout(600);
+}
+
+for (const mode of MODES) {
+  test(`${mode}: the 注音 word is high-contrast and fits inside its box`, async ({ page }, testInfo) => {
+    test.skip(!SIZES.includes(testInfo.project.name));
+    await openZhuyinCast(page, mode);
+    const report = await page.evaluate(() => {
+      type Rgba = [number, number, number, number];
+      const parse = (value: string): Rgba[] =>
+        [...value.matchAll(/rgba?\(([^)]+)\)/g)].map((m) => {
+          const parts = m[1].split(/[ ,/]+/).filter(Boolean).map(Number);
+          return [parts[0], parts[1], parts[2], parts[3] ?? 1];
+        });
+      const lum = ([r, g, b]: Rgba): number => {
+        const ch = (c: number) => {
+          const s = c / 255;
+          return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+        };
+        return 0.2126 * ch(r) + 0.7152 * ch(g) + 0.0722 * ch(b);
+      };
+      const ratio = (a: Rgba, b: Rgba): number => {
+        const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+        return (hi + 0.05) / (lo + 0.05);
+      };
+      const word = document.querySelector<HTMLElement>('.cast-cue-pane .cue-word')!;
+      const box = document.querySelector<HTMLElement>('.cast-cue-pane .cue-box')!;
+      const emoji = box.querySelector<HTMLElement>('.cue-emoji');
+      const fg = parse(getComputedStyle(word).color)[0];
+      // Every solid colour or gradient stop painted behind the text, nearest first.
+      let backgrounds: Rgba[] = [];
+      for (let el: HTMLElement | null = word; el; el = el.parentElement) {
+        const style = getComputedStyle(el);
+        const stops = parse(style.backgroundImage).filter((c) => c[3] > 0.5);
+        const solid = parse(style.backgroundColor).filter((c) => c[3] > 0.5);
+        if (stops.length || solid.length) {
+          backgrounds = [...stops, ...solid];
+          break;
+        }
+      }
+      const worst = backgrounds.length ? Math.min(...backgrounds.map((bg) => ratio(fg, bg))) : 0;
+      const boxRect = box.getBoundingClientRect();
+      const wordRect = word.getBoundingClientRect();
+      const emojiRect = emoji?.getBoundingClientRect();
+      const children = [...box.querySelectorAll<HTMLElement>('*')].map((el) => el.getBoundingClientRect());
+      const outside = children.filter(
+        (r) =>
+          r.width > 0 &&
+          (r.left < boxRect.left - 1 || r.right > boxRect.right + 1 || r.top < boxRect.top - 1 || r.bottom > boxRect.bottom + 1),
+      ).length;
+      const emojiOverlapsWord =
+        !!emojiRect &&
+        emojiRect.left < wordRect.right - 1 &&
+        wordRect.left < emojiRect.right - 1 &&
+        emojiRect.top < wordRect.bottom - 1 &&
+        wordRect.top < emojiRect.bottom - 1;
+      return {
+        text: word.textContent,
+        fontSize: parseFloat(getComputedStyle(word).fontSize),
+        worst,
+        backgrounds: backgrounds.length,
+        overflowY: box.scrollHeight - box.clientHeight,
+        overflowX: box.scrollWidth - box.clientWidth,
+        outside,
+        emojiOverlapsWord,
+        wordOnScreen: wordRect.top >= 0 && wordRect.bottom <= innerHeight && wordRect.left >= 0 && wordRect.right <= innerWidth,
+      };
+    });
+    expect(report.backgrounds, 'a background behind the word').toBeGreaterThan(0);
+    expect(report.worst, `contrast of "${report.text}"`).toBeGreaterThanOrEqual(4.5);
+    expect(report.fontSize).toBeGreaterThanOrEqual(24);
+    expect(report.overflowY).toBeLessThanOrEqual(1);
+    expect(report.overflowX).toBeLessThanOrEqual(1);
+    expect(report.outside, 'elements poking out of the word box').toBe(0);
+    expect(report.emojiOverlapsWord, 'emoji overlapping the word').toBe(false);
+    expect(report.wordOnScreen).toBe(true);
+    await page.screenshot({ path: `test-results/zhuyin-cast-fit/cast-${mode}-${sizeLabel(page)}.png` });
+  });
+
+  test(`${mode}: every slot, key, and control is big, separate, and on screen`, async ({ page }, testInfo) => {
+    test.skip(!SIZES.includes(testInfo.project.name));
+    await openZhuyinCast(page, mode);
+    const targets = page.locator(TARGETS);
+    const rects = await targets.evaluateAll((els) =>
+      els.map((el) => {
+        const r = el.getBoundingClientRect();
+        const label = `${el.className.split(' ')[0]} "${(el.textContent ?? '').trim().slice(0, 4)}"`;
+        return { label, left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height };
+      }),
+    );
+    const slots = await page.locator('.cast-dock .spell-slot').count();
+    expect(slots).toBeGreaterThanOrEqual(2);
+    expect(slots).toBeLessThanOrEqual(4);
+    expect(await page.locator('.cast-dock .spell-ctrl').count()).toBe(3);
+    expect(await page.locator('.cast-dock .hint-btn').count()).toBe(1);
+    const size = page.viewportSize()!;
+    for (const r of rects) {
+      expect(r.width, `${r.label} width`).toBeGreaterThanOrEqual(48);
+      expect(r.height, `${r.label} height`).toBeGreaterThanOrEqual(48);
+      expect(r.left, `${r.label} left`).toBeGreaterThanOrEqual(0);
+      expect(r.top, `${r.label} top`).toBeGreaterThanOrEqual(0);
+      expect(r.right, `${r.label} right`).toBeLessThanOrEqual(size.width);
+      expect(r.bottom, `${r.label} bottom`).toBeLessThanOrEqual(size.height);
+    }
+    for (let i = 0; i < rects.length; i += 1) {
+      for (let j = i + 1; j < rects.length; j += 1) {
+        const a = rects[i];
+        const b = rects[j];
+        const overlap = a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+        expect(overlap, `${a.label} overlaps ${b.label}`).toBe(false);
+      }
+    }
+    // Nothing in the dock needs scrolling to reach.
+    const scroll = await page.locator('.cast-dock').evaluate((dock) => ({
+      y: dock.scrollHeight - dock.clientHeight,
+      x: dock.scrollWidth - dock.clientWidth,
+    }));
+    expect(scroll.y).toBeLessThanOrEqual(1);
+    expect(scroll.x).toBeLessThanOrEqual(1);
+    // Each target takes its own tap at its centre.
+    for (const target of await targets.all()) {
+      const hit = await target.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return !!top && el.contains(top);
+      });
+      expect(hit).toBe(true);
+    }
+  });
+
+  test(`${mode}: the speech-fallback note is fully visible`, async ({ page }, testInfo) => {
+    test.skip(!SIZES.includes(testInfo.project.name));
+    await openZhuyinCast(page, mode);
+    const note = page.locator('.cast-cue-pane .speech-fallback-note');
+    await expect(note).toContainText('仍需拼出完整注音');
+    await expect(note).toBeInViewport({ ratio: 1 });
+    const clippedBy = await note.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      for (let p = el.parentElement; p; p = p.parentElement) {
+        const style = getComputedStyle(p);
+        // A display: contents pane has no box of its own, so it cannot clip.
+        if (style.display === 'contents') continue;
+        if (style.overflowX === 'visible' && style.overflowY === 'visible') continue;
+        const c = p.getBoundingClientRect();
+        if (r.left < c.left - 1 || r.right > c.right + 1 || r.top < c.top - 1 || r.bottom > c.bottom + 1) {
+          return p.className || p.tagName;
+        }
+      }
+      return null;
+    });
+    expect(clippedBy, 'container clipping the note').toBeNull();
+  });
+}
