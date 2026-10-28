@@ -1,4 +1,22 @@
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+const cliArgs = process.argv.slice(2);
+if (cliArgs.some((arg) => arg.startsWith('--'))) {
+  const root = fileURLToPath(new URL('..', import.meta.url));
+  const result = spawnSync(process.execPath, [
+    'node_modules/vitest/vitest.mjs',
+    'run',
+    '--config',
+    'vitest.sim.config.ts',
+  ], {
+    cwd: root,
+    stdio: 'inherit',
+    env: { ...process.env, ZS_SIM_ARGS: JSON.stringify(cliArgs) },
+  });
+  process.exit(result.status === null ? 1 : result.status);
+}
 
 const docPath = new URL('../docs/RESONANCE_WARRIOR_DESIGN_PROCESS.md', import.meta.url);
 const source = fs.readFileSync(docPath, 'utf8');

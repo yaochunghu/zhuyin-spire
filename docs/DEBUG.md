@@ -7,6 +7,8 @@ Files:
 - `src/debug/debugFlags.ts` — enablement + skip-cast flag  
 - `src/debug/debugActions.ts` — pure state mutations  
 - `src/debug/debugPanel.ts` — DOM panel (mounts on `document.body`)  
+- `src/debug/childModel.ts` — child-error rates, shared with the headless sim  
+- `src/debug/childModelBridge.ts` — `?childModel` page hook  
 
 Mounted from `main.ts` after UI bind.
 
@@ -20,11 +22,10 @@ build. Ordinary production builds do not contain or mount the debug panel.
 In a debug-capable build, `isDebugEnabled()` is true if **any** of:
 
 1. Vite **`import.meta.env.DEV`** (local `npm run dev`)  
-2. URL query **`?debug=1`** or `?debug=true`  
+2. URL query **`?debug`**, **`?debug=1`**, or **`?debug=true`**  
 3. `localStorage.setItem('zhuyin-debug', '1')`  
 
-`?debug=1` and the local-storage flag cannot enable debug in the normal public
-production build. For a private QA artifact only, build with
+`?debug=0` and `?debug=false` stay off. `?debug=1` and the local-storage flag cannot enable debug in the normal public production build. For a private QA artifact only, build with
 `VITE_ENABLE_DEBUG_TOOLS=true`; never deploy that artifact to GitHub Pages.
 
 ---
@@ -41,6 +42,18 @@ production build. For a private QA artifact only, build with
 Label in UI: **DEBUG · 測試用**.
 
 ---
+
+## Child-error model
+
+`?childModel=firstGrader` (also `struggling` or `strong`) answers one open cast
+the way the headless Act I sim does. It loads only in a debug-capable build,
+and only when the query also has `debug`. A saved `zhuyin-debug` flag is not
+enough. Optional `seed` and `zhuyinP` (`0.7`, `0.8`, `0.9`) match the sim.
+
+The page does not play itself. After the title screen is up,
+`window.__zsDebug.answerCast()` answers the current cast, or returns `idle`.
+The run is marked `synthetic: true`. Rates live in
+[sim/CHILD_MODEL.md](./sim/CHILD_MODEL.md). Normal play never imports them.
 
 ## Skip cast (most useful)
 

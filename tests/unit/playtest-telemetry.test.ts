@@ -9,6 +9,8 @@ import {
   PLAYTEST_STORAGE_KEY,
   exportPlaytestTelemetry,
   priorErrorTagFor,
+  clearSyntheticPlaytestMark,
+  markSyntheticPlaytest,
   recordCastMeasurement,
   recordPlaytestEvent,
   responseBucketFor,
@@ -102,6 +104,7 @@ beforeEach(() => {
 
 afterEach(() => {
   setDebugSkipCast(false);
+  clearSyntheticPlaytestMark();
   navigator.webdriver = false;
   vi.unstubAllGlobals();
 });
@@ -492,6 +495,33 @@ describe('v1 events and synthetic runs', () => {
     tryPlayCard(state, playable(state).uid);
     expect(state.screen).toBe('combat');
     expect(casts()).toHaveLength(0);
+  });
+
+  it('marks a headless model run synthetic only while the mark is set', () => {
+    markSyntheticPlaytest();
+    recordCastMeasurement({
+      gateId: 'math',
+      family: 'add10',
+      tier: 1,
+      correct: false,
+      retried: false,
+      hintLevel: 0,
+      errorTag: null,
+      responseMs: 12_000,
+    });
+    expect(casts()[0]).toMatchObject({ synthetic: true, responseBucket: '5-15s' });
+    clearSyntheticPlaytestMark();
+    recordCastMeasurement({
+      gateId: 'math',
+      family: 'add10',
+      tier: 1,
+      correct: true,
+      retried: false,
+      hintLevel: 0,
+      errorTag: null,
+      responseMs: 1_000,
+    });
+    expect(casts()[1]).not.toHaveProperty('synthetic');
   });
 });
 

@@ -61,6 +61,21 @@ export type PlaytestEvent = SyntheticMark & (
 
 const RESPONSE_BUCKETS = new Set<string>(['<5s', '5-15s', '15-30s', '>30s']);
 
+/**
+ * Headless model runs have no `?debug` query and no browser webdriver flag.
+ * The sim calls this before it plays so every event it writes is synthetic.
+ * A human session never calls it.
+ */
+let syntheticMark = false;
+
+export function markSyntheticPlaytest(): void {
+  syntheticMark = true;
+}
+
+export function clearSyntheticPlaytestMark(): void {
+  syntheticMark = false;
+}
+
 function asBucket(value: string): ResponseBucket {
   return RESPONSE_BUCKETS.has(value) ? value as ResponseBucket : '>30s';
 }
@@ -238,6 +253,7 @@ function storedEvent(event: PlaytestEvent): PlaytestEvent {
 }
 
 function isSyntheticPlaytest(): boolean {
+  if (syntheticMark) return true;
   try {
     if (isDebugEnabled() || getDebugSkipCast()) return true;
   } catch {

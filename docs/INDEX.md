@@ -40,6 +40,7 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md) | Live normal, elite, and boss roster, and Yao's decisions on the #52 questions |
 | [BALANCE.md](./BALANCE.md) | Live economy / HP / hand numbers + design intent |
 | [DEBUG.md](./DEBUG.md) | Debug panel, flags, skip-cast testing |
+| [sim/CHILD_MODEL.md](./sim/CHILD_MODEL.md) | Debug-only child-error model and the Act I headless sim |
 | [ROADMAP.md](./ROADMAP.md) | Shipped systems, next work, known pitfalls |
 | [NEXT_PHASE.md](./NEXT_PHASE.md) | v0.4.4 current release, and what comes next |
 

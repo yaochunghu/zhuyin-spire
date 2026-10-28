@@ -58,8 +58,13 @@ schema. An older stored `combatEnd` has no `characterId` and still exports.
 
 `synthetic: true` is set on events recorded while any of these is true:
 
-- debug tools are on (`isDebugEnabled()`: `?debug=1`, `?debug=true`, or
-  `localStorage` `zhuyin-debug` in a debug-capable build);
+- `markSyntheticPlaytest()` was called. The child-error model does this for a
+  headless Act I run and for a debug page that actually installed
+  `?childModel`. `clearSyntheticPlaytestMark()` turns it back off. A human
+  session never calls it. Headless Node has no debug query and no webdriver
+  flag, so the mark is what labels those runs;
+- debug tools are on (`isDebugEnabled()`: `?debug`, `?debug=1`, `?debug=true`,
+  or `localStorage` `zhuyin-debug` in a debug-capable build);
 - skip-cast is on;
 - `navigator.webdriver` is true (Playwright and other automation).
 
