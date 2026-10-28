@@ -72,6 +72,8 @@ export interface ActiveEvent {
   shrineHpPerMiss: number;
   shrineThen: EventEffect[];
   shrineCardId: string;
+  /** Set only after 家長協助 is used. Absent means this event has not spent it. */
+  parentHintUsed?: boolean;
   fightEncounterId: string | null;
   fightReward: EventEffect[];
   offerIds: string[];

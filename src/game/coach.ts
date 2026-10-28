@@ -24,6 +24,16 @@ export function isEarlyLearningRuns(): boolean {
   return getCompletedRunCount() < 3;
 }
 
+/** Pause-menu title while a cast is open. Follows the gate, not the screen name. */
+export function castPauseTitle(gateId: CastingGateId | null | undefined): string {
+  return gateId === 'math' ? '算題暫停' : '注音暫停';
+}
+
+/** Why a potion cannot be drunk or dropped while a cast is open. */
+export function castBusyNote(gateId: CastingGateId | null | undefined): string {
+  return gateId === 'math' ? '先算完' : '先念完注音';
+}
+
 export function coachForScreen(
   screen: Screen,
   opts?: {

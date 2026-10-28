@@ -99,7 +99,8 @@ export function playSpellReveal(
   revealContinueTimer = teachingTimers.set(() => {
     if (finished) return;
     overlay.classList.add('can-continue');
-    continueButton.focus();
+    // Focusing the button must not scroll the question and answer out of the card.
+    continueButton.focus({ preventScroll: true });
   }, LEARNING_REVEAL_CONTINUE_MS);
   autoTimer = teachingTimers.set(finish, LEARNING_REVEAL_TOTAL_MS - 180);
   overlay.addEventListener('remove', () => teachingTimers.clear(removeTimer));
@@ -257,9 +258,11 @@ export function renderCastCheck(isPractice = false): HTMLElement {
   const mode = cast.prompt.mode;
   const mathCast = cast.prompt.gateId === 'math';
   const el = document.createElement('div');
-  el.className = `screen cast-screen mode-${mode}${isPractice ? ' practice-screen' : ''}${
-    !isPractice && run().combat ? ' cast-dock' : ''
-  }${mathCast ? ' cast-math' : ''}`;
+  // Practice, shrine, and combat casts share one dock. The combat stage
+  // only changes where that dock sits; the fit rules key off .cast-dock.
+  el.className = `screen cast-screen cast-dock mode-${mode}${isPractice ? ' practice-screen' : ''}${
+    mathCast ? ' cast-math' : ''
+  }`;
 
   const cueWord = cast.prompt.cue.text;
   const cueEmoji = cast.prompt.cue.emoji;
@@ -354,7 +357,9 @@ export function renderCastCheck(isPractice = false): HTMLElement {
     const reveal = document.createElement('div');
     reveal.className = 'spell-hint-reveal';
     reveal.innerHTML = `<span class="adult-text">答案：</span><span class="spell-answer">${session.hintSpell}</span>`;
-    answerPane.appendChild(reveal);
+    // 注音 covers the mana line. Math keeps the reveal in the answer stack.
+    if (mathCast) answerPane.appendChild(reveal);
+    else header.appendChild(reveal);
   }
 
   if (cast.prompt.inputMode === 'singleChoice') {
@@ -495,11 +500,18 @@ export function renderCastCheck(isPractice = false): HTMLElement {
       '<span>💡</span><span class="adult-text"> 顯示答案（練習可多次）</span>';
     hint.disabled = false;
   } else {
-    const used = run().tutorial ? false : run().combat?.parentHintUsed;
+    const state = run();
+    const eventHint = state.screen === 'eventCast';
+    const used = state.tutorial
+      ? false
+      : eventHint
+        ? !!state.eventTrack.active?.parentHintUsed
+        : !!state.combat?.parentHintUsed;
     const hintNote = mathCast ? '顯示答案' : '顯示完整拼法';
+    const onceNote = eventHint ? '，本事件一次' : '，本場一次';
     hint.innerHTML = used
       ? '<span class="adult-text">家長協助已用完</span>'
-      : `<span>💡</span><span class="adult-text"> 家長協助（${hintNote}${run().tutorial ? '，教學可重複' : '，本場一次'}）</span>`;
+      : `<span>💡</span><span class="adult-text"> 家長協助（${hintNote}${state.tutorial ? '，教學可重複' : onceNote}）</span>`;
     hint.disabled = !!used;
   }
   hint.addEventListener('click', () => {

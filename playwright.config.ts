@@ -35,8 +35,22 @@ export default defineConfig({
     },
     {
       name: 'tablet-landscape',
-      testMatch: /tablet-smoke\.spec\.ts/,
+      testMatch: /tablet-smoke\.spec\.ts|math-cast-fit\.spec\.ts|zhuyin-cast-fit\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], viewport: { width: 1024, height: 768 } },
+    },
+    {
+      name: 'short-landscape',
+      testMatch: /math-cast-fit\.spec\.ts|zhuyin-cast-fit\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1024, height: 600 } },
+    },
+    {
+      name: 'phone-narrow',
+      testMatch: /math-cast-fit\.spec\.ts|zhuyin-cast-fit\.spec\.ts/,
+      use: {
+        ...devices['Pixel 5'],
+        viewport: { width: 360, height: 740 },
+        hasTouch: true,
+      },
     },
     {
       name: 'tablet-portrait',

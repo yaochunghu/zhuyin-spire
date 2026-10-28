@@ -4,7 +4,15 @@ import { expect, test, type Page } from '@playwright/test';
 // fully inside its box, its three answers must be big separate tap targets on
 // screen, and both characters must show on the select screen without scrolling.
 
-const SIZES = ['landscape-wide', 'phone-landscape-chromium', 'phone-landscape-webkit', 'phone-portrait-webkit'];
+const SIZES = [
+  'landscape-wide',
+  'tablet-landscape',
+  'short-landscape',
+  'phone-landscape-chromium',
+  'phone-landscape-webkit',
+  'phone-portrait-webkit',
+  'phone-narrow',
+];
 const LANDSCAPE_PHONES = ['phone-landscape-chromium', 'phone-landscape-webkit'];
 
 const consoleErrors = new WeakMap<Page, string[]>();
@@ -164,6 +172,120 @@ test('the three math choices are big, separate, and on screen', async ({ page },
     });
     expect(hit).toBe(true);
   }
+});
+
+test('a hint and the speech note leave the three answers on screen', async ({ page }, testInfo) => {
+  test.skip(!SIZES.includes(testInfo.project.name));
+  await openMathCast(page);
+  await page.evaluate(async () => {
+    const { run } = await import('/src/ui/runtime.ts');
+    window.dispatchEvent(
+      new CustomEvent('zhuyin-speech-fallback', { detail: { text: run().cast!.prompt.cue.speechText } }),
+    );
+  });
+  await expect(page.locator('.speech-fallback-note')).toContainText('語音暫時無法播放');
+  await expect(page.locator('.speech-fallback-note')).toContainText('仍需選出答案');
+  await page.locator('.cast-dock .hint-btn').click();
+  await expect(page.locator('.spell-hint-reveal')).toBeVisible();
+  await page.evaluate(async () => {
+    const { run } = await import('/src/ui/runtime.ts');
+    window.dispatchEvent(
+      new CustomEvent('zhuyin-speech-fallback', { detail: { text: run().cast!.prompt.cue.speechText } }),
+    );
+  });
+  const size = page.viewportSize()!;
+  const choices = page.locator('.cast-choice-key');
+  expect(await choices.count()).toBe(3);
+  for (const key of await choices.all()) {
+    const box = await key.boundingBox();
+    expect(box).toBeTruthy();
+    expect(box!.width).toBeGreaterThanOrEqual(48);
+    expect(box!.height).toBeGreaterThanOrEqual(48);
+    expect(box!.y).toBeGreaterThanOrEqual(0);
+    expect(box!.y + box!.height).toBeLessThanOrEqual(size.height);
+    const hit = await key.evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      return !!top && el.contains(top);
+    });
+    expect(hit).toBe(true);
+  }
+  const hint = page.locator('.cast-dock .hint-btn');
+  const hintBox = await hint.boundingBox();
+  expect(hintBox).toBeTruthy();
+  expect(hintBox!.width).toBeGreaterThanOrEqual(48);
+  expect(hintBox!.height).toBeGreaterThanOrEqual(48);
+  expect(hintBox!.y + hintBox!.height).toBeLessThanOrEqual(size.height);
+  const hintHit = await hint.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return !!top && el.contains(top);
+  });
+  expect(hintHit).toBe(true);
+  const note = page.locator('.speech-fallback-note');
+  await expect(note).toBeInViewport({ ratio: 1 });
+  const clippedBy = await note.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    for (let parent = el.parentElement; parent; parent = parent.parentElement) {
+      // The fight is position:fixed and wider than the 1024px app frame.
+      // That frame does not clip it.
+      if (parent.id === 'app') break;
+      const style = getComputedStyle(parent);
+      if (style.display === 'contents') continue;
+      if (style.overflowX === 'visible' && style.overflowY === 'visible') continue;
+      const box = parent.getBoundingClientRect();
+      if (r.left < box.left - 1 || r.right > box.right + 1 || r.top < box.top - 1 || r.bottom > box.bottom + 1) {
+        return parent.className || parent.tagName;
+      }
+    }
+    return null;
+  });
+  expect(clippedBy, 'container clipping the speech note').toBeNull();
+  const wordOnScreen = await page.locator('.cast-cue-pane .cue-word').evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return r.height > 0 && r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth;
+  });
+  expect(wordOnScreen).toBe(true);
+});
+
+test('focusing 繼續 on a short phone does not scroll the math correction away', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'phone-landscape-chromium');
+  await openMathCast(page);
+  const answer = await page.evaluate(async () => {
+    const { run } = await import('/src/ui/runtime.ts');
+    return run().cast!.prompt.answerTokens[0];
+  });
+  const miss = async (): Promise<void> => {
+    await page.evaluate((correct) => {
+      const button = [...document.querySelectorAll<HTMLButtonElement>('.cast-choice-key')].find(
+        (candidate) => candidate.textContent?.trim() !== correct,
+      );
+      button?.click();
+    }, answer);
+  };
+  await miss();
+  await expect(page.locator('.cast-kid-prompt')).toContainText('再數數看');
+  await miss();
+  const report = await page.waitForFunction(() => {
+    const overlay = document.querySelector('.spell-reveal-overlay');
+    const card = document.querySelector<HTMLElement>('.spell-reveal-card');
+    const wordEl = document.querySelector('.spell-reveal-word');
+    const spellEl = document.querySelector('.spell-reveal-spell');
+    if (!overlay?.classList.contains('can-continue') || !card || !wordEl || !spellEl) return null;
+    const word = wordEl.getBoundingClientRect();
+    const spell = spellEl.getBoundingClientRect();
+    const onScreen = (r: DOMRect) => r.height > 0 && r.top >= 0 && r.bottom <= innerHeight;
+    return {
+      scrollTop: card.scrollTop,
+      wordOn: onScreen(word),
+      spellOn: onScreen(spell),
+      active: document.activeElement?.className ?? '',
+    };
+  }).then((handle) => handle.jsonValue());
+  expect(report.scrollTop).toBe(0);
+  expect(report.wordOn).toBe(true);
+  expect(report.spellOn).toBe(true);
+  expect(report.active).toContain('spell-reveal-continue');
 });
 
 test('both characters show on the select screen without scrolling', async ({ page }, testInfo) => {

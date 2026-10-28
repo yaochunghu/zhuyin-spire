@@ -5,8 +5,10 @@
 
 import { getPotion, potionNeedsEnemy } from '../data/potions';
 import { sfx } from '../game/audio';
+import { castBusyNote } from '../game/coach';
 import {
   discardPotion,
+  getActiveCharacter,
   potionChangeBlock,
   previewPotionUse,
   usePotion,
@@ -33,7 +35,7 @@ function drinkReason(slot: number): string | null {
   if (preview === 'full-hp') return '血滿了';
   if (preview === 'no-draw') return '抽不到牌';
   if (preview === 'target') return '沒有怪物';
-  return run().screen === 'castCheck' ? '先念完注音' : '這裡不能喝';
+  return castBlockCopy(run()) ?? '這裡不能喝';
 }
 
 function discardReason(): string | null {
@@ -41,7 +43,14 @@ function discardReason(): string | null {
   if (block === null) return null;
   if (block === 'tutorial') return '先學會出牌';
   if (block === 'phase') return '現在不能丟';
-  return run().screen === 'castCheck' ? '先念完注音' : '這裡不能丟';
+  return castBlockCopy(run()) ?? '這裡不能丟';
+}
+
+function castBlockCopy(state: ReturnType<typeof run>): string | null {
+  if (state.screen !== 'castCheck' && state.screen !== 'practice' && state.screen !== 'eventCast') {
+    return null;
+  }
+  return castBusyNote(state.cast?.prompt.gateId ?? getActiveCharacter(state)?.castingGateId);
 }
 
 export function closePotionInspect(): void {
