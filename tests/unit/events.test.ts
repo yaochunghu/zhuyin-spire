@@ -33,6 +33,7 @@ import {
   pickCharacter,
   startRun,
   toggleEventCard,
+  useParentHint,
   type RunState,
 } from '../../src/game/state';
 
@@ -428,6 +429,34 @@ describe('event saves', () => {
     expect(restored.cast?.prompt.mode).toBe(continued.mode);
     expect(restored.cast?.prompt.answerTokens).toEqual(continued.answerTokens);
     expect(restored.castCounter).toBe(fresh.state.castCounter);
+  });
+
+  it('spends the shrine parent hint once for the whole event', () => {
+    const state = prepare();
+    state.activeNodeId = room(state).id;
+    openEvent(state, state.activeNodeId, 'event_shared_phonetic_shrine');
+    state.screen = 'event';
+    chooseEventChoice(state, 'practice');
+    confirmEventChoice(state);
+    expect(state.screen).toBe('eventCast');
+    const spelling = state.cast?.prompt.correctionText ?? '';
+    expect(spelling.length).toBeGreaterThan(0);
+    expect(useParentHint(state)).toBe(spelling);
+    expect(state.eventTrack.active?.parentHintUsed).toBe(true);
+    expect(useParentHint(state)).toBeNull();
+
+    answerEventShrine(state, true);
+    expect(state.screen).toBe('eventCast');
+    expect(useParentHint(state)).toBeNull();
+
+    const snapshot = snapshotRun(state)!;
+    const restored = createNewRun();
+    applySnapshot(restored, parseSnapshot(snapshot)!);
+    expect(restored.eventTrack.active?.parentHintUsed).toBe(true);
+
+    const legacy = structuredClone(snapshot) as { eventTrack?: { active?: { parentHintUsed?: boolean } } };
+    delete legacy.eventTrack?.active?.parentHintUsed;
+    expect(parseSnapshot(legacy)).not.toBeNull();
   });
 
   it('loads a save from before events existed', () => {

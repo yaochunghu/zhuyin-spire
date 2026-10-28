@@ -1330,8 +1330,15 @@ export function answerCast(state: RunState, attempt: string[]): 'success' | 'fiz
 
 export function useParentHint(state: RunState): string | null {
   if (!state.cast) return null;
-  // Practice and the shrine have no combat belt, but the help button is live.
-  if (state.screen === 'practice' || state.screen === 'eventCast') {
+  // Practice can show the answer as often as the adult asks.
+  if (state.screen === 'practice') {
+    return state.cast.prompt.correctionText;
+  }
+  // The shrine has no combat belt. One reveal covers the whole event.
+  if (state.screen === 'eventCast') {
+    const active = state.eventTrack.active;
+    if (!active || active.parentHintUsed) return null;
+    active.parentHintUsed = true;
     return state.cast.prompt.correctionText;
   }
   if (!state.combat) return null;

@@ -500,11 +500,18 @@ export function renderCastCheck(isPractice = false): HTMLElement {
       '<span>💡</span><span class="adult-text"> 顯示答案（練習可多次）</span>';
     hint.disabled = false;
   } else {
-    const used = run().tutorial ? false : run().combat?.parentHintUsed;
+    const state = run();
+    const eventHint = state.screen === 'eventCast';
+    const used = state.tutorial
+      ? false
+      : eventHint
+        ? !!state.eventTrack.active?.parentHintUsed
+        : !!state.combat?.parentHintUsed;
     const hintNote = mathCast ? '顯示答案' : '顯示完整拼法';
+    const onceNote = eventHint ? '，本事件一次' : '，本場一次';
     hint.innerHTML = used
       ? '<span class="adult-text">家長協助已用完</span>'
-      : `<span>💡</span><span class="adult-text"> 家長協助（${hintNote}${run().tutorial ? '，教學可重複' : '，本場一次'}）</span>`;
+      : `<span>💡</span><span class="adult-text"> 家長協助（${hintNote}${state.tutorial ? '，教學可重複' : onceNote}）</span>`;
     hint.disabled = !!used;
   }
   hint.addEventListener('click', () => {

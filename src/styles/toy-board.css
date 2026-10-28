@@ -3617,6 +3617,21 @@ html[data-screen='combat'] .global-control-btn {
     padding: 2px 4px;
     font-size: 0.68rem;
   }
+
+  /* The lesson banner is centered across the stage, so on a short phone it
+     sits on the cast dock. Park it in the battlefield column while a cast is open. */
+  .tutorial-active.combat-casting > .combat-stage > .tutorial-guide {
+    top: 6px;
+    left: 6px;
+    right: auto;
+    width: calc(100% - min(70%, 500px) - 18px);
+    max-width: none;
+    min-height: 0;
+    transform: none;
+    z-index: 4;
+    padding: 4px 8px;
+    overflow: hidden;
+  }
 }
 
 @media (max-height: 500px) and (min-height: 380px) and (orientation: landscape) {
@@ -3637,6 +3652,15 @@ html[data-screen='combat'] .global-control-btn {
   #app > .cast-screen.cast-dock:not(.cast-math) {
     --zg: 2px;
     padding-inline: 2px;
+  }
+
+  /* Four 48px slots share this row with ⌫ 🗑️ ✓. A 4px slot gap needs 204px
+     and the cell is only ~203px, so the tone slot wraps onto the key grid.
+     A 2px gap keeps every slot on one line, clear of the keys. */
+  .combat-casting > .combat-stage > .cast-dock:not(.cast-math) .spell-slots {
+    flex-wrap: nowrap;
+    gap: 2px;
+    min-height: var(--zk);
   }
 }
 

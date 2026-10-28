@@ -466,6 +466,7 @@ function isValidEventTrack(value: unknown, mapIds: Set<string>, screen: Screen):
   if (!isBoundedStringArray(active.chosenUids, 8, isSafeId)) return false;
   if (!isIntIn(active.uidCursor, 0, 20)) return false;
   if (!isIntIn(active.shrineLeft, 0, 10) || !isIntIn(active.shrineHpPerMiss, 0, 20)) return false;
+  if (active.parentHintUsed !== undefined && typeof active.parentHintUsed !== 'boolean') return false;
   if (!Array.isArray(active.shrineThen) || !active.shrineThen.every((effect) => isValidEffect(effect))) return false;
   if (typeof active.shrineCardId !== 'string' || !isCardId(active.shrineCardId)) return false;
   if (active.fightEncounterId !== null && (typeof active.fightEncounterId !== 'string' || !(active.fightEncounterId in ENCOUNTERS))) {

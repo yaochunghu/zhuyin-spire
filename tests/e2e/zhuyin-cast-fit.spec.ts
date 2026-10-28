@@ -306,6 +306,34 @@ async function showSpeechFallback(page: Page): Promise<void> {
   });
 }
 
+/** The box is inside the viewport and no overflow ancestor cuts it off. */
+async function expectFullyShown(page: Page, selector: string): Promise<void> {
+  const viewportHeight = page.viewportSize()!.height;
+  const rows = await page.locator(selector).evaluateAll((els, height) => {
+    return els.map((el) => {
+      const r = el.getBoundingClientRect();
+      let clippedBy: string | null = null;
+      for (let parent = el.parentElement; parent; parent = parent.parentElement) {
+        const style = getComputedStyle(parent);
+        if (style.display === 'contents') continue;
+        if (style.overflowX === 'visible' && style.overflowY === 'visible') continue;
+        const box = parent.getBoundingClientRect();
+        if (r.top < box.top - 1 || r.bottom > box.bottom + 1 || r.left < box.left - 1 || r.right > box.right + 1) {
+          clippedBy = parent.id || parent.className || parent.tagName;
+          break;
+        }
+      }
+      return { top: r.top, bottom: r.bottom, past: r.bottom - height, clippedBy };
+    });
+  }, viewportHeight);
+  expect(rows.length, selector).toBeGreaterThan(0);
+  for (const row of rows) {
+    expect(row.top, `${selector} starts above the fold`).toBeGreaterThanOrEqual(0);
+    expect(row.past, `${selector} extends past the fold`).toBeLessThanOrEqual(0);
+    expect(row.clippedBy, `${selector} is cut off`).toBeNull();
+  }
+}
+
 async function expectTappable(page: Page, selector: string): Promise<void> {
   const size = page.viewportSize()!;
   const targets = page.locator(selector);
@@ -368,6 +396,12 @@ test('practice cast controls stay on screen, including after the answer is shown
   await expectTappable(page, '.practice-screen .hint-btn');
   await expectTappable(page, '.practice-screen .practice-leave-btn');
   await expect(page.locator('.speech-fallback-note')).toBeInViewport({ ratio: 1 });
+  if (testInfo.project.name === 'phone-portrait-webkit') {
+    await expectFullyShown(page, '.practice-screen .spell-ctrl');
+    await expectFullyShown(page, '.practice-screen .hint-btn');
+    await expectFullyShown(page, '.practice-screen .practice-leave-btn');
+    await expectFullyShown(page, '.speech-fallback-note');
+  }
 });
 
 test('shrine cast keeps 家長協助 tappable, including after the hint', async ({ page }, testInfo) => {
@@ -410,4 +444,97 @@ test('shrine cast keeps 家長協助 tappable, including after the hint', async 
   await expectTappable(page, '.cast-dock .spell-submit');
   await expectTappable(page, '.cast-dock .hint-btn');
   await expect(page.locator('.speech-fallback-note')).toBeInViewport({ ratio: 1 });
+  if (testInfo.project.name === 'phone-portrait-webkit') {
+    await expectFullyShown(page, '.cast-dock .hint-btn');
+    await expectFullyShown(page, '.cast-dock .spell-ctrl');
+    await expectFullyShown(page, '.cast-dock .spell-key');
+    await expectFullyShown(page, '.speech-fallback-note');
+  }
+});
+
+test('shrine 家長協助 shows the full spelling once per event', async ({ page }, testInfo) => {
+  test.skip(!['landscape-wide', 'phone-portrait-webkit'].includes(testInfo.project.name));
+  await page.goto('/?debug=1');
+  await foldDebug(page);
+  await page.evaluate(async () => {
+    const { run, render } = await import('/src/ui/runtime.ts');
+    const { startRun, pickCharacter } = await import('/src/game/state.ts');
+    const { openEvent } = await import('/src/game/eventEngine.ts');
+    const st = run();
+    startRun(st);
+    pickCharacter(st, 'echoMage');
+    openEvent(st, 'qa-shrine', 'event_shared_phonetic_shrine');
+    st.screen = 'event';
+    render();
+  });
+  await page.getByRole('button', { name: /練習三題/ }).click();
+  await page.getByRole('button', { name: '確定', exact: true }).click();
+  const hint = page.locator('.cast-dock .hint-btn');
+  await expect(hint).toBeVisible();
+  await expect(hint).toContainText('本事件一次');
+  await hint.click();
+  const answer = page.locator('.spell-hint-reveal .spell-answer');
+  await expect(answer).toBeVisible();
+  const spelling = (await answer.innerText()).trim();
+  expect(spelling.length).toBeGreaterThan(0);
+  await expect(hint).toContainText('家長協助已用完');
+  await expect(hint).toBeDisabled();
+  await hint.click({ force: true });
+  await expect(answer).toHaveText(spelling);
+  if (testInfo.project.name === 'phone-portrait-webkit') {
+    await showSpeechFallback(page);
+    await expectFullyShown(page, '.cast-dock .hint-btn');
+    await expectFullyShown(page, '.cast-dock .spell-ctrl');
+    await expectFullyShown(page, '.speech-fallback-note');
+  }
+});
+
+test('tutorial cast keeps slots and the hinted answer clear of the lesson banner', async ({ page }, testInfo) => {
+  test.skip(!['phone-landscape-chromium', 'phone-landscape-webkit'].includes(testInfo.project.name));
+  await page.goto('/?debug=1');
+  await page.evaluate(async () => {
+    const { run, render } = await import('/src/ui/runtime.ts');
+    const { debugStartTutorial } = await import('/src/debug/debugActions.ts');
+    debugStartTutorial(run());
+    render();
+  });
+  await foldDebug(page);
+  await expect(page.locator('.tutorial-step-shield')).toBeVisible();
+  await expect(page.getByRole('button', { name: '注音 ㄇ', exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: '注音 ㄇ', exact: true }).click();
+  await expect(page.locator('.cast-dock .spell-slot').first()).toBeVisible();
+  await page.waitForTimeout(400);
+  const slots = await page.evaluate(() => {
+    const banner = document.querySelector('.tutorial-guide')!.getBoundingClientRect();
+    return [...document.querySelectorAll('.cast-dock .spell-slot')].map((el) => {
+      const r = el.getBoundingClientRect();
+      const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      return {
+        text: (el.textContent ?? '').trim(),
+        overlap: r.left < banner.right && banner.left < r.right && r.top < banner.bottom && banner.top < r.bottom,
+        shown: !!top && (el.contains(top) || top === el),
+      };
+    });
+  });
+  expect(slots.length).toBeGreaterThan(0);
+  for (const slot of slots) {
+    expect(slot.overlap, `lesson banner covers slot ${slot.text}`).toBe(false);
+    expect(slot.shown, `lesson banner hides slot ${slot.text}`).toBe(true);
+  }
+  await page.locator('.cast-dock .hint-btn').click();
+  await expect(page.locator('.spell-hint-reveal')).toBeVisible();
+  const reveal = await page.evaluate(() => {
+    const el = document.querySelector('.spell-hint-reveal')!;
+    const banner = document.querySelector('.tutorial-guide')!.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return {
+      text: (el.textContent ?? '').trim(),
+      overlap: r.left < banner.right && banner.left < r.right && r.top < banner.bottom && banner.top < r.bottom,
+      shown: !!top && el.contains(top),
+    };
+  });
+  expect(reveal.text.length).toBeGreaterThan(0);
+  expect(reveal.overlap, 'lesson banner covers the hinted answer').toBe(false);
+  expect(reveal.shown, 'lesson banner hides the hinted answer').toBe(true);
 });
