@@ -86,14 +86,23 @@ async function coveredVisibleDots(page: Page): Promise<{ visible: number; covere
 async function expectCoachClearOfDots(page: Page): Promise<void> {
   await expect(page.locator('.map-dot.available').first()).toBeAttached();
   await page.waitForTimeout(300);
+  // The map scrolls the next rooms into view after it renders; on a slow
+  // runner that can land after the first measurement, so wait for it.
+  await expect
+    .poll(async () => (await coveredVisibleDots(page)).visible, {
+      message: 'an available dot should be on screen',
+      timeout: 6_000,
+    })
+    .toBeGreaterThan(0);
   const before = await coveredVisibleDots(page);
-  expect(before.visible, 'an available dot should be on screen').toBeGreaterThan(0);
   expect(before.covered).toEqual([]);
   expect(await coveredDots(page, '.map-dot.available')).toEqual([]);
   expect(await coveredDots(page, '.map-dot')).toEqual([]);
 }
 
 test('the parent coach never covers a map dot', async ({ page }, testInfo) => {
+  // Several full map loads; WebKit on a shared CI runner can need more than 30s.
+  test.slow(testInfo.project.name.includes('webkit'));
   test.skip(
     !['landscape-wide', 'phone-landscape-chromium', 'phone-landscape-webkit'].includes(
       testInfo.project.name,
@@ -128,6 +137,8 @@ test('the parent coach never covers a map dot', async ({ page }, testInfo) => {
 });
 
 test('all three campfire choices fit on screen without scrolling', async ({ page }, testInfo) => {
+  // Starts a real run, then loads the rest screen; WebKit on a shared CI runner can need more than 30s.
+  test.slow(testInfo.project.name.includes('webkit'));
   test.skip(
     ![
       'landscape-wide',

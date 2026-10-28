@@ -15,6 +15,10 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - The 語音暫時無法播放… note for adults is fully visible at all four sizes
 - The 珠算武者 math dock, the practice screen, game logic and saves (version 4) are unchanged. Screenshots are in docs/screenshots/zhuyin-dock/
 
+---
+
+## [0.4.3] — 2026-10-28
+
 ### 珠算武者
 
 - 珠算武者 is playable. The starter deck is 撥珠拳 ×5, 算珠盾 ×4, and 十全掌 ×1, with starter relic 木珠串. The card pool is 27 designs. Score gates stay 0 / 300 / 1,000 / 2,000
@@ -351,6 +355,7 @@ Baseline snapshot of the preschool Spire + 注音 game, documented for long-term
 - Standalone git repository for the game folder (tag `v0.1.0`)
 
 [Unreleased]: #unreleased
+[0.4.3]: #043--2026-10-28
 [0.4.2]: #042--2026-10-27
 [0.4.1]: #041--2026-10-26
 [0.4.0]: #040--2026-08-21

@@ -5,9 +5,10 @@ The live version, obtainability rules, and next implementation slice live in
 
 ## Shipped on main
 
-`package.json` is 0.4.2. **v0.4.2** is the published GitHub Release, at
-`027961c`, 2026-10-27 15:00 UTC (`[0.4.2]` in [CHANGELOG.md](../CHANGELOG.md),
-#44 and #50–#58). Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
+`package.json` is 0.4.3. The published GitHub Release is still **v0.4.2** at
+`027961c` (#59), 2026-10-27 15:00 UTC. **v0.4.3** is the release being published
+(`[0.4.3]` in [CHANGELOG.md](../CHANGELOG.md), #60–#62). It is not tagged yet.
+Two characters are playable. Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
 
 - Vite + TypeScript SPA; touch-first preschool UI; adult coach strip  
 - Full first-syllable 注音 cast (including 聲調); listen mode (Web Speech zh-TW)  
@@ -44,7 +45,11 @@ The live version, obtainability rules, and next implementation slice live in
   `castSeed`, and `castCounter` are optional
 - 珠算武者 is playable: 27-card pool, math casting with three choices, and
   its own relic pool. 共鳴武者 stays the 注音 character. `english` is reserved
-- Phone shop offers keep the card, price, and remove-card button on screen
+- Phone shop offers keep the card, price, and remove-card button on screen.
+  The remove button is disabled when gold is short
+- The parent coach no longer covers map dots, and campfire choices fit on
+  screen. The math cast fits at the checked phone sizes. The 注音 dock is
+  unchanged
 
 ---
 
@@ -52,22 +57,17 @@ The live version, obtainability rules, and next implementation slice live in
 
 Detail: [NEXT_PHASE.md](./NEXT_PHASE.md).
 
-1. **Claude design pass for 珠算武者** — character select, the answer pad, and
-   the remaining #61 layout bugs (cast-question legibility, choice overlap at
-   640×360, character-select scroll). Do not start that UI work here
-2. **珠算武者 follow-ups** — number pad, math tutorial, and the character-select
-   art pass. The playable deck, three-choice cast, and relic pool are in this tree
-3. **The v0.4.2 release** — `package.json` is 0.4.2 and `[0.4.2]` covers #44
-   and #50–#58. The published tag is still `v0.4.1` at #49. Tagging and the
-   GitHub Release are still open. Saves stay
-   on version 4
+1. **注音 answer-dock fix at 640×360** — the math question and its three
+   answers already fit. The 注音 dock is unchanged and still needs this fix
+2. **A second boss per act** — approved for after the playtest. This revisits
+   the one-boss decision
 
 Yao decided the #52 questions. See
-[ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md#questions-for-yao). Keys, Act IV, a
-20-level track, and a second boss per act stay later. The second boss comes
-after the v0.4.2 playtest. Cast-on / debug-skip passes at
-each score milestone stay in
+[ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md#questions-for-yao). Keys, Act IV, and a
+20-level track stay later. The second boss is item 2 above. Cast-on /
+debug-skip passes at each score milestone stay in
 [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md).
+Saves stay on version 4.
 
 Smith, physical-copy upgrades, the full 75-card score progression, the relic
 pool, the potion belt, Act I–III events, act-native fights, toy-board enemy
