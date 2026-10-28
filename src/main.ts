@@ -401,6 +401,11 @@ if (import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEBUG_TOOLS === 'true') {
   window.addEventListener('zhuyin-debug-change', () => {
     void syncDebugLayer();
   });
+
+  // Same dev/QA fold as the panel. The child-error model is not in production.
+  void import('./debug/childModelBridge').then(({ installChildModelBridge }) => {
+    installChildModelBridge(() => runState);
+  });
 }
 
 // Pause reasons compose: a hidden page and an open menu must both release.
