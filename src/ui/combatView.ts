@@ -1,5 +1,6 @@
 import { createModalShell, showModalShell, dismissModalShell, lockPageScroll } from './modal';
 import { CARDS, getCard, resolveCard } from '../data/cards';
+import { ACT_PLACE_NAMES } from '../data/map';
 import {
   ENEMIES,
   intentIsUrgent,
@@ -231,6 +232,7 @@ export async function presentBattleEnding(): Promise<void> {
       emoji: defeat ? '🥋' : foe.emoji,
       isBoss: foe.isBoss,
       isElite: foe.isElite,
+      act: run().actIndex + 1,
     },
     () => {
       session.battleOutro = false;
@@ -500,7 +502,7 @@ function renderEnemySlot(
     }
     ${
       !dead && unit.weakTurns > 0
-        ? `<span class="enemy-status weak-status" title="虛弱：這隻怪物的攻擊每下變成 75%">😵 虛弱 ${unit.weakTurns}</span>`
+        ? `<span class="enemy-status weak-status" title="虛弱：這隻怪物打人變小力了">😵 虛弱 ${unit.weakTurns}</span>`
         : ''
     }
     <div class="enemy-bars">
@@ -577,7 +579,7 @@ export function renderCombat(): HTMLElement {
         '還有能量可以出牌。準備好就按 ✋，看護盾擋住攻擊。',
       ],
       attack: ['3 / 3　換你攻擊', '點亮起來的 ⚔️ 牌。只有一隻怪物，會自動瞄準。'],
-      free: ['你學會了！', '現在自己打倒練習史萊姆吧。'],
+      free: ['你學會了！', '現在換你，讓練習史萊姆暈頭轉向吧！'],
     }[tutorial.step];
     guide.innerHTML = `<strong>${copy[0]}</strong><span>${copy[1]}</span>`;
     if (tutorial.wrongAttempts > 0 && tutorial.step !== 'free') {
@@ -586,13 +588,13 @@ export function renderCombat(): HTMLElement {
     stage.appendChild(guide);
   }
 
-  const actLabels = ['庭園', '圖書館', '觀測台'];
+  const actName = ACT_PLACE_NAMES[run().actIndex] ?? ACT_PLACE_NAMES[0];
   const hud = document.createElement('div');
   hud.className = 'combat-hud-strip';
   hud.innerHTML = `
     <div class="combat-hud-location">
       <span aria-hidden="true">${run().actIndex === 0 ? '🌿' : run().actIndex === 1 ? '📚' : '🔭'}</span>
-      <strong>${actLabels[run().actIndex] ?? actLabels[0]} · 第 ${c.turn} 回合</strong>
+      <strong>${actName} · 第 ${c.turn} 回合</strong>
     </div>
     <div class="combat-hud-relics"></div>
     <div class="combat-hud-resources">

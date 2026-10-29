@@ -53,7 +53,7 @@ let _appendCoach: (parent: HTMLElement, castMode?: CastMode) => void;
 let _clearFloatSoon: () => void;
 let _playOutcome: (
   kind: 'kill' | 'faint',
-  opts: { emoji: string; isBoss?: boolean; isElite?: boolean },
+  opts: { emoji: string; isBoss?: boolean; isElite?: boolean; act?: number },
   onDone: () => void,
 ) => void;
 let _submitSpell: () => void;
@@ -68,7 +68,7 @@ export function bindUi(opts: {
   clearFloatSoon: () => void;
   playOutcomeOverlay: (
     kind: 'kill' | 'faint',
-    opts: { emoji: string; isBoss?: boolean; isElite?: boolean },
+    opts: { emoji: string; isBoss?: boolean; isElite?: boolean; act?: number },
     onDone: () => void,
   ) => void;
   submitSpell: () => void;
@@ -115,7 +115,7 @@ export function clearFloatSoon(): void {
 
 export function playOutcomeOverlay(
   kind: 'kill' | 'faint',
-  opts: { emoji: string; isBoss?: boolean; isElite?: boolean },
+  opts: { emoji: string; isBoss?: boolean; isElite?: boolean; act?: number },
   onDone: () => void,
 ): void {
   _playOutcome(kind, opts, onDone);

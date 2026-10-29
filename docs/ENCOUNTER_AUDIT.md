@@ -72,7 +72,7 @@ Multis: 塔影雙怪 `latePair` (晶盾怪 + 夜梟), 影與蛙 `lateMix` (幽�
 
 Elites: 風暴菁英, 爆裂菁英, 暗影菁英 `eliteShadow` 36 HP `A8, H12, M4×2, B9`.
 
-Boss 注音終焉王 `boss3`, 72 HP: `A9, M3×3, B12, H14, M4×2, A10, H12`. One loop. Peak 14.
+Boss 終焉王 `boss3`, 72 HP: `A9, M3×3, B12, H14, M4×2, A10, H12`. One loop. Peak 14.
 
 ## Gaps
 
@@ -155,7 +155,7 @@ Hard packs: 塔影雙怪, 影與蛙, 冠鐘與鏡音 `a3_crown_mirror`, 晶盾�
 
 風暴菁英 and 爆裂菁英 are not in this pool. Peak stays 12.
 
-Boss 注音終焉王, still 72 HP and cap 1. Opening `A9, M3×3, B12` until HP ≤ 36. Brace `B14` grants itself +1. 下回合's heavy shows 14, not 13. Then `H14`, then `B10` summons 星螢, then `M4×2` (shows 10), `A9` (shows 10), `H12` (shows 13). Peak stays 14, matching the old heavy. The first 14 does not share a turn with 星螢.
+Boss 終焉王, still 72 HP and cap 1. Opening `A9, M3×3, B12` until HP ≤ 36. Brace `B14` grants itself +1. 下回合's heavy shows 14, not 13. Then `H14`, then `B10` summons 星螢, then `M4×2` (shows 10), `A9` (shows 10), `H12` (shows 13). Peak stays 14, matching the old heavy. The first 14 does not share a turn with 星螢.
 
 ## Map rules after
 

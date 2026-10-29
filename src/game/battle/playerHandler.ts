@@ -162,7 +162,7 @@ export function resolveCastSuccess(state: CombatState, def: CardDef): void {
   syncPrimaryEnemy(state);
 }
 
-export function resolveCastFizzle(state: CombatState, def: CardDef): void {
+export function resolveCastFizzle(state: CombatState, _def: CardDef): void {
   if (state.pending) {
     const card = state.pending;
     card.temporaryCostReduction = 0;
@@ -172,14 +172,14 @@ export function resolveCastFizzle(state: CombatState, def: CardDef): void {
     pushFx(state, { type: 'discard', cards: [card], reason: 'fizzle' });
   }
   state.pendingTargetIds = [];
-  state.log.push(`${def.name} 失敗了…法術消散！`);
+  state.log.push('法術飄走了，沒關係！');
   if (state.eraserReady && state.fizzleBeads > 0) {
     state.eraserReady = false;
     addBeads(state, state.fizzleBeads);
     state.log.push(`橡皮擦：撥 ${state.fizzleBeads} 珠`);
     if (livingEnemies(state).length === 0) {
       state.status = 'won';
-      state.log.push('敵人全部倒下了！');
+      state.log.push('怪物都變成音符了！');
     }
   }
 }

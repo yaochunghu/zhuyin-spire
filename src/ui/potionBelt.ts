@@ -32,7 +32,7 @@ function drinkReason(slot: number): string | null {
   if (preview === null || preview === 'aim' || preview === 'empty') return null;
   if (preview === 'tutorial') return '先學會出牌';
   if (preview === 'phase') return '現在不能喝';
-  if (preview === 'full-hp') return '血滿了';
+  if (preview === 'full-hp') return '心已經滿了';
   if (preview === 'no-draw') return '抽不到牌';
   if (preview === 'target') return '沒有怪物';
   return castBlockCopy(run()) ?? '這裡不能喝';

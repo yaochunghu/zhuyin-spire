@@ -1,3 +1,4 @@
+import { ACT_PLACE_NAMES, TOWER_SUMMIT_NAME } from '../data/map';
 import type { Screen } from '../game/state';
 
 export type ArtAssetKey =
@@ -64,17 +65,17 @@ export const ART_ASSETS = {
   sceneGarden: {
     src: new URL('../assets/art/act-garden.webp', import.meta.url).href,
     fallback: '🌿',
-    alt: '花園塔樓房間',
+    alt: `${ACT_PLACE_NAMES[0]}塔樓房間`,
   },
   sceneLibrary: {
     src: new URL('../assets/art/act-library.webp', import.meta.url).href,
     fallback: '📚',
-    alt: '燈籠圖書館塔樓房間',
+    alt: `${ACT_PLACE_NAMES[1]}塔樓房間`,
   },
   sceneObservatory: {
     src: new URL('../assets/art/act-observatory.webp', import.meta.url).href,
     fallback: '🔭',
-    alt: '星空觀測台塔樓房間',
+    alt: `${ACT_PLACE_NAMES[2]}塔樓房間`,
   },
   transitionGardenLibrary: {
     src: new URL(
@@ -82,7 +83,7 @@ export const ART_ASSETS = {
       import.meta.url,
     ).href,
     fallback: '🌿📚',
-    alt: '花園樹根變成圖書館書架的塔樓場景',
+    alt: `${ACT_PLACE_NAMES[0]}樹根變成${ACT_PLACE_NAMES[1]}書架的塔樓場景`,
   },
   transitionLibraryObservatory: {
     src: new URL(
@@ -90,7 +91,7 @@ export const ART_ASSETS = {
       import.meta.url,
     ).href,
     fallback: '📚🔭',
-    alt: '圖書館書架變成星空觀測台的塔樓場景',
+    alt: `${ACT_PLACE_NAMES[1]}書架變成${ACT_PLACE_NAMES[2]}的塔樓場景`,
   },
   heroMartialArtist: {
     src: new URL('../assets/art/hero-martial-artist.webp', import.meta.url).href,
@@ -265,7 +266,7 @@ export const ART_ASSETS = {
   enemyBoss1: {
     src: new URL('../assets/art/enemies/boss-1.webp', import.meta.url).href,
     fallback: '🐉',
-    alt: '背著花園塔樓的守護龍玩具',
+    alt: `背著${ACT_PLACE_NAMES[0]}塔樓的守護龍玩具`,
   },
   enemyBoss2: {
     src: new URL('../assets/art/enemies/boss-2.webp', import.meta.url).href,
@@ -275,22 +276,22 @@ export const ART_ASSETS = {
   enemyBoss3: {
     src: new URL('../assets/art/enemies/boss-3.webp', import.meta.url).href,
     fallback: '👑',
-    alt: '被星環包圍的注音終焉王玩具',
+    alt: '被星環包圍的終焉王玩具',
   },
   tokenGarden: {
     src: new URL('../assets/art/token-garden.webp', import.meta.url).href,
     fallback: '🌿',
-    alt: '花園房間圓牌',
+    alt: `${ACT_PLACE_NAMES[0]}房間圓牌`,
   },
   tokenLibrary: {
     src: new URL('../assets/art/token-library.webp', import.meta.url).href,
     fallback: '📚',
-    alt: '圖書館房間圓牌',
+    alt: `${ACT_PLACE_NAMES[1]}房間圓牌`,
   },
   tokenObservatory: {
     src: new URL('../assets/art/token-observatory.webp', import.meta.url).href,
     fallback: '✨',
-    alt: '觀測台房間圓牌',
+    alt: `${ACT_PLACE_NAMES[2]}房間圓牌`,
   },
   propBlossom: {
     src: new URL('../assets/art/prop-blossom.webp', import.meta.url).href,
@@ -560,13 +561,17 @@ export function towerProgressElement(
     : screen === 'victory'
       ? 2
       : Math.max(0, Math.min(2, actIndex));
-  const labels = ['花園', '圖書館', '觀測台'];
+  const place = ACT_PLACE_NAMES[current] ?? ACT_PLACE_NAMES[0];
   const icons = ['🌿', '📚', '🔭'];
   const rail = document.createElement('div');
   rail.className = 'tower-progress';
   rail.setAttribute(
     'aria-label',
-    current < 0 ? '塔樓三幕：花園、圖書館、觀測台' : `塔樓進度：第${current + 1}幕，${labels[current]}`,
+    screen === 'victory'
+      ? `塔樓進度：${TOWER_SUMMIT_NAME}`
+      : current < 0
+        ? `塔樓三幕：${ACT_PLACE_NAMES.join('、')}`
+        : `塔樓進度：第${current + 1}幕，${place}`,
   );
 
   icons.forEach((icon, index) => {

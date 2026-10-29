@@ -8,6 +8,7 @@ import { isCurseId } from '../data/curses';
 import { pickNormalFight } from '../data/encounters';
 import {
   effectChips,
+  STURDIER_MONSTERS_LINE,
   effectsNeedConfirm,
   eventsForAct,
   getEvent,
@@ -931,7 +932,7 @@ function applyEffect(state: EventRun, effect: EventEffect): void {
     case 'futureNormalHp':
       state.eventTrack.normalHpBonusPercent = effect.percent;
       state.eventTrack.normalHpBonusFights = effect.fights;
-      lines.push(`接下來 ${effect.fights} 場怪物的心會多 ${effect.percent}%`);
+      lines.push(STURDIER_MONSTERS_LINE);
       break;
     case 'fight':
     case 'shrine':

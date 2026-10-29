@@ -1,3 +1,5 @@
+import { TOWER_SUMMIT_NAME } from '../data/map';
+
 export const SCORE_PER_ROOM = 5;
 export const SCORE_NORMAL_WIN = 10;
 export const SCORE_ELITE_WIN = 30;
@@ -85,7 +87,7 @@ export function calculateRunScore(
     },
     {
       key: 'victory',
-      label: '三幕登頂',
+      label: TOWER_SUMMIT_NAME,
       count: victory ? 1 : 0,
       points: victory ? SCORE_VICTORY : 0,
     },

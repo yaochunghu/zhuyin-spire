@@ -221,7 +221,7 @@ export function submitSpell(): void {
       // Kill path: still play impact FX before poof so the hit is never missed
       if (run().screen === 'reward' || run().screen === 'victory') {
         await playPendingCombatFx();
-        playOutcomeOverlay('kill', { emoji: enemyEmoji, isBoss, isElite }, () => {
+        playOutcomeOverlay('kill', { emoji: enemyEmoji, isBoss, isElite, act: run().actIndex + 1 }, () => {
           session.castLocked = false;
           render();
         });

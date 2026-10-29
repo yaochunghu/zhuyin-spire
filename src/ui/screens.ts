@@ -291,7 +291,7 @@ export function renderRest(): HTMLElement {
   heal.innerHTML = `
     <div class="rest-choice-emoji">❤️</div>
     <div class="kid-prompt" style="font-size:1.2rem">+${healAmt}</div>
-    <div class="adult-text">休息回復約四成生命</div>
+    <div class="adult-text">休息一下，把心補回來</div>
   `;
   heal.addEventListener('click', () => {
     if (run().screen !== 'rest') return;
@@ -698,7 +698,7 @@ export function renderReward(): HTMLElement {
     const decline = document.createElement('button');
     decline.type = 'button';
     decline.className = 'btn-secondary';
-    decline.textContent = '不拿這瓶';
+    decline.textContent = '先不要';
     decline.addEventListener('click', () => {
       sfx.click();
       declinePendingPotion(run());
@@ -735,7 +735,7 @@ export function renderReward(): HTMLElement {
     skip.innerHTML = `<span class="btn-emoji">✅</span><span class="adult-text"> 收下</span>`;
     skip.setAttribute('aria-label', '收下寶箱');
   } else {
-    skip.innerHTML = `<span class="btn-emoji">⏭️</span><span class="adult-text"> 跳過</span>`;
+    skip.innerHTML = `<span class="btn-emoji">⏭️</span><span class="adult-text"> 先不要</span>`;
   }
   skip.disabled = rewardBlocked;
   skip.addEventListener('click', () => {

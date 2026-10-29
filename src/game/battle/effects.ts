@@ -343,7 +343,7 @@ export function executeEffects(
 
   if (livingEnemies(state).length === 0) {
     state.status = 'won';
-    state.log.push('敵人全部倒下了！');
+    state.log.push('怪物都變成音符了！');
   }
 }
 

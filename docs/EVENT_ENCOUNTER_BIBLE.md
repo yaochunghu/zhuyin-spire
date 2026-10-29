@@ -266,7 +266,7 @@ definitions complete the act alongside the current `wraith`, `owl`, and
 
 | Stable id | Name | HP | Exact behavior | Deck test | Advanced at Difficulty 19 |
 |---|---|---:|---|---|---|
-| `boss3` | 注音終焉王 👑 | 72 | Repeat `A9, M3×3, B12, H14, M4×2, A10, H12` | Complete deck consistency and scaling | Starts with 12 Block; `H14→H17` |
+| `boss3` | 終焉王 👑 | 72 | Repeat `A9, M3×3, B12, H14, M4×2, A10, H12` | Complete deck consistency and scaling | Starts with 12 Block; `H14→H17` |
 | `bossMirrorChoir` | 萬鏡合唱 🪞 | 76 | Phase 1 repeats `A8+O1, B12, M3×3, N1`. At ≤38 HP, clear its debuffs, gain 15 Block and `Amp1`, then phase 2 repeats `M4×3, H15, B10`. | Switch from setup to a short damage race | Transition gains 22 Block and `Amp2` |
 | `bossSilentCrown` | 寢靜之冠 🌑 | 68 | Starts with 12 Block. Repeat `A9+C1, B10, H15, N2, M4×3`. At ≤17 HP, immediately gains 14 Block once. | Prevent compounded per-hit damage while retaining finishers | Starts with 18 Block; low-HP Block becomes 20 |
 

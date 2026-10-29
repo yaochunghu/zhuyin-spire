@@ -99,7 +99,7 @@ export function applyCombatPotion(
 
   if (livingEnemies(combat).length === 0) {
     combat.status = 'won';
-    combat.log.push('敵人全部倒下了！');
+    combat.log.push('怪物都變成音符了！');
     return { ok: true, endedFight: true };
   }
 
