@@ -5,9 +5,9 @@ The live version, obtainability rules, and next implementation slice live in
 
 ## Shipped on main
 
-`package.json` is 0.4.5. The current GitHub Release is **v0.4.5** (`[0.4.5]`
-in [CHANGELOG.md](../CHANGELOG.md), #67–#71). The previous release is
-v0.4.4 at `993d902` (#66), 2026-10-28 02:38 UTC. Two characters are playable. Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
+`package.json` is 0.4.7. The current GitHub Release is **v0.4.7** (`[0.4.7]`
+in [CHANGELOG.md](../CHANGELOG.md), #78). The previous release is
+v0.4.6 at `88861dd` (#76), 2026-10-29 02:42 UTC. Two characters are playable. Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
 
 - Vite + TypeScript SPA; touch-first preschool UI; adult coach strip  
 - Full first-syllable 注音 cast (including 聲調); listen mode (Web Speech zh-TW)  
@@ -57,6 +57,18 @@ v0.4.4 at `993d902` (#66), 2026-10-28 02:38 UTC. Two characters are playable. Li
   and 餘 / 於 / 閒
 - Local playtest log records one `cast` per resolved prompt (schema v2) and
   does not store the answer (#69)
+- Playtest export is schema v3 (#74): `bossEntry`, `combatEnd` with `hpLost`
+  before the boss heal, `actClear`, `shopEnter`, `rest`, `potionUsed`,
+  `relicPoolExhaust`, and `sittingStart` / `sittingEnd`.
+  `scripts/balance-report.mjs` prints B1–B24. The map is in
+  [BALANCE.md](./BALANCE.md). Saves stay version 4
+- During a tutorial cast, the lesson banner sits under the combat HUD at
+  640×360 and 844×390. The math 「語音暫時無法播放…」 note fits at 568×320 (#75)
+- Cast fit matrix (#78): combat, event fights, the shrine, and practice in
+  the default, hinted, speech-fallback, retry, and correction-card states at
+  eight viewports. The correction card uses the compact layout up to 640px
+  height, so 繼續 stays on screen at 1024×600. The 640×360 hinted header is
+  guarded so the answer does not cover 送出. Saves stay version 4
 - Debug-only child-error model for both characters (#71). A normal production
   bundle does not contain it
 
