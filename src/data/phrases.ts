@@ -1327,7 +1327,7 @@ export const PHRASES_BY_INITIAL: Record<string, Phrase[]> = {
     p('聞', '👃', 'ㄨㄣˊ', ['body']),
     p('蚊', '🦟', 'ㄨㄣˊ', ['animals']),
     p('穩', '🪨', 'ㄨㄣˇ', ['core']),
-    p('問', '❓', 'ㄨㄣˋ', ['school']),
+    p('問', '🙋', 'ㄨㄣˋ', ['school']),
     p('翁', '👴', 'ㄨㄥ', ['family']),
     p('我', '🪞', 'ㄨㄛˇ', ['core']),
     p('窩', '🪺', 'ㄨㄛ', ['animals']),
