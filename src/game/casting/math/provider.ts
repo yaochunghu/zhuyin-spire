@@ -1,6 +1,7 @@
 import { ambientManaForMode } from '../zhuyinProvider';
 import type { CastingGateProvider, CastingPrompt } from '../types';
 import { generateMathQuestion, resolveMathTask } from './generate';
+import { speakableMathQuestion } from './speech';
 import { getMathAdaptiveDrop, getMathCastingPreferences } from '../../profiles';
 
 export const mathProvider: CastingGateProvider = {
@@ -29,7 +30,7 @@ export const mathProvider: CastingGateProvider = {
       cue: {
         text: draft.question,
         emoji: draft.emoji,
-        speechText: draft.question,
+        speechText: speakableMathQuestion(draft.question),
         word: draft.question,
         spell: draft.answer,
       },
