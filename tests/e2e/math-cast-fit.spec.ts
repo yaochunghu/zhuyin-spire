@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { CAST_FIT_VIEWPORTS, runCastStateMatrix } from './castFitMatrix';
 
 // Playtest PR #61 (A3, A4, A10): the 珠算武者 question must be readable and
 // fully inside its box, its three answers must be big separate tap targets on
@@ -307,4 +308,10 @@ test('both characters show on the select screen without scrolling', async ({ pag
   }));
   expect(scrolled).toEqual({ window: 0, screen: 0 });
   await page.screenshot({ path: `test-results/math-cast-fit/charselect-${sizeLabel(page)}.png` });
+});
+
+test('combat, event, shrine, and practice casts fit in every UI state', async ({ page }, testInfo) => {
+  test.skip(!CAST_FIT_VIEWPORTS.includes(testInfo.project.name as (typeof CAST_FIT_VIEWPORTS)[number]));
+  test.setTimeout(90_000);
+  await runCastStateMatrix(page, 'abacusFist');
 });

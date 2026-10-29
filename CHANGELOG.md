@@ -21,6 +21,7 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ### Layout (#75)
 
+- Cast fit checks walk combat, an event fight, the shrine, and practice through the default, hinted, speech-fallback, retry, and correction-card states. The viewports are the existing set plus 1024×600, 360×740, and 568×320. At 1024×600 the docked correction card keeps 繼續 on screen with the question and the answer
 - During the first tutorial fight, the lesson banner stays in the battlefield column while a cast is open and sits under the combat HUD, so the whole banner is readable at 640×360, 844×390, and 568×320. The cast slots and the hinted answer stay clear
 - At 568×320, the math dock's 「語音暫時無法播放…」 note fits on screen together with the question, the three answers, and 家長協助
 
