@@ -42,7 +42,7 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [DEBUG.md](./DEBUG.md) | Debug panel, flags, skip-cast testing |
 | [sim/CHILD_MODEL.md](./sim/CHILD_MODEL.md) | Debug-only child-error model and the Act I headless sim |
 | [ROADMAP.md](./ROADMAP.md) | Shipped systems, next work, known pitfalls |
-| [NEXT_PHASE.md](./NEXT_PHASE.md) | v0.4.5 current release, and what comes next |
+| [NEXT_PHASE.md](./NEXT_PHASE.md) | v0.4.6 current release, and what comes next |
 
 Root companions:
 
@@ -51,18 +51,19 @@ Root companions:
 | [../README.md](../README.md) | Play, quick start, version control |
 | [../AGENTS.md](../AGENTS.md) | AI/human resume guide |
 | [../CHANGELOG.md](../CHANGELOG.md) | Human-readable version history |
-| [../RELEASE_NOTES_v0.4.5.md](../RELEASE_NOTES_v0.4.5.md) | Player-facing notes for the current v0.4.5 release |
+| [../RELEASE_NOTES_v0.4.6.md](../RELEASE_NOTES_v0.4.6.md) | Player-facing notes for the current v0.4.6 release |
+| [../RELEASE_NOTES_v0.4.5.md](../RELEASE_NOTES_v0.4.5.md) | Player-facing notes for the v0.4.5 release |
 | [../RELEASE_NOTES_v0.4.4.md](../RELEASE_NOTES_v0.4.4.md) | Player-facing notes for the v0.4.4 release |
 | [../RELEASE_NOTES_v0.4.3.md](../RELEASE_NOTES_v0.4.3.md) | Player-facing notes for the v0.4.3 release |
 | [../RELEASE_NOTES_v0.4.2.md](../RELEASE_NOTES_v0.4.2.md) | Player-facing notes for the v0.4.2 release |
 
 ---
 
-## Snapshot (main, v0.4.5)
+## Snapshot (main, v0.4.6)
 
-`package.json` is **0.4.5**. The current GitHub Release is **v0.4.5**: #67–#71
-are `[0.4.5]` in [CHANGELOG.md](../CHANGELOG.md). The previous release is
-v0.4.4 at `993d902` (#66), 2026-10-28 02:38 UTC. Two characters are playable.
+`package.json` is **0.4.6**. The current GitHub Release is **v0.4.6**: #74–#75
+are `[0.4.6]` in [CHANGELOG.md](../CHANGELOG.md). The previous release is
+v0.4.5 at `7f7f414` (#73), 2026-10-29 00:42 UTC. Two characters are playable.
 
 - **Stack:** Vite + TypeScript SPA, no backend; localStorage save. Saves stay
   on version 4. `eventTrack`, `castSeed`, and `castCounter` are optional.
@@ -91,11 +92,17 @@ v0.4.4 at `993d902` (#66), 2026-10-28 02:38 UTC. Two characters are playable.
 - **Layout:** the parent coach no longer covers map dots. Campfire choices
   fit on screen. The math cast and the 注音 cast dock fit at the checked
   phone sizes. A hinted answer keeps 送出 and 家長協助 inside the dock, and
-  the tutorial banner stays off the slots (#68).
+  the tutorial banner stays off the slots (#68). During a tutorial cast the
+  banner sits under the combat HUD at 640×360 and 844×390, and the math
+  speech note fits at 568×320 (#75).
 - **Content:** 輕聲 is written with ˙ first. 仔 is ㄗㄞˇ. Grade 1 does not
   ask 公分. 餘, 於, and 閒 are the Taiwan forms (#70).
-- **Telemetry:** one local `cast` event per resolved prompt, schema v2, with
-  no question or answer stored. See [TELEMETRY.md](./TELEMETRY.md).
+- **Telemetry:** local export is schema v3 (#74). `cast` still stores no
+  question or answer. Run fields include `bossEntry`, `combatEnd` (`hpLost`
+  before the boss heal), `actClear`, `shopEnter`, `rest`, `potionUsed`,
+  `relicPoolExhaust`, and `sittingStart` / `sittingEnd`.
+  `scripts/balance-report.mjs` prints B1–B24. See [TELEMETRY.md](./TELEMETRY.md)
+  and [BALANCE.md](./BALANCE.md).
 - **Debug:** body-mounted panel for testing (not for kids in normal play)
 - **Save fixtures:** ten version-4 checkpoints and a seeded choice replay under
   `tests/fixtures/`. Regenerate with `npm run generate:save-fixtures`. Saves
