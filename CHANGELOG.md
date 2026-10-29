@@ -10,6 +10,20 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ---
 
+## [0.4.9] — 2026-10-29
+
+### Kid-safe copy (#83)
+
+- Campfire, map coach, and the rest button say 「休息一下，把心補回來」. The child-facing strip no longer says 約四成血. The rest still heals the same share of hearts
+- A faint reads as rest: the coach title is 「休息一下」, the combat line is 「你暈倒了，休息一下…」, and the outcome line is 「💫 休息一下…」
+- The Act 3 boss headline is 「🏆 爬到塔頂了！」. Earlier bosses say 「🏆 過關！」. Elites say 「💪 菁英暈頭轉向！」. Other wins say 「✨ 變成星星飛走了！」
+- Act names are one set on every screen: 第一幕 · 魔法花園, 第二幕 · 燈籠書庫, 第三幕 · 星空觀星台. The summit is 塔頂之心. The last boss is shown as 終焉王
+- Math listen speech reads the question as words: no emoji, 加 / 減 / 等於, Chinese numbers, and 兩 before a measure word such as 顆. The question on screen stays as written
+- Event hearts say 心補滿, 補很多心, or 補一點心 instead of a percent. A later-fight cost says 「接下來幾場，怪物比較壯」
+- Saves stay version 4
+
+---
+
 ## [0.4.8] — 2026-10-29
 
 ### Content (#77)
@@ -440,6 +454,7 @@ Baseline snapshot of the preschool Spire + 注音 game, documented for long-term
 - Standalone git repository for the game folder (tag `v0.1.0`)
 
 [Unreleased]: #unreleased
+[0.4.9]: #049--2026-10-29
 [0.4.8]: #048--2026-10-29
 [0.4.7]: #047--2026-10-29
 [0.4.6]: #046--2026-10-29

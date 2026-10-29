@@ -42,7 +42,7 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [DEBUG.md](./DEBUG.md) | Debug panel, flags, skip-cast testing |
 | [sim/CHILD_MODEL.md](./sim/CHILD_MODEL.md) | Debug-only child-error model and the Act I headless sim |
 | [ROADMAP.md](./ROADMAP.md) | Shipped systems, next work, known pitfalls |
-| [NEXT_PHASE.md](./NEXT_PHASE.md) | v0.4.8 current release, and what comes next |
+| [NEXT_PHASE.md](./NEXT_PHASE.md) | v0.4.9 current release, and what comes next |
 
 Root companions:
 
@@ -51,7 +51,8 @@ Root companions:
 | [../README.md](../README.md) | Play, quick start, version control |
 | [../AGENTS.md](../AGENTS.md) | AI/human resume guide |
 | [../CHANGELOG.md](../CHANGELOG.md) | Human-readable version history |
-| [../RELEASE_NOTES_v0.4.8.md](../RELEASE_NOTES_v0.4.8.md) | Player-facing notes for the current v0.4.8 release |
+| [../RELEASE_NOTES_v0.4.9.md](../RELEASE_NOTES_v0.4.9.md) | Player-facing notes for the current v0.4.9 release |
+| [../RELEASE_NOTES_v0.4.8.md](../RELEASE_NOTES_v0.4.8.md) | Player-facing notes for the v0.4.8 release |
 | [../RELEASE_NOTES_v0.4.7.md](../RELEASE_NOTES_v0.4.7.md) | Player-facing notes for the v0.4.7 release |
 | [../RELEASE_NOTES_v0.4.6.md](../RELEASE_NOTES_v0.4.6.md) | Player-facing notes for the v0.4.6 release |
 | [../RELEASE_NOTES_v0.4.5.md](../RELEASE_NOTES_v0.4.5.md) | Player-facing notes for the v0.4.5 release |
@@ -61,12 +62,11 @@ Root companions:
 
 ---
 
-## Snapshot (main, v0.4.8)
+## Snapshot (main, v0.4.9)
 
-`package.json` is **0.4.8**. The current GitHub Release is **v0.4.8**: #77,
-#79, and #81 are `[0.4.8]` in [CHANGELOG.md](../CHANGELOG.md). The previous
-release is v0.4.7 at `a3ebb0e` (#80), 2026-10-29 03:54 UTC. Two characters
-are playable.
+`package.json` is **0.4.9**. The current GitHub Release is **v0.4.9**: #83
+is `[0.4.9]` in [CHANGELOG.md](../CHANGELOG.md). The previous release is
+v0.4.8 at `ea6255a` (#82), 2026-10-29 05:46 UTC. Two characters are playable.
 
 - **Stack:** Vite + TypeScript SPA, no backend; localStorage save. Saves stay
   on version 4. `eventTrack`, `castSeed`, `castCounter`, and `rng` are optional.
@@ -108,7 +108,11 @@ are playable.
   球 ⚽, 魔術方塊的一面 🟦, and 書本 📘. 三角飯糰 stays 🍙. Make-10 tier 2
   asks 「N 和 M 合起來是幾？」, total 2–10, about one single-zero question
   in ten, never 0 and 0. 問 uses 🙋 (#77). The public page says 一年級,
-  ages 5–7 (#79).
+  ages 5–7 (#79). Campfire and map coach lines say 「休息一下，把心補回來」.
+  Act names are 魔法花園, 燈籠書庫, and 星空觀星台; the summit is 塔頂之心;
+  the last boss is 終焉王. The Act 3 boss headline is 「🏆 爬到塔頂了！」;
+  earlier bosses say 「🏆 過關！」. Math listen speech reads the question as
+  words (#83).
 - **Telemetry:** local export is schema v3 (#74). `cast` still stores no
   question or answer. Run fields include `bossEntry`, `combatEnd` (`hpLost`
   before the boss heal), `actClear`, `shopEnter`, `rest`, `potionUsed`,
