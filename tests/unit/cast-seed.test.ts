@@ -1,8 +1,10 @@
+import { createHash } from 'node:crypto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { FIRST_CHARACTER_ID } from '../../src/data/characters';
 import { debugCharacterId, debugInspect, debugSetMetaProgress } from '../../src/debug/debugActions';
 import { createCombat, makeCard } from '../../src/game/combat';
-import { castUnit } from '../../src/game/castRng';
+import { castUint32, castUnit } from '../../src/game/castRng';
+import { RUN_RNG_STREAMS, takeRunUnit } from '../../src/game/runRng';
 import type { CastPrompt } from '../../src/game/castCheck';
 import {
   getActiveProfile,
@@ -112,6 +114,51 @@ describe('cast prompt stream', () => {
     expect(castUnit(0xa84a, 0)).not.toBe(castUnit(0xa84a, 1));
     expect(castUnit(0xa84a, 4)).toBeGreaterThanOrEqual(0);
     expect(castUnit(0xa84a, 4)).toBeLessThan(1);
+  });
+
+  it('keeps the practice mixer byte-identical for existing seeds', () => {
+    const pinned: Record<number, readonly number[]> = {
+      0: [0, 1144304738, 1416247, 958946056, 627933444, 2007157716, 2340967985, 2642484575],
+      1: [63, 2693262067, 11749833, 2265367787, 4213581821, 4159151403, 1207330352, 2632122864],
+      17665: [1316701674, 2573271168, 754236273, 3490741695, 3865397003, 2660776019, 937219081, 2330980587],
+      0xc0ffee: [3842675552, 90802087, 2860920651, 3349951739, 3176491012, 459804437, 2151861270, 626884110],
+      0xffffffff: [142530043, 3850105811, 813802916, 3073704848, 4054706436, 3630262831, 2315588663, 2922715533],
+    };
+    for (const [seedText, values] of Object.entries(pinned)) {
+      const seed = Number(seedText);
+      expect(values.map((_, index) => castUint32(seed, index))).toEqual([...values]);
+      expect(castUnit(seed, 3)).toBe(values[3]! / 0x1_0000_0000);
+    }
+  });
+
+  it('keeps practice questions unchanged when other run streams advance', () => {
+    const untouched = practiceSequence(17665, 4);
+    clearLessons();
+    const state = createNewRun();
+    state.castSeed = 17665;
+    state.castCounter = 0;
+    for (const name of RUN_RNG_STREAMS) {
+      for (let step = 0; step < 20; step += 1) takeRunUnit(state.rng[name]);
+    }
+    const prompts = [];
+    for (let index = 0; index < 4; index += 1) {
+      nextPracticePrompt(state);
+      const cast = state.cast;
+      if (!cast) throw new Error('expected a practice prompt');
+      prompts.push(promptSignature(cast.prompt, cast.cardDef.id));
+    }
+    expect(prompts).toEqual(untouched.prompts);
+    expect(state.castCounter).toBe(untouched.counter);
+  });
+
+  it('pins practice question bytes for existing seeds', () => {
+    // Four prompts each, for seeds 0, 1, 17665, and 0xc0ffee.
+    const payload = [0, 1, 17665, 0xc0ffee].map((seed) => ({
+      seed,
+      sequence: practiceSequence(seed, 4),
+    }));
+    const digest = createHash('sha256').update(JSON.stringify(payload)).digest('hex');
+    expect(digest).toBe('91e23d3c86c44b7846f4702ac529b768f4c30476b68f9be6068b46eb86ffb41d');
   });
 
   it('repeats a practice prompt sequence for the same seed', () => {

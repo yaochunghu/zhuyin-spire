@@ -30,6 +30,7 @@ export function createCombat(
   relics?: RelicDef | readonly RelicDef[] | null,
   encounterId?: string,
   rules: CombatRules = ECHO_COMBAT_RULES,
+  shuffleRng?: () => number,
 ): CombatState {
   const defIds = Array.isArray(enemyIdOrIds)
     ? enemyIdOrIds
@@ -43,7 +44,7 @@ export function createCombat(
   const enemies = spawnEnemies(defIds);
   const names = enemies.map((e) => ENEMIES[e.defId]?.name ?? e.defId).join('、');
 
-  const drawPile = shuffle(deckDefIds.map(makeCard));
+  const drawPile = shuffle(deckDefIds.map(makeCard), shuffleRng ?? Math.random);
   const state: CombatState = {
     heroHp,
     heroMaxHp,
@@ -110,6 +111,7 @@ export function createCombat(
     compareExtraDamage: 0,
     status: 'playing',
     log: [`遇到了 ${names}！`],
+    shuffleRng,
     pending: null,
     pendingFx: [],
     enemyId: enemies[0]?.defId ?? 'slime',
@@ -248,7 +250,7 @@ function drawCardOfType(state: CombatState, wantedType: 'attack' | 'skill'): voi
     const count = state.discardPile.length;
     // Keep cards already in the draw pile. Shuffled discards go underneath
     // (draw order pops from the end).
-    state.drawPile = [...shuffle(state.discardPile), ...state.drawPile];
+    state.drawPile = [...shuffle(state.discardPile, state.shuffleRng ?? Math.random), ...state.drawPile];
     state.discardPile = [];
     state.log.push('洗牌！');
     pushFx(state, { type: 'shuffle', count });

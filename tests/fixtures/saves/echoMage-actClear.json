@@ -56,70 +56,70 @@
     },
     {
       "uid": "d11",
-      "defId": "ri",
+      "defId": "le",
       "upgradeLevel": 0
     },
     {
       "uid": "d14",
-      "defId": "te",
+      "defId": "ke",
       "upgradeLevel": 0
     },
     {
       "uid": "d20",
-      "defId": "he",
-      "upgradeLevel": 0
-    },
-    {
-      "uid": "d23",
-      "defId": "ge",
-      "upgradeLevel": 0
-    },
-    {
-      "uid": "d26",
-      "defId": "fo",
-      "upgradeLevel": 0
-    },
-    {
-      "uid": "d29",
-      "defId": "he",
-      "upgradeLevel": 0
-    },
-    {
-      "uid": "d32",
-      "defId": "he",
-      "upgradeLevel": 0
-    },
-    {
-      "uid": "d35",
-      "defId": "te",
-      "upgradeLevel": 0
-    },
-    {
-      "uid": "d38",
       "defId": "ri",
       "upgradeLevel": 0
     },
     {
+      "uid": "d23",
+      "defId": "ke",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d26",
+      "defId": "yi",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d29",
+      "defId": "shi",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d32",
+      "defId": "ri",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d35",
+      "defId": "he",
+      "upgradeLevel": 0
+    },
+    {
+      "uid": "d38",
+      "defId": "te",
+      "upgradeLevel": 0
+    },
+    {
       "uid": "d41",
-      "defId": "le",
+      "defId": "yi",
       "upgradeLevel": 0
     }
   ],
   "nextCardUid": 44,
-  "gold": 317,
+  "gold": 313,
   "characterId": "echoMage",
   "relicIds": [
     "tuningFork",
-    "tempoWood",
     "gapThumb",
     "listeningHeart",
-    "trainingWrap",
-    "trainingStance"
+    "tempoWood",
+    "trainingStance",
+    "trainingWrap"
   ],
   "pendingRelicId": null,
   "potions": [
-    "pageJuice",
-    "sparkSoda",
+    "guardBubble",
+    "chorusBurst",
     "sparkSoda"
   ],
   "potionDropChance": 40,
@@ -3030,21 +3030,21 @@
   "shopOffers": [
     {
       "uid": "d17",
-      "defId": "fo",
+      "defId": "he",
       "upgradeLevel": 0,
       "price": 22,
       "sold": false
     },
     {
       "uid": "d18",
-      "defId": "shi",
+      "defId": "ge",
       "upgradeLevel": 0,
       "price": 34,
       "sold": false
     },
     {
       "uid": "d19",
-      "defId": "yi",
+      "defId": "fo",
       "upgradeLevel": 0,
       "price": 46,
       "sold": false
@@ -3052,12 +3052,12 @@
   ],
   "shopPotionOffers": [
     {
-      "potionId": "warmHoney",
+      "potionId": "pageJuice",
       "price": 18,
       "sold": false
     },
     {
-      "potionId": "chorusBurst",
+      "potionId": "guardBubble",
       "price": 18,
       "sold": false
     }
@@ -3077,5 +3077,35 @@
   },
   "scoreCommitted": false,
   "castSeed": 1067704970,
-  "castCounter": 639
+  "castCounter": 625,
+  "rng": {
+    "combat": {
+      "seed": 1695214527,
+      "counter": 135
+    },
+    "reward": {
+      "seed": 3787749001,
+      "counter": 80
+    },
+    "shop": {
+      "seed": 1239896380,
+      "counter": 8
+    },
+    "gold": {
+      "seed": 1636273392,
+      "counter": 13
+    },
+    "relic": {
+      "seed": 149909391,
+      "counter": 5
+    },
+    "potion": {
+      "seed": 2266234680,
+      "counter": 16
+    },
+    "upgrade": {
+      "seed": 2073890399,
+      "counter": 33
+    }
+  }
 }

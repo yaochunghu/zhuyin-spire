@@ -47,7 +47,7 @@ export function drawCards(state: CombatState, n: number): CombatCard[] {
     if (state.drawPile.length === 0) {
       if (state.discardPile.length === 0) break;
       const count = state.discardPile.length;
-      state.drawPile = shuffle(state.discardPile);
+      state.drawPile = shuffle(state.discardPile, state.shuffleRng ?? Math.random);
       state.discardPile = [];
       state.log.push('洗牌！');
       pushFx(state, { type: 'shuffle', count });

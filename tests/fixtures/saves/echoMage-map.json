@@ -2980,5 +2980,35 @@
   },
   "scoreCommitted": false,
   "castSeed": 1067704970,
-  "castCounter": 0
+  "castCounter": 0,
+  "rng": {
+    "combat": {
+      "seed": 1695214527,
+      "counter": 0
+    },
+    "reward": {
+      "seed": 3787749001,
+      "counter": 0
+    },
+    "shop": {
+      "seed": 1239896380,
+      "counter": 0
+    },
+    "gold": {
+      "seed": 1636273392,
+      "counter": 0
+    },
+    "relic": {
+      "seed": 149909391,
+      "counter": 0
+    },
+    "potion": {
+      "seed": 2266234680,
+      "counter": 0
+    },
+    "upgrade": {
+      "seed": 2073890399,
+      "counter": 0
+    }
+  }
 }

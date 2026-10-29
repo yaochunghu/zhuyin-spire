@@ -91,6 +91,13 @@ import {
 } from './castCheck';
 import type { CastingGateId } from './casting/types';
 import { castStreamRng, createCastSeed, takeCastRandom } from './castRng';
+import {
+  createRunRng,
+  runRandomFloat,
+  runRandomInt,
+  takeRunUnit,
+  type RunRngState,
+} from './runRng';
 import { cancelSpeech } from './speech';
 import { clearSavedRun, saveRunCheckpoint } from './save';
 import { getDebugSkipCast } from '../debug/debugFlags';
@@ -247,6 +254,11 @@ export interface RunState {
   /** Prompt-draw stream. Checkpoints persist the counter so a reload continues it. */
   castSeed: number;
   castCounter: number;
+  /**
+   * Deck, reward, shop, gold, relic, potion, and upgrade rolls.
+   * Practice prompts do not read this.
+   */
+  rng: RunRngState;
 }
 
 const HERO_MAX = HERO_MAX_HP;
@@ -277,17 +289,9 @@ function secureRandomUint32(): number {
   return values[0] ?? 0;
 }
 
-function secureRandomFloat(): number {
-  return secureRandomUint32() / 0x1_0000_0000;
-}
-
-function secureRandomInt(maxExclusive: number): number {
-  const max = Math.floor(maxExclusive);
-  if (!Number.isFinite(max) || max <= 0) return 0;
-  const limit = Math.floor(0x1_0000_0000 / max) * max;
-  let value = secureRandomUint32();
-  while (value >= limit) value = secureRandomUint32();
-  return value % max;
+/** One combat's deck order. Later reshuffles keep reading this same stream. */
+export function combatShuffleRng(state: RunState): () => number {
+  return () => takeRunUnit(state.rng.combat);
 }
 
 function makeOffer(state: RunState, defId: string, source: 'reward' | 'shop'): CardOffer {
@@ -296,7 +300,7 @@ function makeOffer(state: RunState, defId: string, source: 'reward' | 'shop'): C
     getCard(defId).rarity !== 'basic' &&
     !!getCard(defId).upgrade;
   const upgradeLevel: UpgradeLevel =
-    eligible && secureRandomFloat() < upgradedOfferChance(state) ? 1 : 0;
+    eligible && runRandomFloat(state.rng.upgrade) < upgradedOfferChance(state) ? 1 : 0;
   const offer = addCardInstance(state, defId, upgradeLevel);
   recordPlaytestEvent({
     kind: 'offer',
@@ -366,6 +370,7 @@ export function getAvailableMapNodes(state: RunState): MapNode[] {
 
 export function createNewRun(): RunState {
   let initialUid = 1;
+  const castSeed = createCastSeed();
   return {
     screen: 'title',
     heroHp: HERO_MAX,
@@ -413,8 +418,9 @@ export function createNewRun(): RunState {
     scoreStats: createRunScoreStats(),
     scoreCommitted: false,
     scoreResult: null,
-    castSeed: createCastSeed(),
+    castSeed,
     castCounter: 0,
+    rng: createRunRng(castSeed),
   };
 }
 
@@ -477,6 +483,7 @@ export function startRun(state: RunState): void {
   state.scoreResult = null;
   state.castSeed = createCastSeed();
   state.castCounter = 0;
+  state.rng = createRunRng(state.castSeed);
   state.screen = 'relicPick';
   saveRunCheckpoint(state);
 }
@@ -601,6 +608,7 @@ function createTutorialCombat(state: RunState): CombatState {
     getOwnedRelics(state),
     undefined,
     combatRulesForRun(state),
+    combatShuffleRng(state),
   );
 
   // This ordering is local to the tutorial combat. The player's saved deck is
@@ -673,6 +681,7 @@ function enterUnknownNode(state: RunState, node: MapNode): void {
     getOwnedRelics(state),
     resolution.encounterId,
     combatRulesForRun(state),
+    combatShuffleRng(state),
   );
   decorateCombat(state, state.combat, { normalFight: true, boss: false });
   state.tutorial = null;
@@ -744,6 +753,7 @@ export function startEventCombat(state: RunState): void {
     getOwnedRelics(state),
     active.fightEncounterId,
     combatRulesForRun(state),
+    combatShuffleRng(state),
   );
   decorateCombat(state, state.combat, { normalFight: false, boss: false });
   state.scoreStats.currentCombatHpLost = 0;
@@ -817,6 +827,7 @@ export function selectMapNode(state: RunState, nodeId: string): void {
         getOwnedRelics(state),
         node.encounterId,
         combatRulesForRun(state),
+        combatShuffleRng(state),
       );
   if (node.kind === 'boss') noteBossEntry(state, node);
   if (state.combat && !tutorial) {
@@ -931,13 +942,17 @@ export function skipRemoveCard(state: RunState): void {
 
 function openShop(state: RunState): void {
   noteShopEnter(state);
-  const ids = pickRewardIds(rewardPoolFor(state, 'normal'), 3);
+  const ids = pickRewardIds(
+    rewardPoolFor(state, 'normal'),
+    3,
+    () => takeRunUnit(state.rng.shop),
+  );
   state.shopOffers = ids.map((defId, i) => ({
     ...makeOffer(state, defId, 'shop'),
     price: SHOP_CARD_PRICES[i] ?? 45,
     sold: false,
   }));
-  state.shopPotionOffers = rollShopPotions(secureRandomInt).map((potionId) => ({
+  state.shopPotionOffers = rollShopPotions((max) => runRandomInt(state.rng.potion, max)).map((potionId) => ({
     potionId,
     price: SHOP_POTION_PRICE,
     sold: false,
@@ -949,7 +964,11 @@ function openShop(state: RunState): void {
 
 /** One unowned pool relic, or exhaust gold when the pool is already owned. */
 function grantRelicReward(state: RunState): void {
-  const relicId = rollRelicDrop(state.relicIds, secureRandomInt, state.characterId);
+  const relicId = rollRelicDrop(
+    state.relicIds,
+    (max) => runRandomInt(state.rng.relic, max),
+    state.characterId,
+  );
   if (!relicId) {
     noteRelicPoolExhaust(state);
     state.gold += RELIC_POOL_EXHAUST_GOLD;
@@ -962,7 +981,7 @@ function grantRelicReward(state: RunState): void {
 
 /** Treasure chest: gold plus one relic. Cards stay on fight rewards. */
 function openTreasure(state: RunState): void {
-  const gold = GOLD_TREASURE_BASE + secureRandomInt(GOLD_TREASURE_JITTER);
+  const gold = GOLD_TREASURE_BASE + runRandomInt(state.rng.gold, GOLD_TREASURE_JITTER);
   state.gold += gold;
   state.pendingGold = gold;
   state.pendingHeal = 0;
@@ -1285,6 +1304,7 @@ export function debugStartEncounter(
     getOwnedRelics(state),
     encounterId,
     combatRulesForRun(state),
+    combatShuffleRng(state),
   );
   decorateCombat(state, state.combat, {
     normalFight: false,
@@ -1437,7 +1457,7 @@ function fightGold(state: RunState): number {
   const node = getActiveNode(state);
   let base = GOLD_FIGHT_BASE;
   if (node?.kind === 'elite' || node?.kind === 'boss') base = GOLD_ELITE_BASE;
-  const jitter = secureRandomInt(GOLD_JITTER);
+  const jitter = runRandomInt(state.rng.gold, GOLD_JITTER);
   let bonus = node?.goldBonus ?? 0;
   if (node?.kind === 'elite') bonus += GOLD_ELITE_FLAT_BONUS;
   return base + jitter + bonus;
@@ -1506,10 +1526,13 @@ function finishFight(state: RunState): void {
     state.pendingGold = gold;
     state.rewardSource = 'fight';
     state.rewardTier = 'elite';
-    state.rewardOptions = pickRewardIds(rewardPoolFor(state, 'elite'), 3)
-      .map((id) => makeOffer(state, id, 'reward'));
+    state.rewardOptions = pickRewardIds(
+      rewardPoolFor(state, 'elite'),
+      3,
+      () => takeRunUnit(state.rng.reward),
+    ).map((id) => makeOffer(state, id, 'reward'));
     grantRelicReward(state);
-    resolvePotionDrop(state, secureRandomInt);
+    resolvePotionDrop(state, (max) => runRandomInt(state.rng.potion, max));
     state.screen = 'reward';
     saveRunCheckpoint(state);
     return;
@@ -1525,9 +1548,10 @@ function finishFight(state: RunState): void {
 
   const pool = rewardPoolFor(state, tier);
   state.rewardTier = tier;
-  state.rewardOptions = pickRewardIds(pool, 3).map((id) => makeOffer(state, id, 'reward'));
+  state.rewardOptions = pickRewardIds(pool, 3, () => takeRunUnit(state.rng.reward))
+    .map((id) => makeOffer(state, id, 'reward'));
   if (node?.kind === 'elite') grantRelicReward(state);
-  resolvePotionDrop(state, secureRandomInt);
+  resolvePotionDrop(state, (max) => runRandomInt(state.rng.potion, max));
   state.screen = 'reward';
   saveRunCheckpoint(state);
 }

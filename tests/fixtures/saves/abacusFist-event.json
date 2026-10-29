@@ -56,43 +56,43 @@
     },
     {
       "uid": "d11",
-      "defId": "ab_m006",
+      "defId": "ab_m010",
       "upgradeLevel": 0
     },
     {
       "uid": "d14",
-      "defId": "ab_m009",
+      "defId": "ab_m007",
       "upgradeLevel": 0
     },
     {
       "uid": "d20",
-      "defId": "ab_m004",
+      "defId": "ab_m006",
       "upgradeLevel": 0
     },
     {
       "uid": "d23",
-      "defId": "ab_m005",
+      "defId": "ab_m007",
       "upgradeLevel": 0
     },
     {
       "uid": "d26",
-      "defId": "ab_m027",
+      "defId": "ab_m026",
       "upgradeLevel": 0
     }
   ],
   "nextCardUid": 29,
-  "gold": 196,
+  "gold": 200,
   "characterId": "abacusFist",
   "relicIds": [
     "woodBeads",
     "beadPouch",
     "tenBell",
-    "rulerCharm"
+    "eraser"
   ],
   "pendingRelicId": null,
   "potions": [
-    "pageJuice",
-    "sparkSoda",
+    "guardBubble",
+    "chorusBurst",
     null
   ],
   "potionDropChance": 50,
@@ -139,9 +139,9 @@
         ],
         "cursor": 0,
         "relics": {
-          "common": "eraser",
-          "uncommon": "eraser",
-          "rare": "eraser"
+          "common": "rulerCharm",
+          "uncommon": "rulerCharm",
+          "rare": "rulerCharm"
         },
         "libraryIds": []
       },
@@ -3067,21 +3067,21 @@
   "shopOffers": [
     {
       "uid": "d17",
-      "defId": "ab_m027",
+      "defId": "ab_m004",
       "upgradeLevel": 0,
       "price": 22,
       "sold": false
     },
     {
       "uid": "d18",
-      "defId": "ab_m011",
+      "defId": "ab_m005",
       "upgradeLevel": 0,
       "price": 34,
       "sold": false
     },
     {
       "uid": "d19",
-      "defId": "ab_m026",
+      "defId": "ab_m027",
       "upgradeLevel": 0,
       "price": 46,
       "sold": false
@@ -3089,12 +3089,12 @@
   ],
   "shopPotionOffers": [
     {
-      "potionId": "warmHoney",
+      "potionId": "pageJuice",
       "price": 18,
       "sold": false
     },
     {
-      "potionId": "chorusBurst",
+      "potionId": "guardBubble",
       "price": 18,
       "sold": false
     }
@@ -3114,5 +3114,35 @@
   },
   "scoreCommitted": false,
   "castSeed": 1067704970,
-  "castCounter": 21
+  "castCounter": 25,
+  "rng": {
+    "combat": {
+      "seed": 1695214527,
+      "counter": 55
+    },
+    "reward": {
+      "seed": 3787749001,
+      "counter": 40
+    },
+    "shop": {
+      "seed": 1239896380,
+      "counter": 8
+    },
+    "gold": {
+      "seed": 1636273392,
+      "counter": 8
+    },
+    "relic": {
+      "seed": 149909391,
+      "counter": 3
+    },
+    "potion": {
+      "seed": 2266234680,
+      "counter": 9
+    },
+    "upgrade": {
+      "seed": 2073890399,
+      "counter": 18
+    }
+  }
 }

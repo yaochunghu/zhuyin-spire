@@ -5,9 +5,9 @@ The live version, obtainability rules, and next implementation slice live in
 
 ## Shipped on main
 
-`package.json` is 0.4.7. The current GitHub Release is **v0.4.7** (`[0.4.7]`
-in [CHANGELOG.md](../CHANGELOG.md), #78). The previous release is
-v0.4.6 at `88861dd` (#76), 2026-10-29 02:42 UTC. Two characters are playable. Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
+`package.json` is 0.4.8. The current GitHub Release is **v0.4.8** (`[0.4.8]`
+in [CHANGELOG.md](../CHANGELOG.md), #77, #79, #81). The previous release is
+v0.4.7 at `a3ebb0e` (#80), 2026-10-29 03:54 UTC. Two characters are playable. Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
 
 - Vite + TypeScript SPA; touch-first preschool UI; adult coach strip  
 - Full first-syllable 注音 cast (including 聲調); listen mode (Web Speech zh-TW)  
@@ -41,7 +41,10 @@ v0.4.6 at `88861dd` (#76), 2026-10-29 02:42 UTC. Two characters are playable. Li
 - Act-native fights, including 鐘粉蛾, brace, soothe, and summon. ? rooms that
   become fights use the same easy and hard pools
 - `castSeed` and `castCounter` on the run. Saves stay version 4. `eventTrack`,
-  `castSeed`, and `castCounter` are optional
+  `castSeed`, `castCounter`, and `rng` are optional. `rng` (#81) is the saved
+  deck, reward, shop, gold, relic, potion, and upgrade streams. A checkpoint
+  without `rng` still loads: those streams are derived from `castSeed` and
+  every counter starts at 0. Practice questions stay on `castSeed`
 - 珠算武者 is playable: 27-card pool, math casting with three choices, and
   its own relic pool. 共鳴武者 stays the 注音 character. `english` is reserved
 - Phone shop offers keep the card, price, and remove-card button on screen.
@@ -69,6 +72,11 @@ v0.4.6 at `88861dd` (#76), 2026-10-29 02:42 UTC. Two characters are playable. Li
   eight viewports. The correction card uses the compact layout up to 640px
   height, so 繼續 stays on screen at 1024×600. The 640×360 hinted header is
   guarded so the answer does not cover 送出. Saves stay version 4
+- Content fixes (#77): shape prompts use 球 ⚽, 魔術方塊的一面 🟦, and 書本 📘.
+  三角飯糰 stays 🍙. Make-10 tier 2 asks 「N 和 M 合起來是幾？」, total 2–10,
+  about one single-zero question in ten, never 0 and 0. 問 uses 🙋. Saves stay
+  version 4
+- The public README and page description say 一年級 / 5–7 歲 (#79)
 - Debug-only child-error model for both characters (#71). A normal production
   bundle does not contain it
 
