@@ -10,6 +10,17 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ---
 
+## [0.4.7] — 2026-10-29
+
+### Cast fit (#78)
+
+- End-to-end checks walk combat, an event fight, the shrine, and practice through the default, hinted, speech-fallback, retry, and correction-card states at 1280×720, 1024×768, 1024×600, 360×740, 640×360, 844×390, 390×844, and 568×320. ✓ (繼續 on the correction card), every answer key, and every hint control stay fully inside the viewport and receive the tap. Keys stay at least 48px
+- The docked correction card uses the compact layout up to 640px height, so 繼續 stays on screen with the question and the answer at 1024×600. 1280×720 and 1024×768 stay on the large card
+- The same matrix guards the 640×360 hinted 注音 header. The revealed answer stays on the mana line, so it does not cover the keys or 送出
+- Saves stay version 4. Game rules are unchanged
+
+---
+
 ## [0.4.6] — 2026-10-29
 
 ### Playtest telemetry schema v3 (#74)
@@ -21,7 +32,6 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ### Layout (#75)
 
-- Cast fit checks walk combat, an event fight, the shrine, and practice through the default, hinted, speech-fallback, retry, and correction-card states. The viewports are the existing set plus 1024×600, 360×740, and 568×320. At 1024×600 the docked correction card keeps 繼續 on screen with the question and the answer
 - During the first tutorial fight, the lesson banner stays in the battlefield column while a cast is open and sits under the combat HUD, so the whole banner is readable at 640×360, 844×390, and 568×320. The cast slots and the hinted answer stay clear
 - At 568×320, the math dock's 「語音暫時無法播放…」 note fits on screen together with the question, the three answers, and 家長協助
 
@@ -410,6 +420,7 @@ Baseline snapshot of the preschool Spire + 注音 game, documented for long-term
 - Standalone git repository for the game folder (tag `v0.1.0`)
 
 [Unreleased]: #unreleased
+[0.4.7]: #047--2026-10-29
 [0.4.6]: #046--2026-10-29
 [0.4.5]: #045--2026-10-29
 [0.4.4]: #044--2026-10-28
