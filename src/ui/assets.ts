@@ -276,7 +276,7 @@ export const ART_ASSETS = {
   enemyBoss3: {
     src: new URL('../assets/art/enemies/boss-3.webp', import.meta.url).href,
     fallback: '👑',
-    alt: '被星環包圍的注音終焉王玩具',
+    alt: '被星環包圍的終焉王玩具',
   },
   tokenGarden: {
     src: new URL('../assets/art/token-garden.webp', import.meta.url).href,

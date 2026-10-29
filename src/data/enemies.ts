@@ -575,7 +575,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
   },
   boss3: {
     id: 'boss3',
-    name: '注音終焉王',
+    name: '終焉王',
     emoji: '👑',
     maxHp: 72,
     role: 'boss',
@@ -583,7 +583,7 @@ export const ENEMIES: Record<string, EnemyDef> = {
     tier: 'boss',
     behaviorNote: '血量過半後先舉盾並 +1，下一手重擊，再叫星螢',
     strengthCap: 1,
-    coachTip: '注音終焉王血量變少後，下一手先舉盾，自己的攻擊 +1。變大的重擊數字寫在圖示上。重擊之後才叫出星螢。星螢那一輪先休息。',
+    coachTip: '終焉王血量變少後，下一手先舉盾，自己的攻擊 +1。變大的重擊數字寫在圖示上。重擊之後才叫出星螢。星螢那一輪先休息。',
     pattern: [atk(9), multi(3, 3), guard(12)],
     phases: [{
       belowHp: 36,

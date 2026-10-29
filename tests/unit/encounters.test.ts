@@ -207,7 +207,7 @@ const NEW_FIGHTS: Array<{ label: string; enemyId: string; encounterId?: string; 
   { label: '晶盾與鏡音', enemyId: 'slime', encounterId: 'a3_crystal_mirror', deck: MID_DECK },
   { label: '塔守護獸', enemyId: 'boss1', deck: MID_DECK },
   { label: '雙翼監守', enemyId: 'boss2', deck: MID_DECK },
-  { label: '注音終焉王', enemyId: 'boss3', deck: MID_DECK },
+  { label: '終焉王', enemyId: 'boss3', deck: MID_DECK },
 ];
 
 describe('encounter budgets', () => {
@@ -424,7 +424,7 @@ describe('listener, buffer, summon, and boss phase', () => {
     expect(state.enemies).toHaveLength(1);
   });
 
-  it('previews 注音終焉王 heavy at 14 and summons 星螢 after that hit', () => {
+  it('previews 終焉王 heavy at 14 and summons 星螢 after that hit', () => {
     const state = createCombat(['mo'], 'boss3', 40, 40);
     const boss = state.enemies[0]!;
     expect(intentForUnit(boss, state).value).toBe(9);

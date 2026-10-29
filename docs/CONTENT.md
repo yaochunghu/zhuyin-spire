@@ -71,6 +71,7 @@ Example: 爸爸 → `ㄅㄚˋ`.
 
 The live fight roster is [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md). The 30
 Act I–III events are in [EVENT_ENCOUNTER_BIBLE.md](./EVENT_ENCOUNTER_BIBLE.md).
+The Act III boss is shown as 終焉王. Its id stays `boss3`.
 Difficulty variants, keys, and Act IV in that bible are still proposals.
 
 ### Roles (design language)

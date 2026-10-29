@@ -131,6 +131,9 @@ describe('kid-safe child-facing copy', () => {
       const relative = path.relative(path.resolve(SRC, '..'), file);
       for (const snippet of extractStrings(readFileSync(file, 'utf8'))) {
         if (isLessonHeadword(file, snippet.text)) continue;
+        if (snippet.text.includes('注音終焉王')) {
+          hits.push(`${relative}:${snippet.line} [注音終焉王] ${snippet.text.replace(/\s+/g, ' ').slice(0, 80)}`);
+        }
         for (const rule of RULES) {
           if (rule.name === '%' && !/[\u4e00-\u9fff]/.test(snippet.text)) continue;
           if (!rule.pattern.test(snippet.text)) continue;
@@ -139,6 +142,10 @@ describe('kid-safe child-facing copy', () => {
         }
       }
     }
+    const rawHits = listTypeScript(SRC)
+      .filter((file) => readFileSync(file, 'utf8').includes('注音終焉王'))
+      .map((file) => path.relative(path.resolve(SRC, '..'), file));
+    expect(rawHits).toEqual([]);
     expect(hits).toEqual([]);
   });
 
@@ -164,7 +171,7 @@ describe('kid-safe child-facing copy', () => {
     expect(getEvent('event_shared_phonetic_shrine').rationale).toContain('錯到沒有心，這趟就先休息');
   });
 
-  it('uses one set of act names and leaves the boss name alone', () => {
+  it('uses one set of act names and shows the last boss as 終焉王', () => {
     expect([...ACT_PLACE_NAMES]).toEqual(['魔法花園', '燈籠書庫', '星空觀星台']);
     expect(TOWER_SUMMIT_NAME).toBe('塔頂之心');
     expect([actTitle(1), actTitle(2), actTitle(3)]).toEqual([
@@ -177,11 +184,13 @@ describe('kid-safe child-facing copy', () => {
       actTitle(2),
       actTitle(3),
     ]);
-    expect(ENEMIES.boss3.name).toBe('注音終焉王');
+    expect(ENEMIES.boss3.id).toBe('boss3');
+    expect(ENEMIES.boss3.name).toBe('終焉王');
+    expect(ENEMIES.boss3.coachTip.startsWith('終焉王')).toBe(true);
     const source = listTypeScript(SRC).map((file) => readFileSync(file, 'utf8')).join('\n');
     expect(source).not.toContain('入門塔');
     expect(source).not.toContain('庭園');
     expect(source).not.toContain('觀測台');
-    expect(source).toContain('注音終焉王');
+    expect(source).not.toContain('注音終焉王');
   });
 });
