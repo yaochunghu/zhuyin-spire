@@ -278,33 +278,68 @@ describe('math prompt generation', () => {
       expect(Number(draft.answer)).toBe(left + right);
       expect(draft.choices).toHaveLength(3);
       expectNearMake10Choices(left + right, draft.choices);
-      expect(draft.question).not.toMatch(/已經有|再幾顆|10 可以分成|0 和 0/);
+      expect(draft.question).not.toMatch(/已經有|再幾顆|10 可以分成/);
     }
 
     const scripted = (draws: number[]) => {
       let index = 0;
       return () => draws[index++] ?? 0;
     };
-    const wasBothZero = generateMathQuestion('make10', 2, scripted([0, 0]));
-    expect(wasBothZero.question).toBe('0 和 1 合起來是幾？');
-    expect(wasBothZero.question).not.toBe('0 和 0 合起來是幾？');
-    expect(wasBothZero.answer).toBe('1');
-    expect(wasBothZero.choices.map(Number).sort((a, b) => a - b)).toEqual([0, 1, 2]);
+    const zeroPair = generateMathQuestion('make10', 2, scripted([0, 0, 0]));
+    expect(zeroPair.question).toBe('0 和 1 合起來是幾？');
+    expect(zeroPair.question).not.toContain('0 和 0');
+    expect(zeroPair.answer).toBe('1');
+    expect(zeroPair.choices.map(Number).sort((a, b) => a - b)).toEqual([0, 1, 2]);
 
-    const oneZero = generateMathQuestion('make10', 2, scripted([0, 0.7]));
+    const oneZero = generateMathQuestion('make10', 2, scripted([0, 0.6, 0]));
     expect(oneZero.question).toBe('0 和 7 合起來是幾？');
     expect(oneZero.answer).toBe('7');
     expect(oneZero.choices.map(Number).sort((a, b) => a - b)).toEqual([6, 7, 8]);
 
-    const ten = generateMathQuestion('make10', 2, scripted([0.99, 0]));
+    const ten = generateMathQuestion('make10', 2, scripted([0, 0.95, 0.9]));
     expect(ten.question).toBe('10 和 0 合起來是幾？');
     expect(ten.answer).toBe('10');
     expect(ten.choices.map(Number).sort((a, b) => a - b)).toEqual([8, 9, 10]);
 
-    const seven = generateMathQuestion('make10', 2, scripted([0.4, 0.5]));
+    const seven = generateMathQuestion('make10', 2, scripted([0.4, 0.6, 0.5]));
     expect(seven.question).toBe('4 和 3 合起來是幾？');
     expect(seven.answer).toBe('7');
     expect(seven.choices.map(Number).sort((a, b) => a - b)).toEqual([6, 7, 8]);
+
+    const samplesPerSeed = 2500;
+    const seeds = [1, 17, 42, 99, 256];
+    for (const seed of seeds) {
+      const rng = castStreamRng(stream(seed));
+      let singleZero = 0;
+      for (let index = 0; index < samplesPerSeed; index += 1) {
+        const draft = generateMathQuestion('make10', 2, rng);
+        const match = /^(\d+) 和 (\d+) 合起來是幾？$/.exec(draft.question);
+        expect(match, draft.question).not.toBeNull();
+        const left = Number(match![1]);
+        const right = Number(match![2]);
+        expect(left === 0 && right === 0, draft.question).toBe(false);
+        const total = left + right;
+        expect(total).toBeGreaterThanOrEqual(1);
+        expect(total).toBeLessThanOrEqual(10);
+        expect(Number(draft.answer)).toBe(total);
+        expectNearMake10Choices(total, draft.choices);
+        const zeros = Number(left === 0) + Number(right === 0);
+        expect(zeros).toBeLessThanOrEqual(1);
+        if (zeros === 1) {
+          singleZero += 1;
+          const other = left === 0 ? right : left;
+          expect(other).toBeGreaterThanOrEqual(1);
+          expect(other).toBeLessThanOrEqual(10);
+        } else {
+          expect(left).toBeGreaterThanOrEqual(1);
+          expect(right).toBeGreaterThanOrEqual(1);
+          expect(total).toBeGreaterThanOrEqual(2);
+        }
+      }
+      const rate = singleZero / samplesPerSeed;
+      expect(rate, `seed ${seed} single-0 rate ${rate}`).toBeGreaterThanOrEqual(0.05);
+      expect(rate, `seed ${seed} single-0 rate ${rate}`).toBeLessThanOrEqual(0.15);
+    }
   });
 
   it('matches every clock face to the hour it asks', () => {

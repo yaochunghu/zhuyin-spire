@@ -214,10 +214,23 @@ function make10Question(rng: Rng, tier: CastingTier): MathQuestion {
     return numeric(`10 可以分成 ${part} 和幾？`, 10 - part, rng);
   }
   if (tier === 2) {
-    const left = irand(rng, 0, 10);
-    let right = irand(rng, 0, 10 - left);
-    // 「0 和 0」 is not a question. One zero stays allowed, so the total is 1..10.
-    if (left === 0 && right === 0) right = 1;
+    // About one question in ten is a single zero. The rest uses two numbers that are both at least 1.
+    let left: number;
+    let right: number;
+    if (rng() < 0.1) {
+      const part = irand(rng, 1, 10);
+      if (rng() < 0.5) {
+        left = 0;
+        right = part;
+      } else {
+        left = part;
+        right = 0;
+      }
+    } else {
+      const sum = irand(rng, 2, 10);
+      left = irand(rng, 1, sum - 1);
+      right = sum - left;
+    }
     const total = left + right;
     return {
       question: `${left} 和 ${right} 合起來是幾？`,
