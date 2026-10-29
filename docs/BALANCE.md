@@ -69,6 +69,8 @@ this shorter, cast-gated game are in
 
 Helper: `restHealAmount(heroMaxHp)`.
 
+Fight gold, treasure gold, relic drops, potion drops, reward cards, shop cards, upgrade offers, and deck shuffles each read a named stream saved on the run (`rng` in the version-4 checkpoint). The ranges in this table are unchanged. A reward card is a uniform draw from that character's current pool, so its rarity mix is the pool's mix. A potion drop uses `POTION_DROP_START` / `POTION_DROP_STEP` and then a uniform bottle. A relic drop is uniform among that character's unowned pool relics.
+
 ---
 
 ## Related content knobs (not in balance.ts)

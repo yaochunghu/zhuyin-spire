@@ -68,7 +68,7 @@ Important fields:
 - **Hero:** `heroHp`, `heroMaxHp`, physical `deck[]`, `nextCardUid`, `gold`, `characterId`, `relicIds` (ordered; v1/v2 `relicId` migrates here), `potions` (3 slots; v3 checkpoints load an empty belt)
 - **Map:** `runMap` (3 acts), `actIndex`, `currentNodeId`, `activeNodeId`, `visitedIds`, `pathIds`
 - **Combat:** `combat: CombatState | null`
-- **Cast:** `castSeed` / `castCounter` choose this run's prompt draws, including practice, combat, and event casts such as 注音神龕. `cast: { prompt, cardDef } | null` is the live prompt and is not stored. Shuffle bags stay on the learner profile.
+- **Cast:** `castSeed` / `castCounter` choose this run's prompt draws, including practice, combat, and event casts such as 注音神龕. `cast: { prompt, cardDef } | null` is the live prompt and is not stored. Shuffle bags stay on the learner profile. Deck order, reward cards, shop cards, gold, relics, potions, and upgrade offers use `rng` instead, one saved stream each.
 - **Events:** `eventTrack` holds ?-room rolls and the event in progress. It is optional on a version 4 save.
 - **Meta UI:** `flash`, `floatText`, physical shop/reward card-instance fields
 - **Tutorial (ephemeral):** `tutorial`, plus optional saved `tutorialEligibleRun` so old saves are not retrofitted
@@ -114,6 +114,7 @@ File: `src/game/save.ts`
 - **Stable screens only** (map, rest, shop, reward, actClear, relicPick, event, eventCast, …) — **not** mid-combat or a combat cast
 - Current snapshot version is 4. v1 card ids, the old boss floor, a single `relicId`, and a v3 relic list each migrate forward. v3 gains an empty belt and drop chance 40
 - Checkpoints store `castSeed` and `castCounter` beside the optional `eventTrack`. A save missing the cast fields still loads: the seed is filled in and the counter starts at 0. A save missing `eventTrack` still loads an empty event record. Reloading 注音神龕 keeps the question count and draws the next prompt
+- Checkpoints also store optional `rng`: `combat`, `reward`, `shop`, `gold`, `relic`, `potion`, and `upgrade`, each a seed plus a counter. A save without `rng` still loads. Those streams are derived from the run's `castSeed` and every counter starts at 0. Practice prompts do not read `rng`. The map is stored as `runMap`, and event rolls stay on `eventTrack`
 - Committed v4 fixtures for both characters live in `tests/fixtures/saves/`. `npm run generate:save-fixtures` rewrites them from the live run. The unit replay loads a checkpoint with `parseSnapshot` / `resumeSavedRun` and continues the same choices
 - Title offers continue vs new game; new game clears save
 

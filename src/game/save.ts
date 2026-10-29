@@ -33,6 +33,12 @@ import {
 import { emptyPotionBelt, isKnownPotionId } from '../data/potions';
 import { isKnownRelicId, RELICS } from '../data/relics';
 import { createCastSeed } from './castRng';
+import {
+  cloneRunRng,
+  createRunRng,
+  RUN_RNG_STREAMS,
+  type RunRngState,
+} from './runRng';
 import { recordSittingStart } from './playtestTelemetry';
 import type { RunState, Screen, ShopOffer, ShopPotionOffer } from './state';
 import {
@@ -121,6 +127,12 @@ export interface RunSnapshot {
   /** Optional so checkpoints saved before seeded prompt draws still load. */
   castSeed?: number | null;
   castCounter?: number | null;
+  /**
+   * Deck, reward, shop, gold, relic, potion, and upgrade streams.
+   * Absent on saves from before those streams. The load path derives them
+   * from `castSeed` with every counter at 0.
+   */
+  rng?: RunRngState;
 }
 
 function isStableScreen(screen: Screen): boolean {
@@ -187,6 +199,7 @@ export function snapshotRun(state: RunState): RunSnapshot | null {
     scoreCommitted: state.scoreCommitted,
     castSeed: state.castSeed,
     castCounter: state.castCounter,
+    rng: cloneRunRng(state.rng),
   };
 }
 
@@ -244,6 +257,17 @@ function isUint32(value: unknown): value is number {
 
 function isOptionalUint32(value: unknown): boolean {
   return value === undefined || value === null || isUint32(value);
+}
+
+function isValidRunRng(value: unknown): value is RunRngState {
+  if (!isPlainObject(value)) return false;
+  if (Object.keys(value).length !== RUN_RNG_STREAMS.length) return false;
+  for (const name of RUN_RNG_STREAMS) {
+    const stream = value[name];
+    if (!isPlainObject(stream) || Object.keys(stream).length !== 2) return false;
+    if (!isUint32(stream.seed) || !isUint32(stream.counter)) return false;
+  }
+  return true;
 }
 
 function isSafeDisplay(value: unknown, maxLength: number): value is string {
@@ -593,6 +617,7 @@ function isValidSnapshot(data: unknown): data is RunSnapshot {
   if (data.relicIds !== undefined && !isBoundedStringArray(data.relicIds, 12, (id) => id in RELICS)) return false;
   if (!isValidEventTrack(data.eventTrack, mapIds, data.screen as Screen)) return false;
   if (!isOptionalUint32(data.castSeed) || !isOptionalUint32(data.castCounter)) return false;
+  if (data.rng !== undefined && !isValidRunRng(data.rng)) return false;
   return true;
 }
 
@@ -827,6 +852,7 @@ export function applySnapshot(state: RunState, snap: RunSnapshot): void {
   state.scoreResult = null;
   state.castSeed = isUint32(snap.castSeed) ? snap.castSeed : createCastSeed();
   state.castCounter = isUint32(snap.castCounter) ? snap.castCounter : 0;
+  state.rng = snap.rng ? cloneRunRng(snap.rng) : createRunRng(state.castSeed);
 }
 
 export function resumeSavedRun(state: RunState): boolean {

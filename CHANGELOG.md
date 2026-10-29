@@ -8,6 +8,10 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+### Save determinism
+
+- Deck shuffles, reward cards, shop cards, gold, relic drops, potion drops, and upgrade offers each use a named stream stored on the run. A version-4 save without `rng` still loads: those streams are derived from `castSeed` and every counter starts at 0. Practice questions stay on `castSeed` / `castCounter`
+
 ---
 
 ## [0.4.7] — 2026-10-29

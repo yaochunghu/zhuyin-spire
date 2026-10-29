@@ -1,10 +1,11 @@
 /**
  * Seeded save/replay harness. Test-only.
  *
- * The game does not keep one run seed for every roll. This harness replaces
- * `Math.random` and `crypto.getRandomValues` with one deterministic stream for
- * the duration of a run, then drives the real start, choice, and save APIs.
- * Checkpoints stay schema v4.
+ * Map generation, the event-track seed, and `castSeed` still read `Math.random`
+ * and `crypto.getRandomValues`. This harness replaces both with one
+ * deterministic stream. Deck, reward, shop, gold, relic, potion, and upgrade
+ * rolls use the run's saved streams, so a fresh page boot can spend an extra
+ * cast-seed draw and still resume those rolls. Checkpoints stay schema v4.
  */
 
 import { getCard } from '../../src/data/cards';

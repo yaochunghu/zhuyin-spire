@@ -41,7 +41,8 @@ v0.4.6 at `88861dd` (#76), 2026-10-29 02:42 UTC. Two characters are playable. Li
 - Act-native fights, including 鐘粉蛾, brace, soothe, and summon. ? rooms that
   become fights use the same easy and hard pools
 - `castSeed` and `castCounter` on the run. Saves stay version 4. `eventTrack`,
-  `castSeed`, and `castCounter` are optional
+  `castSeed`, `castCounter`, and `rng` are optional. `rng` is the saved deck,
+  reward, shop, gold, relic, potion, and upgrade streams
 - 珠算武者 is playable: 27-card pool, math casting with three choices, and
   its own relic pool. 共鳴武者 stays the 注音 character. `english` is reserved
 - Phone shop offers keep the card, price, and remove-card button on screen.

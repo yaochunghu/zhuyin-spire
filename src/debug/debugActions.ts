@@ -12,6 +12,7 @@ import { drawCards, livingEnemies } from '../game/combat';
 import { createCombat } from '../game/battle/battleManager';
 import { combatRulesForGate } from '../game/battle/types';
 import {
+  combatShuffleRng,
   createNewRun,
   debugFinishFight,
   debugOpenActTreasure,
@@ -353,6 +354,7 @@ export function debugPrepareVisualReview(
         getOwnedRelics(state),
         undefined,
         combatRulesForGate(getPlayableCharacter(debugCharacterId(state)).castingGateId),
+        combatShuffleRng(state),
       );
       for (
         let index = state.combat.enemies.length;
@@ -389,6 +391,7 @@ export function debugPrepareVisualReview(
         getOwnedRelics(state),
         undefined,
         combatRulesForGate(getPlayableCharacter(debugCharacterId(state)).castingGateId),
+        combatShuffleRng(state),
       );
       state.cast = reviewCast;
       state.screen = 'castCheck';
