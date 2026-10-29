@@ -1,6 +1,7 @@
 import { relicPlayerCopy, type RelicDef } from '../data/relics';
 import { getActiveCharacter } from '../game/state';
 import { sfx } from '../game/audio';
+import { hydrateArtImages, paintRelicFace } from './assets';
 import {
   createModalShell,
   dismissModalShell,
@@ -21,7 +22,7 @@ export function relicBadgeButton(relic: RelicDef): HTMLButtonElement {
   button.type = 'button';
   button.className = 'relic-badge';
   button.dataset.relicId = relic.id;
-  button.textContent = relic.emoji;
+  paintRelicFace(button, relic.id, relic.emoji);
   button.setAttribute('aria-label', `查看遺物：${relic.name}`);
   button.addEventListener('click', (event) => {
     event.stopPropagation();
@@ -70,7 +71,7 @@ export function openRelicInspect(relic: RelicDef, opener?: HTMLElement): void {
   const emoji = document.createElement('p');
   emoji.className = 'relic-inspect-emoji';
   emoji.setAttribute('aria-hidden', 'true');
-  emoji.textContent = relic.emoji;
+  paintRelicFace(emoji, relic.id, relic.emoji);
   const name = document.createElement('h2');
   name.className = 'relic-inspect-name';
   name.textContent = relic.name;
@@ -101,5 +102,6 @@ export function openRelicInspect(relic: RelicDef, opener?: HTMLElement): void {
   dialog.addEventListener('keydown', (event) => trapModalFocus(dialog, event));
   inspectDialog = dialog;
   showModalShell(dialog, closeRelicInspect);
+  hydrateArtImages(dialog);
   close.focus();
 }

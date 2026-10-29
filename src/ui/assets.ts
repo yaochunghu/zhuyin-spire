@@ -1,4 +1,5 @@
 import { ACT_PLACE_NAMES, TOWER_SUMMIT_NAME } from '../data/map';
+import { RELICS } from '../data/relics';
 import type { Screen } from '../game/state';
 
 export type ArtAssetKey =
@@ -50,8 +51,7 @@ export type ArtAssetKey =
   | 'propBlossom'
   | 'propLantern'
   | 'propBooks'
-  | 'propTelescope'
-  | 'propStar';
+  | 'propTelescope';
 
 export type VisualTheme = 'foyer' | 'garden' | 'library' | 'observatory';
 
@@ -313,12 +313,89 @@ export const ART_ASSETS = {
     fallback: '🔭',
     alt: '黃銅望遠鏡玩具擺件',
   },
-  propStar: {
-    src: new URL('../assets/art/prop-star.webp', import.meta.url).href,
-    fallback: '⭐',
-    alt: '星星玩具擺件',
-  },
 } as const satisfies Record<ArtAssetKey, ArtAsset>;
+
+/**
+ * Painted relic faces. A relic missing from this map keeps its emoji.
+ * Legacy shieldCharm, coinPouch, morningSpark, and luckyDraw stay emoji.
+ */
+export const RELIC_ART = {
+  tuningFork: {
+    src: new URL('../assets/art/relics/relic-tuning-fork.webp', import.meta.url).href,
+    fallback: RELICS.tuningFork.emoji,
+    alt: RELICS.tuningFork.name,
+  },
+  gapThumb: {
+    src: new URL('../assets/art/relics/relic-gap-thumb.webp', import.meta.url).href,
+    fallback: RELICS.gapThumb.emoji,
+    alt: RELICS.gapThumb.name,
+  },
+  trainingWrap: {
+    src: new URL('../assets/art/relics/relic-training-wrap.webp', import.meta.url).href,
+    fallback: RELICS.trainingWrap.emoji,
+    alt: RELICS.trainingWrap.name,
+  },
+  tempoWood: {
+    src: new URL('../assets/art/relics/relic-tempo-wood.webp', import.meta.url).href,
+    fallback: RELICS.tempoWood.emoji,
+    alt: RELICS.tempoWood.name,
+  },
+  listeningHeart: {
+    src: new URL('../assets/art/relics/relic-listening-heart.webp', import.meta.url).href,
+    fallback: RELICS.listeningHeart.emoji,
+    alt: RELICS.listeningHeart.name,
+  },
+  trainingStance: {
+    src: new URL('../assets/art/relics/relic-training-stance.webp', import.meta.url).href,
+    fallback: RELICS.trainingStance.emoji,
+    alt: RELICS.trainingStance.name,
+  },
+  woodBeads: {
+    src: new URL('../assets/art/relics/relic-wood-beads.webp', import.meta.url).href,
+    fallback: RELICS.woodBeads.emoji,
+    alt: RELICS.woodBeads.name,
+  },
+  beadPouch: {
+    src: new URL('../assets/art/relics/relic-bead-pouch.webp', import.meta.url).href,
+    fallback: RELICS.beadPouch.emoji,
+    alt: RELICS.beadPouch.name,
+  },
+  rulerCharm: {
+    src: new URL('../assets/art/relics/relic-ruler-charm.webp', import.meta.url).href,
+    fallback: RELICS.rulerCharm.emoji,
+    alt: RELICS.rulerCharm.name,
+  },
+  tenBell: {
+    src: new URL('../assets/art/relics/relic-ten-bell.webp', import.meta.url).href,
+    fallback: RELICS.tenBell.emoji,
+    alt: RELICS.tenBell.name,
+  },
+  eraser: {
+    src: new URL('../assets/art/relics/relic-eraser.webp', import.meta.url).href,
+    fallback: RELICS.eraser.emoji,
+    alt: RELICS.eraser.name,
+  },
+  pocketMetronome: {
+    src: new URL('../assets/art/relics/relic-pocket-metronome.webp', import.meta.url).href,
+    fallback: RELICS.pocketMetronome.emoji,
+    alt: RELICS.pocketMetronome.name,
+  },
+  moonMusicBox: {
+    src: new URL('../assets/art/relics/relic-moon-music-box.webp', import.meta.url).href,
+    fallback: RELICS.moonMusicBox.emoji,
+    alt: RELICS.moonMusicBox.name,
+  },
+  rainSoundTube: {
+    src: new URL('../assets/art/relics/relic-rain-sound-tube.webp', import.meta.url).href,
+    fallback: RELICS.rainSoundTube.emoji,
+    alt: RELICS.rainSoundTube.name,
+  },
+  choirRibbon: {
+    src: new URL('../assets/art/relics/relic-choir-ribbon.webp', import.meta.url).href,
+    fallback: RELICS.choirRibbon.emoji,
+    alt: RELICS.choirRibbon.name,
+  },
+} as const satisfies Record<string, ArtAsset>;
 
 export const REQUIRED_ART_ASSET_KEYS = Object.freeze(
   Object.keys(ART_ASSETS) as ArtAssetKey[],
@@ -424,6 +501,8 @@ export function actTransitionArtKeyFor(
 
 const ACT_THEMES = ['garden', 'library', 'observatory'] as const;
 
+/** Three act slots only. Per-floor, shop, camp, event, foyer, and Act IV plates are not wired. */
+
 const THEME_ASSETS: Record<
   Exclude<VisualTheme, 'foyer'>,
   { scene: ArtAssetKey; token: ArtAssetKey; prop: ArtAssetKey }
@@ -495,12 +574,12 @@ export function applyVisualTheme(
   return theme;
 }
 
-export function artImageHtml(
-  key: ArtAssetKey,
-  className = '',
-  decorative = false,
+function artMarkup(
+  key: string,
+  asset: ArtAsset,
+  className: string,
+  decorative: boolean,
 ): string {
-  const asset = ART_ASSETS[key];
   const classes = ['art-image', className].filter(Boolean).join(' ');
   return `<span class="${classes}" data-art-key="${key}">
     <span class="art-image-fallback" aria-hidden="true">${asset.fallback}</span>
@@ -508,6 +587,32 @@ export function artImageHtml(
       decorative ? ' aria-hidden="true"' : ''
     }>
   </span>`;
+}
+
+export function artImageHtml(
+  key: ArtAssetKey,
+  className = '',
+  decorative = false,
+): string {
+  return artMarkup(key, ART_ASSETS[key], className, decorative);
+}
+
+/** Painted relic face, or the emoji when this relic has no icon. */
+export function relicFaceHtml(relicId: string, emoji: string): string {
+  if (!Object.prototype.hasOwnProperty.call(RELIC_ART, relicId)) return emoji;
+  const asset = RELIC_ART[relicId as keyof typeof RELIC_ART];
+  return artMarkup(`relic:${relicId}`, asset, 'relic-art', true);
+}
+
+/** Replace the node's contents with the relic face. */
+export function paintRelicFace(parent: HTMLElement, relicId: string, emoji: string): void {
+  const markup = relicFaceHtml(relicId, emoji);
+  parent.replaceChildren();
+  if (markup === emoji) {
+    parent.textContent = emoji;
+    return;
+  }
+  parent.insertAdjacentHTML('beforeend', markup);
 }
 
 export function hydrateArtImages(root: ParentNode): void {
