@@ -16,6 +16,18 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ---
 
+## [0.4.10] — 2026-10-29
+
+### Layout follow-ups (#85)
+
+- During a tutorial cast, the lesson banner sits under the combat HUD at portrait and desktop sizes, the same placement #75 already used on short landscape phones. The slots, the hinted answer, and 家長協助 stay clear
+- At 360×740, the open coach stays in its row and scrolls, so it no longer covers ⌫, 🗑️, and ✓
+- The math 「語音暫時無法播放…」 note stays on screen after 家長協助 re-renders the dock. That note is remembered for the session and is not written into the save
+- At 568×320, the open coach copy scrolls instead of being clipped. The question, the three answers, and 家長協助 stay outside that box
+- Saves stay version 4
+
+---
+
 ## [0.4.9] — 2026-10-29
 
 ### Kid-safe copy (#83)
@@ -460,6 +472,7 @@ Baseline snapshot of the preschool Spire + 注音 game, documented for long-term
 - Standalone git repository for the game folder (tag `v0.1.0`)
 
 [Unreleased]: #unreleased
+[0.4.10]: #0410--2026-10-29
 [0.4.9]: #049--2026-10-29
 [0.4.8]: #048--2026-10-29
 [0.4.7]: #047--2026-10-29

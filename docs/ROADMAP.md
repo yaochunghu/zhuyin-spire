@@ -5,9 +5,9 @@ The live version, obtainability rules, and next implementation slice live in
 
 ## Shipped on main
 
-`package.json` is 0.4.9. The current GitHub Release is **v0.4.9** (`[0.4.9]`
-in [CHANGELOG.md](../CHANGELOG.md), #83). The previous release is
-v0.4.8 at `ea6255a` (#82), 2026-10-29 05:46 UTC. Two characters are playable. Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
+`package.json` is 0.4.10. The current GitHub Release is **v0.4.10** (`[0.4.10]`
+in [CHANGELOG.md](../CHANGELOG.md), #85). The previous release is
+v0.4.9 at `7ab0827` (#84), 2026-10-29 10:51 UTC. Two characters are playable. Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
 
 - Vite + TypeScript SPA; touch-first preschool UI; adult coach strip  
 - Full first-syllable 注音 cast (including 聲調); listen mode (Web Speech zh-TW)  
@@ -66,9 +66,10 @@ v0.4.8 at `ea6255a` (#82), 2026-10-29 05:46 UTC. Two characters are playable. Li
   `scripts/balance-report.mjs` prints B1–B24. The map is in
   [BALANCE.md](./BALANCE.md). Saves stay version 4
 - During a tutorial cast, the lesson banner sits under the combat HUD at
-  640×360, 844×390, and 568×320, and also at portrait and desktop sizes. The
+  640×360, 844×390, and 568×320, and also at portrait and desktop sizes. At
+  360×740 the open coach no longer covers the spelling keys. The
   math 「語音暫時無法播放…」 note fits at 568×320 and stays after 家長協助
-  re-renders the dock. The open coach copy scrolls there instead of clipping (#75)
+  re-renders the dock. The open coach copy scrolls there instead of clipping (#75, #85)
 - Cast fit matrix (#78): combat, event fights, the shrine, and practice in
   the default, hinted, speech-fallback, retry, and correction-card states at
   eight viewports. The correction card uses the compact layout up to 640px

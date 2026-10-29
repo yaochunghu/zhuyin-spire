@@ -42,7 +42,7 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [DEBUG.md](./DEBUG.md) | Debug panel, flags, skip-cast testing |
 | [sim/CHILD_MODEL.md](./sim/CHILD_MODEL.md) | Debug-only child-error model and the Act I headless sim |
 | [ROADMAP.md](./ROADMAP.md) | Shipped systems, next work, known pitfalls |
-| [NEXT_PHASE.md](./NEXT_PHASE.md) | v0.4.9 current release, and what comes next |
+| [NEXT_PHASE.md](./NEXT_PHASE.md) | v0.4.10 current release, and what comes next |
 
 Root companions:
 
@@ -51,7 +51,8 @@ Root companions:
 | [../README.md](../README.md) | Play, quick start, version control |
 | [../AGENTS.md](../AGENTS.md) | AI/human resume guide |
 | [../CHANGELOG.md](../CHANGELOG.md) | Human-readable version history |
-| [../RELEASE_NOTES_v0.4.9.md](../RELEASE_NOTES_v0.4.9.md) | Player-facing notes for the current v0.4.9 release |
+| [../RELEASE_NOTES_v0.4.10.md](../RELEASE_NOTES_v0.4.10.md) | Player-facing notes for the current v0.4.10 release |
+| [../RELEASE_NOTES_v0.4.9.md](../RELEASE_NOTES_v0.4.9.md) | Player-facing notes for the v0.4.9 release |
 | [../RELEASE_NOTES_v0.4.8.md](../RELEASE_NOTES_v0.4.8.md) | Player-facing notes for the v0.4.8 release |
 | [../RELEASE_NOTES_v0.4.7.md](../RELEASE_NOTES_v0.4.7.md) | Player-facing notes for the v0.4.7 release |
 | [../RELEASE_NOTES_v0.4.6.md](../RELEASE_NOTES_v0.4.6.md) | Player-facing notes for the v0.4.6 release |
@@ -62,11 +63,11 @@ Root companions:
 
 ---
 
-## Snapshot (main, v0.4.9)
+## Snapshot (main, v0.4.10)
 
-`package.json` is **0.4.9**. The current GitHub Release is **v0.4.9**: #83
-is `[0.4.9]` in [CHANGELOG.md](../CHANGELOG.md). The previous release is
-v0.4.8 at `ea6255a` (#82), 2026-10-29 05:46 UTC. Two characters are playable.
+`package.json` is **0.4.10**. The current GitHub Release is **v0.4.10**: #85
+is `[0.4.10]` in [CHANGELOG.md](../CHANGELOG.md). The previous release is
+v0.4.9 at `7ab0827` (#84), 2026-10-29 10:51 UTC. Two characters are playable.
 
 - **Stack:** Vite + TypeScript SPA, no backend; localStorage save. Saves stay
   on version 4. `eventTrack`, `castSeed`, `castCounter`, and `rng` are optional.
@@ -97,8 +98,9 @@ v0.4.8 at `ea6255a` (#82), 2026-10-29 05:46 UTC. Two characters are playable.
   phone sizes. A hinted answer keeps 送出 and 家長協助 inside the dock, and
   the tutorial banner stays off the slots (#68). During a tutorial cast the
   banner sits under the combat HUD at 640×360, 844×390, and 568×320, and also
-  at portrait and desktop sizes. The math speech note survives the 家長協助
-  re-render, and the open coach copy scrolls at 568×320 (#75). The cast fit matrix walks combat, event
+  at portrait and desktop sizes. At 360×740 the open coach no longer covers
+  the spelling keys. The math speech note survives the 家長協助
+  re-render, and the open coach copy scrolls at 568×320 (#75, #85). The cast fit matrix walks combat, event
   fights, the shrine, and practice through the default, hinted,
   speech-fallback, retry, and correction-card states at eight viewports (#78).
   The correction card uses the compact layout up to 640px height, so 繼續
