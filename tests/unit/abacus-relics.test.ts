@@ -189,6 +189,9 @@ describe('per-character relic pools', () => {
     expect(getRelic('beadPouch').emoji).toBe('✨');
     expect(getRelic('beadPouch').name).toBe('星星袋');
     expect(getRelic('beadPouch').blurb).toBe('每場戰鬥開始數 4 顆星');
+    expect(getRelic('beadPouch').adultNote).toBe(
+      '這 4 顆星自己算一次，不會和湊十訣併成同一撥。不能跳過答題。',
+    );
     expect(getRelic('eraser').blurb).toBe('每場戰鬥第一次法術飄走時，數 2 顆星');
     expect(getRelic('eraser').adultNote).toBe(
       '再算一次的第一次答錯不算。法術消散才數星，而且一場只有一次。故意答錯仍然少一張牌和能量。',
