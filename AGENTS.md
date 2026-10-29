@@ -49,6 +49,7 @@ npm run test:security:e2e # production build, then security smoke tests
 | Debug cheats | `src/debug/*` → [docs/DEBUG.md](docs/DEBUG.md) |
 | Child-error model / Act I sim | `src/debug/childModel.ts`, `scripts/simulate-act.ts` → [docs/sim/CHILD_MODEL.md](docs/sim/CHILD_MODEL.md) |
 | Responsive phone/tablet stages | `src/styles/main.css`, `src/ui/responsive.ts` |
+| Scene plates, tokens, props, relic icons | `src/ui/assets.ts`, `src/assets/art/` → [docs/ART_INVENTORY.md](docs/ART_INVENTORY.md) |
 
 ## Architecture in one breath
 

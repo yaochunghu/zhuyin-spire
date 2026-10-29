@@ -2,16 +2,19 @@ import { describe, expect, it } from 'vitest';
 import {
   ART_ASSETS,
   ENEMY_ART_BY_DEF_ID,
+  RELIC_ART,
   REQUIRED_ART_ASSET_KEYS,
   actTransitionArtKeyFor,
   enemyArtKeyFor,
   visualThemeFor,
 } from '../../src/ui/assets';
 import { ENEMIES } from '../../src/data/enemies';
+import { RELICS } from '../../src/data/relics';
 
 describe('magical toy-board art registry', () => {
   it('defines a local WebP source, fallback, and accessible label for every required asset', () => {
-    expect(REQUIRED_ART_ASSET_KEYS).toHaveLength(50);
+    expect(REQUIRED_ART_ASSET_KEYS).toHaveLength(49);
+    expect(REQUIRED_ART_ASSET_KEYS).not.toContain('propStar');
     expect(new Set(REQUIRED_ART_ASSET_KEYS).size).toBe(
       REQUIRED_ART_ASSET_KEYS.length,
     );
@@ -56,6 +59,42 @@ describe('magical toy-board art registry', () => {
     expect(enemyArtKeyFor('slime')).toBe('enemySlime');
     expect(enemyArtKeyFor('boss')).toBe('enemyBoss1');
     expect(enemyArtKeyFor('boss1')).toBe('enemyBoss1');
+  });
+
+  it('paints the shipped relic icons and leaves the four legacy relics on emoji', () => {
+    const painted = [
+      'tuningFork',
+      'gapThumb',
+      'trainingWrap',
+      'tempoWood',
+      'listeningHeart',
+      'trainingStance',
+      'woodBeads',
+      'beadPouch',
+      'rulerCharm',
+      'tenBell',
+      'eraser',
+      'pocketMetronome',
+      'moonMusicBox',
+      'rainSoundTube',
+      'choirRibbon',
+    ] as const;
+    const legacy = ['shieldCharm', 'coinPouch', 'morningSpark', 'luckyDraw'] as const;
+
+    expect(Object.keys(RELIC_ART).sort()).toEqual([...painted].sort());
+    for (const id of painted) {
+      const relic = RELICS[id];
+      const asset = RELIC_ART[id];
+      const file = id.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+      expect(relic.source).not.toBe('legacy');
+      expect(asset.src).toMatch(new RegExp(`relic-${file}\\.webp(?:$|\\?)`));
+      expect(asset.fallback).toBe(relic.emoji);
+      expect(asset.alt).toBe(relic.name);
+    }
+    for (const id of legacy) {
+      expect(RELICS[id].source).toBe('legacy');
+      expect(Object.hasOwn(RELIC_ART, id)).toBe(false);
+    }
   });
 
   it('selects the two controlled cross-act backdrops', () => {

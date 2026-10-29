@@ -2401,6 +2401,11 @@ html[data-screen='combat'] .global-control-btn {
     font-size: 1.3rem;
     scroll-snap-align: start;
   }
+
+  .combat-hud-relics .relic-badge .relic-art {
+    width: 32px;
+    height: 32px;
+  }
 }
 
 /* Fade the right edge only while more relics wait off-screen. */
@@ -4054,6 +4059,11 @@ html[data-screen='combat'] .global-control-btn {
 
   .character-screen .character-card .starting-relic-emoji {
     font-size: 1.4rem;
+  }
+
+  .character-screen .character-card .starting-relic-emoji .relic-art {
+    width: 1.6rem;
+    height: 1.6rem;
   }
 
   .character-screen .character-card .character-pick-cta {

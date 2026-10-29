@@ -42,7 +42,7 @@ import { cardAriaLabel, cardFaceHtml } from './cards';
 import { openOptions } from './options';
 import { createConfettiLayer } from './outcome';
 import { appendCoach, render, run, session, showFlash } from './runtime';
-import { artImageHtml } from './assets';
+import { artImageHtml, relicFaceHtml } from './assets';
 import { renderPotionBelt } from './potionBelt';
 import { relicBadgeButton } from './relicBadges';
 
@@ -250,7 +250,7 @@ export function renderCharacterPick(): HTMLElement {
         ${starterSummary}
       </div>
       <div class="starting-relic">
-        <span class="starting-relic-emoji">${relic.emoji}</span>
+        <span class="starting-relic-emoji">${relicFaceHtml(relic.id, relic.emoji)}</span>
         <span><strong>起始遺物：${relic.name}</strong><br>${relic.blurb}</span>
       </div>
       <div class="character-progress" aria-label="已解鎖 ${progress.unlockedCards} 張，共 ${progress.totalCards} 張卡牌，角色分數 ${progress.score}">

@@ -1,5 +1,22 @@
 # Third-Party Notices
 
+## Original art
+
+The room plates, relic icons, map tokens, corner props, and act transitions in
+`src/assets/art/` are original art generated with Grok Bot's built-in image
+generation. They are not third-party assets and do not carry a separate
+license.
+
+Room plates (the three act scenes in use, plus the registered per-floor,
+shop, camp, event, foyer, and Act IV plates under `src/assets/art/backdrops/`)
+were produced with Grok Imagine from text-only prompts on 2026-10-29. Relic
+icons, map tokens, corner props, and the two act transitions were produced
+with the built-in GenerateImage tool, also from text-only prompts, on
+2026-10-29. No text is drawn in the images.
+
+Enemy sprites, the hero portrait, and the older plates these files replace
+are separate from this notice.
+
 ## Slay-the-Spire-style map-generation reference
 
 The procedural map pipeline was informed by the open-source project

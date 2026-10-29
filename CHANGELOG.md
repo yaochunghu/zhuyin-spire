@@ -8,6 +8,13 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+### Production art
+
+- Act I–III room plates, the two act transitions, the three map tokens, and the four corner props are the QA-passed paintings. Plates are 1920×1080. Transitions are 1536×1152. On a phone the corner prop still draws at 72 px
+- Fifteen relic badges use painted icons. 小盾符, 零錢袋, 晨光火花, and 幸運抽 stay emoji, and so does any relic with no file
+- Per-floor rooms, shops, camps, events, the foyer, the Act IV plates, and the Act IV map token are in the repo and listed in the art inventory. The game does not show them yet
+- The unused star corner prop is gone
+
 ---
 
 ## [0.4.11] — 2026-10-29
