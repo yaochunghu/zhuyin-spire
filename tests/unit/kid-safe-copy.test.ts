@@ -28,7 +28,12 @@ const RULES: Array<{ name: string; pattern: RegExp }> = [
   { name: '二年級', pattern: /二年級/ },
   { name: '歲', pattern: /歲/ },
   { name: '%', pattern: /%/ },
+  { name: '成血', pattern: /成血/ },
+  { name: '約N成', pattern: /約[一二三四五六七八九十\d]+成/ },
 ];
+
+/** Fraction wording is on the coach strip, which the child can see. */
+const FRACTION_RULES = new Set(['成血', '約N成']);
 
 function listTypeScript(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -41,6 +46,10 @@ function listTypeScript(dir: string): string[] {
 function isParentOnly(file: string): boolean {
   const rel = file.split(path.sep).join('/');
   return rel.endsWith('/src/ui/options.ts') || rel.endsWith('/src/game/coach.ts');
+}
+
+function isCoachStrip(file: string): boolean {
+  return file.split(path.sep).join('/').endsWith('/src/game/coach.ts');
 }
 
 /** 死, 秒, and 歲 are lesson headwords in the phrase bank, not interface sentences. */
@@ -127,7 +136,8 @@ describe('kid-safe child-facing copy', () => {
   it('rejects death words, timers, grade labels, and percents in child-facing strings', () => {
     const hits: string[] = [];
     for (const file of listTypeScript(SRC)) {
-      if (isParentOnly(file)) continue;
+      const coachStrip = isCoachStrip(file);
+      if (isParentOnly(file) && !coachStrip) continue;
       const relative = path.relative(path.resolve(SRC, '..'), file);
       for (const snippet of extractStrings(readFileSync(file, 'utf8'))) {
         if (isLessonHeadword(file, snippet.text)) continue;
@@ -135,6 +145,7 @@ describe('kid-safe child-facing copy', () => {
           hits.push(`${relative}:${snippet.line} [注音終焉王] ${snippet.text.replace(/\s+/g, ' ').slice(0, 80)}`);
         }
         for (const rule of RULES) {
+          if (coachStrip && !FRACTION_RULES.has(rule.name)) continue;
           if (rule.name === '%' && !/[\u4e00-\u9fff]/.test(snippet.text)) continue;
           if (!rule.pattern.test(snippet.text)) continue;
           const sample = snippet.text.replace(/\s+/g, ' ').slice(0, 80);
@@ -154,6 +165,8 @@ describe('kid-safe child-facing copy', () => {
       title: '休息一下',
       body: '小武者暈倒了，鼓勵孩子再試一次。三幕比較長，記得在營火休息。',
     });
+    expect(coachForScreen('map', { act: 1 }).body).toContain('心剩一點點就去營火，把心補回來');
+    expect(coachForScreen('rest').body).toContain('心剩一點點時把心補回來');
     expect(getPotion('chorusBurst').blurb).toBe('每隻還在場上的怪物受到 4 點傷害');
     expect(missingHeartChip(49)).toBe('補一點心');
     expect(missingHeartChip(50)).toBe('補很多心');
