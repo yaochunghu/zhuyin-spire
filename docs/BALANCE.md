@@ -94,3 +94,58 @@ Helper: `restHealAmount(heroMaxHp)`.
 4. Shop prices should feel “save for a good card,” not always-buy-all.
 
 See [DEBUG.md](./DEBUG.md) and [ROADMAP.md](./ROADMAP.md).
+
+---
+
+## Balance measurement (B1–B24)
+
+The v1 roadmap points at END_STATE.md §15 for rows B1–B26. That document is
+not in this repo. This table is the measurement contract for
+`scripts/balance-report.mjs`. A row the family sheet still writes by hand is
+`session record` ([playtest/FAMILY_SESSION.md](./playtest/FAMILY_SESSION.md)).
+B25 and B26 are later grades and acts. This extractor stops at B24.
+
+`node scripts/balance-report.mjs <telemetry-export.json>` prints every row.
+Events with `synthetic: true` (child model, debug, or webdriver) are
+`cohort: synthetic (child-model)`. Other events are `cohort: real play`.
+A v0.4.4 export and a schema v2 export stay readable. A field that export
+does not have is `n/a`. See [TELEMETRY.md](./TELEMETRY.md).
+
+Bands the roadmap states, and this table does not invent the rest:
+
+- B1: flag an Act I clear rate above 80% (P46-11).
+- B10: boss turns 5–8; flag a median under 5.
+- B13: if shop gold misses the band, tune `GOLD_FIGHT_BASE` from 16 toward 13. Shop prices stay.
+- B17: the median first exhaust floor should not fall before the Act III elites. That content is later.
+- B21: later second bosses, about ±10 percentage points of wins and ±20% HP lost.
+- B22: `scorchCooled` at or above 80% for the steady persona, once that event exists. Until then the cell is `n/a`.
+
+| Row | What it measures | Where it comes from |
+|-----|------------------|---------------------|
+| B1 | Act I clear rate | `actClear` with `act` 1, over those clears plus `sittingEnd` `reason` `defeat` |
+| B2 | Adult can explain damage, block, and intent | session record (三件說明) |
+| B3 | Child wants to play again | session record |
+| B4 | Campfire choice | `rest.choice` (`rest`, `smith`, `remove`) |
+| B5 | First-try cast rate | `cast` that is correct, not retried, and `hintLevel` 0 |
+| B6 | Cast success rate | `cast.correct` |
+| B7 | Hint rate | `cast.hintLevel` above 0 |
+| B8 | Slow answer share | `cast.responseBucket` `>30s` |
+| B9 | Turns per non-boss fight | `combatEnd.turns` where `nodeKind` is `fight`, `unknown`, or `event` |
+| B10 | Boss turns | `combatEnd.turns` where `nodeKind` is `boss` |
+| B11 | HP lost per normal fight | `combatEnd.hpLost` where `nodeKind` is `fight` or `unknown` |
+| B12 | HP lost per elite | `combatEnd.hpLost` where `nodeKind` is `elite` |
+| B13 | Gold at shop entry | `shopEnter.gold` |
+| B14 | HP at boss entry | `bossEntry.hp` |
+| B15 | Deck size at boss entry | `bossEntry.deckSize` |
+| B16 | Boss HP lost, and gold before the boss | `combatEnd.hpLost` for a boss, and `bossEntry.gold`. Both are stored before the post-boss full heal |
+| B17 | First floor where the relic pool runs out | earliest `relicPoolExhaust.floor` in each sitting. `none` when schema v3 recorded no exhaust |
+| B18 | Potions used | `potionUsed` |
+| B19 | Campfire choices taken | `rest` |
+| B20 | Elites fought | `combatEnd` with `nodeKind` `elite` |
+| B21 | Boss win rate and HP lost | `combatEnd.won` and `combatEnd.hpLost` where `nodeKind` is `boss` |
+| B22 | Scorch cooled | `scorchCooled` when that event exists |
+| B23 | Mis-taps | session record (誤觸) |
+| B24 | Speech failures | session record (語音失敗) |
+
+Numbers are medians with a sample size, except the rates and the plain counts.
+Rest count and prompt difficulty are not tuning levers.

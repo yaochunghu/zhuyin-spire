@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getCard } from '../../src/data/cards';
+import { canUpgradeCard, getCard } from '../../src/data/cards';
+import { RELIC_POOL_IDS } from '../../src/data/relics';
 import { setDebugSkipCast } from '../../src/debug/debugFlags';
 import type { CastingPrompt } from '../../src/game/casting/types';
 import { beginPlay } from '../../src/game/combat';
@@ -22,18 +23,35 @@ import {
   answerCast,
   answerEventShrine,
   answerPractice,
+  applyRestHeal,
+  beginRestRemove,
+  beginShopRemove,
+  beginSmith,
   chooseEventChoice,
   confirmEventChoice,
+  confirmShopRemove,
   createNewRun,
   debugFinishFight,
+  debugOpenActTreasure,
   debugStartEncounter,
+  declinePendingPotion,
   enterPractice,
+  getCurrentActNodes,
   pickCharacter,
+  pickReward,
+  playerEndTurn,
+  potionOfferBlocksReward,
+  removeCardFromDeck,
+  resumeSavedRun,
+  selectMapNode,
+  smithCard,
   startRun,
   tryPlayCard,
   useParentHint,
+  usePotion,
   type RunState,
 } from '../../src/game/state';
+import type { MapNode } from '../../src/data/map';
 
 const V1_FIXTURE = JSON.parse(readFileSync(
   new URL('../fixtures/playtest-v1-events.json', import.meta.url),
@@ -352,10 +370,11 @@ describe('gate-generic cast event', () => {
       question: '20 + 21 = ？',
     } as PlaytestEvent);
     const exported = JSON.parse(exportPlaytestTelemetry()) as { schema: string; events: Array<Record<string, unknown>> };
-    expect(exported.schema).toBe('zhuyin-spire-playtest-v2');
-    expect(PLAYTEST_EXPORT_SCHEMA).toBe('zhuyin-spire-playtest-v2');
+    expect(exported.schema).toBe('zhuyin-spire-playtest-v3');
+    expect(PLAYTEST_EXPORT_SCHEMA).toBe('zhuyin-spire-playtest-v3');
     expect(PLAYTEST_STORAGE_KEY).toBe('zhuyin-spire-playtest-v1');
     expect(localStorage.getItem('zhuyin-spire-playtest-v2')).toBeNull();
+    expect(localStorage.getItem('zhuyin-spire-playtest-v3')).toBeNull();
     const [english, stripped] = exported.events;
     expect(english).toMatchObject({
       kind: 'cast',
@@ -377,15 +396,21 @@ describe('gate-generic cast event', () => {
 });
 
 describe('v1 events and synthetic runs', () => {
-  it('exports a v1 fixture unchanged under schema v2', () => {
+  it('exports a v1 fixture unchanged under schema v3', () => {
     localStorage.setItem(PLAYTEST_STORAGE_KEY, JSON.stringify(V1_FIXTURE));
     const exported = JSON.parse(exportPlaytestTelemetry()) as { schema: string; events: unknown[] };
-    expect(exported.schema).toBe('zhuyin-spire-playtest-v2');
+    expect(exported.schema).toBe('zhuyin-spire-playtest-v3');
     expect(exported.events).toEqual(V1_FIXTURE);
     const combatEnd = exported.events[2] as Record<string, unknown>;
     expect(combatEnd.kind).toBe('combatEnd');
     expect(combatEnd).not.toHaveProperty('characterId');
     expect(combatEnd).not.toHaveProperty('synthetic');
+    expect(combatEnd).not.toHaveProperty('turns');
+    expect(combatEnd).not.toHaveProperty('nodeKind');
+    expect(combatEnd).not.toHaveProperty('floor');
+    expect(combatEnd).not.toHaveProperty('hp');
+    expect(combatEnd).not.toHaveProperty('gold');
+    expect(combatEnd).not.toHaveProperty('deckSize');
 
     navigator.webdriver = true;
     recordCastMeasurement({
@@ -400,7 +425,7 @@ describe('v1 events and synthetic runs', () => {
       at: 1_800_000_000_000,
     });
     const after = JSON.parse(exportPlaytestTelemetry()) as { schema: string; events: Array<Record<string, unknown>> };
-    expect(after.schema).toBe('zhuyin-spire-playtest-v2');
+    expect(after.schema).toBe('zhuyin-spire-playtest-v3');
     expect(after.events.slice(0, 3)).toEqual(V1_FIXTURE);
     expect(after.events[3]).toMatchObject({ kind: 'cast', gateId: 'zhuyin', synthetic: true });
     expect(localStorage.getItem(PLAYTEST_STORAGE_KEY)).toContain('"synthetic":true');
@@ -485,8 +510,19 @@ describe('v1 events and synthetic runs', () => {
       debugFinishFight(state);
       const ended = stored().filter((event) => event.kind === 'combatEnd');
       expect(ended).toHaveLength(1);
-      expect(ended[0]).toMatchObject({ kind: 'combatEnd', characterId, won: true });
+      expect(ended[0]).toMatchObject({
+        kind: 'combatEnd',
+        characterId,
+        won: true,
+        turns: 1,
+        nodeKind: 'fight',
+        floor: 0,
+        hp: state.heroMaxHp,
+        gold: 0,
+        deckSize: state.deck.length,
+      });
       expect(ended[0]).not.toHaveProperty('synthetic');
+      expect(stored().some((event) => event.kind === 'sittingStart' && event.characterId === characterId)).toBe(true);
     }
 
     localStorage.clear();
@@ -552,5 +588,174 @@ describe('event shrine casts', () => {
       expect(event.errorTag).toBeNull();
       expect(event.responseBucket).toBe('<5s');
     }
+  });
+});
+
+function freshRun(): RunState {
+  const state = createNewRun();
+  startRun(state);
+  pickCharacter(state, 'echoMage');
+  state.tutorialEligibleRun = false;
+  return state;
+}
+
+/** Make `kind` the next room, even when this seed did not link one. */
+function reach(state: RunState, kind: MapNode['kind']): MapNode {
+  const nodes = getCurrentActNodes(state);
+  let node = nodes.find((candidate) => candidate.kind === kind && candidate.row > 0);
+  if (!node && kind === 'shop') {
+    node = nodes.find((candidate) => candidate.row > 0 && candidate.kind !== 'boss');
+    if (node) node.kind = 'shop';
+  }
+  if (!node) throw new Error(`missing ${kind}`);
+  const start = nodes.find((candidate) => candidate.row === 0);
+  if (!start) throw new Error('missing start');
+  if (!start.nextIds.includes(node.id)) start.nextIds = [...start.nextIds, node.id];
+  state.currentNodeId = start.id;
+  state.visitedIds = [start.id];
+  state.pathIds = [start.id];
+  state.activeNodeId = null;
+  return node;
+}
+
+describe('run telemetry fields', () => {
+  it('records boss HP and gold before the fight and HP lost before the full heal', () => {
+    const state = freshRun();
+    const boss = reach(state, 'boss');
+    state.heroHp = 22;
+    state.gold = 47;
+    selectMapNode(state, boss.id);
+    expect(state.screen).toBe('combat');
+    const entry = stored().find((event) => event.kind === 'bossEntry');
+    expect(entry).toMatchObject({
+      kind: 'bossEntry',
+      act: 1,
+      floor: boss.row + 1,
+      characterId: 'echoMage',
+      hp: 22,
+      gold: 47,
+      deckSize: state.deck.length,
+    });
+    state.combat!.heroHp = 16;
+    debugFinishFight(state);
+    expect(state.heroHp).toBe(state.heroMaxHp);
+    expect(state.gold).toBeGreaterThan(47);
+    const ended = stored().find((event) => event.kind === 'combatEnd');
+    expect(ended).toMatchObject({
+      kind: 'combatEnd',
+      won: true,
+      hpLost: 6,
+      turns: 1,
+      nodeKind: 'boss',
+      floor: boss.row + 1,
+      hp: 16,
+      gold: 47,
+      deckSize: state.deck.length,
+      characterId: 'echoMage',
+    });
+    if (potionOfferBlocksReward(state)) declinePendingPotion(state);
+    pickReward(state, null);
+    expect(state.screen).toBe('actClear');
+    const cleared = stored().find((event) => event.kind === 'actClear');
+    expect(cleared).toMatchObject({
+      kind: 'actClear',
+      act: 1,
+      characterId: 'echoMage',
+      hp: state.heroMaxHp,
+      deckSize: state.deck.length,
+    });
+    expect(stored().some((event) => event.kind === 'sittingEnd')).toBe(false);
+  });
+
+  it('records shop gold and does not treat a shop remove as a rest', () => {
+    const state = freshRun();
+    const shop = reach(state, 'shop');
+    state.gold = 80;
+    selectMapNode(state, shop.id);
+    expect(state.screen).toBe('shop');
+    expect(stored().find((event) => event.kind === 'shopEnter')).toMatchObject({
+      kind: 'shopEnter',
+      act: 1,
+      floor: shop.row + 1,
+      gold: 80,
+    });
+    expect(beginShopRemove(state)).toBe(true);
+    expect(confirmShopRemove(state, 0)).toBe(true);
+    expect(stored().some((event) => event.kind === 'rest')).toBe(false);
+    expect(stored().some((event) => event.kind === 'remove')).toBe(true);
+  });
+
+  it('records campfire rest, smith, and remove as rest choices', () => {
+    const state = freshRun();
+    const rest = reach(state, 'rest');
+    state.heroHp = 10;
+    selectMapNode(state, rest.id);
+    expect(applyRestHeal(state)).toBe(true);
+    state.activeNodeId = rest.id;
+    state.screen = 'rest';
+    expect(beginSmith(state)).toBe(true);
+    const card = state.deck.find((candidate) => canUpgradeCard(candidate.defId, candidate.upgradeLevel));
+    if (!card) throw new Error('no smith card');
+    expect(smithCard(state, card.uid)).toBe(true);
+    state.activeNodeId = rest.id;
+    state.screen = 'rest';
+    expect(beginRestRemove(state)).toBe(true);
+    expect(removeCardFromDeck(state, 0)).toBe(true);
+    const choices = stored().filter((event) => event.kind === 'rest').map((event) => event.choice);
+    expect(choices).toEqual(['rest', 'smith', 'remove']);
+    expect(stored().filter((event) => event.kind === 'rest').every((event) => event.floor === rest.row + 1)).toBe(true);
+  });
+
+  it('records a potion only after it is used', () => {
+    const state = freshRun();
+    state.screen = 'map';
+    state.heroHp = 20;
+    state.potions[0] = 'warmHoney';
+    expect(usePotion(state, 0)).toEqual({ ok: true, endedFight: false });
+    expect(state.heroHp).toBe(25);
+    expect(stored().find((event) => event.kind === 'potionUsed')).toMatchObject({
+      kind: 'potionUsed',
+      act: 1,
+      potionId: 'warmHoney',
+      inCombat: false,
+    });
+  });
+
+  it('records the floor where the relic pool runs out', () => {
+    const state = freshRun();
+    state.relicIds = [...RELIC_POOL_IDS];
+    expect(debugOpenActTreasure(state)).toBe(true);
+    const node = getCurrentActNodes(state).find((candidate) => candidate.id === state.activeNodeId);
+    const exhaust = stored().find((event) => event.kind === 'relicPoolExhaust');
+    expect(exhaust).toMatchObject({
+      kind: 'relicPoolExhaust',
+      act: 1,
+      characterId: 'echoMage',
+      floor: (node?.row ?? -1) + 1,
+    });
+    expect(typeof exhaust?.floor).toBe('number');
+    expect(exhaust?.floor).toBeGreaterThan(0);
+  });
+
+  it('opens a sitting on pick and resume, and closes it on defeat', () => {
+    const state = freshRun();
+    const loaded = createNewRun();
+    expect(resumeSavedRun(loaded)).toBe(true);
+    expect(stored().filter((event) => event.kind === 'sittingStart')).toHaveLength(2);
+
+    debugStartEncounter(loaded, 'slime');
+    loaded.combat!.heroHp = 3;
+    loaded.combat!.block = 0;
+    playerEndTurn(loaded);
+    expect(loaded.screen).toBe('defeat');
+    const ended = stored().filter((event) => event.kind === 'combatEnd');
+    expect(ended).toHaveLength(1);
+    expect(ended[0]).toMatchObject({ won: false, nodeKind: 'fight', hp: 0 });
+    expect(ended[0]!.hpLost).toBeGreaterThan(0);
+    expect(stored().find((event) => event.kind === 'sittingEnd')).toMatchObject({
+      kind: 'sittingEnd',
+      reason: 'defeat',
+      characterId: 'echoMage',
+    });
   });
 });
