@@ -42,7 +42,7 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [DEBUG.md](./DEBUG.md) | Debug panel, flags, skip-cast testing |
 | [sim/CHILD_MODEL.md](./sim/CHILD_MODEL.md) | Debug-only child-error model and the Act I headless sim |
 | [ROADMAP.md](./ROADMAP.md) | Shipped systems, next work, known pitfalls |
-| [NEXT_PHASE.md](./NEXT_PHASE.md) | v0.4.7 current release, and what comes next |
+| [NEXT_PHASE.md](./NEXT_PHASE.md) | v0.4.8 current release, and what comes next |
 
 Root companions:
 
@@ -51,7 +51,8 @@ Root companions:
 | [../README.md](../README.md) | Play, quick start, version control |
 | [../AGENTS.md](../AGENTS.md) | AI/human resume guide |
 | [../CHANGELOG.md](../CHANGELOG.md) | Human-readable version history |
-| [../RELEASE_NOTES_v0.4.7.md](../RELEASE_NOTES_v0.4.7.md) | Player-facing notes for the current v0.4.7 release |
+| [../RELEASE_NOTES_v0.4.8.md](../RELEASE_NOTES_v0.4.8.md) | Player-facing notes for the current v0.4.8 release |
+| [../RELEASE_NOTES_v0.4.7.md](../RELEASE_NOTES_v0.4.7.md) | Player-facing notes for the v0.4.7 release |
 | [../RELEASE_NOTES_v0.4.6.md](../RELEASE_NOTES_v0.4.6.md) | Player-facing notes for the v0.4.6 release |
 | [../RELEASE_NOTES_v0.4.5.md](../RELEASE_NOTES_v0.4.5.md) | Player-facing notes for the v0.4.5 release |
 | [../RELEASE_NOTES_v0.4.4.md](../RELEASE_NOTES_v0.4.4.md) | Player-facing notes for the v0.4.4 release |
@@ -60,11 +61,12 @@ Root companions:
 
 ---
 
-## Snapshot (main, v0.4.7)
+## Snapshot (main, v0.4.8)
 
-`package.json` is **0.4.7**. The current GitHub Release is **v0.4.7**: #78
-is `[0.4.7]` in [CHANGELOG.md](../CHANGELOG.md). The previous release is
-v0.4.6 at `88861dd` (#76), 2026-10-29 02:42 UTC. Two characters are playable.
+`package.json` is **0.4.8**. The current GitHub Release is **v0.4.8**: #77,
+#79, and #81 are `[0.4.8]` in [CHANGELOG.md](../CHANGELOG.md). The previous
+release is v0.4.7 at `a3ebb0e` (#80), 2026-10-29 03:54 UTC. Two characters
+are playable.
 
 - **Stack:** Vite + TypeScript SPA, no backend; localStorage save. Saves stay
   on version 4. `eventTrack`, `castSeed`, `castCounter`, and `rng` are optional.
@@ -102,7 +104,11 @@ v0.4.6 at `88861dd` (#76), 2026-10-29 02:42 UTC. Two characters are playable.
   stays on screen at 1024×600. That matrix guards the 640×360 hinted header
   so the answer does not cover 送出.
 - **Content:** 輕聲 is written with ˙ first. 仔 is ㄗㄞˇ. Grade 1 does not
-  ask 公分. 餘, 於, and 閒 are the Taiwan forms (#70).
+  ask 公分. 餘, 於, and 閒 are the Taiwan forms (#70). Shape prompts use
+  球 ⚽, 魔術方塊的一面 🟦, and 書本 📘. 三角飯糰 stays 🍙. Make-10 tier 2
+  asks 「N 和 M 合起來是幾？」, total 2–10, about one single-zero question
+  in ten, never 0 and 0. 問 uses 🙋 (#77). The public page says 一年級,
+  ages 5–7 (#79).
 - **Telemetry:** local export is schema v3 (#74). `cast` still stores no
   question or answer. Run fields include `bossEntry`, `combatEnd` (`hpLost`
   before the boss heal), `actClear`, `shopEnter`, `rest`, `potionUsed`,

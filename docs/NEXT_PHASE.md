@@ -1,4 +1,4 @@
-# Next phase — v0.4.7 current release
+# Next phase — v0.4.8 current release
 
 The complete score-gated card pool is implemented. The relic pool, potion belt,
 Act I–III events, act-native fights, cast-prompt seed, shop layout, and both
@@ -10,9 +10,9 @@ milestone while balancing the advanced tiers.
 
 | Source | Says |
 |--------|------|
-| `package.json` | **0.4.7** |
-| `CHANGELOG.md` | **[0.4.7] — 2026-10-29** is the current release (#78). **[0.4.6] — 2026-10-29** is #74–#75. |
-| GitHub Releases | **v0.4.7** is the current release. The previous one is v0.4.6 at `88861dd` (#76), 2026-10-29 02:42 UTC. |
+| `package.json` | **0.4.8** |
+| `CHANGELOG.md` | **[0.4.8] — 2026-10-29** is the current release (#77, #79, #81). **[0.4.7] — 2026-10-29** is #78. |
+| GitHub Releases | **v0.4.8** is the current release. The previous one is v0.4.7 at `a3ebb0e` (#80), 2026-10-29 03:54 UTC. |
 
 ## What is live
 
@@ -31,7 +31,7 @@ Two characters are playable.
 - Each run stores `castSeed` and `castCounter` (#55). Mode rolls, shuffle-bag refills, and distractor banks read that stream. 注音神龕 draws from it too. The question on screen is not stored, so a reload shows the next prompt
 - On a phone, each shop offer keeps its card, price, and the remove-card button on screen. Short landscape no longer hides the price (#56). The remove button is disabled when gold is short (#62)
 - The parent coach no longer covers a map dot. Campfire choices fit on screen (#62). The math question and its three answers fit at 640×360 (#61). The 注音 cast dock fits at 640×360, 844×390, 1280×720 and 390×844, with every target at least 48px and a readable word box (#64). The v0.4.4 playtest follow-up (#68) keeps hinted 注音 controls and the math column inside the dock, keeps the tutorial banner off the slots, and shows the shrine spelling once per event. During a tutorial cast the banner sits under the combat HUD at 640×360 and 844×390, and the math speech note fits at 568×320 (#75). The cast fit matrix (#78) walks combat, event fights, the shrine, and practice through the default, hinted, speech-fallback, retry, and correction-card states at 1280×720, 1024×768, 1024×600, 360×740, 640×360, 844×390, 390×844, and 568×320. The docked correction card uses the compact layout up to 640px height, so 繼續 stays on screen at 1024×600. That matrix also guards the 640×360 hinted 注音 header: the answer stays on the mana line and does not cover the keys or 送出
-- 輕聲 is stored with ˙ first. 仔 is ㄗㄞˇ. Grade 1 never asks 公分. 餘, 於, and 閒 replace 余, 于, and 閑 (#70). The local playtest export records one `cast` per resolved prompt and does not store the answer (#69). Schema v3 (#74) also records `bossEntry`, `combatEnd` with `hpLost` before the boss heal, `actClear`, `shopEnter`, `rest`, `potionUsed`, `relicPoolExhaust`, and `sittingStart` / `sittingEnd`. `scripts/balance-report.mjs` prints B1–B24 from [BALANCE.md](./BALANCE.md). Ten version-4 save fixtures and a seeded replay are test-only (#67). The child-error model is debug-only and is absent from a normal production bundle (#71)
+- 輕聲 is stored with ˙ first. 仔 is ㄗㄞˇ. Grade 1 never asks 公分. 餘, 於, and 閒 replace 余, 于, and 閑 (#70). Shape prompts use 球 ⚽, 魔術方塊的一面 🟦, and 書本 📘; 三角飯糰 stays 🍙. Make-10 tier 2 asks 「N 和 M 合起來是幾？」, with a total of 2–10 and about one single-zero question in ten, never 0 and 0. Tier 1 still asks for the missing part of ten. 問 uses 🙋 (#77). The README and the page description say first graders, ages 5–7 (#79). The local playtest export records one `cast` per resolved prompt and does not store the answer (#69). Schema v3 (#74) also records `bossEntry`, `combatEnd` with `hpLost` before the boss heal, `actClear`, `shopEnter`, `rest`, `potionUsed`, `relicPoolExhaust`, and `sittingStart` / `sittingEnd`. `scripts/balance-report.mjs` prints B1–B24 from [BALANCE.md](./BALANCE.md). Ten version-4 save fixtures and a seeded replay are test-only (#67). The child-error model is debug-only and is absent from a normal production bundle (#71)
 - #50: searching the discard for a card type no longer deletes cards still in the draw pile. The campfire remove screen can return to rest without deleting a card. Attack damage that is not marked 直傷 respects block and 易傷. Enemy block expires at that enemy's next action
 
 Saves stay on version 4. `eventTrack`, `castSeed`, `castCounter`, and `rng` are optional, so a checkpoint from before those fields still loads. A missing event record starts empty. A missing seed is filled in and the counter starts at 0. A missing `rng` is derived from that seed: deck, reward, shop, gold, relic, potion, and upgrade counters all start at 0. Practice prompts keep using `castSeed`. A v1 or v2 `relicId` becomes `relicIds`. A v3 checkpoint loads with an empty belt and chance 40.

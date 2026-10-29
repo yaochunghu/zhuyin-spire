@@ -8,9 +8,25 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
-### Save determinism
+---
 
-- Deck shuffles, reward cards, shop cards, gold, relic drops, potion drops, and upgrade offers each use a named stream stored on the run. A version-4 save without `rng` still loads: those streams are derived from `castSeed` and every counter starts at 0. Practice questions stay on `castSeed` / `castCounter`
+## [0.4.8] — 2026-10-29
+
+### Content (#77)
+
+- Shape prompts use 球 ⚽, 魔術方塊的一面 🟦, and 書本 📘. 三角飯糰 stays 🍙
+- Make-10 tier 2 asks 「N 和 M 合起來是幾？」. By default both numbers are at least 1, so that total is 2–10. About one question in ten is a single zero, 「0 和 N」 or 「N 和 0」, with N from 1 to 10. Never 0 and 0. The other two choices sit near that total, each distinct and inside 0–10. Tier 1 still asks 「10 可以分成 N 和幾？」
+- 問 uses 🙋. 為什麼 stays ❓
+- The 於 row cites MOE 《重編國語辭典修訂本》11601 for the ㄩˊ reading and 11248 for the separate ㄨ reading
+- Saves stay version 4
+
+### Audience (#79)
+
+- The README pitch and the page description say first graders, ages 5–7 (一年級 / 5–7 歲)
+
+### Seeded run rolls (#81)
+
+- Deck shuffles, reward cards, shop cards, gold, relic drops, potion drops, and upgrade offers each use a named stream stored on the run (P46-12). A version-4 save without `rng` still loads: those streams are derived from `castSeed` and every counter starts at 0. Practice questions stay on `castSeed` / `castCounter`
 
 ---
 
@@ -38,14 +54,6 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 - During the first tutorial fight, the lesson banner stays in the battlefield column while a cast is open and sits under the combat HUD, so the whole banner is readable at 640×360, 844×390, and 568×320. The cast slots and the hinted answer stay clear
 - At 568×320, the math dock's 「語音暫時無法播放…」 note fits on screen together with the question, the three answers, and 家長協助
-
-### Content
-
-- 余, 于, and 閑 were corrected to 餘, 於, and 閒
-- Shape prompts use 球 ⚽, 魔術方塊的一面 🟦, and 書本 📘. 三角飯糰 stays 🍙
-- Make-10 tier 2 asks 「N 和 M 合起來是幾？」. By default both numbers are at least 1, so that total is 2–10. About one question in ten is a single zero, 「0 和 N」 or 「N 和 0」, with N from 1 to 10. Never 0 and 0. The other two choices sit near that total, each distinct and inside 0–10. Tier 1 still asks 「10 可以分成 N 和幾？」
-- 問 uses 🙋. 為什麼 stays ❓
-- Saves stay version 4
 
 ---
 
@@ -432,6 +440,7 @@ Baseline snapshot of the preschool Spire + 注音 game, documented for long-term
 - Standalone git repository for the game folder (tag `v0.1.0`)
 
 [Unreleased]: #unreleased
+[0.4.8]: #048--2026-10-29
 [0.4.7]: #047--2026-10-29
 [0.4.6]: #046--2026-10-29
 [0.4.5]: #045--2026-10-29
