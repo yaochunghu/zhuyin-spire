@@ -81,6 +81,15 @@ export default defineConfig({
       testMatch: /phone-smoke\.spec\.ts|layout-fit\.spec\.ts|math-cast-fit\.spec\.ts|zhuyin-cast-fit\.spec\.ts/,
       use: { ...devices['iPhone 13 landscape'], viewport: { width: 844, height: 390 } },
     },
+    {
+      name: 'phone-568x320',
+      testMatch: /math-cast-fit\.spec\.ts|zhuyin-cast-fit\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 568, height: 320 },
+        hasTouch: true,
+      },
+    },
   ],
   webServer: {
     command: 'npm run dev -- --host 127.0.0.1 --port 4173',

@@ -8,6 +8,11 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+### Layout
+
+- During the first tutorial fight, the lesson banner stays in the battlefield column while a cast is open and sits under the combat HUD, so the whole banner is readable at 640×360, 844×390, and 568×320. The cast slots and the hinted answer stay clear
+- At 568×320, the math dock's 「語音暫時無法播放…」 note fits on screen together with the question, the three answers, and 家長協助
+
 ---
 
 ## [0.4.5] — 2026-10-29

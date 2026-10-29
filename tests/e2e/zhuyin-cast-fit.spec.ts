@@ -14,6 +14,15 @@ const SIZES = [
   'phone-portrait-webkit',
   'phone-narrow',
 ];
+// 640×360, 844×390, 568×320, plus the other small fit sizes.
+const TUTORIAL_BANNER_SIZES = [
+  'phone-landscape-chromium',
+  'phone-landscape-webkit',
+  'phone-568x320',
+  'phone-narrow',
+  'phone-portrait-webkit',
+  'short-landscape',
+];
 const MODES = ['recognize', 'listen'] as const;
 const TARGETS = [
   '.cast-dock .spell-slot',
@@ -489,8 +498,8 @@ test('shrine 家長協助 shows the full spelling once per event', async ({ page
   }
 });
 
-test('tutorial cast keeps slots and the hinted answer clear of the lesson banner', async ({ page }, testInfo) => {
-  test.skip(!['phone-landscape-chromium', 'phone-landscape-webkit'].includes(testInfo.project.name));
+test('tutorial cast keeps the lesson banner visible and clear of slots', async ({ page }, testInfo) => {
+  test.skip(!TUTORIAL_BANNER_SIZES.includes(testInfo.project.name));
   await page.goto('/?debug=1');
   await page.evaluate(async () => {
     const { run, render } = await import('/src/ui/runtime.ts');
@@ -504,6 +513,48 @@ test('tutorial cast keeps slots and the hinted answer clear of the lesson banner
   await page.getByRole('button', { name: '注音 ㄇ', exact: true }).click();
   await expect(page.locator('.cast-dock .spell-slot').first()).toBeVisible();
   await page.waitForTimeout(400);
+  const bannerFit = await page.evaluate(() => {
+    const banner = document.querySelector('.tutorial-guide')!;
+    const rect = banner.getBoundingClientRect();
+    const radius = parseFloat(getComputedStyle(banner).borderTopLeftRadius) || 0;
+    // The rounded corners are transparent, so sample inside the painted box.
+    const inset = Math.min(radius + 2, rect.width / 4, rect.height / 4);
+    let hidden = 0;
+    let samples = 0;
+    const step = 4;
+    for (let y = rect.top + inset; y < rect.bottom - inset; y += step) {
+      for (let x = rect.left + inset; x < rect.right - inset; x += step) {
+        samples += 1;
+        if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) {
+          hidden += 1;
+          continue;
+        }
+        const top = document.elementFromPoint(x, y);
+        if (!top || (top !== banner && !banner.contains(top))) hidden += 1;
+      }
+    }
+    const dock = document.querySelector('.cast-dock')!.getBoundingClientRect();
+    const hud = document.querySelector('.combat-hud-strip')!.getBoundingClientRect();
+    return {
+      text: (banner.textContent ?? '').replace(/\s+/g, ''),
+      inView: rect.top >= 0 && rect.left >= 0 && rect.bottom <= innerHeight + 0.5 && rect.right <= innerWidth + 0.5,
+      hidden,
+      samples,
+      area: rect.width * rect.height,
+      // Stays in the battlefield column: left of the cast dock.
+      inBattlefieldColumn: rect.right <= dock.left + 1,
+      belowHud: rect.top >= hud.bottom - 1,
+    };
+  });
+  expect(bannerFit.text).toContain('先看怪物');
+  expect(bannerFit.area).toBeGreaterThan(0);
+  expect(bannerFit.samples).toBeGreaterThan(0);
+  expect(bannerFit.inView, 'lesson banner leaves the viewport').toBe(true);
+  expect(bannerFit.hidden, 'lesson banner is covered').toBe(0);
+  if (['phone-landscape-chromium', 'phone-landscape-webkit', 'phone-568x320'].includes(testInfo.project.name)) {
+    expect(bannerFit.inBattlefieldColumn, 'lesson banner leaves the battlefield column').toBe(true);
+    expect(bannerFit.belowHud, 'lesson banner sits behind the top bar').toBe(true);
+  }
   const slots = await page.evaluate(() => {
     const banner = document.querySelector('.tutorial-guide')!.getBoundingClientRect();
     return [...document.querySelectorAll('.cast-dock .spell-slot')].map((el) => {

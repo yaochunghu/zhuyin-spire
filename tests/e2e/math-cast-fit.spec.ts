@@ -14,6 +14,9 @@ const SIZES = [
   'phone-narrow',
 ];
 const LANDSCAPE_PHONES = ['phone-landscape-chromium', 'phone-landscape-webkit'];
+// The speech note is also checked at 568×320, which is shorter than the
+// supported phones and is where the note used to leave the viewport.
+const SPEECH_NOTE_SIZES = [...SIZES, 'phone-568x320'];
 
 const consoleErrors = new WeakMap<Page, string[]>();
 
@@ -175,7 +178,7 @@ test('the three math choices are big, separate, and on screen', async ({ page },
 });
 
 test('a hint and the speech note leave the three answers on screen', async ({ page }, testInfo) => {
-  test.skip(!SIZES.includes(testInfo.project.name));
+  test.skip(!SPEECH_NOTE_SIZES.includes(testInfo.project.name));
   await openMathCast(page);
   await page.evaluate(async () => {
     const { run } = await import('/src/ui/runtime.ts');
