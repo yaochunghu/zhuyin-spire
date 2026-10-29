@@ -1,4 +1,4 @@
-# Next phase — v0.4.10 current release
+# Next phase — v0.4.11 current release
 
 The complete score-gated card pool is implemented. The relic pool, potion belt,
 Act I–III events, act-native fights, cast-prompt seed, shop layout, and both
@@ -10,15 +10,15 @@ milestone while balancing the advanced tiers.
 
 | Source | Says |
 |--------|------|
-| `package.json` | **0.4.10** |
-| `CHANGELOG.md` | **[0.4.10] — 2026-10-29** is the current release (#85). **[0.4.9] — 2026-10-29** is #83. |
-| GitHub Releases | **v0.4.10** is the current release. The previous one is v0.4.9 at `7ab0827` (#84), 2026-10-29 10:51 UTC. |
+| `package.json` | **0.4.11** |
+| `CHANGELOG.md` | **[0.4.11] — 2026-10-29** is the current release (#87). **[0.4.10] — 2026-10-29** is #85. |
+| GitHub Releases | **v0.4.11** is the current release. The previous one is v0.4.10 at `808d08d` (#86), 2026-10-29 12:53 UTC. |
 
 ## What is live
 
 Two characters are playable.
 
-- 共鳴武者 (`echoMage`) keeps the 注音 gate. 珠算武者 (`abacusFist`) is playable with a 27-card pool, starter 木珠串, and the math provider. `english` stays reserved. Practice still builds Zhuyin prompts. 珠算武者 skips the 注音 tutorial.
+- 共鳴武者 (`echoMage`) keeps the 注音 gate. 數星人 (`abacusFist`) is playable with a 27-card pool, starter 小星盤, and the math provider. Kid-facing cards and counters say 星星 and 星座. The pick-screen title stays 「數清來招，湊十出拳」. The theme line is 「每一招都數星星；湊滿十顆變成「星座」，再一口氣放出去。」. `english` stays reserved. Practice still builds Zhuyin prompts. 數星人 skips the 注音 tutorial. Ids are unchanged (#87).
 - Act I: 12 teaching designs (starter 5/4/1 + 9 rewards)
 - Later acts / shop / treasure: 12 → 33 → 54 → 75 cards at character scores
   0 / 300 / 1,000 / 2,000
@@ -54,11 +54,11 @@ fights do not drop relics. 共鳴武者 rolls these five:
 | `listeningHeart` | 聽勁護心 | First 勁 gained in a combat: +3 Block. A full block's shield waits until the next player turn; a card's 勁 grants it immediately |
 | `trainingStance` | 練功起勢 | Turn 1 only: 練功 +1, removed when turn 2 starts |
 
-The 共鳴 starter remains 🎵 初心音叉. 珠算武者 starts with 📿 木珠串 and rolls
-four relics: 🫘 算珠袋 (4 beads at combat start), 📏 小尺子 (3 Block on the
+The 共鳴 starter remains 🎵 初心音叉. 數星人 starts with 🌟 小星盤 (`woodBeads`) and rolls
+four relics: ✨ 星星袋 (`beadPouch`, 4 stars at combat start, counted on their own and not folded into the same 湊十訣 add), 📏 小尺子 (3 Block on the
 third successful cast of the turn), 🔔 十響鈴 (1 energy on the first 湊十),
-and 🧽 橡皮擦 (2 beads on the first final fizzle). None of them grant 勁 or
-skip casting. 木珠串 is not in the drop pool.
+and 🧽 橡皮擦 (2 stars on the first spell that drifts away in a fight; a deliberate miss still costs a card and energy). None of them grant 勁 or
+skip casting. 小星盤 is not in the drop pool. Ids are unchanged (#87).
 
 Each relic can be owned once. When the current character's pool is exhausted,
 a chest, elite, or boss drop pays `RELIC_POOL_EXHAUST_GOLD` (20) instead. An

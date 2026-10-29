@@ -42,7 +42,7 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [DEBUG.md](./DEBUG.md) | Debug panel, flags, skip-cast testing |
 | [sim/CHILD_MODEL.md](./sim/CHILD_MODEL.md) | Debug-only child-error model and the Act I headless sim |
 | [ROADMAP.md](./ROADMAP.md) | Shipped systems, next work, known pitfalls |
-| [NEXT_PHASE.md](./NEXT_PHASE.md) | v0.4.10 current release, and what comes next |
+| [NEXT_PHASE.md](./NEXT_PHASE.md) | v0.4.11 current release, and what comes next |
 
 Root companions:
 
@@ -51,7 +51,8 @@ Root companions:
 | [../README.md](../README.md) | Play, quick start, version control |
 | [../AGENTS.md](../AGENTS.md) | AI/human resume guide |
 | [../CHANGELOG.md](../CHANGELOG.md) | Human-readable version history |
-| [../RELEASE_NOTES_v0.4.10.md](../RELEASE_NOTES_v0.4.10.md) | Player-facing notes for the current v0.4.10 release |
+| [../RELEASE_NOTES_v0.4.11.md](../RELEASE_NOTES_v0.4.11.md) | Player-facing notes for the current v0.4.11 release |
+| [../RELEASE_NOTES_v0.4.10.md](../RELEASE_NOTES_v0.4.10.md) | Player-facing notes for the v0.4.10 release |
 | [../RELEASE_NOTES_v0.4.9.md](../RELEASE_NOTES_v0.4.9.md) | Player-facing notes for the v0.4.9 release |
 | [../RELEASE_NOTES_v0.4.8.md](../RELEASE_NOTES_v0.4.8.md) | Player-facing notes for the v0.4.8 release |
 | [../RELEASE_NOTES_v0.4.7.md](../RELEASE_NOTES_v0.4.7.md) | Player-facing notes for the v0.4.7 release |
@@ -63,11 +64,11 @@ Root companions:
 
 ---
 
-## Snapshot (main, v0.4.10)
+## Snapshot (main, v0.4.11)
 
-`package.json` is **0.4.10**. The current GitHub Release is **v0.4.10**: #85
-is `[0.4.10]` in [CHANGELOG.md](../CHANGELOG.md). The previous release is
-v0.4.9 at `7ab0827` (#84), 2026-10-29 10:51 UTC. Two characters are playable.
+`package.json` is **0.4.11**. The current GitHub Release is **v0.4.11**: #87
+is `[0.4.11]` in [CHANGELOG.md](../CHANGELOG.md). The previous release is
+v0.4.10 at `808d08d` (#86), 2026-10-29 12:53 UTC. Two characters are playable.
 
 - **Stack:** Vite + TypeScript SPA, no backend; localStorage save. Saves stay
   on version 4. `eventTrack`, `castSeed`, `castCounter`, and `rng` are optional.
@@ -82,13 +83,16 @@ v0.4.9 at `7ab0827` (#84), 2026-10-29 10:51 UTC. Two characters are playable.
   registered. `english` is reserved. Each run's `castSeed` and `castCounter`
   replay later prompts.
 - **Cards:** 共鳴武者 Act I uses the 12-design teaching pool. Later acts expand
-  by cumulative character score: 12 → 33 → 54 → all 75. 珠算武者 is the second
-  playable character, with 27 cards and the same score gates.
+  by cumulative character score: 12 → 33 → 54 → all 75. 數星人 (`abacusFist`)
+  is the second playable character, with 27 cards and the same score gates.
+  Kid-facing cards and counters say 星星 and 星座. The title stays
+  「數清來招，湊十出拳」. Ids are unchanged (#87).
 - **Events:** 30 events across Acts I, II, and III. Difficulty variants, keys,
   and Act IV are still proposed.
 - **Relics:** each character has its own drop pool. 共鳴武者 keeps 初心音叉 plus
-  five drops. 珠算武者 starts with 木珠串 and rolls four math relics. Legacy
-  four remain loadable. See [NEXT_PHASE.md](./NEXT_PHASE.md).
+  five drops. 數星人 starts with 小星盤 and rolls four math relics. 橡皮擦
+  and 星星袋 use the star wording. Legacy four remain loadable. See
+  [NEXT_PHASE.md](./NEXT_PHASE.md).
 - **Potions:** 3 belt slots and 6 bottles. Combat rewards and the shop can
   give one. See [NEXT_PHASE.md](./NEXT_PHASE.md).
 - **Shop:** on a phone, each offer keeps its card, price, and the remove-card
