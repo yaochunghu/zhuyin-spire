@@ -128,6 +128,21 @@ export function resolveMathTask(
   return { cardFamily, family: redirected.family, tier: redirected.tier };
 }
 
+function nearBandChoices(answer: number, rng: Rng, floor: number, ceiling: number): string[] {
+  const picked = [String(answer)];
+  let distance = 1;
+  while (picked.length < MATH_CHOICE_COUNT && distance <= ceiling - floor) {
+    for (const candidate of [answer + distance, answer - distance]) {
+      if (candidate < floor || candidate > ceiling) continue;
+      const text = String(candidate);
+      if (!picked.includes(text)) picked.push(text);
+      if (picked.length === MATH_CHOICE_COUNT) break;
+    }
+    distance += 1;
+  }
+  return shuffle(picked, rng);
+}
+
 function choiceNumbers(answer: number, rng: Rng, floor = 0): string[] {
   const picked = [String(answer)];
   const preferred = [answer + 1, answer - 1, answer - 10, answer + 10, answer + 2, answer - 2];
@@ -199,9 +214,15 @@ function make10Question(rng: Rng, tier: CastingTier): MathQuestion {
     return numeric(`10 可以分成 ${part} 和幾？`, 10 - part, rng);
   }
   if (tier === 2) {
-    const part = irand(rng, 1, 9);
-    const rest = 10 - part;
-    return numeric(`10 可以分成 ${part} 和幾？ ${part} 和幾合起來是 10。`, rest, rng);
+    const left = irand(rng, 0, 10);
+    const right = irand(rng, 0, 10 - left);
+    const total = left + right;
+    return {
+      question: `${left} 和 ${right} 合起來是幾？`,
+      answer: String(total),
+      choices: nearBandChoices(total, rng, 0, 10),
+      emoji: '🧮',
+    };
   }
   if (rng() < 0.5) {
     const front = irand(rng, 2, 9);
@@ -388,10 +409,10 @@ function lengthQuestion(rng: Rng, tier: CastingTier): MathQuestion {
 
 function shapesQuestion(rng: Rng): MathQuestion {
   const scenes = [
-    ['球', '圓形', '🔺'],
+    ['球', '圓形', '⚽'],
     ['三角飯糰', '三角形', '🍙'],
-    ['魔術方塊的一面', '正方形', '🔺'],
-    ['書本', '長方形', '🔺'],
+    ['魔術方塊的一面', '正方形', '🟦'],
+    ['書本', '長方形', '📘'],
   ] as const;
   const scene = scenes[irand(rng, 0, scenes.length - 1)]!;
   return labeled(`${scene[0]}是什麼形狀？`, scene[1], ['圓形', '三角形', '正方形', '長方形'], rng, scene[2]);

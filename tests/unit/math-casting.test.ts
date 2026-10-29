@@ -84,6 +84,33 @@ const GRADE_ONE: Array<[string, CastingTier]> = [
   ['word', 2], ['word', 3], ['word', 4],
 ];
 
+function nearestMake10Distractors(total: number): number[] {
+  const picked = [total];
+  let distance = 1;
+  while (picked.length < 3 && distance <= 10) {
+    for (const candidate of [total + distance, total - distance]) {
+      if (candidate < 0 || candidate > 10 || picked.includes(candidate)) continue;
+      picked.push(candidate);
+      if (picked.length === 3) break;
+    }
+    distance += 1;
+  }
+  return picked.slice(1).sort((left, right) => left - right);
+}
+
+function expectNearMake10Choices(total: number, choices: string[]): void {
+  const numbers = choices.map(Number);
+  expect(new Set(numbers).size).toBe(3);
+  expect(numbers).toContain(total);
+  for (const choice of numbers) {
+    expect(Number.isInteger(choice)).toBe(true);
+    expect(choice).toBeGreaterThanOrEqual(0);
+    expect(choice).toBeLessThanOrEqual(10);
+  }
+  const distractors = numbers.filter((choice) => choice !== total).sort((left, right) => left - right);
+  expect(distractors).toEqual(nearestMake10Distractors(total));
+}
+
 function expectChoice(question: MathQuestion): void {
   expect(question.choices).toHaveLength(3);
   expect(new Set(question.choices).size).toBe(3);
@@ -147,14 +174,24 @@ function expectBand(family: string, tier: CastingTier, draft: MathQuestion): voi
     expect(question.includes(answer)).toBe(false);
     expect(question).not.toMatch(/紅旗|窗戶/);
   }
-  if (family === 'make10' && tier <= 2) {
+  if (family === 'make10' && (tier === 1 || tier === 2)) {
     expect(question).not.toMatch(/已經有|再幾顆/);
-    const partsOfTen = /10 可以分成 (\d+) 和幾？/.exec(question);
+  }
+  if (family === 'make10' && tier === 1) {
+    const partsOfTen = /^10 可以分成 (\d+) 和幾？$/.exec(question);
     expect(partsOfTen).not.toBeNull();
     expect(value).toBe(10 - Number(partsOfTen![1]));
   }
   if (family === 'make10' && tier === 2) {
-    expect(question).toMatch(/^10 可以分成 (\d+) 和幾？ \1 和幾合起來是 10。$/);
+    const join = /^(\d+) 和 (\d+) 合起來是幾？$/.exec(question);
+    expect(join).not.toBeNull();
+    const left = Number(join![1]);
+    const right = Number(join![2]);
+    expect(left + right).toBeLessThanOrEqual(10);
+    expect(left).toBeGreaterThanOrEqual(0);
+    expect(right).toBeGreaterThanOrEqual(0);
+    expect(value).toBe(left + right);
+    expectNearMake10Choices(value, draft.choices);
   }
   if (family === 'clock') expect(answer).toMatch(/點/);
   if (family === 'g2Missing') {
@@ -224,18 +261,38 @@ describe('math prompt generation', () => {
     expect(Number(kept.answer)).toBeGreaterThan(0);
   });
 
-  it('asks make10 tier 2 as a shown split and join', () => {
-    for (let seed = 1; seed <= 40; seed += 1) {
+  it('asks make10 tier 2 how many N and M make, with nearby choices inside 0..10', () => {
+    for (let seed = 1; seed <= 80; seed += 1) {
       const draft = ask('make10', 2, seed);
-      const match = /^10 可以分成 (\d+) 和幾？ \1 和幾合起來是 10。$/.exec(draft.question);
-      expect(match).not.toBeNull();
-      const part = Number(match![1]);
-      expect(part).toBeGreaterThanOrEqual(1);
-      expect(part).toBeLessThanOrEqual(9);
-      expect(Number(draft.answer)).toBe(10 - part);
+      const match = /^(\d+) 和 (\d+) 合起來是幾？$/.exec(draft.question);
+      expect(match, draft.question).not.toBeNull();
+      const left = Number(match![1]);
+      const right = Number(match![2]);
+      expect(left + right).toBeLessThanOrEqual(10);
+      expect(Number(draft.answer)).toBe(left + right);
       expect(draft.choices).toHaveLength(3);
-      expect(draft.question).not.toMatch(/已經有|再幾顆/);
+      expectNearMake10Choices(left + right, draft.choices);
+      expect(draft.question).not.toMatch(/已經有|再幾顆|10 可以分成/);
     }
+
+    const scripted = (draws: number[]) => {
+      let index = 0;
+      return () => draws[index++] ?? 0;
+    };
+    const zero = generateMathQuestion('make10', 2, scripted([0, 0]));
+    expect(zero.question).toBe('0 和 0 合起來是幾？');
+    expect(zero.answer).toBe('0');
+    expect(zero.choices.map(Number).sort((a, b) => a - b)).toEqual([0, 1, 2]);
+
+    const ten = generateMathQuestion('make10', 2, scripted([0.99, 0]));
+    expect(ten.question).toBe('10 和 0 合起來是幾？');
+    expect(ten.answer).toBe('10');
+    expect(ten.choices.map(Number).sort((a, b) => a - b)).toEqual([8, 9, 10]);
+
+    const seven = generateMathQuestion('make10', 2, scripted([0.4, 0.5]));
+    expect(seven.question).toBe('4 和 3 合起來是幾？');
+    expect(seven.answer).toBe('7');
+    expect(seven.choices.map(Number).sort((a, b) => a - b)).toEqual([6, 7, 8]);
   });
 
   it('matches every clock face to the hour it asks', () => {
@@ -269,10 +326,10 @@ describe('math prompt generation', () => {
 
   it('uses unambiguous shape objects', () => {
     const scenes = [
-      ['球是什麼形狀？', '圓形', '🔺'],
+      ['球是什麼形狀？', '圓形', '⚽'],
       ['三角飯糰是什麼形狀？', '三角形', '🍙'],
-      ['魔術方塊的一面是什麼形狀？', '正方形', '🔺'],
-      ['書本是什麼形狀？', '長方形', '🔺'],
+      ['魔術方塊的一面是什麼形狀？', '正方形', '🟦'],
+      ['書本是什麼形狀？', '長方形', '📘'],
     ] as const;
     const seen = new Set<string>();
     for (let index = 0; index < scenes.length; index += 1) {

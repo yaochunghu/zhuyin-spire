@@ -13,6 +13,14 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - During the first tutorial fight, the lesson banner stays in the battlefield column while a cast is open and sits under the combat HUD, so the whole banner is readable at 640×360, 844×390, and 568×320. The cast slots and the hinted answer stay clear
 - At 568×320, the math dock's 「語音暫時無法播放…」 note fits on screen together with the question, the three answers, and 家長協助
 
+### Content
+
+- 余, 于, and 閑 were corrected to 餘, 於, and 閒
+- Shape prompts use 球 ⚽, 魔術方塊的一面 🟦, and 書本 📘. 三角飯糰 stays 🍙
+- Make-10 tier 2 asks 「N 和 M 合起來是幾？」. N+M is at most 10, and the other two choices sit near that total, each distinct and inside 0–10. Tier 1 still asks 「10 可以分成 N 和幾？」
+- 問 uses 🙋. 為什麼 stays ❓
+- Saves stay version 4
+
 ---
 
 ## [0.4.5] — 2026-10-29

@@ -185,6 +185,8 @@ describe('Zhuyin casting provider', () => {
     expect(spells('於', '📍')).toEqual(['ㄩˊ']);
     expect(spells('仔', '👶')).toEqual(['ㄗㄞˇ']);
     expect(spells('為什麼', '❓')).toEqual(['ㄨㄟˋ']);
+    expect(spells('問', '🙋')).toEqual(['ㄨㄣˋ']);
+    expect(spells('問', '❓')).toEqual([]);
     expect(spells('種子', '🌱')).toEqual(['ㄓㄨㄥˇ']);
   });
 

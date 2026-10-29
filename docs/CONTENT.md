@@ -178,7 +178,7 @@ pictured phrase. A cross-reference marked 「(一)之又音」, 「(一)之語�
 | 掃 | 🧹 | ㄙㄠˋ | 掃帚 / 掃把. 掃地 is ㄙㄠˇ. |
 | 艘 | ⛵ | ㄙㄠ | 一艘船. ㄙㄡ is 「(一)之又音」. |
 | 應 | ✅ | ㄧㄥˋ | 答應. 應該 is ㄧㄥ. |
-| 於 | 📍 | ㄩˊ | The preposition 在. This reverses the earlier 于 row. 《重編國語辭典修訂本》11582. MOE also reads the surname 於 as ㄨ; that reading does not match this picture, so the row stays ㄩˊ. |
+| 於 | 📍 | ㄩˊ | The preposition 在. This reverses the earlier 于 row. Source: MOE 《重編國語辭典修訂本》11601. That entry reads 在 as ㄩˊ. It also reads 於 as ㄨ for 「烏」的本字 and as an exclamation; that reading does not match this picture, so the row stays ㄩˊ. |
 
 ---
 
