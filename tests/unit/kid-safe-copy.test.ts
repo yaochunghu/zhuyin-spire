@@ -165,8 +165,8 @@ describe('kid-safe child-facing copy', () => {
       title: '休息一下',
       body: '小武者暈倒了，鼓勵孩子再試一次。三幕比較長，記得在營火休息。',
     });
-    expect(coachForScreen('map', { act: 1 }).body).toContain('心剩一點點就去營火，把心補回來');
-    expect(coachForScreen('rest').body).toContain('心剩一點點時把心補回來');
+    expect(coachForScreen('map', { act: 1 }).body).toContain('🔥 休息一下，把心補回來');
+    expect(coachForScreen('rest').body).toContain('❤️ 休息一下，把心補回來');
     expect(getPotion('chorusBurst').blurb).toBe('每隻還在場上的怪物受到 4 點傷害');
     expect(missingHeartChip(49)).toBe('補一點心');
     expect(missingHeartChip(50)).toBe('補很多心');
