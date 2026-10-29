@@ -29,7 +29,7 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [MAP.md](./MAP.md) | Spire map gen (15×7), layout constraints |
 | [CONTENT.md](./CONTENT.md) | How to add cards, enemies, encounters, phrases |
 | [CASTING_GATES.md](./CASTING_GATES.md) | Reusable education gate, phrase bags, learner profiles, future subjects |
-| [TELEMETRY.md](./TELEMETRY.md) | Local playtest export: `cast`, schema v2, synthetic runs |
+| [TELEMETRY.md](./TELEMETRY.md) | Local playtest export: schema v3 run fields, `cast`, and the balance report |
 | [DESIGN_PLAYBOOK.md](./DESIGN_PLAYBOOK.md) | Governing design funnel, evidence ladder, complexity budget, and release gates |
 | [DECK_DESIGN.md](./DECK_DESIGN.md) | Live 共鳴武者 foundation, directions, starter, and upgrades |
 | [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md) | Locked 共鳴武者 75-card roster, score progression, simulation, and review checks |
@@ -38,11 +38,11 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [UPGRADE_BIBLE.md](./UPGRADE_BIBLE.md) | Live physical-copy foundation and all 75 score-gated upgrades |
 | [EVENT_ENCOUNTER_BIBLE.md](./EVENT_ENCOUNTER_BIBLE.md) | 30 live Act I–III events; difficulty variants, keys, and Act IV still proposed |
 | [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md) | Live normal, elite, and boss roster, and Yao's decisions on the #52 questions |
-| [BALANCE.md](./BALANCE.md) | Live economy / HP / hand numbers + design intent |
+| [BALANCE.md](./BALANCE.md) | Live economy and the B1–B24 measurement map |
 | [DEBUG.md](./DEBUG.md) | Debug panel, flags, skip-cast testing |
 | [sim/CHILD_MODEL.md](./sim/CHILD_MODEL.md) | Debug-only child-error model and the Act I headless sim |
 | [ROADMAP.md](./ROADMAP.md) | Shipped systems, next work, known pitfalls |
-| [NEXT_PHASE.md](./NEXT_PHASE.md) | v0.4.4 current release, and what comes next |
+| [NEXT_PHASE.md](./NEXT_PHASE.md) | v0.4.5 current release, and what comes next |
 
 Root companions:
 
@@ -51,17 +51,18 @@ Root companions:
 | [../README.md](../README.md) | Play, quick start, version control |
 | [../AGENTS.md](../AGENTS.md) | AI/human resume guide |
 | [../CHANGELOG.md](../CHANGELOG.md) | Human-readable version history |
-| [../RELEASE_NOTES_v0.4.4.md](../RELEASE_NOTES_v0.4.4.md) | Player-facing notes for the current v0.4.4 release |
+| [../RELEASE_NOTES_v0.4.5.md](../RELEASE_NOTES_v0.4.5.md) | Player-facing notes for the current v0.4.5 release |
+| [../RELEASE_NOTES_v0.4.4.md](../RELEASE_NOTES_v0.4.4.md) | Player-facing notes for the v0.4.4 release |
 | [../RELEASE_NOTES_v0.4.3.md](../RELEASE_NOTES_v0.4.3.md) | Player-facing notes for the v0.4.3 release |
 | [../RELEASE_NOTES_v0.4.2.md](../RELEASE_NOTES_v0.4.2.md) | Player-facing notes for the v0.4.2 release |
 
 ---
 
-## Snapshot (main, v0.4.4)
+## Snapshot (main, v0.4.5)
 
-`package.json` is **0.4.4**. The current GitHub Release is **v0.4.4**: #64 is
-`[0.4.4]` in [CHANGELOG.md](../CHANGELOG.md). The previous release is
-v0.4.3 at `e3813ee` (#63), 2026-10-28 02:17 UTC. Two characters are playable.
+`package.json` is **0.4.5**. The current GitHub Release is **v0.4.5**: #67–#71
+are `[0.4.5]` in [CHANGELOG.md](../CHANGELOG.md). The previous release is
+v0.4.4 at `993d902` (#66), 2026-10-28 02:38 UTC. Two characters are playable.
 
 - **Stack:** Vite + TypeScript SPA, no backend; localStorage save. Saves stay
   on version 4. `eventTrack`, `castSeed`, and `castCounter` are optional.
@@ -89,7 +90,12 @@ v0.4.3 at `e3813ee` (#63), 2026-10-28 02:17 UTC. Two characters are playable.
   button on screen. The remove button is disabled when gold is short.
 - **Layout:** the parent coach no longer covers map dots. Campfire choices
   fit on screen. The math cast and the 注音 cast dock fit at the checked
-  phone sizes.
+  phone sizes. A hinted answer keeps 送出 and 家長協助 inside the dock, and
+  the tutorial banner stays off the slots (#68).
+- **Content:** 輕聲 is written with ˙ first. 仔 is ㄗㄞˇ. Grade 1 does not
+  ask 公分. 餘, 於, and 閒 are the Taiwan forms (#70).
+- **Telemetry:** one local `cast` event per resolved prompt, schema v2, with
+  no question or answer stored. See [TELEMETRY.md](./TELEMETRY.md).
 - **Debug:** body-mounted panel for testing (not for kids in normal play)
 - **Save fixtures:** ten version-4 checkpoints and a seeded choice replay under
   `tests/fixtures/`. Regenerate with `npm run generate:save-fixtures`. Saves

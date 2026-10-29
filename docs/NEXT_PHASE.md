@@ -1,4 +1,4 @@
-# Next phase — v0.4.4 current release
+# Next phase — v0.4.5 current release
 
 The complete score-gated card pool is implemented. The relic pool, potion belt,
 Act I–III events, act-native fights, cast-prompt seed, shop layout, and both
@@ -10,9 +10,9 @@ milestone while balancing the advanced tiers.
 
 | Source | Says |
 |--------|------|
-| `package.json` | **0.4.4** |
-| `CHANGELOG.md` | **[0.4.4] — 2026-10-28** is the current release (#64). **[0.4.3] — 2026-10-28** covers #60–#62. |
-| GitHub Releases | **v0.4.4** is the current release. The previous one is v0.4.3 at `e3813ee` (#63), 2026-10-28 02:17 UTC. |
+| `package.json` | **0.4.5** |
+| `CHANGELOG.md` | **[0.4.5] — 2026-10-29** is the current release (#67–#71). **[0.4.4] — 2026-10-28** is #64. |
+| GitHub Releases | **v0.4.5** is the current release. The previous one is v0.4.4 at `993d902` (#66), 2026-10-28 02:38 UTC. |
 
 ## What is live
 
@@ -30,7 +30,8 @@ Two characters are playable.
 - Act-native fights from #52. Each act has a listener, a buffer or scaler, and a summoner. Act II and Act III elites are not recycled Act I fights. Bosses brace, then one heavier hit, then a shield calls one friend that does not act on the turn it appears. The Act III boss gains one point during the brace. A correct cast softens a listener's later attack; the current intent number stays; a fizzle is not punished. Easy-opening quotas and the two-fight anti-repeat are chosen when the map is built. Event moth fights use the act-native 鐘粉蛾. Patterns are in [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md)
 - Each run stores `castSeed` and `castCounter` (#55). Mode rolls, shuffle-bag refills, and distractor banks read that stream. 注音神龕 draws from it too. The question on screen is not stored, so a reload shows the next prompt
 - On a phone, each shop offer keeps its card, price, and the remove-card button on screen. Short landscape no longer hides the price (#56). The remove button is disabled when gold is short (#62)
-- The parent coach no longer covers a map dot. Campfire choices fit on screen (#62). The math question and its three answers fit at 640×360 (#61). The 注音 cast dock fits at 640×360, 844×390, 1280×720 and 390×844, with every target at least 48px and a readable word box (#64)
+- The parent coach no longer covers a map dot. Campfire choices fit on screen (#62). The math question and its three answers fit at 640×360 (#61). The 注音 cast dock fits at 640×360, 844×390, 1280×720 and 390×844, with every target at least 48px and a readable word box (#64). The v0.4.4 playtest follow-up (#68) keeps hinted 注音 controls and the math column inside the dock, keeps the tutorial banner off the slots, and shows the shrine spelling once per event
+- 輕聲 is stored with ˙ first. 仔 is ㄗㄞˇ. Grade 1 never asks 公分. 餘, 於, and 閒 replace 余, 于, and 閑 (#70). The local playtest export records one `cast` per resolved prompt and does not store the answer (#69, schema v2). Ten version-4 save fixtures and a seeded replay are test-only (#67). The child-error model is debug-only and is absent from a normal production bundle (#71)
 - #50: searching the discard for a card type no longer deletes cards still in the draw pile. The campfire remove screen can return to rest without deleting a card. Attack damage that is not marked 直傷 respects block and 易傷. Enemy block expires at that enemy's next action
 
 Saves stay on version 4. `eventTrack`, `castSeed`, and `castCounter` are optional, so a checkpoint from before those fields still loads. A missing event record starts empty. A missing seed is filled in and the counter starts at 0. A v1 or v2 `relicId` becomes `relicIds`. A v3 checkpoint loads with an empty belt and chance 40.

@@ -5,9 +5,9 @@ The live version, obtainability rules, and next implementation slice live in
 
 ## Shipped on main
 
-`package.json` is 0.4.4. The current GitHub Release is **v0.4.4** (`[0.4.4]`
-in [CHANGELOG.md](../CHANGELOG.md), #64). The previous release is
-v0.4.3 at `e3813ee` (#63), 2026-10-28 02:17 UTC. Two characters are playable. Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
+`package.json` is 0.4.5. The current GitHub Release is **v0.4.5** (`[0.4.5]`
+in [CHANGELOG.md](../CHANGELOG.md), #67–#71). The previous release is
+v0.4.4 at `993d902` (#66), 2026-10-28 02:38 UTC. Two characters are playable. Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
 
 - Vite + TypeScript SPA; touch-first preschool UI; adult coach strip  
 - Full first-syllable 注音 cast (including 聲調); listen mode (Web Speech zh-TW)  
@@ -50,7 +50,15 @@ v0.4.3 at `e3813ee` (#63), 2026-10-28 02:17 UTC. Two characters are playable. Li
   screen. The math cast and the 注音 cast dock fit at the checked phone
   sizes (#61, #64)
 - Save/replay harness: committed v4 checkpoints for both characters, plus a
-  seeded choice replay inside `npm test`. Saves stay version 4
+  seeded choice replay inside `npm test`. Saves stay version 4 (#67)
+- v0.4.4 playtest follow-up (#68): hinted docks stay on screen, the tutorial
+  banner stays off the slots, and 注音神龕 shows 家長協助 once per event
+- Content pass (#70): leading 輕聲, 仔 ㄗㄞˇ, no 公分 in grade 1, cue batch 2,
+  and 餘 / 於 / 閒
+- Local playtest log records one `cast` per resolved prompt (schema v2) and
+  does not store the answer (#69)
+- Debug-only child-error model for both characters (#71). A normal production
+  bundle does not contain it
 
 ---
 

@@ -161,10 +161,12 @@ Full contract and future-provider checklist: [CASTING_GATES.md](./CASTING_GATES.
 
 ## Local playtest telemetry
 
-Offer, pick, smith, remove, skip, combat end, and cast events stay in
-`localStorage` under `zhuyin-spire-playtest-v1`. The export file says
-`zhuyin-spire-playtest-v2`. A `cast` event is a bucket and a few ids. It does
-not store the attempt. See [TELEMETRY.md](./TELEMETRY.md).
+Offer, pick, smith, remove, skip, combat end, cast, and the run fields
+(act clear, shop, boss entry, rest, potion, relic-pool exhaust, sitting)
+stay in `localStorage` under `zhuyin-spire-playtest-v1`. The export file says
+`zhuyin-spire-playtest-v3`. A `cast` event is a bucket and a few ids. It does
+not store the attempt. Boss HP lost is stored before the full heal. See
+[TELEMETRY.md](./TELEMETRY.md).
 
 ## Related
 

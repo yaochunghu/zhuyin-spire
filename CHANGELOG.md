@@ -15,6 +15,40 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ---
 
+## [0.4.5] — 2026-10-29
+
+### Save fixtures and seed replay (#67)
+
+- Ten version-4 checkpoints for 共鳴武者 and 珠算武者, plus a seeded choice replay, live under `tests/fixtures/`. `npm test` checks that a load-then-save matches the file, and that an in-session resume matches an uninterrupted replay. Test-only. Saves stay version 4
+
+### Playtest fixes (#68)
+
+- The hinted 注音 answer sits on the mana line, so 送出, 🗑️, and 家長協助 stay inside the dock. Practice and 注音神龕 use that same dock
+- The math dock keeps the question, the three answers, 家長協助, and 「語音暫時無法播放…」 inside the viewport. On a 640×360 correction, focusing 繼續 does not scroll the question away
+- At 360×740 in listen mode, four 48px slots stay on one line. During the first tutorial fight at 640×360 and 844×390, the lesson banner stays in the battlefield column. At 390×844, practice and shrine controls, including the speech note, stay on screen
+- Pause and the potion belt follow the cast gate: 算題暫停 / 先算完 for math, 注音暫停 / 先念完注音 otherwise
+- 注音神龕 家長協助 shows the spelling once per event. A second tap says 家長協助已用完. Practice can still show the answer again. Saves stay version 4. An unused hint is left out of the checkpoint; a spent hint is saved as `true`. Older saves omit the flag and still load
+
+### Playtest cast log (#69)
+
+- Each resolved cast, for 注音 and for math, in combat, practice, and the shrine, is one local `cast` event. The export schema is `zhuyin-spire-playtest-v2`. The storage key stays `zhuyin-spire-playtest-v1`, so events already on the device still export
+- The event stores the gate, family, tier, whether it was correct, whether 再算一次 was used, the hint level, an error tag, and a time bucket (`<5s`, `5-15s`, `15-30s`, `>30s`). It does not store the question, the attempt, or the answer. Opening 再算一次 does not emit. Debug skip-cast does not emit
+- New `combatEnd` events include `characterId`. Debug, skip-cast, webdriver, and the child-error model mark `synthetic: true`
+
+### Content (#70)
+
+- 輕聲 is stored and checked with ˙ first: 們 `˙ㄇㄣ`, 呢 `˙ㄋㄜ`, matching 《重編國語辭典修訂本》
+- 仔 (👶) is `ㄗㄞˇ`. 子 stays `ㄗˇ`
+- Grade 1 never asks 公分 or another length unit. 長尺掃 asks which side has more (`compare`). 公分 stays on the grade-2 tier-5 prompt
+- Cue batch 2: 為什麼 `ㄨㄟˋ` replaces 為 `ㄨㄟˊ`; 采 is removed (彩, 彩虹, and 踩 still cover `ㄘㄞˇ`); 種子 replaces 種; the clock face matches the hour; 三角飯糰 is the triangle and 魔術方塊的一面 is the square; make-10 tier 2 shows the split and the join; the 共鳴武者 theme says 「易傷」空檔
+- Standard Taiwan forms: 餘, 於, and 閒 replace 余, 于, and 閑. The 注音 for those rows stays ㄩˊ, ㄩˊ, and ㄒㄧㄢˊ
+
+### Child-error model (#71)
+
+- One debug-only model can miss, hesitate, and choose for both characters. `?childModel` is ignored unless debug is also on. A normal production bundle does not contain it. Headless Act I checks run from `scripts/simulate-resonance-pool.mjs`
+
+---
+
 ## [0.4.4] — 2026-10-28
 
 ### 共鳴武者 注音 cast dock (#64)
@@ -364,6 +398,8 @@ Baseline snapshot of the preschool Spire + 注音 game, documented for long-term
 - Standalone git repository for the game folder (tag `v0.1.0`)
 
 [Unreleased]: #unreleased
+[0.4.5]: #045--2026-10-29
+[0.4.4]: #044--2026-10-28
 [0.4.3]: #043--2026-10-28
 [0.4.2]: #042--2026-10-27
 [0.4.1]: #041--2026-10-26

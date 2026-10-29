@@ -112,7 +112,15 @@ import {
   type RunScoreResult,
   type RunScoreStats,
 } from './progression';
-import { priorErrorTagFor, recordPlaytestEvent, recordResolvedCast } from './playtestTelemetry';
+import {
+  priorErrorTagFor,
+  recordPlaytestEvent,
+  recordResolvedCast,
+  recordSittingStart,
+  type CombatNodeKind,
+  type RestChoice,
+  type SittingEndReason,
+} from './playtestTelemetry';
 import {
   beginEventChoice,
   cancelEventPending,
@@ -565,6 +573,7 @@ export function pickCharacter(state: RunState, characterId: string): boolean {
   acquireRelic(state, relic.id);
   state.screen = 'map';
   saveRunCheckpoint(state);
+  recordSittingStart(state.characterId ?? '');
   return true;
 }
 
@@ -618,6 +627,7 @@ function applyEventStep(state: RunState, step: EventStep): void {
     return;
   }
   if (step === 'defeat' || state.heroHp <= 0) {
+    noteSittingEnd(state, 'defeat');
     commitRunScore(state, false);
     state.screen = 'defeat';
     state.combat = null;
@@ -808,6 +818,7 @@ export function selectMapNode(state: RunState, nodeId: string): void {
         node.encounterId,
         combatRulesForRun(state),
       );
+  if (node.kind === 'boss') noteBossEntry(state, node);
   if (state.combat && !tutorial) {
     decorateCombat(state, state.combat, {
       normalFight: node.kind === 'fight',
@@ -833,6 +844,7 @@ export function applyRestHeal(state: RunState): boolean {
   if (state.screen !== 'rest') return false;
   if (!activeRestNode(state)) return false;
 
+  noteRestChoice(state, 'rest');
   const before = state.heroHp;
   const amount = restHealAmount(state.heroMaxHp);
   state.heroHp = Math.min(state.heroMaxHp, state.heroHp + amount);
@@ -866,6 +878,7 @@ export function smithCard(state: RunState, uid: string): boolean {
   const card = state.deck.find((candidate) => candidate.uid === uid);
   if (!card || !canUpgradeCard(card.defId, card.upgradeLevel)) return false;
   card.upgradeLevel = 1;
+  noteRestChoice(state, 'smith');
   recordPlaytestEvent({ kind: 'smith', at: Date.now(), ...card });
   state.flash = '🔨✨';
   completeNode(state);
@@ -901,6 +914,7 @@ export function removeCardFromDeck(state: RunState, index: number): boolean {
 
   const [removed] = state.deck.splice(index, 1);
   if (removed) recordPlaytestEvent({ kind: 'remove', at: Date.now(), ...removed });
+  noteRestChoice(state, 'remove');
   state.flash = '🗑️✨';
   completeNode(state);
   return true;
@@ -916,6 +930,7 @@ export function skipRemoveCard(state: RunState): void {
 }
 
 function openShop(state: RunState): void {
+  noteShopEnter(state);
   const ids = pickRewardIds(rewardPoolFor(state, 'normal'), 3);
   state.shopOffers = ids.map((defId, i) => ({
     ...makeOffer(state, defId, 'shop'),
@@ -936,6 +951,7 @@ function openShop(state: RunState): void {
 function grantRelicReward(state: RunState): void {
   const relicId = rollRelicDrop(state.relicIds, secureRandomInt, state.characterId);
   if (!relicId) {
+    noteRelicPoolExhaust(state);
     state.gold += RELIC_POOL_EXHAUST_GOLD;
     state.pendingGold += RELIC_POOL_EXHAUST_GOLD;
     state.pendingRelicId = null;
@@ -1095,8 +1111,10 @@ function completeNode(state: RunState): void {
 }
 
 function finishBoss(state: RunState, act: number): void {
-  // act is 1|2|3
+  // act is 1|2|3. Record the clear before the act-3 victory wipes the save.
+  noteActClear(state, act);
   if (act >= 3) {
+    noteSittingEnd(state, 'victory');
     commitRunScore(state, true);
     state.screen = 'victory';
     clearSavedRun();
@@ -1254,6 +1272,8 @@ export function debugStartEncounter(
   enemyId: string,
   encounterId?: string,
 ): void {
+  const bossNode = getEnemyDef(enemyId).isBoss ? getActiveNode(state) : null;
+  if (bossNode || getEnemyDef(enemyId).isBoss) noteBossEntry(state, bossNode);
   state.cast = null;
   state.tutorial = null;
   state.activeNodeId = null;
@@ -1328,6 +1348,7 @@ export function answerCast(state: RunState, attempt: string[]): 'success' | 'fiz
   }
   if (state.combat.status === 'lost') {
     recordCombatTelemetry(state, false);
+    noteSittingEnd(state, 'defeat');
     commitRunScore(state, false);
     state.screen = 'defeat';
     clearSavedRun();
@@ -1401,6 +1422,7 @@ export function playerEndTurn(state: RunState): void {
   state.floatText = null;
   if (status === 'lost') {
     recordCombatTelemetry(state, false);
+    noteSittingEnd(state, 'defeat');
     commitRunScore(state, false);
     state.screen = 'defeat';
     clearSavedRun();
@@ -1443,6 +1465,7 @@ export function rewardPoolFor(
 }
 
 function finishFight(state: RunState): void {
+  // HP lost is stored before a boss clear sets hero HP back to the maximum.
   recordCombatTelemetry(state, true);
   if (!state.combat) return;
   if (state.tutorial) {
@@ -1509,15 +1532,116 @@ function finishFight(state: RunState): void {
   saveRunCheckpoint(state);
 }
 
+function mapFloor(node: MapNode | null): number {
+  return node ? node.row + 1 : 0;
+}
+
+function noteBossEntry(state: RunState, node: MapNode | null): void {
+  recordPlaytestEvent({
+    kind: 'bossEntry',
+    at: Date.now(),
+    act: node?.act ?? state.actIndex + 1,
+    floor: mapFloor(node),
+    characterId: state.characterId ?? '',
+    hp: state.heroHp,
+    gold: state.gold,
+    deckSize: state.deck.length,
+  });
+}
+
+function noteShopEnter(state: RunState): void {
+  const node = getActiveNode(state);
+  recordPlaytestEvent({
+    kind: 'shopEnter',
+    at: Date.now(),
+    act: node?.act ?? state.actIndex + 1,
+    floor: mapFloor(node),
+    gold: state.gold,
+  });
+}
+
+function noteRestChoice(state: RunState, choice: RestChoice): void {
+  const node = activeRestNode(state);
+  recordPlaytestEvent({
+    kind: 'rest',
+    at: Date.now(),
+    act: node?.act ?? state.actIndex + 1,
+    floor: mapFloor(node),
+    choice,
+  });
+}
+
+function noteRelicPoolExhaust(state: RunState): void {
+  const node = getActiveNode(state);
+  recordPlaytestEvent({
+    kind: 'relicPoolExhaust',
+    at: Date.now(),
+    act: node?.act ?? state.actIndex + 1,
+    floor: mapFloor(node),
+    characterId: state.characterId ?? '',
+  });
+}
+
+function noteActClear(state: RunState, act: number): void {
+  recordPlaytestEvent({
+    kind: 'actClear',
+    at: Date.now(),
+    act,
+    characterId: state.characterId ?? '',
+    hp: state.heroHp,
+    gold: state.gold,
+    deckSize: state.deck.length,
+  });
+}
+
+function noteSittingEnd(state: RunState, reason: SittingEndReason): void {
+  recordPlaytestEvent({
+    kind: 'sittingEnd',
+    at: Date.now(),
+    reason,
+    characterId: state.characterId ?? '',
+  });
+}
+
+function notePotionUsed(state: RunState, potionId: string, inCombat: boolean): void {
+  recordPlaytestEvent({
+    kind: 'potionUsed',
+    at: Date.now(),
+    act: state.actIndex + 1,
+    potionId,
+    inCombat,
+  });
+}
+
+function combatNodeKind(state: RunState): CombatNodeKind {
+  if (isEventFight(state)) return 'event';
+  const node = getActiveNode(state);
+  if (
+    node
+    && (node.kind === 'fight' || node.kind === 'elite' || node.kind === 'boss' || node.kind === 'unknown')
+  ) {
+    return node.kind;
+  }
+  return 'fight';
+}
+
 function recordCombatTelemetry(state: RunState, won: boolean): void {
+  syncHeroHpFromCombat(state);
+  const node = getActiveNode(state);
   recordPlaytestEvent({
     kind: 'combatEnd',
     at: Date.now(),
     won,
     hpLost: state.scoreStats.currentCombatHpLost,
-    act: state.actIndex + 1,
+    act: node?.act ?? state.actIndex + 1,
     deck: state.deck.map(({ defId, upgradeLevel }) => ({ defId, upgradeLevel })),
     characterId: state.characterId ?? '',
+    turns: state.combat?.turn ?? 0,
+    nodeKind: combatNodeKind(state),
+    floor: mapFloor(node),
+    hp: state.heroHp,
+    gold: state.gold,
+    deckSize: state.deck.length,
   });
 }
 
@@ -1652,6 +1776,7 @@ export function usePotion(state: RunState, slot: number, targetId?: string): Pot
     const applied = applyCombatPotion(state.combat, potion, targetId);
     if (!applied.ok) return { ok: false, reason: applied.reason ?? 'phase' };
     state.potions[slot] = null;
+    notePotionUsed(state, potionId, true);
     settlePendingPotion(state);
     state.flash = potion.emoji;
     drainCombatFx(state);
@@ -1666,6 +1791,7 @@ export function usePotion(state: RunState, slot: number, targetId?: string): Pot
   if (!potion.heal || gained <= 0) return { ok: false, reason: potion.heal ? 'full-hp' : 'screen' };
   state.heroHp += gained;
   state.potions[slot] = null;
+  notePotionUsed(state, potionId, false);
   settlePendingPotion(state);
   state.flash = potion.emoji;
   saveRunCheckpoint(state);
