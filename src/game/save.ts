@@ -33,6 +33,7 @@ import {
 import { emptyPotionBelt, isKnownPotionId } from '../data/potions';
 import { isKnownRelicId, RELICS } from '../data/relics';
 import { createCastSeed } from './castRng';
+import { recordSittingStart } from './playtestTelemetry';
 import type { RunState, Screen, ShopOffer, ShopPotionOffer } from './state';
 import {
   isDeckCard,
@@ -832,5 +833,6 @@ export function resumeSavedRun(state: RunState): boolean {
   const snap = loadSnapshot();
   if (!snap) return false;
   applySnapshot(state, snap);
+  recordSittingStart(state.characterId ?? '');
   return true;
 }

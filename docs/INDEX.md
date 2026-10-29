@@ -29,7 +29,7 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [MAP.md](./MAP.md) | Spire map gen (15×7), layout constraints |
 | [CONTENT.md](./CONTENT.md) | How to add cards, enemies, encounters, phrases |
 | [CASTING_GATES.md](./CASTING_GATES.md) | Reusable education gate, phrase bags, learner profiles, future subjects |
-| [TELEMETRY.md](./TELEMETRY.md) | Local playtest export: `cast`, schema v2, synthetic runs |
+| [TELEMETRY.md](./TELEMETRY.md) | Local playtest export: schema v3 run fields, `cast`, and the balance report |
 | [DESIGN_PLAYBOOK.md](./DESIGN_PLAYBOOK.md) | Governing design funnel, evidence ladder, complexity budget, and release gates |
 | [DECK_DESIGN.md](./DECK_DESIGN.md) | Live 共鳴武者 foundation, directions, starter, and upgrades |
 | [RESONANCE_WARRIOR_DESIGN_PROCESS.md](./RESONANCE_WARRIOR_DESIGN_PROCESS.md) | Locked 共鳴武者 75-card roster, score progression, simulation, and review checks |
@@ -38,7 +38,7 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [UPGRADE_BIBLE.md](./UPGRADE_BIBLE.md) | Live physical-copy foundation and all 75 score-gated upgrades |
 | [EVENT_ENCOUNTER_BIBLE.md](./EVENT_ENCOUNTER_BIBLE.md) | 30 live Act I–III events; difficulty variants, keys, and Act IV still proposed |
 | [ENCOUNTER_AUDIT.md](./ENCOUNTER_AUDIT.md) | Live normal, elite, and boss roster, and Yao's decisions on the #52 questions |
-| [BALANCE.md](./BALANCE.md) | Live economy / HP / hand numbers + design intent |
+| [BALANCE.md](./BALANCE.md) | Live economy and the B1–B24 measurement map |
 | [DEBUG.md](./DEBUG.md) | Debug panel, flags, skip-cast testing |
 | [sim/CHILD_MODEL.md](./sim/CHILD_MODEL.md) | Debug-only child-error model and the Act I headless sim |
 | [ROADMAP.md](./ROADMAP.md) | Shipped systems, next work, known pitfalls |

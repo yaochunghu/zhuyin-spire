@@ -4,9 +4,11 @@ The balance export is a JSON file written only on this device. Options →
 Privacy downloads it. Nothing in this log is sent to a server.
 
 The storage key stays `zhuyin-spire-playtest-v1`. A browser that already has
-events keeps them. The file's `schema` string is `zhuyin-spire-playtest-v2`.
+events keeps them. The file's `schema` string is `zhuyin-spire-playtest-v3`.
 Export copies the stored array as it is. An event written by an older build
-is not upgraded and is not dropped.
+is not upgraded and is not dropped. A v0.4.4 file (`zhuyin-spire-playtest-v1`)
+and a schema v2 file still load in `scripts/balance-report.mjs`. A field that
+file does not have prints as `n/a`.
 
 ## `cast`
 
@@ -50,9 +52,49 @@ That does not change the schema string.
 
 ## `combatEnd`
 
-New combat-end events include `characterId`. Live ids are `echoMage` and
-`abacusFist`. The field is a string, so another hero does not need a new
-schema. An older stored `combatEnd` has no `characterId` and still exports.
+A fight records this when it ends, after hero HP is copied out of combat and
+before a boss clear restores full HP or adds that fight's gold. P46-11 reads
+the boss row from here. The full heal still happens; it no longer overwrites
+the logged HP.
+
+| Field | Meaning |
+|-------|---------|
+| `characterId` | Live ids are `echoMage` and `abacusFist`. A string, so another hero does not need a new schema. |
+| `turns` | Player turns taken. A fight starts at turn 1. |
+| `nodeKind` | `fight`, `elite`, `boss`, `unknown`, or `event`. A fight with no map node is `fight`. |
+| `floor` | Map floor, 1-based (row + 1). `0` when the fight has no map node. |
+| `hp` | Hero HP when the fight ended, before a boss restores full HP. |
+| `gold` | Gold when the fight ended, before that fight's gold is added. |
+| `deckSize` | Cards in the deck at the end of the fight. |
+| `hpLost` | HP lost during the fight. Already on older events. |
+
+A v1 `combatEnd` has no `characterId` and none of the v3 fields. A v2
+`combatEnd` has `characterId` and still lacks turns, floor, HP, and gold.
+Both still export.
+
+## Run fields
+
+| Kind | When | Fields |
+|------|------|--------|
+| `sittingStart` | A character is picked, or a saved run is resumed. | `characterId` |
+| `sittingEnd` | The run is lost, or Act III is cleared. An Act I or Act II clear does not end the sitting. | `reason` `defeat`, `victory`, or `leave`; `characterId` |
+| `actClear` | A boss reward is taken and that act's node completes, including Act III. | `act`, `characterId`, `hp`, `gold`, `deckSize` |
+| `shopEnter` | A shop room opens, before anything is bought. | `act`, `floor`, `gold` |
+| `bossEntry` | A boss fight starts, before damage and before the payout. | `act`, `floor`, `characterId`, `hp`, `gold`, `deckSize` |
+| `rest` | A campfire choice completes: heal, smith, or remove. A shop remove stays the existing `remove` event and does not emit `rest`. | `act`, `floor`, `choice` `rest`, `smith`, or `remove` |
+| `potionUsed` | A bottle is used successfully. | `act`, `potionId`, `inCombat` |
+| `relicPoolExhaust` | A chest, elite, or boss would drop a relic and that character's pool is already owned. Recorded before the exhaust gold is added. | `act`, `floor`, `characterId` |
+
+`floor` is the map row plus 1. The balance report takes the earliest exhaust
+floor in each sitting.
+
+## Balance report
+
+`node scripts/balance-report.mjs <export.json>` prints B1–B24. Rows the
+family sheet still writes by hand print `session record`. Events with
+`synthetic: true` print under `cohort: synthetic (child-model)`. Every other
+event prints under `cohort: real play`. The row meanings are in
+[BALANCE.md](./BALANCE.md).
 
 ## Synthetic runs
 
@@ -71,10 +113,13 @@ schema. An older stored `combatEnd` has no `characterId` and still exports.
 The flag is omitted otherwise. A human session on `npm start` without those
 switches is not marked synthetic. A production build ignores the debug
 switch; webdriver still counts. Events already in storage are not relabeled.
+The balance report puts every flagged event in the synthetic cohort, including
+a child-model run.
 
 ## What this log is not
 
 Learning history on the learner profile is separate. It still stores counts
 and a clamped response total for the profile's own practice record. The
-parent report, error tallies, and the rest of the balance fields are later
-work. This file is only the local playtest export.
+parent report and the family-session rows (the three explanations, wanting to
+play again, mis-taps, and speech failures) stay on the paper sheet. This file
+is only the local playtest export.

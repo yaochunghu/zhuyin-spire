@@ -1,0 +1,231 @@
+{
+  "schema": "zhuyin-spire-playtest-v3",
+  "exportedAt": 1700000000000,
+  "events": [
+    {
+      "kind": "sittingStart",
+      "at": 1000,
+      "characterId": "echoMage",
+      "synthetic": true
+    },
+    {
+      "kind": "cast",
+      "at": 1100,
+      "gateId": "zhuyin",
+      "family": "initial:ㄅ",
+      "tier": 1,
+      "correct": true,
+      "retried": false,
+      "hintLevel": 0,
+      "errorTag": null,
+      "responseBucket": "5-15s",
+      "synthetic": true
+    },
+    {
+      "kind": "cast",
+      "at": 1200,
+      "gateId": "zhuyin",
+      "family": "initial:ㄆ",
+      "tier": 1,
+      "correct": false,
+      "retried": false,
+      "hintLevel": 0,
+      "errorTag": null,
+      "responseBucket": ">30s",
+      "synthetic": true
+    },
+    {
+      "kind": "shopEnter",
+      "at": 1300,
+      "act": 1,
+      "floor": 6,
+      "gold": 30,
+      "synthetic": true
+    },
+    {
+      "kind": "shopEnter",
+      "at": 1400,
+      "act": 1,
+      "floor": 9,
+      "gold": 50,
+      "synthetic": true
+    },
+    {
+      "kind": "rest",
+      "at": 1500,
+      "act": 1,
+      "floor": 15,
+      "choice": "rest",
+      "synthetic": true
+    },
+    {
+      "kind": "rest",
+      "at": 1600,
+      "act": 1,
+      "floor": 15,
+      "choice": "smith",
+      "synthetic": true
+    },
+    {
+      "kind": "combatEnd",
+      "at": 1700,
+      "won": true,
+      "hpLost": 4,
+      "act": 1,
+      "deck": [],
+      "characterId": "echoMage",
+      "turns": 3,
+      "nodeKind": "fight",
+      "floor": 1,
+      "hp": 36,
+      "gold": 0,
+      "deckSize": 10,
+      "synthetic": true
+    },
+    {
+      "kind": "combatEnd",
+      "at": 1800,
+      "won": true,
+      "hpLost": 8,
+      "act": 1,
+      "deck": [],
+      "characterId": "echoMage",
+      "turns": 5,
+      "nodeKind": "fight",
+      "floor": 3,
+      "hp": 28,
+      "gold": 16,
+      "deckSize": 11,
+      "synthetic": true
+    },
+    {
+      "kind": "combatEnd",
+      "at": 1900,
+      "won": true,
+      "hpLost": 12,
+      "act": 1,
+      "deck": [],
+      "characterId": "echoMage",
+      "turns": 6,
+      "nodeKind": "elite",
+      "floor": 8,
+      "hp": 16,
+      "gold": 44,
+      "deckSize": 12,
+      "synthetic": true
+    },
+    {
+      "kind": "bossEntry",
+      "at": 2000,
+      "act": 1,
+      "floor": 16,
+      "characterId": "echoMage",
+      "hp": 28,
+      "gold": 44,
+      "deckSize": 12,
+      "synthetic": true
+    },
+    {
+      "kind": "combatEnd",
+      "at": 2100,
+      "won": true,
+      "hpLost": 9,
+      "act": 1,
+      "deck": [],
+      "characterId": "echoMage",
+      "turns": 7,
+      "nodeKind": "boss",
+      "floor": 16,
+      "hp": 19,
+      "gold": 44,
+      "deckSize": 12,
+      "synthetic": true
+    },
+    {
+      "kind": "relicPoolExhaust",
+      "at": 2200,
+      "act": 1,
+      "floor": 16,
+      "characterId": "echoMage",
+      "synthetic": true
+    },
+    {
+      "kind": "potionUsed",
+      "at": 2300,
+      "act": 1,
+      "potionId": "warmHoney",
+      "inCombat": true,
+      "synthetic": true
+    },
+    {
+      "kind": "actClear",
+      "at": 2400,
+      "act": 1,
+      "characterId": "echoMage",
+      "hp": 40,
+      "gold": 72,
+      "deckSize": 13,
+      "synthetic": true
+    },
+    {
+      "kind": "shopEnter",
+      "at": 3000,
+      "act": 1,
+      "floor": 6,
+      "gold": 10
+    },
+    {
+      "kind": "rest",
+      "at": 3100,
+      "act": 1,
+      "floor": 15,
+      "choice": "remove"
+    },
+    {
+      "kind": "combatEnd",
+      "at": 3200,
+      "won": true,
+      "hpLost": 2,
+      "act": 1,
+      "deck": [],
+      "characterId": "echoMage",
+      "turns": 4,
+      "nodeKind": "fight",
+      "floor": 2,
+      "hp": 38,
+      "gold": 16,
+      "deckSize": 10
+    },
+    {
+      "kind": "bossEntry",
+      "at": 3300,
+      "act": 1,
+      "floor": 16,
+      "characterId": "echoMage",
+      "hp": 20,
+      "gold": 15,
+      "deckSize": 11
+    },
+    {
+      "kind": "combatEnd",
+      "at": 3400,
+      "won": false,
+      "hpLost": 11,
+      "act": 1,
+      "deck": [],
+      "characterId": "echoMage",
+      "turns": 5,
+      "nodeKind": "boss",
+      "floor": 16,
+      "hp": 0,
+      "gold": 15,
+      "deckSize": 11
+    },
+    {
+      "kind": "sittingEnd",
+      "at": 3500,
+      "reason": "defeat",
+      "characterId": "echoMage"
+    }
+  ]
+}

@@ -59,7 +59,10 @@ with no `childModel` query, is unchanged.
 `runActI` and the browser bridge call `markSyntheticPlaytest()` before any
 event. Headless Node has no `?debug` query and no `navigator.webdriver`, so
 the mark is what sets `synthetic: true`. Clearing the mark returns later
-events to the human rule. See [TELEMETRY.md](../TELEMETRY.md).
+events to the human rule. A headless Act I run also emits the schema v3 run
+fields (boss entry, shop gold, rests, potions, exhaust floor, fight turns,
+and sitting start/end). They are synthetic because this mark is already set.
+See [TELEMETRY.md](../TELEMETRY.md).
 
 A cast's `responseBucket` is the persona's delay. The model moves
 `prompt.createdAt` back by that many milliseconds, and the existing recorder

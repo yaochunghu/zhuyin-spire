@@ -5,11 +5,13 @@ import { getDebugSkipCast, isDebugEnabled } from '../debug/debugFlags';
 /**
  * Local playtest log. The storage key stays `zhuyin-spire-playtest-v1` so a
  * browser that already has events keeps them. The export schema string is
- * `zhuyin-spire-playtest-v2` once `cast` and `combatEnd.characterId` exist.
- * Events already in storage are copied out unchanged.
+ * `zhuyin-spire-playtest-v3` once the run fields (act clear, shop, boss
+ * entry, rest, potion, relic-pool exhaust, fight turns, sitting) exist.
+ * Events already in storage are copied out unchanged. A v1 or v2 event is
+ * not upgraded and is not dropped.
  */
 export const PLAYTEST_STORAGE_KEY = 'zhuyin-spire-playtest-v1';
-export const PLAYTEST_EXPORT_SCHEMA = 'zhuyin-spire-playtest-v2';
+export const PLAYTEST_EXPORT_SCHEMA = 'zhuyin-spire-playtest-v3';
 
 const MAX_EVENTS = 10_000;
 const RESPONSE_CLAMP_MS = 300_000;
@@ -41,6 +43,76 @@ export type PlaytestEvent = SyntheticMark & (
       deck: Array<{ defId: string; upgradeLevel: 0 | 1 }>;
       /** Run character id. Open string so a later hero does not need a new schema. */
       characterId: string;
+      /** Player turns taken. Captured when the fight ends, before a boss full heal. */
+      turns: number;
+      nodeKind: CombatNodeKind;
+      /** Map floor, 1-based (row + 1). 0 when the fight has no map node. */
+      floor: number;
+      /** Hero HP when the fight ended, before a boss restores full HP. */
+      hp: number;
+      /** Gold when the fight ended, before that fight's gold is added. */
+      gold: number;
+      deckSize: number;
+    }
+  | {
+      kind: 'actClear';
+      at: number;
+      /** Act just cleared, 1-based. */
+      act: number;
+      characterId: string;
+      hp: number;
+      gold: number;
+      deckSize: number;
+    }
+  | {
+      kind: 'shopEnter';
+      at: number;
+      act: number;
+      floor: number;
+      gold: number;
+    }
+  | {
+      kind: 'bossEntry';
+      at: number;
+      act: number;
+      floor: number;
+      characterId: string;
+      /** HP and gold as the boss fight starts, before any damage or payout. */
+      hp: number;
+      gold: number;
+      deckSize: number;
+    }
+  | {
+      kind: 'rest';
+      at: number;
+      act: number;
+      floor: number;
+      choice: RestChoice;
+    }
+  | {
+      kind: 'potionUsed';
+      at: number;
+      act: number;
+      potionId: string;
+      inCombat: boolean;
+    }
+  | {
+      kind: 'relicPoolExhaust';
+      at: number;
+      act: number;
+      floor: number;
+      characterId: string;
+    }
+  | {
+      kind: 'sittingStart';
+      at: number;
+      characterId: string;
+    }
+  | {
+      kind: 'sittingEnd';
+      at: number;
+      reason: SittingEndReason;
+      characterId: string;
     }
   | {
       kind: 'cast';
@@ -60,6 +132,13 @@ export type PlaytestEvent = SyntheticMark & (
 );
 
 const RESPONSE_BUCKETS = new Set<string>(['<5s', '5-15s', '15-30s', '>30s']);
+const REST_CHOICES = new Set<string>(['rest', 'smith', 'remove']);
+const SITTING_REASONS = new Set<string>(['defeat', 'victory', 'leave']);
+const NODE_KINDS = new Set<string>(['fight', 'elite', 'boss', 'unknown', 'event']);
+
+export type RestChoice = 'rest' | 'smith' | 'remove';
+export type SittingEndReason = 'defeat' | 'victory' | 'leave';
+export type CombatNodeKind = 'fight' | 'elite' | 'boss' | 'unknown' | 'event';
 
 /**
  * Headless model runs have no `?debug` query and no browser webdriver flag.
@@ -220,8 +299,17 @@ export function clearPlaytestTelemetry(): void {
   }
 }
 
+export function recordSittingStart(characterId: string): void {
+  recordPlaytestEvent({
+    kind: 'sittingStart',
+    at: Date.now(),
+    characterId: typeof characterId === 'string' ? characterId : '',
+  });
+}
+
 function storedEvent(event: PlaytestEvent): PlaytestEvent {
   const synthetic = event.synthetic === true || isSyntheticPlaytest();
+  const marked = synthetic ? { synthetic: true as const } : {};
   if (event.kind === 'cast') {
     return {
       kind: 'cast',
@@ -234,7 +322,7 @@ function storedEvent(event: PlaytestEvent): PlaytestEvent {
       hintLevel: sanitizeHintLevel(event.hintLevel),
       errorTag: sanitizeErrorTag(event.errorTag),
       responseBucket: asBucket(event.responseBucket),
-      ...(synthetic ? { synthetic: true as const } : {}),
+      ...marked,
     };
   }
   if (event.kind === 'combatEnd') {
@@ -242,11 +330,99 @@ function storedEvent(event: PlaytestEvent): PlaytestEvent {
       kind: 'combatEnd',
       at: event.at,
       won: event.won,
-      hpLost: event.hpLost,
-      act: event.act,
+      hpLost: countField(event.hpLost),
+      act: countField(event.act, 9),
       deck: event.deck.map(({ defId, upgradeLevel }) => ({ defId, upgradeLevel })),
       characterId: typeof event.characterId === 'string' ? event.characterId : '',
-      ...(synthetic ? { synthetic: true as const } : {}),
+      turns: countField(event.turns, 999),
+      nodeKind: asNodeKind(event.nodeKind),
+      floor: countField(event.floor, 99),
+      hp: countField(event.hp, 9999),
+      gold: countField(event.gold),
+      deckSize: countField(event.deckSize, 999),
+      ...marked,
+    };
+  }
+  if (event.kind === 'actClear') {
+    return {
+      kind: 'actClear',
+      at: event.at,
+      act: countField(event.act, 9),
+      characterId: typeof event.characterId === 'string' ? event.characterId : '',
+      hp: countField(event.hp, 9999),
+      gold: countField(event.gold),
+      deckSize: countField(event.deckSize, 999),
+      ...marked,
+    };
+  }
+  if (event.kind === 'shopEnter') {
+    return {
+      kind: 'shopEnter',
+      at: event.at,
+      act: countField(event.act, 9),
+      floor: countField(event.floor, 99),
+      gold: countField(event.gold),
+      ...marked,
+    };
+  }
+  if (event.kind === 'bossEntry') {
+    return {
+      kind: 'bossEntry',
+      at: event.at,
+      act: countField(event.act, 9),
+      floor: countField(event.floor, 99),
+      characterId: typeof event.characterId === 'string' ? event.characterId : '',
+      hp: countField(event.hp, 9999),
+      gold: countField(event.gold),
+      deckSize: countField(event.deckSize, 999),
+      ...marked,
+    };
+  }
+  if (event.kind === 'rest') {
+    return {
+      kind: 'rest',
+      at: event.at,
+      act: countField(event.act, 9),
+      floor: countField(event.floor, 99),
+      choice: asRestChoice(event.choice),
+      ...marked,
+    };
+  }
+  if (event.kind === 'potionUsed') {
+    return {
+      kind: 'potionUsed',
+      at: event.at,
+      act: countField(event.act, 9),
+      potionId: openId(event.potionId),
+      inCombat: event.inCombat === true,
+      ...marked,
+    };
+  }
+  if (event.kind === 'relicPoolExhaust') {
+    return {
+      kind: 'relicPoolExhaust',
+      at: event.at,
+      act: countField(event.act, 9),
+      floor: countField(event.floor, 99),
+      characterId: typeof event.characterId === 'string' ? event.characterId : '',
+      ...marked,
+    };
+  }
+  if (event.kind === 'sittingStart') {
+    return {
+      kind: 'sittingStart',
+      at: event.at,
+      characterId: typeof event.characterId === 'string' ? event.characterId : '',
+      ...marked,
+    };
+  }
+  if (event.kind === 'sittingEnd') {
+    return {
+      kind: 'sittingEnd',
+      at: event.at,
+      reason: asSittingReason(event.reason),
+      characterId: typeof event.characterId === 'string' ? event.characterId : '',
+      ...marked,
     };
   }
   return synthetic ? { ...event, synthetic: true } : event;
@@ -264,6 +440,23 @@ function isSyntheticPlaytest(): boolean {
   } catch {
     return false;
   }
+}
+
+function countField(value: number, max = 1_000_000): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(max, Math.floor(value)));
+}
+
+function asRestChoice(value: string): RestChoice {
+  return REST_CHOICES.has(value) ? value as RestChoice : 'rest';
+}
+
+function asSittingReason(value: string): SittingEndReason {
+  return SITTING_REASONS.has(value) ? value as SittingEndReason : 'leave';
+}
+
+function asNodeKind(value: string): CombatNodeKind {
+  return NODE_KINDS.has(value) ? value as CombatNodeKind : 'fight';
 }
 
 function openId(value: string): string {
