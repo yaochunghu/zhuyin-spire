@@ -8,7 +8,18 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
-### Layout
+---
+
+## [0.4.6] — 2026-10-29
+
+### Playtest telemetry schema v3 (#74)
+
+- The export schema is `zhuyin-spire-playtest-v3`. The storage key stays `zhuyin-spire-playtest-v1`, so a v1 or v2 event already on the device still exports unchanged
+- New events: `bossEntry` (HP, gold, and deck size as the fight starts), `actClear`, `shopEnter` (gold), campfire `rest`, `potionUsed`, `relicPoolExhaust` (the floor where that character's pool is already owned), `sittingStart`, and `sittingEnd`
+- `combatEnd` also stores turns, node kind, floor, deck size, end HP, gold, and `hpLost`. Boss HP lost is snapshotted after combat HP is synced and before the post-boss full heal and before that fight's gold is added
+- `scripts/balance-report.mjs` turns an export into B1–B24. The map lives in `docs/BALANCE.md`. A v0.4.4 or schema v2 file stays readable; fields that file does not have print `n/a`. Saves stay version 4
+
+### Layout (#75)
 
 - Cast fit checks walk combat, an event fight, the shrine, and practice through the default, hinted, speech-fallback, retry, and correction-card states. The viewports are the existing set plus 1024×600, 360×740, and 568×320. At 1024×600 the docked correction card keeps 繼續 on screen with the question and the answer
 - During the first tutorial fight, the lesson banner stays in the battlefield column while a cast is open and sits under the combat HUD, so the whole banner is readable at 640×360, 844×390, and 568×320. The cast slots and the hinted answer stay clear
@@ -399,6 +410,7 @@ Baseline snapshot of the preschool Spire + 注音 game, documented for long-term
 - Standalone git repository for the game folder (tag `v0.1.0`)
 
 [Unreleased]: #unreleased
+[0.4.6]: #046--2026-10-29
 [0.4.5]: #045--2026-10-29
 [0.4.4]: #044--2026-10-28
 [0.4.3]: #043--2026-10-28
