@@ -497,7 +497,7 @@ describe('event saves', () => {
   });
 });
 
-describe('珠算武者 shared events', () => {
+describe('數星人 shared events', () => {
   function abacus(): RunState {
     const state = prepare();
     pickCharacter(state, 'abacusFist');
@@ -528,7 +528,7 @@ describe('珠算武者 shared events', () => {
     expect(eventIsEligible(math, well, 4, 2)).toBe(true);
   });
 
-  it('says 算 on a math quiz chip and does not charge 珠算武者 HP if the shrine is already open', () => {
+  it('says 算 on a math quiz chip and does not charge 數星人 HP if the shrine is already open', () => {
     const shrine = getEvent('event_shared_phonetic_shrine');
     const practice = shrine.choices.find((choice) => choice.id === 'practice');
     expect(practice).toBeTruthy();

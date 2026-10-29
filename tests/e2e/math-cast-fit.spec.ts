@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { CAST_FIT_VIEWPORTS, runCastStateMatrix } from './castFitMatrix';
 
-// Playtest PR #61 (A3, A4, A10): the 珠算武者 question must be readable and
+// Playtest PR #61 (A3, A4, A10): the 數星人 question must be readable and
 // fully inside its box, its three answers must be big separate tap targets on
 // screen, and both characters must show on the select screen without scrolling.
 
@@ -48,7 +48,7 @@ function sizeLabel(page: Page): string {
 async function openMathCast(page: Page): Promise<void> {
   await page.goto('/?debug=1');
   await page.getByRole('button', { name: '開始爬塔' }).click();
-  await page.getByRole('button', { name: /選擇珠算武者/ }).click();
+  await page.getByRole('button', { name: /選擇數星人/ }).click();
   await expect(page.locator('.map-stage')).toBeVisible();
   // The debug panel opens on its own only where there is room; fold it away.
   const fold = page.locator('.debug-panel .debug-head .debug-btn-icon');
@@ -357,10 +357,10 @@ test('both characters show on the select screen without scrolling', async ({ pag
   test.skip(!LANDSCAPE_PHONES.includes(testInfo.project.name));
   await page.goto('/');
   await page.getByRole('button', { name: '開始爬塔' }).click();
-  for (const name of [/選擇共鳴武者/, /選擇珠算武者/]) {
+  for (const name of [/選擇共鳴武者/, /選擇數星人/]) {
     await expect(page.getByRole('button', { name })).toBeInViewport({ ratio: 1 });
   }
-  for (const heading of ['共鳴武者', '珠算武者']) {
+  for (const heading of ['共鳴武者', '數星人']) {
     await expect(page.getByText(heading, { exact: true }).first()).toBeInViewport({ ratio: 1 });
   }
   const scrolled = await page.evaluate(() => ({
