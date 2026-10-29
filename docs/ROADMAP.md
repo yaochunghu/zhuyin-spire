@@ -66,7 +66,9 @@ v0.4.8 at `ea6255a` (#82), 2026-10-29 05:46 UTC. Two characters are playable. Li
   `scripts/balance-report.mjs` prints B1–B24. The map is in
   [BALANCE.md](./BALANCE.md). Saves stay version 4
 - During a tutorial cast, the lesson banner sits under the combat HUD at
-  640×360 and 844×390. The math 「語音暫時無法播放…」 note fits at 568×320 (#75)
+  640×360, 844×390, and 568×320, and also at portrait and desktop sizes. The
+  math 「語音暫時無法播放…」 note fits at 568×320 and stays after 家長協助
+  re-renders the dock. The open coach copy scrolls there instead of clipping (#75)
 - Cast fit matrix (#78): combat, event fights, the shrine, and practice in
   the default, hinted, speech-fallback, retry, and correction-card states at
   eight viewports. The correction card uses the compact layout up to 640px

@@ -191,6 +191,10 @@ test('a hint and the speech note leave the three answers on screen', async ({ pa
   await expect(page.locator('.speech-fallback-note')).toContainText('仍需選出答案');
   await page.locator('.cast-dock .hint-btn').click();
   await expect(page.locator('.spell-hint-reveal')).toBeVisible();
+  // The fallback can arrive before 家長協助. Opening the hint re-renders the
+  // dock; the note has to still be there without a second event.
+  await expect(page.locator('.speech-fallback-note')).toContainText('語音暫時無法播放');
+  await expect(page.locator('.speech-fallback-note')).toContainText('仍需選出答案');
   await page.evaluate(async () => {
     const { run } = await import('/src/ui/runtime.ts');
     window.dispatchEvent(
@@ -250,6 +254,63 @@ test('a hint and the speech note leave the three answers on screen', async ({ pa
     return r.height > 0 && r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth;
   });
   expect(wordOnScreen).toBe(true);
+});
+
+test('568x320 math coach copy stays readable without covering the question', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'phone-568x320');
+  await openMathCast(page);
+  await page.locator('.cast-dock .adult-coach-head').click();
+  await expect(page.locator('.cast-dock .adult-coach-body')).toBeVisible();
+  const report = await page.evaluate(() => {
+    const coach = document.querySelector<HTMLElement>('.cast-dock .adult-coach')!;
+    const coachBox = coach.getBoundingClientRect();
+    const visibleHeight = (el: Element | null): number => {
+      if (!el) return 0;
+      const r = el.getBoundingClientRect();
+      const top = Math.max(r.top, coachBox.top);
+      const bottom = Math.min(r.bottom, coachBox.bottom, innerHeight);
+      return Math.max(0, bottom - top);
+    };
+    const hitsOwn = (selector: string): boolean =>
+      [...document.querySelectorAll(selector)].every((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.width < 1 || r.height < 1) return false;
+        const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return !!top && (top === el || el.contains(top));
+      });
+    const overlaps = (selector: string): boolean =>
+      [...document.querySelectorAll(selector)].some((el) => {
+        const r = el.getBoundingClientRect();
+        return (
+          r.width > 1 &&
+          r.height > 1 &&
+          r.left < coachBox.right - 1 &&
+          coachBox.left < r.right - 1 &&
+          r.top < coachBox.bottom - 1 &&
+          coachBox.top < r.bottom - 1
+        );
+      });
+    return {
+      copyVisible:
+        visibleHeight(coach.querySelector('.adult-coach-early')) +
+        visibleHeight(coach.querySelector('.adult-coach-body')),
+      scrolls: coach.scrollHeight > coach.clientHeight + 1,
+      questionHit: hitsOwn('.cast-cue-pane .cue-word'),
+      answerHit: hitsOwn('.cast-choice-key'),
+      hintHit: hitsOwn('.cast-dock .hint-btn'),
+      coversQuestion: overlaps('.cast-cue-pane .cue-word'),
+      coversAnswers: overlaps('.cast-choice-key'),
+      coversHint: overlaps('.cast-dock .hint-btn'),
+    };
+  });
+  expect(report.copyVisible, 'coach copy has no readable line').toBeGreaterThanOrEqual(16);
+  expect(report.scrolls || report.copyVisible >= 32, 'clipped coach copy cannot scroll').toBe(true);
+  expect(report.questionHit).toBe(true);
+  expect(report.answerHit).toBe(true);
+  expect(report.hintHit).toBe(true);
+  expect(report.coversQuestion).toBe(false);
+  expect(report.coversAnswers).toBe(false);
+  expect(report.coversHint).toBe(false);
 });
 
 test('focusing 繼續 on a short phone does not scroll the math correction away', async ({ page }, testInfo) => {

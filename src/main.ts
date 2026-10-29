@@ -19,7 +19,7 @@ import { getMathCastingPreferences } from './game/profiles';
 import { closePotionInspectIfScreenChanged } from './ui/potionBelt';
 import { closeRelicInspectIfScreenChanged } from './ui/relicBadges';
 import { playPendingCombatFx, presentBattleEnding, renderCombat } from './ui/combatView';
-import { renderCastCheck, renderPractice, submitSpell } from './ui/castView';
+import { renderCastCheck, renderPractice, submitSpell, syncSpeechFallbackNote } from './ui/castView';
 import { renderActClear, renderMap } from './ui/mapView';
 import { renderEvent } from './ui/eventView';
 import { playOutcomeOverlay } from './ui/outcome';
@@ -434,15 +434,9 @@ window.addEventListener('zhuyin-save-status', () => {
 window.addEventListener('zhuyin-speech-fallback', (event) => {
   const text = (event as CustomEvent<{ text: string }>).detail.text;
   if (runState.cast?.prompt.cue.speechText !== text) return;
+  // Remember it: 家長協助 replaces the dock and would otherwise drop the note.
+  session.speechFallbackText = text;
   const pane = appEl.querySelector('.cast-cue-pane');
   if (!pane) return;
-  let warning = pane.querySelector('.speech-fallback-note');
-  if (!warning) {
-    warning = document.createElement('p');
-    warning.className = 'speech-fallback-note warn-banner adult-text';
-    warning.setAttribute('role', 'status');
-    pane.appendChild(warning);
-  }
-  const still = runState.cast.prompt.gateId === 'math' ? '仍需選出答案。' : '仍需拼出完整注音。';
-  warning.textContent = `語音暫時無法播放，請大人念：「${runState.cast.prompt.cue.text}」。${still}`;
+  syncSpeechFallbackNote(pane);
 });
