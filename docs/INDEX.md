@@ -96,8 +96,9 @@ are playable.
   fit on screen. The math cast and the 注音 cast dock fit at the checked
   phone sizes. A hinted answer keeps 送出 and 家長協助 inside the dock, and
   the tutorial banner stays off the slots (#68). During a tutorial cast the
-  banner sits under the combat HUD at 640×360 and 844×390, and the math
-  speech note fits at 568×320 (#75). The cast fit matrix walks combat, event
+  banner sits under the combat HUD at 640×360, 844×390, and 568×320, and also
+  at portrait and desktop sizes. The math speech note survives the 家長協助
+  re-render, and the open coach copy scrolls at 568×320 (#75). The cast fit matrix walks combat, event
   fights, the shrine, and practice through the default, hinted,
   speech-fallback, retry, and correction-card states at eight viewports (#78).
   The correction card uses the compact layout up to 640px height, so 繼續

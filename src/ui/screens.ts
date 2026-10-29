@@ -165,6 +165,7 @@ export function renderTitle(): HTMLElement {
     session.spellUsedBankIdx = [];
     session.castLocked = false;
     session.castSpeechPlayedForOpen = false;
+    session.speechFallbackText = null;
     enterPractice(run());
     render();
   });

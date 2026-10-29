@@ -3295,6 +3295,31 @@ html[data-screen='combat'] .global-control-btn {
     font-size: 0.68rem;
     line-height: 1.15;
   }
+
+  /* The open coach is the leftover strip under 家長協助. A 48px head left
+     only a sliver of 「前幾次一起玩…」, so the copy looked clipped. A shorter
+     head keeps a readable line on screen; the rest scrolls inside the coach
+     and does not cover the question, the answers, or 家長協助. */
+  .combat-casting .cast-dock.cast-math .adult-coach:not(.collapsed) {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .combat-casting .cast-dock.cast-math .adult-coach:not(.collapsed) .adult-coach-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    min-height: 32px;
+    padding-block: 0;
+    background:
+      linear-gradient(140deg, rgba(84, 47, 93, 0.98), rgba(38, 22, 48, 0.98));
+  }
+
+  .combat-casting .cast-dock.cast-math .adult-coach:not(.collapsed) .adult-coach-early,
+  .combat-casting .cast-dock.cast-math .adult-coach:not(.collapsed) .adult-coach-body {
+    margin-bottom: 2px;
+    overflow-wrap: anywhere;
+  }
 }
 
 /*
@@ -3573,6 +3598,57 @@ html[data-screen='combat'] .global-control-btn {
   .cast-dock:not(.cast-math) .spell-slots,
   .cast-dock:not(.cast-math) .spell-bank-wrap {
     justify-content: center;
+  }
+
+  /* The open coach sits beside the cue. Its copy is taller than that row at
+     360×740 and used to paint over ⌫ 🗑️ ✓ (z-index 45). Stay in the row and
+     scroll the copy so those keys keep their hit targets. */
+  .combat-casting > .combat-stage > .cast-dock:not(.cast-math) .adult-coach:not(.collapsed),
+  #app > .cast-screen.cast-dock:not(.cast-math) .adult-coach:not(.collapsed) {
+    align-self: stretch;
+    min-height: 0;
+    max-height: 100%;
+    overflow: auto;
+    z-index: auto;
+  }
+}
+
+/* Tutorial cast outside short landscape: the lesson used to be
+   position:absolute at z-index 30, so it covered the HUD and the potion belt.
+   Share the battlefield's row, under the HUD, and keep the dock full width
+   underneath. Both have to name the same column; an auto column would park
+   the battlefield beside the banner. Short landscape keeps its own rule. */
+@media (min-height: 501px), (orientation: portrait) {
+  .tutorial-active.combat-casting > .combat-stage > .combat-hud-strip {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .tutorial-active.combat-casting > .combat-stage > .combat-battlefield,
+  .tutorial-active.combat-casting > .combat-stage > .tutorial-guide {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .tutorial-active.combat-casting > .combat-stage > .cast-dock {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+
+  .tutorial-active.combat-casting > .combat-stage > .tutorial-guide {
+    position: relative;
+    align-self: start;
+    justify-self: center;
+    z-index: 6;
+    top: auto;
+    left: auto;
+    right: auto;
+    width: min(680px, calc(100% - 16px));
+    max-width: none;
+    height: auto;
+    min-height: 0;
+    margin: 4px 8px 0;
+    transform: none;
   }
 }
 

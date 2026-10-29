@@ -24,6 +24,14 @@ const TUTORIAL_BANNER_SIZES = [
   'phone-portrait-webkit',
   'short-landscape',
 ];
+// Portrait and desktop sizes where the lesson used to cover the HUD.
+const TUTORIAL_BANNER_BELOW_HUD = [
+  'phone-portrait-webkit',
+  'phone-narrow',
+  'tablet-landscape',
+  'short-landscape',
+  'landscape-wide',
+];
 const MODES = ['recognize', 'listen'] as const;
 const TARGETS = [
   '.cast-dock .spell-slot',
@@ -589,6 +597,96 @@ test('tutorial cast keeps the lesson banner visible and clear of slots', async (
   expect(reveal.text.length).toBeGreaterThan(0);
   expect(reveal.overlap, 'lesson banner covers the hinted answer').toBe(false);
   expect(reveal.shown, 'lesson banner hides the hinted answer').toBe(true);
+});
+
+test('tutorial cast keeps the lesson banner under the HUD', async ({ page }, testInfo) => {
+  test.skip(!TUTORIAL_BANNER_BELOW_HUD.includes(testInfo.project.name));
+  await page.goto('/?debug=1');
+  await page.evaluate(async () => {
+    const { run, render } = await import('/src/ui/runtime.ts');
+    const { debugStartTutorial } = await import('/src/debug/debugActions.ts');
+    debugStartTutorial(run());
+    render();
+  });
+  await foldDebug(page);
+  await page.getByRole('button', { name: '注音 ㄇ', exact: true }).click();
+  await expect(page.locator('.cast-dock .spell-slot').first()).toBeVisible();
+  await page.waitForTimeout(400);
+  await page.locator('.cast-dock .hint-btn').click();
+  await expect(page.locator('.spell-hint-reveal')).toBeVisible();
+  const fit = await page.evaluate(() => {
+    const banner = document.querySelector('.tutorial-guide')!;
+    const rect = banner.getBoundingClientRect();
+    const hud = document.querySelector('.combat-hud-strip')!.getBoundingClientRect();
+    const belt = document.querySelector('.combat-potion-belt')?.getBoundingClientRect();
+    const overlap = (a: DOMRect, b: DOMRect | undefined): boolean =>
+      !!b && a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1;
+    const radius = parseFloat(getComputedStyle(banner).borderTopLeftRadius) || 0;
+    const inset = Math.min(radius + 2, rect.width / 4, rect.height / 4);
+    let hidden = 0;
+    let samples = 0;
+    for (let y = rect.top + inset; y < rect.bottom - inset; y += 4) {
+      for (let x = rect.left + inset; x < rect.right - inset; x += 4) {
+        samples += 1;
+        if (x < 0 || y < 0 || x >= innerWidth || y >= innerHeight) {
+          hidden += 1;
+          continue;
+        }
+        const top = document.elementFromPoint(x, y);
+        if (!top || (top !== banner && !banner.contains(top))) hidden += 1;
+      }
+    }
+    const blocked = [...document.querySelectorAll('.cast-dock .spell-slot, .cast-dock .hint-btn, .spell-hint-reveal')].filter((el) => {
+      const r = el.getBoundingClientRect();
+      return overlap(rect, r);
+    }).map((el) => (el.textContent ?? '').trim().slice(0, 24));
+    return {
+      inView: rect.top >= -0.5 && rect.left >= -0.5 && rect.bottom <= innerHeight + 0.5 && rect.right <= innerWidth + 0.5,
+      belowHud: rect.top >= hud.bottom - 1,
+      overlapHud: overlap(rect, hud),
+      overlapBelt: overlap(rect, belt),
+      hidden,
+      samples,
+      blocked,
+    };
+  });
+  expect(fit.samples).toBeGreaterThan(0);
+  expect(fit.inView, 'lesson banner leaves the viewport').toBe(true);
+  expect(fit.hidden, 'lesson banner is covered').toBe(0);
+  expect(fit.belowHud, 'lesson banner sits on the HUD').toBe(true);
+  expect(fit.overlapHud, 'lesson banner overlaps the HUD').toBe(false);
+  expect(fit.overlapBelt, 'lesson banner overlaps the potion belt').toBe(false);
+  expect(fit.blocked, 'lesson banner overlaps slots, the answer, or 家長協助').toEqual([]);
+});
+
+test('tutorial cast keeps ⌫ 🗑️ ✓ tappable at 360x740', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'phone-narrow');
+  await page.goto('/?debug=1');
+  await page.evaluate(async () => {
+    const { run, render } = await import('/src/ui/runtime.ts');
+    const { debugStartTutorial } = await import('/src/debug/debugActions.ts');
+    debugStartTutorial(run());
+    render();
+  });
+  await foldDebug(page);
+  await page.getByRole('button', { name: '注音 ㄇ', exact: true }).click();
+  await expect(page.locator('.cast-dock .spell-ctrl')).toHaveCount(3);
+  await page.waitForTimeout(400);
+  const keys = await page.locator('.cast-dock .spell-ctrl').evaluateAll((els) =>
+    els.map((el) => {
+      const r = el.getBoundingClientRect();
+      const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      return {
+        label: el.getAttribute('aria-label'),
+        hit: !!top && (top === el || el.contains(top)),
+        top: top instanceof HTMLElement ? top.className : '',
+      };
+    }),
+  );
+  expect(keys.map((key) => key.label)).toEqual(['倒退', '清空', '送出']);
+  for (const key of keys) {
+    expect(key.hit, `${key.label} is covered by ${key.top}`).toBe(true);
+  }
 });
 
 test('combat, event, shrine, and practice casts fit in every UI state', async ({ page }, testInfo) => {

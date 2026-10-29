@@ -33,6 +33,11 @@ export const session = {
   spellAttempt: [] as string[],
   spellUsedBankIdx: [] as number[],
   castSpeechPlayedForOpen: false,
+  /**
+   * Cue speech text that already reported a playback failure. The note is
+   * drawn again when the cast dock re-renders. Not saved.
+   */
+  speechFallbackText: null as string | null,
   goldSfxForPending: -1,
   /** Event id already read aloud this session, so rerenders stay quiet. */
   eventSpokenId: null as string | null,

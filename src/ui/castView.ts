@@ -27,6 +27,24 @@ import {
   showFlash,
 } from './runtime';
 
+/** Adult note for a cue the device could not speak. Same words as the live event. */
+export function syncSpeechFallbackNote(pane: ParentNode): void {
+  const cast = run().cast;
+  const speechText = cast?.prompt.cue.speechText;
+  const show = !!cast && !!speechText && session.speechFallbackText === speechText;
+  const warning = pane.querySelector<HTMLElement>(':scope > .speech-fallback-note');
+  if (!show || !cast) {
+    warning?.remove();
+    return;
+  }
+  const note = warning ?? document.createElement('p');
+  note.className = 'speech-fallback-note warn-banner adult-text';
+  note.setAttribute('role', 'status');
+  const still = cast.prompt.gateId === 'math' ? '仍需選出答案。' : '仍需拼出完整注音。';
+  note.textContent = `語音暫時無法播放，請大人念：「${cast.prompt.cue.text}」。${still}`;
+  if (!warning) pane.appendChild(note);
+}
+
 /** Practice keeps the same teaching reveal on a wrong answer as on a correct one. */
 export function practiceRevealKind(correct: boolean): 'success' | 'correction' {
   return correct ? 'success' : 'correction';
@@ -126,6 +144,7 @@ export function submitSpell(): void {
     session.spellUsedBankIdx = [];
     session.hintSpell = null;
     session.castSpeechPlayedForOpen = false;
+    session.speechFallbackText = null;
 
     if (correct) {
       sfx.castOk();
@@ -155,6 +174,7 @@ export function submitSpell(): void {
     session.spellUsedBankIdx = [];
     session.hintSpell = null;
     session.castSpeechPlayedForOpen = false;
+    session.speechFallbackText = null;
     session.castLocked = false;
     if (correct) sfx.castOk();
     else sfx.fizzle();
@@ -197,6 +217,7 @@ export function submitSpell(): void {
     return;
   }
   session.castSpeechPlayedForOpen = false;
+  session.speechFallbackText = null;
 
   if (correct) {
     // Magic success first — meaty hit/block SFX play in combat FX after reveal
@@ -352,6 +373,7 @@ export function renderCastCheck(isPractice = false): HTMLElement {
   }
 
   appendCoach(cuePane, mode);
+  syncSpeechFallbackNote(cuePane);
 
   if (session.hintSpell) {
     const reveal = document.createElement('div');
@@ -537,6 +559,7 @@ export function renderCastCheck(isPractice = false): HTMLElement {
       session.spellUsedBankIdx = [];
       session.hintSpell = null;
       session.castSpeechPlayedForOpen = false;
+      session.speechFallbackText = null;
       session.castLocked = false;
       leavePractice(run());
       render();

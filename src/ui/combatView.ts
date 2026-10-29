@@ -329,6 +329,7 @@ function playCardFromUi(uid: string, targetIds: string[] = [], chosenHandUid?: s
     session.spellUsedBankIdx = [];
     session.castLocked = false;
     session.castSpeechPlayedForOpen = false;
+    session.speechFallbackText = null;
     teachingTimers.clear(session.autoSubmitTimer);
     cleanupDragUi();
     render();
