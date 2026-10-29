@@ -190,7 +190,7 @@ describe('per-character relic pools', () => {
     expect(getRelic('beadPouch').name).toBe('星星袋');
     expect(getRelic('beadPouch').blurb).toBe('每場戰鬥開始數 4 顆星');
     expect(getRelic('beadPouch').adultNote).toBe(
-      '這 4 顆星自己算一次，不會和湊十訣併成同一撥。不能跳過答題。',
+      '這 4 顆星自己算一次，不會和湊十訣併成同一次。不能跳過答題。',
     );
     expect(getRelic('eraser').blurb).toBe('每場戰鬥第一次法術飄走時，數 2 顆星');
     expect(getRelic('eraser').adultNote).toBe(

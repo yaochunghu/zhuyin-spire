@@ -217,7 +217,7 @@ export const RELICS: Record<string, RelicDef> = {
     emoji: '✨',
     name: '星星袋',
     blurb: '每場戰鬥開始數 4 顆星',
-    adultNote: '這 4 顆星自己算一次，不會和湊十訣併成同一撥。不能跳過答題。',
+    adultNote: '這 4 顆星自己算一次，不會和湊十訣併成同一次。不能跳過答題。',
     source: 'pool',
     characters: ['abacusFist'],
     startBeads: BEAD_POUCH_START,
