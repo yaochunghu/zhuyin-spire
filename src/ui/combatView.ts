@@ -232,6 +232,7 @@ export async function presentBattleEnding(): Promise<void> {
       emoji: defeat ? '🥋' : foe.emoji,
       isBoss: foe.isBoss,
       isElite: foe.isElite,
+      act: run().actIndex + 1,
     },
     () => {
       session.battleOutro = false;
