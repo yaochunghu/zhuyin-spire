@@ -17,7 +17,7 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 - 余, 于, and 閑 were corrected to 餘, 於, and 閒
 - Shape prompts use 球 ⚽, 魔術方塊的一面 🟦, and 書本 📘. 三角飯糰 stays 🍙
-- Make-10 tier 2 asks 「N 和 M 合起來是幾？」. N+M is at most 10, and the other two choices sit near that total, each distinct and inside 0–10. Tier 1 still asks 「10 可以分成 N 和幾？」
+- Make-10 tier 2 asks 「N 和 M 合起來是幾？」. N+M is from 1 to 10, never 0 and 0, and a single zero is still allowed. The other two choices sit near that total, each distinct and inside 0–10. Tier 1 still asks 「10 可以分成 N 和幾？」
 - 問 uses 🙋. 為什麼 stays ❓
 - Saves stay version 4
 

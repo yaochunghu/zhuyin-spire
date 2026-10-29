@@ -187,9 +187,11 @@ function expectBand(family: string, tier: CastingTier, draft: MathQuestion): voi
     expect(join).not.toBeNull();
     const left = Number(join![1]);
     const right = Number(join![2]);
+    expect(left + right).toBeGreaterThanOrEqual(1);
     expect(left + right).toBeLessThanOrEqual(10);
-    expect(left).toBeGreaterThanOrEqual(0);
-    expect(right).toBeGreaterThanOrEqual(0);
+    expect(left === 0 && right === 0).toBe(false);
+    expect(value).toBeGreaterThanOrEqual(1);
+    expect(value).toBeLessThanOrEqual(10);
     expect(value).toBe(left + right);
     expectNearMake10Choices(value, draft.choices);
   }
@@ -268,21 +270,31 @@ describe('math prompt generation', () => {
       expect(match, draft.question).not.toBeNull();
       const left = Number(match![1]);
       const right = Number(match![2]);
+      expect(left + right).toBeGreaterThanOrEqual(1);
       expect(left + right).toBeLessThanOrEqual(10);
+      expect(left === 0 && right === 0).toBe(false);
+      expect(Number(draft.answer)).toBeGreaterThanOrEqual(1);
+      expect(Number(draft.answer)).toBeLessThanOrEqual(10);
       expect(Number(draft.answer)).toBe(left + right);
       expect(draft.choices).toHaveLength(3);
       expectNearMake10Choices(left + right, draft.choices);
-      expect(draft.question).not.toMatch(/已經有|再幾顆|10 可以分成/);
+      expect(draft.question).not.toMatch(/已經有|再幾顆|10 可以分成|0 和 0/);
     }
 
     const scripted = (draws: number[]) => {
       let index = 0;
       return () => draws[index++] ?? 0;
     };
-    const zero = generateMathQuestion('make10', 2, scripted([0, 0]));
-    expect(zero.question).toBe('0 和 0 合起來是幾？');
-    expect(zero.answer).toBe('0');
-    expect(zero.choices.map(Number).sort((a, b) => a - b)).toEqual([0, 1, 2]);
+    const wasBothZero = generateMathQuestion('make10', 2, scripted([0, 0]));
+    expect(wasBothZero.question).toBe('0 和 1 合起來是幾？');
+    expect(wasBothZero.question).not.toBe('0 和 0 合起來是幾？');
+    expect(wasBothZero.answer).toBe('1');
+    expect(wasBothZero.choices.map(Number).sort((a, b) => a - b)).toEqual([0, 1, 2]);
+
+    const oneZero = generateMathQuestion('make10', 2, scripted([0, 0.7]));
+    expect(oneZero.question).toBe('0 和 7 合起來是幾？');
+    expect(oneZero.answer).toBe('7');
+    expect(oneZero.choices.map(Number).sort((a, b) => a - b)).toEqual([6, 7, 8]);
 
     const ten = generateMathQuestion('make10', 2, scripted([0.99, 0]));
     expect(ten.question).toBe('10 和 0 合起來是幾？');

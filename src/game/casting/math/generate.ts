@@ -215,7 +215,9 @@ function make10Question(rng: Rng, tier: CastingTier): MathQuestion {
   }
   if (tier === 2) {
     const left = irand(rng, 0, 10);
-    const right = irand(rng, 0, 10 - left);
+    let right = irand(rng, 0, 10 - left);
+    // 「0 和 0」 is not a question. One zero stays allowed, so the total is 1..10.
+    if (left === 0 && right === 0) right = 1;
     const total = left + right;
     return {
       question: `${left} 和 ${right} 合起來是幾？`,
