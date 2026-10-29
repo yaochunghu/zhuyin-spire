@@ -8,6 +8,12 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+### 數星人 names
+
+- Kid-facing names for the math hero move from beads and fists to stars. The class is 數星人. Cards, the 星星 / 星座 counters, relic names, and battle-log lines use the new words. Ids stay `abacusFist`, `ab_m001`–`ab_m027`, `woodBeads`, `beadPouch`, `beads`, and `tens`, so a version-4 save still loads
+- The pick-screen title stays 「數清來招，湊十出拳」. The theme line now talks about counting stars and lighting a 星座
+- 橡皮擦 tells the child that the first fizzled spell counts 2 stars. The parent note still explains that a deliberate miss costs a card and energy
+
 ---
 
 ## [0.4.9] — 2026-10-29

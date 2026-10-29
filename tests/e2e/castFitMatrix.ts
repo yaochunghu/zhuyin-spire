@@ -61,7 +61,7 @@ export async function runCastStateMatrix(page: Page, hero: Hero): Promise<void> 
 async function prepareCastFit(page: Page, hero: Hero): Promise<void> {
   await page.goto('/?debug=1');
   await page.getByRole('button', { name: '開始爬塔' }).click();
-  const pick = hero === 'echoMage' ? /選擇共鳴武者/ : /選擇珠算武者/;
+  const pick = hero === 'echoMage' ? /選擇共鳴武者/ : /選擇數星人/;
   await page.getByRole('button', { name: pick }).click();
   await expect(page.locator('.map-stage')).toBeVisible();
   const fold = page.locator('.debug-panel .debug-head .debug-btn-icon');

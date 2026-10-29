@@ -176,7 +176,7 @@ export function resolveCastFizzle(state: CombatState, _def: CardDef): void {
   if (state.eraserReady && state.fizzleBeads > 0) {
     state.eraserReady = false;
     addBeads(state, state.fizzleBeads);
-    state.log.push(`橡皮擦：撥 ${state.fizzleBeads} 珠`);
+    state.log.push(`橡皮擦：數 ${state.fizzleBeads} 顆星`);
     if (livingEnemies(state).length === 0) {
       state.status = 'won';
       state.log.push('怪物都變成音符了！');

@@ -147,7 +147,7 @@ export function createCombat(
   }
   if (rules.beadsEnabled && mods.startBeads > 0) {
     addBeads(state, mods.startBeads);
-    state.log.push(`算珠袋：撥 ${mods.startBeads} 珠`);
+    state.log.push(`星星袋：數 ${mods.startBeads} 顆星`);
   }
   drawCards(state, DRAW_PER_TURN);
   if (mods.startDraw > 0) {
@@ -215,7 +215,7 @@ export function endTurn(state: CombatState): CombatState['status'] {
   state.stageFrightUsed = false;
   if (state.rules?.beadsEnabled && state.activePowerIds.includes('M019')) {
     addBeads(state, TURN_START_BEADS);
-    state.log.push(`撥算如飛：撥 ${TURN_START_BEADS} 珠`);
+    state.log.push(`數星如飛：數 ${TURN_START_BEADS} 顆星`);
     if (livingEnemies(state).length === 0) {
       state.status = 'won';
       state.log.push('怪物都變成音符了！');

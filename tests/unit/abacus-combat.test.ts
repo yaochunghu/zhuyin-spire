@@ -81,8 +81,8 @@ function mathPrompt(answer = '4'): CastingPrompt {
   };
 }
 
-describe('珠算武者 combat', () => {
-  it('turns 10 beads into one 十串 and lets 木珠串 ignore Block and 易傷', () => {
+describe('數星人 combat', () => {
+  it('turns 10 stars into one 星座 and lets 小星盤 ignore Block and 易傷', () => {
     const combat = fight('ab_m001', getRelic('woodBeads'), ['slime', 'bat']);
     const [first, second] = combat.enemies;
     second!.block = 9;
@@ -99,7 +99,7 @@ describe('珠算武者 combat', () => {
     expect(first!.hp).toBe(80);
   });
 
-  it('keeps firing 湊十 at the 十串 cap and skips damage when nobody is alive', () => {
+  it('keeps firing 湊十 at the 星座 cap and skips damage when nobody is alive', () => {
     const combat = fight('ab_m001', getRelic('woodBeads'));
     combat.tens = 9;
     const before = combat.enemies[0]!.hp;
@@ -227,7 +227,7 @@ describe('珠算武者 combat', () => {
     expect(combat.mathMissStreak).toBe(1);
   });
 
-  it('spends 十串 only when the card says so, and the third cast counts itself', () => {
+  it('spends 星座 only when the card says so, and the third cast counts itself', () => {
     const palm = fight('ab_m003');
     palm.tens = 1;
     play(palm);
@@ -254,7 +254,7 @@ describe('珠算武者 combat', () => {
     expect(third.enemies[0]!.hp).toBe(80 - 4 - 4 - 8);
   });
 
-  it('primes 比大小 from the shown intent and installs 撥算如飛 for the next turn', () => {
+  it('primes 比大小 from the shown intent and installs 數星如飛 for the next turn', () => {
     const compare = fight('ab_m015', null, 'slime');
     compare.block = 0;
     play(compare);

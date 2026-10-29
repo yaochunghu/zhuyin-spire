@@ -73,9 +73,9 @@ export const CHARACTERS = {
     id: 'abacusFist',
     status: 'playable',
     emoji: '🧮',
-    name: '珠算武者',
+    name: '數星人',
     title: '數清來招，湊十出拳',
-    theme: '每一招都撥動算珠；湊滿十顆變成「十串」，再一口氣放出去。',
+    theme: '每一招都數一顆星；湊滿十顆，點亮一個「星座」，再一口氣放出去。',
     teachingNote: '一年級數學：數數、十的合成與分解、二十以內加減、比大小、第幾、時鐘、日期與錢幣。答題沒有時間限制。',
     starterDeckIds: [...ABACUS_STARTER_DECK_IDS],
     starterSummary: [

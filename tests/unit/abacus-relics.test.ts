@@ -162,7 +162,7 @@ describe('per-character relic pools', () => {
     expect(parseSnapshot(legacy)).toBeNull();
   });
 
-  it('starts 珠算武者 with 木珠串 and skips the 注音 tutorial', () => {
+  it('starts 數星人 with 小星盤 and skips the 注音 tutorial', () => {
     const echo = createNewRun();
     startRun(echo);
     echo.runMap = relicTestMap();
@@ -180,11 +180,24 @@ describe('per-character relic pools', () => {
     state.visitedIds = [];
     expect(isTutorialEligible(state, node!)).toBe(false);
     expect(state.relicIds).toEqual(['woodBeads']);
+    expect(getPlayableCharacter('abacusFist').name).toBe('數星人');
+    expect(getPlayableCharacter('abacusFist').title).toBe('數清來招，湊十出拳');
+    expect(getRelic('woodBeads').id).toBe('woodBeads');
+    expect(getRelic('woodBeads').emoji).toBe('🌟');
+    expect(getRelic('woodBeads').name).toBe('小星盤');
+    expect(getRelic('beadPouch').id).toBe('beadPouch');
+    expect(getRelic('beadPouch').emoji).toBe('✨');
+    expect(getRelic('beadPouch').name).toBe('星星袋');
+    expect(getRelic('beadPouch').blurb).toBe('每場戰鬥開始數 4 顆星');
+    expect(getRelic('eraser').blurb).toBe('每場戰鬥第一次法術飄走時，數 2 顆星');
+    expect(getRelic('eraser').adultNote).toBe(
+      '再算一次的第一次答錯不算。法術消散才數星，而且一場只有一次。故意答錯仍然少一張牌和能量。',
+    );
     expect(getPlayableCharacter('abacusFist').cardPoolIds).toHaveLength(27);
     expect(getPlayableCharacter('abacusFist').starterDeckIds).toEqual([...ABACUS_STARTER_DECK_IDS]);
   });
 
-  it('keeps 念錯 and 拼對 for 共鳴武者 and says 算錯 and 算對 for 珠算武者', () => {
+  it('keeps 念錯 and 拼對 for 共鳴武者 and says 算錯 and 算對 for 數星人', () => {
     const metronome = getRelic('pocketMetronome');
     const box = getRelic('moonMusicBox');
     expect(relicPlayerCopy(metronome, 'zhuyin').adultNote).toContain('念錯');

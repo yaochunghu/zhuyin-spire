@@ -670,7 +670,7 @@ function fireMakeTen(state: CombatState, preferredId?: string): void {
   const target = makeTenEnemy(state, preferredId);
   if (target && state.makeTenDirectDamage > 0) {
     const dealt = dealTrueDamage(target, state.makeTenDirectDamage);
-    if (dealt > 0) state.log.push(`木珠串：直傷 ${dealt}`);
+    if (dealt > 0) state.log.push(`小星盤：直傷 ${dealt}`);
   }
   if (state.tenBellReady && state.tenBellEnergy > 0) {
     state.tenBellReady = false;
@@ -681,12 +681,12 @@ function fireMakeTen(state: CombatState, preferredId?: string): void {
     if (powerId === 'M018') {
       const block = state.activePowerLevels.M018 === 1 ? BEAD_ARRAY_BLOCK_PLUS : BEAD_ARRAY_BLOCK;
       state.block += block;
-      state.log.push(`珠串陣：護盾 +${block}`);
+      state.log.push(`星座陣：護盾 +${block}`);
     } else if (powerId === 'M023') {
       const amount = state.activePowerLevels.M023 === 1 ? BEAD_BURST_DAMAGE_PLUS : BEAD_BURST_DAMAGE;
       for (const enemy of livingEnemies(state)) {
         const dealt = dealTrueDamage(enemy, amount);
-        if (dealt > 0) state.log.push(`珠落玉盤：直傷 ${dealt}`);
+        if (dealt > 0) state.log.push(`流星雨：直傷 ${dealt}`);
       }
     }
   }
@@ -706,7 +706,7 @@ export function addBeads(state: CombatState, amount: number, preferredEnemyId?: 
     fired += 1;
   }
   state.beadsMadeLastAdd = fired;
-  if (fired > 0) state.log.push(`湊十 ×${fired}（算珠 ${state.beads}，十串 ${state.tens}）`);
+  if (fired > 0) state.log.push(`湊十 ×${fired}（星星 ${state.beads}，星座 ${state.tens}）`);
   return fired;
 }
 

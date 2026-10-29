@@ -220,7 +220,7 @@ describe('math prompt generation', () => {
     }
   });
 
-  it('asks grade 2 only at tier 5, and only 倍數連拳 uses the blank', () => {
+  it('asks grade 2 only at tier 5, and only 倍數連閃 uses the blank', () => {
     for (const family of ['g2Column', 'g2Times', 'g2Cm', 'g2ClockMin', 'g2Money1000', 'g2Missing']) {
       for (let seed = 1; seed <= 12; seed += 1) {
         const draft = ask(family, 5, seed * 31);
@@ -490,7 +490,7 @@ describe('math provider', () => {
     }
   });
 
-  it('lifts 倍數連拳 to tier 5 only when 二年級 is on', () => {
+  it('lifts 倍數連閃 to tier 5 only when 二年級 is on', () => {
     const card = getCard('ab_m025');
     const off = getCardCastBinding(card, 'math', DEFAULT_MATH_PREFS);
     expect(off.lessonFamilyId).toBe('add100@4');
@@ -625,9 +625,9 @@ describe('math cast copy', () => {
     }).body).not.toContain('再算一次');
     expect(coachForScreen('castCheck').body).toContain('拼出整個音');
 
-    expect(cardAriaLabel(getCard('ab_m001'))).toBe('撥珠拳');
-    expect(cardAriaLabel(getCard('ab_m002'))).toBe('算珠盾');
-    expect(cardAriaLabel(getCard('ab_m003'))).toBe('十全掌');
+    expect(cardAriaLabel(getCard('ab_m001'))).toBe('摘星擊');
+    expect(cardAriaLabel(getCard('ab_m002'))).toBe('星光盾');
+    expect(cardAriaLabel(getCard('ab_m003'))).toBe('十星閃');
     expect(cardAriaLabel(getCard('bo'))).toBe('注音 ㄅ');
   });
 });

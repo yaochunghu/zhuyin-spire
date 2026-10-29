@@ -74,9 +74,9 @@ function effectText(effect: EffectDef): string {
     case 'jin':
       return `獲得 ${effect.amount} 勁`;
     case 'beads':
-      return `撥 ${effect.amount} 珠`;
+      return `數 ${effect.amount} 顆星`;
     case 'tens':
-      return `獲得 ${effect.amount} 十串`;
+      return `獲得 ${effect.amount} 星座`;
   }
 }
 
