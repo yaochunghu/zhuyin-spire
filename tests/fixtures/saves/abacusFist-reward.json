@@ -2962,17 +2962,17 @@
   "rewardOptions": [
     {
       "uid": "d11",
-      "defId": "ab_m006",
+      "defId": "ab_m010",
       "upgradeLevel": 0
     },
     {
       "uid": "d12",
-      "defId": "ab_m009",
+      "defId": "ab_m005",
       "upgradeLevel": 0
     },
     {
       "uid": "d13",
-      "defId": "ab_m005",
+      "defId": "ab_m026",
       "upgradeLevel": 0
     }
   ],
@@ -2996,5 +2996,35 @@
   },
   "scoreCommitted": false,
   "castSeed": 1067704970,
-  "castCounter": 5
+  "castCounter": 5,
+  "rng": {
+    "combat": {
+      "seed": 1695214527,
+      "counter": 9
+    },
+    "reward": {
+      "seed": 3787749001,
+      "counter": 8
+    },
+    "shop": {
+      "seed": 1239896380,
+      "counter": 0
+    },
+    "gold": {
+      "seed": 1636273392,
+      "counter": 1
+    },
+    "relic": {
+      "seed": 149909391,
+      "counter": 0
+    },
+    "potion": {
+      "seed": 2266234680,
+      "counter": 1
+    },
+    "upgrade": {
+      "seed": 2073890399,
+      "counter": 3
+    }
+  }
 }

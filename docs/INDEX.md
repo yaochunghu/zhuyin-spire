@@ -66,7 +66,7 @@ are `[0.4.6]` in [CHANGELOG.md](../CHANGELOG.md). The previous release is
 v0.4.5 at `7f7f414` (#73), 2026-10-29 00:42 UTC. Two characters are playable.
 
 - **Stack:** Vite + TypeScript SPA, no backend; localStorage save. Saves stay
-  on version 4. `eventTrack`, `castSeed`, and `castCounter` are optional.
+  on version 4. `eventTrack`, `castSeed`, `castCounter`, and `rng` are optional.
 - **Acts:** 3 × (15 floors × 7 lanes), STS-style path generation. ? rooms in
   every act resolve once into an event, a fight, a shop, or a treasure.
 - **Combat:** modular `src/game/battle/*`, multi-enemy intents, drag-and-drop cards

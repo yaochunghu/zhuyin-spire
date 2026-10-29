@@ -207,6 +207,11 @@ export interface CombatState {
   compareExtraDamage: number;
   status: 'playing' | 'won' | 'lost';
   log: string[];
+  /**
+   * Deck shuffle and reshuffle. A combat built outside a run leaves this
+   * empty and keeps using Math.random.
+   */
+  shuffleRng?: () => number;
   pending: CombatCard | null;
   pendingFx: CombatFx[];
   /**

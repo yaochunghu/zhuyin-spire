@@ -50,6 +50,7 @@ const SNAPSHOT_KEYS = [
   'potionDropChance',
   'potions',
   'relicIds',
+  'rng',
   'rewardOptions',
   'rewardSource',
   'rewardTier',
@@ -207,24 +208,15 @@ describe('seeded choice replay', () => {
     }
   });
 
-  // A brand-new page calls createNewRun() before resumeSavedRun(). createNewRun()
-  // in src/game/state.ts calls createCastSeed() in src/game/castRng.ts, which reads
-  // crypto.getRandomValues. applySnapshot then replaces castSeed, so the saved cast
-  // stream itself is kept, but the discarded draw is still entropy. Combat decks are
-  // shuffled with Math.random in src/game/battle/piles.ts (createCombat), and that
-  // PRNG is not in the checkpoint. Reward cards use pickRewardIds in the same file.
-  // Gold, relics, potions, and upgrade rolls use secureRandomUint32 in src/game/state.ts.
-  // Map generation also uses Math.random (src/data/map.ts generateRunMap); the finished
-  // map is what the save stores. Putting those later rolls on a saved seed would be a
-  // schema change, and saves stay version 4.
-  //
-  // Seed 17665, replayed with mode "boot", stops at "Hand has no playable po" for
-  // 共鳴武者 and "Hand has no playable ab_m003" for 珠算武者. In-session resume
-  // (mode "resume") does not construct another run, so it stays on the original stream.
-  it.skip('a fresh createNewRun boot replays the same hands and later rewards', () => {
+  it('a fresh createNewRun boot replays the same hands and later rewards', () => {
     for (const characterId of CHARACTERS) {
       const log = loadLog(characterId);
-      expect(() => runReplay(log, 'boot')).not.toThrow();
+      expect(log.seed).toBe(17665);
+      const resumed = runReplay(log, 'resume');
+      const booted = runReplay(log, 'boot');
+      expect(booted.traces).toEqual(resumed.traces);
+      expect(booted.prompts).toEqual(resumed.prompts);
+      expect(booted.finalSnapshot).toEqual(resumed.finalSnapshot);
     }
   });
 });
