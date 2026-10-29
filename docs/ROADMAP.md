@@ -5,9 +5,9 @@ The live version, obtainability rules, and next implementation slice live in
 
 ## Shipped on main
 
-`package.json` is 0.4.8. The current GitHub Release is **v0.4.8** (`[0.4.8]`
-in [CHANGELOG.md](../CHANGELOG.md), #77, #79, #81). The previous release is
-v0.4.7 at `a3ebb0e` (#80), 2026-10-29 03:54 UTC. Two characters are playable. Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
+`package.json` is 0.4.9. The current GitHub Release is **v0.4.9** (`[0.4.9]`
+in [CHANGELOG.md](../CHANGELOG.md), #83). The previous release is
+v0.4.8 at `ea6255a` (#82), 2026-10-29 05:46 UTC. Two characters are playable. Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
 
 - Vite + TypeScript SPA; touch-first preschool UI; adult coach strip  
 - Full first-syllable 注音 cast (including 聲調); listen mode (Web Speech zh-TW)  
@@ -79,6 +79,11 @@ v0.4.7 at `a3ebb0e` (#80), 2026-10-29 03:54 UTC. Two characters are playable. Li
   about one single-zero question in ten, never 0 and 0. 問 uses 🙋. Saves stay
   version 4
 - The public README and page description say 一年級 / 5–7 歲 (#79)
+- Kid-safe copy (#83): campfire and map coach say 「休息一下，把心補回來」.
+  Act names are 魔法花園, 燈籠書庫, and 星空觀星台; the summit is 塔頂之心;
+  the last boss is 終焉王. The Act 3 boss headline is 「🏆 爬到塔頂了！」;
+  earlier bosses say 「🏆 過關！」. Math listen speech reads the question as
+  words. Saves stay version 4
 - Debug-only child-error model for both characters (#71). A normal production
   bundle does not contain it
 
