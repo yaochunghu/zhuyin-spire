@@ -3263,6 +3263,40 @@ html[data-screen='combat'] .global-control-btn {
   }
 }
 
+/* 568×320: opening 家長協助 pushed 「語音暫時無法播放…」 to y 295–328,
+   past the viewport. Tighter chrome keeps the question, the three answers,
+   家長協助, and the note on screen. The answers stay 48px. */
+@media (max-height: 340px) and (orientation: landscape) {
+  .combat-casting > .combat-stage > .cast-dock.cast-math {
+    padding: 2px 6px;
+    gap: 2px;
+  }
+
+  .combat-casting .cast-dock.cast-math .mana-condition {
+    min-height: 24px;
+    padding: 0 6px;
+  }
+
+  .combat-casting .cast-dock.cast-math .cast-layout {
+    gap: 2px;
+  }
+
+  .combat-casting .cast-dock.cast-math .cue-box {
+    padding: 1px 6px;
+    border-width: 3px;
+  }
+
+  .combat-casting .cast-dock.cast-math .spell-hint-reveal {
+    padding: 0 6px;
+  }
+
+  .combat-casting .cast-dock.cast-math .speech-fallback-note {
+    padding: 1px 6px;
+    font-size: 0.68rem;
+    line-height: 1.15;
+  }
+}
+
 /*
  * 共鳴武者 注音 dock: the panes dissolve into one grid so the word, coach,
  * and speech note sit on the left and every slot, key, and control sits on
@@ -3619,16 +3653,25 @@ html[data-screen='combat'] .global-control-btn {
   }
 
   /* The lesson banner is centered across the stage, so on a short phone it
-     sits on the cast dock. Park it in the battlefield column while a cast is open. */
+     sits on the cast dock. Park it in the battlefield column, under the HUD,
+     while a cast is open. top:6px with z-index 4 painted it behind the HUD
+     (z-index 12): about 20% showed at 640×360 and none at 844×390. */
   .tutorial-active.combat-casting > .combat-stage > .tutorial-guide {
-    top: 6px;
-    left: 6px;
+    position: relative;
+    grid-column: 1;
+    grid-row: 2;
+    align-self: start;
+    justify-self: stretch;
+    z-index: 6;
+    top: auto;
+    left: auto;
     right: auto;
-    width: calc(100% - min(70%, 500px) - 18px);
+    width: auto;
     max-width: none;
+    height: auto;
     min-height: 0;
+    margin: 4px 6px;
     transform: none;
-    z-index: 4;
     padding: 4px 8px;
     overflow: hidden;
   }
