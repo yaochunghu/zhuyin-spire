@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { CAST_FIT_VIEWPORTS, runCastStateMatrix } from './castFitMatrix';
 
 // The 共鳴武者 注音 dock must show a readable word inside its box, every slot,
 // key, and control as a separate full-size tap target on screen without
@@ -588,4 +589,10 @@ test('tutorial cast keeps the lesson banner visible and clear of slots', async (
   expect(reveal.text.length).toBeGreaterThan(0);
   expect(reveal.overlap, 'lesson banner covers the hinted answer').toBe(false);
   expect(reveal.shown, 'lesson banner hides the hinted answer').toBe(true);
+});
+
+test('combat, event, shrine, and practice casts fit in every UI state', async ({ page }, testInfo) => {
+  test.skip(!CAST_FIT_VIEWPORTS.includes(testInfo.project.name as (typeof CAST_FIT_VIEWPORTS)[number]));
+  test.setTimeout(90_000);
+  await runCastStateMatrix(page, 'echoMage');
 });
