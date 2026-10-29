@@ -533,7 +533,7 @@ export const EVENTS: EventDef[] = [
     title: '注音神龕',
     icon: '🔤',
     presentation: '神龕想聽三題注音。',
-    rationale: '練習三題都拼完後升級一張牌。每錯一題少一點心，錯到沒有心會結束這趟。許願只補心。',
+    rationale: '練習三題都拼完後升級一張牌。每錯一題少一點心，錯到沒有心，這趟就先休息。許願只補心。',
     eligibility: [
       [{ op: 'upgradeable', count: 1 }, { op: 'hpAtLeast', amount: 10 }],
       [{ op: 'damaged' }],
@@ -711,6 +711,19 @@ export function sharedEvents(): EventDef[] {
   return EVENTS.filter((event) => event.act === 'shared');
 }
 
+/**
+ * Child-facing words for a missing-heart percent. The heal still uses the percent.
+ * 100 or more is full, 50–99 is large, and below 50 is small.
+ */
+export function missingHeartChip(percent: number): string {
+  if (percent >= 100) return '心補滿';
+  if (percent >= 50) return '補很多心';
+  return '補一點心';
+}
+
+/** Chip and result line. The stored percent still changes the next fights. */
+export const STURDIER_MONSTERS_LINE = '接下來幾場，怪物比較壯';
+
 function typeLabel(type: CardTypeGroup): string {
   if (type === 'attack') return '攻擊';
   if (type === 'skill') return '技能';
@@ -737,7 +750,7 @@ export function effectChips(effects: readonly EventEffect[], quizVerb: '拼' | '
         chips.push('❤️回滿');
         break;
       case 'healMissingPercent':
-        chips.push(`缺的心補 ${effect.percent}%`);
+        chips.push(missingHeartChip(effect.percent));
         break;
       case 'gainMaxHp':
         chips.push(`+${effect.amount}最大❤️`);
@@ -795,7 +808,7 @@ export function effectChips(effects: readonly EventEffect[], quizVerb: '拼' | '
         chips.push(`Boss 第1回合 +${effect.amount}⚡`);
         break;
       case 'futureNormalHp':
-        chips.push(`接下來 ${effect.fights} 場怪 +${effect.percent}% 血`);
+        chips.push(STURDIER_MONSTERS_LINE);
         break;
       case 'shrine':
         chips.push(`${quizVerb} ${effect.questions} 題`);

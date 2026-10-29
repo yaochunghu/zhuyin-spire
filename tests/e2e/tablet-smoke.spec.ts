@@ -64,7 +64,7 @@ async function defeatMonsterWithCast(page: Page) {
   await expect(page.locator('.cast-screen')).toHaveCount(0);
   await expect(page.locator('.enemy-slot.enemy-just-defeated')).toBeVisible({ timeout: 8_000 });
   await expect(page.locator('.outcome-overlay.outcome-kill')).toBeVisible({ timeout: 8_000 });
-  await expect(page.locator('.outcome-overlay .outcome-caption')).toContainText('打倒了');
+  await expect(page.locator('.outcome-overlay .outcome-caption')).toContainText('變成星星飛走了');
 }
 
 async function expectCommandDeckOnViewportBottom(page: Page, slack = 8) {

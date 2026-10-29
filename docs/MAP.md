@@ -12,6 +12,14 @@
 Primary file: `src/data/map.ts`  
 Render: `src/ui/mapView.ts`
 
+Child-facing place names live in `ACT_PLACE_NAMES` and `TOWER_SUMMIT_NAME`.
+Map titles, the combat place line, tower progress, and act art labels all read them.
+
+- Act 1: 魔法花園
+- Act 2: 燈籠書庫
+- Act 3: 星空觀星台
+- Summit: 塔頂之心
+
 ---
 
 ## Generation pipeline

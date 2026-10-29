@@ -81,7 +81,7 @@ export function playOutcomeOverlay(
 
     const caption = document.createElement('div');
     caption.className = 'outcome-caption kid-prompt';
-    caption.textContent = opts.isBoss ? '🏆 登頂！' : opts.isElite ? '💪 菁英倒下！' : '✨ 打倒了！';
+    caption.textContent = opts.isBoss ? '🏆 爬到塔頂了！' : opts.isElite ? '💪 菁英暈頭轉向！' : '✨ 變成星星飛走了！';
 
     stage.appendChild(monster);
     stage.appendChild(poof);

@@ -174,7 +174,7 @@ export function endTurn(state: CombatState): CombatState['status'] {
   if (state.heroHp <= 0) {
     state.status = 'lost';
     state.phase = 'resolve';
-    state.log.push('你倒下了…');
+    state.log.push('你暈倒了，休息一下…');
     return state.status;
   }
 
@@ -216,7 +216,7 @@ export function endTurn(state: CombatState): CombatState['status'] {
     state.log.push(`撥算如飛：撥 ${TURN_START_BEADS} 珠`);
     if (livingEnemies(state).length === 0) {
       state.status = 'won';
-      state.log.push('敵人全部倒下了！');
+      state.log.push('怪物都變成音符了！');
       return state.status;
     }
   }

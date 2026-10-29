@@ -212,7 +212,7 @@ test('chests, elites, and bosses drop relics, and a badge opens the inspect dial
   const eliteId = await eliteBadge.getAttribute('data-relic-id');
   expect(POOL_IDS).toContain(eliteId);
   expect(eliteId).not.toBe(chestId);
-  await page.getByRole('button', { name: /跳過/ }).click();
+  await page.getByRole('button', { name: /先不要/ }).click();
   await expect(page.locator('.map-stage')).toBeVisible();
 
   const badges = page.locator('.map-relic-badges .relic-badge');

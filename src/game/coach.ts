@@ -185,8 +185,8 @@ export function coachForScreen(
       };
     case 'defeat':
       return {
-        title: '失敗了',
-        body: '生命歸零。鼓勵再試。三幕較長，記得休息營火。',
+        title: '休息一下',
+        body: '小武者暈倒了，鼓勵孩子再試一次。三幕比較長，記得在營火休息。',
       };
     case 'victory':
       return {

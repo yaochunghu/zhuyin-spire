@@ -99,7 +99,7 @@ export const POTIONS: Record<string, PotionDef> = {
     id: 'chorusBurst',
     emoji: '🎆',
     name: '合唱爆泡',
-    blurb: '每隻活著的怪物受到 4 點傷害',
+    blurb: '每隻還在場上的怪物受到 4 點傷害',
     adultNote: '每隻怪物各自用護盾抵擋。這不是攻擊，也不是直傷。只有一隻怪時，比音波小石少 2 點。',
     where: 'combat',
     target: 'none',

@@ -33,6 +33,18 @@ export type RewardTier = 'normal' | 'elite';
 export type CastStage = 'early' | 'mid' | 'elite' | 'boss';
 export type ActNumber = 1 | 2 | 3;
 
+/** Child-facing place names. Map titles, combat, tower progress, and art labels read these. */
+export const ACT_PLACE_NAMES = ['魔法花園', '燈籠書庫', '星空觀星台'] as const;
+
+/** The top of the tower, after the three acts. */
+export const TOWER_SUMMIT_NAME = '塔頂之心';
+
+const ACT_ORDINAL = ['一', '二', '三'] as const;
+
+export function actTitle(act: ActNumber): string {
+  return `第${ACT_ORDINAL[act - 1]}幕 · ${ACT_PLACE_NAMES[act - 1]}`;
+}
+
 export interface MapNode {
   id: string;
   act: ActNumber;
@@ -93,19 +105,19 @@ const ACT_META: Record<
   { title: string; emoji: string; middleRows: number; cols: number }
 > = {
   1: {
-    title: '第一幕 · 入門塔',
+    title: actTitle(1),
     emoji: '🌱',
     middleRows: CLIMB_ROWS,
     cols: MAP_COLS,
   },
   2: {
-    title: '第二幕 · 中層',
+    title: actTitle(2),
     emoji: '🔥',
     middleRows: CLIMB_ROWS,
     cols: MAP_COLS,
   },
   3: {
-    title: '第三幕 · 塔頂',
+    title: actTitle(3),
     emoji: '👑',
     middleRows: CLIMB_ROWS,
     cols: MAP_COLS,
