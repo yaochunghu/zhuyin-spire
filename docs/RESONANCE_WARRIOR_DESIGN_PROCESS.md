@@ -9,7 +9,7 @@
 **Fantasy:** 共鳴武者是一名以聲辨位的年幼武者。他先讀懂敵人的節奏，
 以防守化去力道，再抓住破綻，用反覆練熟的基本招式完成反擊。
 
-**Player promise:** 看意圖、攻守換拍、製造易傷窗口、把成功防守轉成進攻資源，
+**Player promise:** 看意圖、攻守換拍、製造易傷空檔、把成功防守轉成進攻資源，
 並讓看似弱小的基礎攻擊在長戰中成為可靠的核心。
 
 **Starter relic — 初心音叉:** the first resolved Attack hit each player turn
