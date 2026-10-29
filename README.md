@@ -3,17 +3,17 @@
 A browser deckbuilder for **first graders (ages 5–7)** inspired by *Slay the Spire*: climb a colorful tower with **注音符號** spell cards.  
 Recognize or **listen** for the correct 注音 to cast. **Wrong answer = fizzle** (energy spent). **HP → 0 ends the run.**
 
-**Version:** 0.4.10 in `package.json` · **Stack:** Vite + TypeScript (no backend)
+**Version:** 0.4.11 in `package.json` · **Stack:** Vite + TypeScript (no backend)
 
-The current GitHub Release is **v0.4.10**: the lesson banner under the HUD
-on tall and desktop screens, the coach off the keys at 360×740, the speech
-note kept after 家長協助, and scrolling coach text at 568×320 (#85),
-`[0.4.10]` in
-[CHANGELOG.md](CHANGELOG.md). The previous release is v0.4.9 at `7ab0827`
-(#84), 2026-10-29 10:51 UTC.
-Two characters are playable: 共鳴武者 and 珠算武者.
-Player notes: [RELEASE_NOTES_v0.4.10.md](RELEASE_NOTES_v0.4.10.md).
-Previous notes: [RELEASE_NOTES_v0.4.9.md](RELEASE_NOTES_v0.4.9.md).
+The current GitHub Release is **v0.4.11**: the math hero is shown as 數星人,
+with 星星 / 星座 wording, the pick-screen title 「數清來招，湊十出拳」 kept,
+the theme line about counting stars into a 星座, and updated 橡皮擦 and
+星星袋 text (#87), `[0.4.11]` in
+[CHANGELOG.md](CHANGELOG.md). The previous release is v0.4.10 at `808d08d`
+(#86), 2026-10-29 12:53 UTC.
+Two characters are playable: 共鳴武者 and 數星人.
+Player notes: [RELEASE_NOTES_v0.4.11.md](RELEASE_NOTES_v0.4.11.md).
+Previous notes: [RELEASE_NOTES_v0.4.10.md](RELEASE_NOTES_v0.4.10.md).
 
 **Play online:** [https://yaochunghu.github.io/zhuyin-spire/](https://yaochunghu.github.io/zhuyin-spire/)
 
@@ -97,7 +97,7 @@ The test for the child is recognizing / listening for 注音 — not reading Chi
 ## How to play (short)
 
 1. Adult opens the game; child taps **▶️** to climb, or **📚** for **practice** (no HP).
-2. Pick a character, which sets the starting deck, deck theme, and starting relic. **共鳴武者** casts 注音. **珠算武者** answers three big number choices.
+2. Pick a character, which sets the starting deck, deck theme, and starting relic. **共鳴武者** casts 注音. **數星人** answers three big number choices.
 3. **Map climbs upward** (StS-style web): lit rooms are branches. **3 acts**, each with a boss. The last boss is shown as 終焉王. **?** rooms appear in every act. **🃏** shows the deck.
 4. In combat, play a card (tap or **drag** onto enemy / shield). Cast check — spell the **full first syllable**:
    - 聲母 + 韻母 + **聲調**（ˊˇˋ˙；一聲 usually unmarked）
@@ -162,7 +162,7 @@ CHANGELOG.md        version history
 | [docs/BALANCE.md](docs/BALANCE.md) | HP, gold, rest, hand rules |
 | [docs/DEBUG.md](docs/DEBUG.md) | Skip cast, jump fights, cheats for testing |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | What’s done / next |
-| [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) | v0.4.10 current release, and what comes next |
+| [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) | v0.4.11 current release, and what comes next |
 
 ---
 
@@ -185,7 +185,7 @@ This folder is its **own git repository** (`zhuyin-spire/.git`).
 
 - Do **not** commit the game through a parent home-directory repo (e.g. unrelated remotes).
 - From this directory: `git status`, `git add`, `git commit` as usual.
-- Current release tag: `v0.4.10` (see [CHANGELOG.md](CHANGELOG.md) `[0.4.10]` and [RELEASE_NOTES_v0.4.10.md](RELEASE_NOTES_v0.4.10.md)). `package.json` is `0.4.10`. Previous release: `v0.4.9` at `7ab0827` (#84), 2026-10-29 10:51 UTC. Two characters are playable.
+- Current release tag: `v0.4.11` (see [CHANGELOG.md](CHANGELOG.md) `[0.4.11]` and [RELEASE_NOTES_v0.4.11.md](RELEASE_NOTES_v0.4.11.md)). `package.json` is `0.4.11`. Previous release: `v0.4.10` at `808d08d` (#86), 2026-10-29 12:53 UTC. Two characters are playable.
 - Dedicated remote: `https://github.com/yaochunghu/zhuyin-spire.git`.
 
 ```bash

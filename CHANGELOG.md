@@ -8,11 +8,17 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
-### 數星人 names
+---
 
-- Kid-facing names for the math hero move from beads and fists to stars. The class is 數星人. Cards, the 星星 / 星座 counters, relic names, and battle-log lines use the new words. Ids stay `abacusFist`, `ab_m001`–`ab_m027`, `woodBeads`, `beadPouch`, `beads`, and `tens`, so a version-4 save still loads
-- The pick-screen title stays 「數清來招，湊十出拳」. The theme line now talks about counting stars and lighting a 星座
-- 橡皮擦 tells the child that the first fizzled spell counts 2 stars. The parent note still explains that a deliberate miss costs a card and energy
+## [0.4.11] — 2026-10-29
+
+### 數星人 names (#87)
+
+- Kid-facing names for the math hero move from beads and fists to stars. The class is 數星人 (was 珠算武者). Cards, the 星星 / 星座 counters, relic names, and battle-log lines use the new words. Ids stay `abacusFist`, `ab_m001`–`ab_m027`, `woodBeads`, `beadPouch`, `beads`, and `tens`, so a version-4 save still loads
+- The pick-screen title stays 「數清來招，湊十出拳」. The theme line is 「每一招都數星星；湊滿十顆變成「星座」，再一口氣放出去。」
+- 橡皮擦 says the first spell that drifts away in a fight counts 2 stars. The parent note still explains that a deliberate miss costs a card and energy
+- 星星袋 counts 4 stars at the start of a fight. The parent note says those stars are their own count, apart from 湊十訣, and uses 同一次
+- Saves stay version 4
 
 ---
 
@@ -472,6 +478,7 @@ Baseline snapshot of the preschool Spire + 注音 game, documented for long-term
 - Standalone git repository for the game folder (tag `v0.1.0`)
 
 [Unreleased]: #unreleased
+[0.4.11]: #0411--2026-10-29
 [0.4.10]: #0410--2026-10-29
 [0.4.9]: #049--2026-10-29
 [0.4.8]: #048--2026-10-29
