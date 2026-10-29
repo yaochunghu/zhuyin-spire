@@ -285,11 +285,11 @@ describe('math prompt generation', () => {
       let index = 0;
       return () => draws[index++] ?? 0;
     };
-    const zeroPair = generateMathQuestion('make10', 2, scripted([0, 0, 0]));
-    expect(zeroPair.question).toBe('0 和 1 合起來是幾？');
-    expect(zeroPair.question).not.toContain('0 和 0');
-    expect(zeroPair.answer).toBe('1');
-    expect(zeroPair.choices.map(Number).sort((a, b) => a - b)).toEqual([0, 1, 2]);
+    const singleZeroWithOne = generateMathQuestion('make10', 2, scripted([0, 0, 0]));
+    expect(singleZeroWithOne.question, '0 和 1 is a legal single-zero question').toBe('0 和 1 合起來是幾？');
+    expect(singleZeroWithOne.question).not.toContain('0 和 0');
+    expect(singleZeroWithOne.answer).toBe('1');
+    expect(singleZeroWithOne.choices.map(Number).sort((a, b) => a - b)).toEqual([0, 1, 2]);
 
     const oneZero = generateMathQuestion('make10', 2, scripted([0, 0.6, 0]));
     expect(oneZero.question).toBe('0 和 7 合起來是幾？');
