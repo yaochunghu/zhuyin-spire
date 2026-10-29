@@ -4035,8 +4035,9 @@ html[data-screen='combat'] .global-control-btn {
   margin-bottom: 4px;
 }
 
-/* A short phone must show the question, the answer, and 繼續 together. */
-@media (max-height: 520px) {
+/* A short window must show the question, the answer, and 繼續 together.
+   At 1024×600 the docked card's 繼續 sat at y 551–615, past the fold. */
+@media (max-height: 640px) {
   .spell-reveal-overlay.spell-reveal-docked {
     align-items: center;
     padding: 8px;

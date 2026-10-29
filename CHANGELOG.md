@@ -14,6 +14,17 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ---
 
+## [0.4.7] — 2026-10-29
+
+### Cast fit (#78)
+
+- End-to-end checks walk combat, an event fight, the shrine, and practice through the default, hinted, speech-fallback, retry, and correction-card states at 1280×720, 1024×768, 1024×600, 360×740, 640×360, 844×390, 390×844, and 568×320. ✓ (繼續 on the correction card), every answer key, and every hint control stay fully inside the viewport and receive the tap. Keys stay at least 48px
+- The docked correction card uses the compact layout up to 640px height, so 繼續 stays on screen with the question and the answer at 1024×600. 1280×720 and 1024×768 stay on the large card
+- The same matrix guards the 640×360 hinted 注音 header. The revealed answer stays on the mana line, so it does not cover the keys or 送出
+- Saves stay version 4. Game rules are unchanged
+
+---
+
 ## [0.4.6] — 2026-10-29
 
 ### Playtest telemetry schema v3 (#74)
@@ -27,6 +38,14 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 - During the first tutorial fight, the lesson banner stays in the battlefield column while a cast is open and sits under the combat HUD, so the whole banner is readable at 640×360, 844×390, and 568×320. The cast slots and the hinted answer stay clear
 - At 568×320, the math dock's 「語音暫時無法播放…」 note fits on screen together with the question, the three answers, and 家長協助
+
+### Content
+
+- 余, 于, and 閑 were corrected to 餘, 於, and 閒
+- Shape prompts use 球 ⚽, 魔術方塊的一面 🟦, and 書本 📘. 三角飯糰 stays 🍙
+- Make-10 tier 2 asks 「N 和 M 合起來是幾？」. By default both numbers are at least 1, so that total is 2–10. About one question in ten is a single zero, 「0 和 N」 or 「N 和 0」, with N from 1 to 10. Never 0 and 0. The other two choices sit near that total, each distinct and inside 0–10. Tier 1 still asks 「10 可以分成 N 和幾？」
+- 問 uses 🙋. 為什麼 stays ❓
+- Saves stay version 4
 
 ---
 
@@ -413,6 +432,7 @@ Baseline snapshot of the preschool Spire + 注音 game, documented for long-term
 - Standalone git repository for the game folder (tag `v0.1.0`)
 
 [Unreleased]: #unreleased
+[0.4.7]: #047--2026-10-29
 [0.4.6]: #046--2026-10-29
 [0.4.5]: #045--2026-10-29
 [0.4.4]: #044--2026-10-28
