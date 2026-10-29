@@ -1,6 +1,6 @@
 # 注音之塔 · Zhuyin Spire
 
-A **preschool** browser deckbuilder inspired by *Slay the Spire*: climb a colorful tower with **注音符號** spell cards.  
+A browser deckbuilder for **first graders (ages 5–7)** inspired by *Slay the Spire*: climb a colorful tower with **注音符號** spell cards.  
 Recognize or **listen** for the correct 注音 to cast. **Wrong answer = fizzle** (energy spent). **HP → 0 ends the run.**
 
 **Version:** 0.4.6 in `package.json` · **Stack:** Vite + TypeScript (no backend)
