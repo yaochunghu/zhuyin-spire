@@ -1,13 +1,21 @@
 /**
- * Procedural sound design (Web Audio API) — no asset files.
+ * Sound design (Web Audio API) — procedural tones plus two small bundled clips.
  *
  * Layers:
- * - SFX: short one-shots with distinct envelopes
+ * - SFX: short one-shots with distinct envelopes. Almost all are synthesised
+ *   here; `ding` (星星 gain) and `gold` play small same-origin MP3 clips from
+ *   src/assets/audio/sfx/ through masterGain, and fall back to the same sound
+ *   synthesised from its recipe if the file cannot be loaded or decoded.
+ *   PLACEHOLDER audio: both clips are procedural, original, and pending final
+ *   sound design.
  * - No continuous background music (SFX + speech only)
  * - Speech: handled separately in speech.ts
  *
  * Volume: 0 | 0.45 | 1  (cycle via UI)
  */
+
+const DING_URL = new URL('../assets/audio/sfx/ding_A.mp3', import.meta.url).href;
+const GOLD_URL = new URL('../assets/audio/sfx/gold_A.mp3', import.meta.url).href;
 
 let ctx: AudioContext | null = null;
 let masterGain: GainNode | null = null;
@@ -90,9 +98,141 @@ async function resume(): Promise<AudioContext | null> {
   }
 }
 
+type ClipKey = 'ding' | 'gold';
+
+const CLIP_URLS: Record<ClipKey, string> = { ding: DING_URL, gold: GOLD_URL };
+/** Resolves to the decoded clip, or null once loading/decoding has failed (never rejects). */
+const clipLoads = new Map<ClipKey, Promise<AudioBuffer | null>>();
+
+function loadClip(c: AudioContext, key: ClipKey): Promise<AudioBuffer | null> {
+  let load = clipLoads.get(key);
+  if (!load) {
+    load = (async () => {
+      try {
+        if (typeof fetch !== 'function') return null;
+        const res = await fetch(CLIP_URLS[key]);
+        if (!res.ok) return null;
+        return (await c.decodeAudioData(await res.arrayBuffer())) ?? null;
+      } catch {
+        return null;
+      }
+    })();
+    clipLoads.set(key, load);
+  }
+  return load;
+}
+
+/** Play a decoded clip at unity gain through masterGain, else the procedural recipe. */
+function playClip(key: ClipKey, fallback: (c: AudioContext, dest: AudioNode) => void): void {
+  if (volume === 0) return;
+  void resume().then(async (c) => {
+    try {
+      if (!c || !masterGain) return;
+      const buffer = await loadClip(c, key);
+      if (volume === 0 || !masterGain) return;
+      if (!buffer) {
+        fallback(c, masterGain);
+        return;
+      }
+      const src = c.createBufferSource();
+      src.buffer = buffer;
+      src.connect(masterGain);
+      src.start();
+    } catch {
+      /* audio must never throw into the UI */
+    }
+  });
+}
+
 /** Warm audio on first user gesture */
 export function warmAudio(): void {
-  void resume();
+  void resume().then((c) => {
+    if (!c) return;
+    void loadClip(c, 'ding');
+    void loadClip(c, 'gold');
+  });
+}
+
+/**
+ * PLACEHOLDER procedural fallback for ding_A.mp3 (叮！ star-bead glass bell).
+ * Ported from the sfx_ding manifest recipe, variant A; level is for masterGain = 1.
+ */
+function playDingFallback(c: BaseAudioContext, dest: AudioNode): void {
+  const t0 = c.currentTime;
+  const DUR = 0.42;
+  const FADE = 0.03;
+  const LEVEL = 0.19953;
+  const lp = c.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = 6000;
+  lp.Q.value = -3.01; // dB → Butterworth
+  const out = c.createGain();
+  out.gain.setValueAtTime(LEVEL, t0);
+  out.gain.setValueAtTime(LEVEL, t0 + DUR - FADE);
+  out.gain.linearRampToValueAtTime(0, t0 + DUR);
+  lp.connect(out);
+  out.connect(dest);
+  const partial = (freq: number, amp: number, tau: number): void => {
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = 'sine';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(amp, t0 + 0.0025);
+    g.gain.setTargetAtTime(0, t0 + 0.0025, tau);
+    o.connect(g);
+    g.connect(lp);
+    o.start(t0);
+    o.stop(t0 + DUR + 0.01);
+  };
+  partial(1318.51, 1.0, 0.11);
+  partial(1318.51 * 2.4, 0.22, 0.035);
+}
+
+/**
+ * PLACEHOLDER procedural fallback for gold_A.mp3 (warm coin bell, single G5).
+ * Ported from the sfx_gold manifest recipe, variant A; level is for masterGain = 1.
+ */
+function playGoldFallback(c: BaseAudioContext, dest: AudioNode): void {
+  const t0 = c.currentTime;
+  const DUR = 0.45;
+  const FADE = 0.03;
+  const LEVEL = 0.19724;
+  const G5 = 783.99;
+  const lp = c.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = 5000;
+  lp.Q.value = -3.01;
+  const hp = c.createBiquadFilter(); // DC guard
+  hp.type = 'highpass';
+  hp.frequency.value = 60;
+  hp.Q.value = -3.01;
+  const out = c.createGain();
+  out.gain.setValueAtTime(LEVEL, t0);
+  out.gain.setValueAtTime(LEVEL, t0 + DUR - FADE);
+  out.gain.linearRampToValueAtTime(0, t0 + DUR);
+  lp.connect(hp);
+  hp.connect(out);
+  out.connect(dest);
+  const voices = [
+    { f: G5, a: 1.0, tau: 0.16 },
+    { f: G5 + 4, a: 0.35, tau: 0.16 }, // +4 Hz twin: slow shimmer
+    { f: G5 * 2, a: 0.3, tau: 0.07 },
+    { f: G5 * 3, a: 0.1, tau: 0.035 },
+  ];
+  for (const p of voices) {
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = 'sine';
+    o.frequency.value = p.f;
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(p.a, t0 + 0.0025);
+    g.gain.setTargetAtTime(0, t0 + 0.0025, p.tau);
+    o.connect(g);
+    g.connect(lp);
+    o.start(t0);
+    o.stop(t0 + DUR + 0.01);
+  }
 }
 
 interface ToneOpts {
@@ -309,10 +449,11 @@ export const sfx = {
 
   fork: () => tone({ freq: 494, dur: 0.12, type: 'triangle', gain: 0.05 }),
 
-  gold: () => {
-    tone({ freq: 988, dur: 0.06, type: 'sine', gain: 0.045 });
-    tone({ freq: 1319, dur: 0.1, type: 'sine', gain: 0.04, when: 0.05 });
-  },
+  /** Gold award — PLACEHOLDER clip gold_A (G5 coin bell); no longer the B5→E6 coin motif. */
+  gold: () => playClip('gold', playGoldFallback),
+
+  /** 叮！ the player gained 星星 — PLACEHOLDER clip ding_A (E6 glass bell). One call per gain event. */
+  ding: () => playClip('ding', playDingFallback),
 
   shopBuy: () => {
     tone({ freq: 587, dur: 0.08, type: 'triangle', gain: 0.05 });

@@ -11,7 +11,7 @@ const PRODUCTION_CSP = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self'",
-  "connect-src 'none'",
+  "connect-src 'self'",
   "media-src 'none'",
   "object-src 'none'",
   "base-uri 'none'",

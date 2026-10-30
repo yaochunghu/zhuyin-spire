@@ -88,6 +88,7 @@ export type CombatFx =
   | { type: 'playerEnergy'; amount: number }
   | { type: 'playerPower'; power: 'training'; amount: number }
   | { type: 'playerResource'; resource: 'jin'; delta: number; value: number }
+  | { type: 'playerBeads'; amount: number; value: number }
   | { type: 'playerTempo'; count: number }
   | {
       type: 'enemyStatus';
