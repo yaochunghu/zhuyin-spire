@@ -1,8 +1,10 @@
 name: Deploy GitHub Pages
 
+# Deploy only when a GitHub Release is published (the build checks out the
+# release tag), or by hand from main.
 on:
-  push:
-    branches: [main]
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
@@ -49,9 +51,10 @@ jobs:
 
   deploy:
     name: Deploy
-    # github-pages environment is restricted to main; skip on other refs so
-    # workflow_dispatch from feature branches cannot create failed Deployments.
-    if: github.ref == 'refs/heads/main'
+    # Deploy published releases (ref is the release tag) and manual runs from
+    # main; skip workflow_dispatch from feature branches so they cannot create
+    # failed Deployments. The github-pages environment must allow `v*` tags.
+    if: github.event_name == 'release' || github.ref == 'refs/heads/main'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

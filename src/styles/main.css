@@ -4425,6 +4425,23 @@ body {
   text-underline-offset: 0.2em;
 }
 
+/* Reserve a strip under the privacy link so the corner label never overlaps a button. */
+#app .title-screen {
+  position: relative;
+  padding-bottom: calc(max(8px, env(safe-area-inset-bottom)) + 1.5rem);
+}
+
+.title-version {
+  position: absolute;
+  right: 6px;
+  bottom: 4px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
 .privacy-options-section:focus {
   outline: 3px solid var(--accent);
   outline-offset: 3px;

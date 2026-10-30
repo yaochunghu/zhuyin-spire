@@ -1,4 +1,4 @@
-# Next phase — v0.4.11 current release
+# Next phase — v0.4.12 current release
 
 The complete score-gated card pool is implemented. The relic pool, potion belt,
 Act I–III events, act-native fights, cast-prompt seed, shop layout, and both
@@ -10,9 +10,9 @@ milestone while balancing the advanced tiers.
 
 | Source | Says |
 |--------|------|
-| `package.json` | **0.4.11** |
-| `CHANGELOG.md` | **[0.4.11] — 2026-10-29** is the current release (#87). **[0.4.10] — 2026-10-29** is #85. |
-| GitHub Releases | **v0.4.11** is the current release. The previous one is v0.4.10 at `808d08d` (#86), 2026-10-29 12:53 UTC. |
+| `package.json` | **0.4.12** |
+| `CHANGELOG.md` | **[0.4.12] — 2026-10-30** is the current release (#89 art and the v0.4.12 fixes). **[0.4.11] — 2026-10-29** is #87. |
+| GitHub Releases | **v0.4.12** is the current release. The previous one is v0.4.11 at `e92afb7` (#88), 2026-10-29 15:46 UTC. |
 
 ## What is live
 

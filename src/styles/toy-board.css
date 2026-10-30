@@ -572,6 +572,11 @@ button:active:not(:disabled) {
     var(--toy-paper);
 }
 
+.rest-choice .kid-prompt {
+  color: var(--toy-ink);
+  text-shadow: none;
+}
+
 .rest-choice .adult-text,
 .relic-card:not(.character-card) .adult-text {
   color: #604c60;

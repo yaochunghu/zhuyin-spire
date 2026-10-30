@@ -1,4 +1,9 @@
+import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vite';
+
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as {
+  version: string;
+};
 
 const PRODUCTION_CSP = [
   "default-src 'self'",
@@ -16,6 +21,7 @@ const PRODUCTION_CSP = [
 ].join('; ');
 
 export default defineConfig(({ command, mode }) => ({
+  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   build: { target: ['chrome120', 'edge120', 'firefox121', 'safari17'] },
   base: command === 'build' || mode === 'production' ? '/zhuyin-spire/' : '/',
   plugins:

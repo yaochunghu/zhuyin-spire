@@ -42,7 +42,7 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [DEBUG.md](./DEBUG.md) | Debug panel, flags, skip-cast testing |
 | [sim/CHILD_MODEL.md](./sim/CHILD_MODEL.md) | Debug-only child-error model and the Act I headless sim |
 | [ROADMAP.md](./ROADMAP.md) | Shipped systems, next work, known pitfalls |
-| [NEXT_PHASE.md](./NEXT_PHASE.md) | v0.4.11 current release, and what comes next |
+| [NEXT_PHASE.md](./NEXT_PHASE.md) | v0.4.12 current release, and what comes next |
 | [ART_INVENTORY.md](./ART_INVENTORY.md) | Scene plates, transitions, tokens, props, and relic icons: sizes, what is on screen, and what is only registered |
 
 Root companions:
@@ -52,7 +52,8 @@ Root companions:
 | [../README.md](../README.md) | Play, quick start, version control |
 | [../AGENTS.md](../AGENTS.md) | AI/human resume guide |
 | [../CHANGELOG.md](../CHANGELOG.md) | Human-readable version history |
-| [../RELEASE_NOTES_v0.4.11.md](../RELEASE_NOTES_v0.4.11.md) | Player-facing notes for the current v0.4.11 release |
+| [../RELEASE_NOTES_v0.4.12.md](../RELEASE_NOTES_v0.4.12.md) | Player-facing notes for the current v0.4.12 release |
+| [../RELEASE_NOTES_v0.4.11.md](../RELEASE_NOTES_v0.4.11.md) | Player-facing notes for the v0.4.11 release |
 | [../RELEASE_NOTES_v0.4.10.md](../RELEASE_NOTES_v0.4.10.md) | Player-facing notes for the v0.4.10 release |
 | [../RELEASE_NOTES_v0.4.9.md](../RELEASE_NOTES_v0.4.9.md) | Player-facing notes for the v0.4.9 release |
 | [../RELEASE_NOTES_v0.4.8.md](../RELEASE_NOTES_v0.4.8.md) | Player-facing notes for the v0.4.8 release |
@@ -65,11 +66,11 @@ Root companions:
 
 ---
 
-## Snapshot (main, v0.4.11)
+## Snapshot (main, v0.4.12)
 
-`package.json` is **0.4.11**. The current GitHub Release is **v0.4.11**: #87
-is `[0.4.11]` in [CHANGELOG.md](../CHANGELOG.md). The previous release is
-v0.4.10 at `808d08d` (#86), 2026-10-29 12:53 UTC. Two characters are playable.
+`package.json` is **0.4.12**. The current GitHub Release is **v0.4.12**: #89
+and the v0.4.12 fixes are `[0.4.12]` in [CHANGELOG.md](../CHANGELOG.md).
+The previous release is v0.4.11 at `e92afb7` (#88), 2026-10-29 15:46 UTC. Two characters are playable.
 
 - **Stack:** Vite + TypeScript SPA, no backend; localStorage save. Saves stay
   on version 4. `eventTrack`, `castSeed`, `castCounter`, and `rng` are optional.

@@ -8,12 +8,27 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
-### Production art
+---
+
+## [0.4.12] — 2026-10-30
+
+### Production art (#89)
 
 - Act I–III room plates, the two act transitions, the three map tokens, and the four corner props are the QA-passed paintings. Plates are 1920×1080. Transitions are 1536×1152. On a phone the corner prop still draws at 72 px
 - Fifteen relic badges use painted icons. 小盾符, 零錢袋, 晨光火花, and 幸運抽 stay emoji, and so does any relic with no file
 - Per-floor rooms, shops, camps, events, the foyer, the Act IV plates, and the Act IV map token are in the repo and listed in the art inventory. The game does not show them yet
 - The unused star corner prop is gone
+
+### Fixes and polish
+
+- Wording correction: the lantern corner prop's alt string is 點燈人的銅提燈 (was 紙燈籠玩具擺件). The lantern is drawn as a CSS background, so screen readers do not announce it
+- Rest-room card titles (+N heal, 升級, 刪牌) use `--toy-ink` `#3b2644` with no text-shadow, where they used `--toy-brass-light` `#ffe494`. Contrast on `--toy-paper` `#f6e4c0` goes from 1.00:1 to 10.85:1, and 12.09:1 on the lightest gradient point `#faf1de`
+- The opening menu shows the game version (for example `v0.4.12`) in small text at its bottom-right corner. The text comes from `package.json` at build time, ignores taps, and is hidden from screen readers. It does not appear on the map, combat, event, rest, or shop screens
+- Saves stay version 4
+
+### Dev / ops
+
+- GitHub Pages now deploys only when a GitHub Release is published (and from a manual run on `main`), not on every push to `main`. The build uses the release tag
 
 ---
 
@@ -485,6 +500,7 @@ Baseline snapshot of the preschool Spire + 注音 game, documented for long-term
 - Standalone git repository for the game folder (tag `v0.1.0`)
 
 [Unreleased]: #unreleased
+[0.4.12]: #0412--2026-10-30
 [0.4.11]: #0411--2026-10-29
 [0.4.10]: #0410--2026-10-29
 [0.4.9]: #049--2026-10-29
