@@ -46,6 +46,11 @@ import { artImageHtml, relicFaceHtml } from './assets';
 import { renderPotionBelt } from './potionBelt';
 import { relicBadgeButton } from './relicBadges';
 
+/** Text of the quiet corner label on the opening menu. */
+export function appVersionLabel(): string {
+  return `v${__APP_VERSION__}`;
+}
+
 export function renderTitle(): HTMLElement {
   const el = document.createElement('div');
   el.className = 'screen title-screen';
@@ -188,6 +193,12 @@ export function renderTitle(): HTMLElement {
     openOptions({ allowProfileSwitch: true, focusPrivacy: true });
   });
   el.appendChild(privacy);
+
+  const version = document.createElement('span');
+  version.className = 'title-version';
+  version.setAttribute('aria-hidden', 'true');
+  version.textContent = appVersionLabel();
+  el.appendChild(version);
 
   return el;
 }

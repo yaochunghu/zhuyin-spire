@@ -69,7 +69,7 @@ Root companions:
 ## Snapshot (main, v0.4.12)
 
 `package.json` is **0.4.12**. The current GitHub Release is **v0.4.12**: #89
-and the accessibility fixes are `[0.4.12]` in [CHANGELOG.md](../CHANGELOG.md).
+and the v0.4.12 fixes are `[0.4.12]` in [CHANGELOG.md](../CHANGELOG.md).
 The previous release is v0.4.11 at `e92afb7` (#88), 2026-10-29 15:46 UTC. Two characters are playable.
 
 - **Stack:** Vite + TypeScript SPA, no backend; localStorage save. Saves stay

@@ -7,7 +7,8 @@ Recognize or **listen** for the correct 注音 to cast. **Wrong answer = fizzle*
 
 The current GitHub Release is **v0.4.12**: painted Act I–III room plates, act
 transitions, map tokens, corner props, and fifteen relic icons (#89), plus
-the lantern alt text 點燈人的銅提燈 and darker rest-room card titles,
+the lantern alt string corrected to 點燈人的銅提燈, darker rest-room card titles,
+and the version shown on the opening menu,
 `[0.4.12]` in
 [CHANGELOG.md](CHANGELOG.md). The previous release is v0.4.11 at `e92afb7`
 (#88), 2026-10-29 15:46 UTC.

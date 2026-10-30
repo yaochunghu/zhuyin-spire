@@ -6,7 +6,7 @@ The live version, obtainability rules, and next implementation slice live in
 ## Shipped on main
 
 `package.json` is 0.4.12. The current GitHub Release is **v0.4.12** (`[0.4.12]`
-in [CHANGELOG.md](../CHANGELOG.md), #89 and the accessibility fixes). The previous release is
+in [CHANGELOG.md](../CHANGELOG.md), #89 and the v0.4.12 fixes). The previous release is
 v0.4.11 at `e92afb7` (#88), 2026-10-29 15:46 UTC. Two characters are playable. Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
 
 - Vite + TypeScript SPA; touch-first preschool UI; adult coach strip  
@@ -54,8 +54,10 @@ v0.4.11 at `e92afb7` (#88), 2026-10-29 15:46 UTC. Two characters are playable. L
 - #89: Act I–III room plates, the two act transitions, the act map tokens,
   four corner props, and fifteen relic icons are the QA-passed paintings. The
   Act IV plates, per-floor backdrops, and Act IV token are registered but not
-  shown yet. The lantern prop alt text is 點燈人的銅提燈, and rest-room card
-  titles use `--toy-ink` (10.85:1 on `--toy-paper`, was 1.00:1)
+  shown yet. The lantern prop alt string is corrected to 點燈人的銅提燈, rest-room card
+  titles use `--toy-ink` (10.85:1 on `--toy-paper`, was 1.00:1), the opening
+  menu shows the version from `package.json`, and Pages deploys only on
+  published releases
 - Phone shop offers keep the card, price, and remove-card button on screen.
   The remove button is disabled when gold is short
 - The parent coach no longer covers map dots, and campfire choices fit on

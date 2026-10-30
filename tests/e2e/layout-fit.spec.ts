@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 
 // Playtest v0.4.2 (M1, M2): the parent coach must never sit on top of a map
@@ -207,4 +208,39 @@ test('the shop remove button is disabled until it can be afforded', async ({ pag
   await expect(remove).toBeEnabled();
   await remove.click();
   await expect(page.locator('.remove-screen')).toBeVisible();
+});
+
+test('the version label sits quietly on the title screen only', async ({ page }, testInfo) => {
+  const pkg = JSON.parse(readFileSync('package.json', 'utf8')) as { version: string };
+  await page.goto('/');
+  await expect(page.locator('.title-screen')).toBeVisible();
+
+  const label = page.locator('.title-version');
+  await expect(label).toBeVisible();
+  await expect(label).toHaveText(`v${pkg.version}`);
+
+  // Short landscape phones scroll the title menu; the label ends the menu, so
+  // bring it into view before checking that it fits.
+  await label.scrollIntoViewIfNeeded();
+  const view = page.viewportSize()!;
+  const box = (await label.boundingBox())!;
+  expect(box.x, sizeLabel(page)).toBeGreaterThanOrEqual(0);
+  expect(box.y, sizeLabel(page)).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width, sizeLabel(page)).toBeLessThanOrEqual(view.width);
+  expect(box.y + box.height, sizeLabel(page)).toBeLessThanOrEqual(view.height);
+
+  const overlaps = await page.evaluate(() => {
+    const l = document.querySelector('.title-version')!.getBoundingClientRect();
+    return [...document.querySelectorAll('button')]
+      .map((b) => ({ name: b.getAttribute('aria-label') ?? b.textContent?.trim(), r: b.getBoundingClientRect() }))
+      .filter(({ r }) => r.width > 0 && r.height > 0)
+      .filter(({ r }) => l.left < r.right && l.right > r.left && l.top < r.bottom && l.bottom > r.top)
+      .map(({ name }) => name);
+  });
+  expect(overlaps, `${sizeLabel(page)} ${testInfo.title}`).toEqual([]);
+
+  await page.getByRole('button', { name: '開始爬塔' }).click();
+  await page.getByRole('button', { name: /選擇共鳴武者/ }).click();
+  await expect(page.locator('.map-stage')).toBeVisible();
+  await expect(page.locator('.title-version')).toHaveCount(0);
 });

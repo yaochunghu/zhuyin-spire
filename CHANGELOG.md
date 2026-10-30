@@ -19,11 +19,16 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - Per-floor rooms, shops, camps, events, the foyer, the Act IV plates, and the Act IV map token are in the repo and listed in the art inventory. The game does not show them yet
 - The unused star corner prop is gone
 
-### Accessibility
+### Fixes and polish
 
-- The lantern corner prop's alt text is 點燈人的銅提燈 (was 紙燈籠玩具擺件)
+- Wording correction: the lantern corner prop's alt string is 點燈人的銅提燈 (was 紙燈籠玩具擺件). The lantern is drawn as a CSS background, so screen readers do not announce it
 - Rest-room card titles (+N heal, 升級, 刪牌) use `--toy-ink` `#3b2644` with no text-shadow, where they used `--toy-brass-light` `#ffe494`. Contrast on `--toy-paper` `#f6e4c0` goes from 1.00:1 to 10.85:1, and 12.09:1 on the lightest gradient point `#faf1de`
+- The opening menu shows the game version (for example `v0.4.12`) in small text at its bottom-right corner. The text comes from `package.json` at build time, ignores taps, and is hidden from screen readers. It does not appear on the map, combat, event, rest, or shop screens
 - Saves stay version 4
+
+### Dev / ops
+
+- GitHub Pages now deploys only when a GitHub Release is published (and from a manual run on `main`), not on every push to `main`. The build uses the release tag
 
 ---
 

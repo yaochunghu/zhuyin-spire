@@ -11,7 +11,7 @@ milestone while balancing the advanced tiers.
 | Source | Says |
 |--------|------|
 | `package.json` | **0.4.12** |
-| `CHANGELOG.md` | **[0.4.12] — 2026-10-30** is the current release (#89 art and the accessibility fixes). **[0.4.11] — 2026-10-29** is #87. |
+| `CHANGELOG.md` | **[0.4.12] — 2026-10-30** is the current release (#89 art and the v0.4.12 fixes). **[0.4.11] — 2026-10-29** is #87. |
 | GitHub Releases | **v0.4.12** is the current release. The previous one is v0.4.11 at `e92afb7` (#88), 2026-10-29 15:46 UTC. |
 
 ## What is live
