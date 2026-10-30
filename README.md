@@ -3,17 +3,17 @@
 A browser deckbuilder for **first graders (ages 5–7)** inspired by *Slay the Spire*: climb a colorful tower with **注音符號** spell cards.  
 Recognize or **listen** for the correct 注音 to cast. **Wrong answer = fizzle** (energy spent). **HP → 0 ends the run.**
 
-**Version:** 0.4.11 in `package.json` · **Stack:** Vite + TypeScript (no backend)
+**Version:** 0.4.12 in `package.json` · **Stack:** Vite + TypeScript (no backend)
 
-The current GitHub Release is **v0.4.11**: the math hero is shown as 數星人,
-with 星星 / 星座 wording, the pick-screen title 「數清來招，湊十出拳」 kept,
-the theme line about counting stars into a 星座, and updated 橡皮擦 and
-星星袋 text (#87), `[0.4.11]` in
-[CHANGELOG.md](CHANGELOG.md). The previous release is v0.4.10 at `808d08d`
-(#86), 2026-10-29 12:53 UTC.
+The current GitHub Release is **v0.4.12**: painted Act I–III room plates, act
+transitions, map tokens, corner props, and fifteen relic icons (#89), plus
+the lantern alt text 點燈人的銅提燈 and darker rest-room card titles,
+`[0.4.12]` in
+[CHANGELOG.md](CHANGELOG.md). The previous release is v0.4.11 at `e92afb7`
+(#88), 2026-10-29 15:46 UTC.
 Two characters are playable: 共鳴武者 and 數星人.
-Player notes: [RELEASE_NOTES_v0.4.11.md](RELEASE_NOTES_v0.4.11.md).
-Previous notes: [RELEASE_NOTES_v0.4.10.md](RELEASE_NOTES_v0.4.10.md).
+Player notes: [RELEASE_NOTES_v0.4.12.md](RELEASE_NOTES_v0.4.12.md).
+Previous notes: [RELEASE_NOTES_v0.4.11.md](RELEASE_NOTES_v0.4.11.md).
 
 **Play online:** [https://yaochunghu.github.io/zhuyin-spire/](https://yaochunghu.github.io/zhuyin-spire/)
 
@@ -162,7 +162,7 @@ CHANGELOG.md        version history
 | [docs/BALANCE.md](docs/BALANCE.md) | HP, gold, rest, hand rules |
 | [docs/DEBUG.md](docs/DEBUG.md) | Skip cast, jump fights, cheats for testing |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | What’s done / next |
-| [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) | v0.4.11 current release, and what comes next |
+| [docs/NEXT_PHASE.md](docs/NEXT_PHASE.md) | v0.4.12 current release, and what comes next |
 
 ---
 
@@ -185,7 +185,7 @@ This folder is its **own git repository** (`zhuyin-spire/.git`).
 
 - Do **not** commit the game through a parent home-directory repo (e.g. unrelated remotes).
 - From this directory: `git status`, `git add`, `git commit` as usual.
-- Current release tag: `v0.4.11` (see [CHANGELOG.md](CHANGELOG.md) `[0.4.11]` and [RELEASE_NOTES_v0.4.11.md](RELEASE_NOTES_v0.4.11.md)). `package.json` is `0.4.11`. Previous release: `v0.4.10` at `808d08d` (#86), 2026-10-29 12:53 UTC. Two characters are playable.
+- Current release tag: `v0.4.12` (see [CHANGELOG.md](CHANGELOG.md) `[0.4.12]` and [RELEASE_NOTES_v0.4.12.md](RELEASE_NOTES_v0.4.12.md)). `package.json` is `0.4.12`. Previous release: `v0.4.11` at `e92afb7` (#88), 2026-10-29 15:46 UTC. Two characters are playable.
 - Dedicated remote: `https://github.com/yaochunghu/zhuyin-spire.git`.
 
 ```bash

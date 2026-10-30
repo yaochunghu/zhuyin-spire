@@ -301,7 +301,7 @@ export const ART_ASSETS = {
   propLantern: {
     src: new URL('../assets/art/prop-lantern.webp', import.meta.url).href,
     fallback: '🏮',
-    alt: '紙燈籠玩具擺件',
+    alt: '點燈人的銅提燈',
   },
   propBooks: {
     src: new URL('../assets/art/prop-books.webp', import.meta.url).href,

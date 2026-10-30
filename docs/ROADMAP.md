@@ -5,9 +5,9 @@ The live version, obtainability rules, and next implementation slice live in
 
 ## Shipped on main
 
-`package.json` is 0.4.11. The current GitHub Release is **v0.4.11** (`[0.4.11]`
-in [CHANGELOG.md](../CHANGELOG.md), #87). The previous release is
-v0.4.10 at `808d08d` (#86), 2026-10-29 12:53 UTC. Two characters are playable. Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
+`package.json` is 0.4.12. The current GitHub Release is **v0.4.12** (`[0.4.12]`
+in [CHANGELOG.md](../CHANGELOG.md), #89 and the accessibility fixes). The previous release is
+v0.4.11 at `e92afb7` (#88), 2026-10-29 15:46 UTC. Two characters are playable. Live detail is [NEXT_PHASE.md](./NEXT_PHASE.md).
 
 - Vite + TypeScript SPA; touch-first preschool UI; adult coach strip  
 - Full first-syllable 注音 cast (including 聲調); listen mode (Web Speech zh-TW)  
@@ -51,6 +51,11 @@ v0.4.10 at `808d08d` (#86), 2026-10-29 12:53 UTC. Two characters are playable. L
   星星 / 星座. The title stays 「數清來招，湊十出拳」. The theme line counts
   stars into a 星座. 橡皮擦 and 星星袋 use the new wording. Ids are unchanged.
   Saves stay version 4
+- #89: Act I–III room plates, the two act transitions, the act map tokens,
+  four corner props, and fifteen relic icons are the QA-passed paintings. The
+  Act IV plates, per-floor backdrops, and Act IV token are registered but not
+  shown yet. The lantern prop alt text is 點燈人的銅提燈, and rest-room card
+  titles use `--toy-ink` (10.85:1 on `--toy-paper`, was 1.00:1)
 - Phone shop offers keep the card, price, and remove-card button on screen.
   The remove button is disabled when gold is short
 - The parent coach no longer covers map dots, and campfire choices fit on
