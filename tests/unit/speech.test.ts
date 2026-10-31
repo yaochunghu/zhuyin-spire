@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cancelSpeech, speakCue, speakCueWithAutoReplay } from '../../src/game/speech';
+import { getMixSnapshot } from '../../src/game/audio';
 
 let spoken: SpeechSynthesisUtterance[];
 let fallback: string[];
@@ -49,5 +50,39 @@ describe('speech fallback', () => {
     spoken[0]!.onend!({} as SpeechSynthesisEvent);
     vi.advanceTimersByTime(2000);
     expect(fallback).toEqual(['貓咪']);
+  });
+});
+
+describe('speech and the mix', () => {
+  it('passes the volume to the utterance, clamped to 0–1', () => {
+    speakCue('爸爸', { volume: 0.45 });
+    speakCue('貓咪', { volume: 3 });
+    expect(spoken.map((u) => u.volume)).toEqual([0.45, 1]);
+  });
+  it('leaves the default volume alone when none is given', () => {
+    speakCue('爸爸');
+    expect(spoken[0]!.volume).toBeUndefined();
+  });
+  it('marks speech as a voice (a prompt by default) until it ends', () => {
+    speakCue('爸爸');
+    expect(getMixSnapshot()).toMatchObject({ voiceActive: true, promptActive: true });
+    spoken[0]!.onend!({} as SpeechSynthesisEvent);
+    expect(getMixSnapshot().voiceActive).toBe(false);
+  });
+  it('a non-prompt line ducks but does not hold rewards', () => {
+    speakCue('答對了', { prompt: false });
+    expect(getMixSnapshot()).toMatchObject({ voiceActive: true, promptActive: false });
+  });
+  it('cancel, error and a missing end event all clear the voice', () => {
+    speakCue('爸爸');
+    cancelSpeech();
+    expect(getMixSnapshot().voiceActive).toBe(false);
+    speakCue('爸爸');
+    spoken[1]!.onerror!({ error: 'synthesis-failed' } as SpeechSynthesisErrorEvent);
+    expect(getMixSnapshot().voiceActive).toBe(false);
+    speakCue('爸爸');
+    spoken[2]!.onstart?.({} as SpeechSynthesisEvent);
+    vi.advanceTimersByTime(1_500 + 2 * 320 + 1);
+    expect(getMixSnapshot().voiceActive).toBe(false);
   });
 });

@@ -4,15 +4,28 @@
  * Layers:
  * - SFX: short one-shots with distinct envelopes. Almost all are synthesised
  *   here; `ding` (星星 gain) and `gold` play small same-origin MP3 clips from
- *   src/assets/audio/sfx/ through masterGain, and fall back to the same sound
+ *   src/assets/audio/sfx/ at gain 0.4 on the sfx bus, and fall back to the same sound
  *   synthesised from its recipe if the file cannot be loaded or decoded.
  *   PLACEHOLDER audio: both clips are procedural, original, and pending final
  *   sound design.
  * - No continuous background music (SFX + speech only)
  * - Speech: Web Speech in speech.ts; recorded voice clips in voice.ts, which
- *   plays through the same masterGain via audioOutput()
+ *   plays through the voice bus via audioOutput()
  *
  * Volume: 0 | 0.45 | 1  (cycle via UI)
+ *
+ * Mixing (Spire Audio's DUCK_SPEC, AUDIO_DIRECTION §7a):
+ * - Graph: voice / sfx / music / ui buses → masterGain (volume) → safety
+ *   limiter (DynamicsCompressor) → destination.
+ * - While a voice line plays (a clip from voice.ts, or Web Speech from
+ *   speech.ts) the sfx bus ducks −6 dB and the music bus −12 dB, with linear
+ *   ramps (80 ms down; 250 ms / 400 ms back up once the voice ends). UI taps
+ *   use the ui bus, which never ducks. Nothing ducks at volume 0 or with the
+ *   voice bus muted.
+ * - Reward and outcome sounds (ding, gold, win) that trigger during a listening
+ *   prompt wait until it ends and play 150 ms later.
+ * - Two or more of the same non-UI sound within MERGE_WINDOW_MS play once, at
+ *   the loudest requested level.
  */
 
 const DING_URL = new URL('../assets/audio/sfx/ding_A.mp3', import.meta.url).href;
@@ -20,8 +33,38 @@ const GOLD_URL = new URL('../assets/audio/sfx/gold_A.mp3', import.meta.url).href
 
 let ctx: AudioContext | null = null;
 let masterGain: GainNode | null = null;
+let limiter: DynamicsCompressorNode | null = null;
 
 export type VolLevel = 0 | 0.45 | 1;
+
+/** voice, sfx and music are DUCK_SPEC's buses; ui carries taps, which never duck. */
+export type Bus = 'voice' | 'sfx' | 'music' | 'ui';
+const BUS_NAMES: readonly Bus[] = ['voice', 'sfx', 'music', 'ui'];
+let buses: Record<Bus, GainNode> | null = null;
+
+const dbToGain = (db: number): number => 10 ** (db / 20);
+
+/** DUCK_SPEC numbers in one place (seconds for ramps, linear gain for levels). */
+export const MIX = {
+  /** sfx bus while a voice plays: −6 dB, about ×0.5. */
+  sfxDuck: 0.5,
+  /** music bus while a voice plays: −12 dB. */
+  musicDuck: dbToGain(-12),
+  attack: 0.08,
+  sfxRelease: 0.25,
+  musicRelease: 0.4,
+  /** Bus mute / unmute ramp (never a step change). */
+  busMuteRamp: 0.02,
+  /** Reward and outcome sounds wait this long after a listening prompt ends. */
+  promptTailMs: 150,
+  /** Safety net: a held sound never waits longer than this. */
+  holdMaxMs: 8_000,
+  /** Same sound triggered again within this window plays once. */
+  mergeWindowMs: 70,
+  /** ding_A and gold_A base gain (QA P2 note 1): about −8 dB. */
+  clipBaseGain: 0.4,
+  limiter: { threshold: -1, ratio: 20, attack: 0.003, release: 0.1, knee: 0 },
+} as const;
 
 function loadVol(): VolLevel {
   try {
@@ -55,6 +98,8 @@ export function setVolume(v: VolLevel): void {
     /* ignore */
   }
   applyMaster();
+  applyDuck();
+  if (volume === 0) releaseHeld(false);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('zhuyin-volume-change'));
   }
@@ -73,11 +118,58 @@ export function toggleMute(): boolean {
   return isMuted();
 }
 
+// ── buses ───────────────────────────────────────────────────────────────────
+
+/** Per-bus mutes for the §7a Voice / Sound effects / Music toggles (no UI yet). */
+const busMuted: Record<Bus, boolean> = { voice: false, sfx: false, music: false, ui: false };
+
+export function setBusMuted(bus: 'voice' | 'sfx' | 'music', muted: boolean): void {
+  busMuted[bus] = muted;
+  if (bus === 'sfx') busMuted.ui = muted; // taps belong to the Sound effects toggle
+  applyDuck();
+  if (bus === 'voice' && typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('zhuyin-volume-change'));
+  }
+}
+
+export function isBusMuted(bus: Bus): boolean {
+  return busMuted[bus];
+}
+
+/** Voice lines play nothing (and fall back to nothing) when this is true. */
+export function isVoiceMuted(): boolean {
+  return volume === 0 || busMuted.voice;
+}
+
 function getCtx(): AudioContext {
   if (!ctx) {
-    ctx = new AudioContext();
-    masterGain = ctx.createGain();
-    masterGain.connect(ctx.destination);
+    const c = new AudioContext();
+    const master = c.createGain();
+    let out: AudioNode = c.destination;
+    if (typeof c.createDynamicsCompressor === 'function') {
+      // Safety limiter on the master (rule 7).
+      const lim = c.createDynamicsCompressor();
+      lim.threshold.value = MIX.limiter.threshold;
+      lim.ratio.value = MIX.limiter.ratio;
+      lim.attack.value = MIX.limiter.attack;
+      lim.release.value = MIX.limiter.release;
+      lim.knee.value = MIX.limiter.knee;
+      lim.connect(c.destination);
+      limiter = lim;
+      out = lim;
+    }
+    master.connect(out);
+    const made = {} as Record<Bus, GainNode>;
+    for (const name of BUS_NAMES) {
+      const bus = c.createGain();
+      bus.gain.value = busTarget(name);
+      rampTargets[name] = bus.gain.value;
+      bus.connect(master);
+      made[name] = bus;
+    }
+    ctx = c;
+    masterGain = master;
+    buses = made;
     applyMaster();
   }
   return ctx;
@@ -100,25 +192,270 @@ async function resume(): Promise<AudioContext | null> {
 }
 
 /**
- * The running context and masterGain for other bundled clips (voice.ts).
+ * The running context and the voice bus, for recorded voice clips (voice.ts).
  * Null when muted or when Web Audio is unavailable. Never rejects.
  */
 export async function audioOutput(): Promise<{ ctx: AudioContext; dest: AudioNode } | null> {
   const c = await resume();
-  if (!c || !masterGain) return null;
-  return { ctx: c, dest: masterGain };
+  if (!c || !buses) return null;
+  return { ctx: c, dest: buses.voice };
+}
+
+// ── ducking ─────────────────────────────────────────────────────────────────
+
+export type VoiceSource = 'clip' | 'speech';
+/** Who is speaking right now, and whether that line is a listening prompt. */
+const speaking = new Map<VoiceSource, { prompt: boolean }>();
+
+function duckingEnabled(): boolean {
+  return volume !== 0 && !busMuted.voice;
+}
+
+function voiceActive(): boolean {
+  return speaking.size > 0;
+}
+
+function promptActive(): boolean {
+  for (const s of speaking.values()) if (s.prompt) return true;
+  return false;
+}
+
+function busTarget(bus: Bus): number {
+  if (busMuted[bus]) return 0;
+  const ducked = voiceActive() && duckingEnabled();
+  if (!ducked) return 1;
+  if (bus === 'sfx') return MIX.sfxDuck;
+  if (bus === 'music') return MIX.musicDuck;
+  return 1; // voice and ui never duck
+}
+
+/** The level each bus was last sent to. */
+const rampTargets: Partial<Record<Bus, number>> = {};
+
+/** Linear ramp from wherever the bus is now (rule 5: never a step change). */
+function rampBus(bus: Bus): void {
+  if (!ctx || !buses) return;
+  const param = buses[bus].gain;
+  const target = busTarget(bus);
+  const now = ctx.currentTime;
+  const from = param.value;
+  let secs: number = MIX.busMuteRamp;
+  if (!busMuted[bus] && rampTargets[bus] !== 0) {
+    if (target < from) secs = MIX.attack;
+    else secs = bus === 'music' ? MIX.musicRelease : MIX.sfxRelease;
+  }
+  param.cancelScheduledValues(now);
+  param.setValueAtTime(from, now);
+  param.linearRampToValueAtTime(target, now + secs);
+  rampTargets[bus] = target;
+}
+
+function applyDuck(): void {
+  if (!ctx || !buses) return;
+  for (const name of BUS_NAMES) {
+    if (rampTargets[name] === busTarget(name)) continue;
+    try {
+      rampBus(name);
+    } catch {
+      /* audio must never throw into the UI */
+    }
+  }
+}
+
+/**
+ * voice.ts and speech.ts report when a voice line starts and stops. `prompt`
+ * marks a listening prompt (a 注音 word or a math question and its frame).
+ */
+export function setVoiceActivity(source: VoiceSource, active: boolean, prompt = false): void {
+  const wasPrompt = promptActive();
+  if (active) speaking.set(source, { prompt });
+  else speaking.delete(source);
+  applyDuck();
+  const isPrompt = promptActive();
+  if (isPrompt) {
+    clearTimeout(flushTimer);
+    flushTimer = undefined;
+  } else if (wasPrompt || held.length) {
+    scheduleFlush(MIX.promptTailMs);
+  }
+}
+
+// ── one-shots: routing, merging, holding ────────────────────────────────────
+
+interface Shot {
+  key: string;
+  bus: Bus;
+  /** Linear gain for this shot (base × level); a merge raises it to the loudest. */
+  gain: number;
+  at: number;
+  node: GainNode | null;
+  body: () => void;
+}
+
+/** Recent non-UI shots by key, for the merge window. */
+const recent = new Map<string, Shot>();
+/** Prompt-critical shots waiting for a listening prompt to end. */
+const held: Shot[] = [];
+let heldSince = 0;
+let flushTimer: ReturnType<typeof setTimeout> | undefined;
+/** The shot whose body is running, so tone() and friends know where to connect. */
+let currentShot: Shot | null = null;
+
+/** Test seam: what played, where, at what gain (most recent last, bounded). */
+const shotLog: Array<{ key: string; bus: Bus; gain: number; heldMs: number }> = [];
+
+function nowMs(): number {
+  return typeof performance !== 'undefined' && typeof performance.now === 'function'
+    ? performance.now()
+    : Date.now();
+}
+
+function scheduleFlush(ms: number): void {
+  clearTimeout(flushTimer);
+  flushTimer = undefined;
+  if (!held.length) return;
+  flushTimer = setTimeout(() => {
+    flushTimer = undefined;
+    if (promptActive() && duckingEnabled() && nowMs() - heldSince < MIX.holdMaxMs) {
+      scheduleFlush(Math.max(0, MIX.holdMaxMs - (nowMs() - heldSince)));
+      return;
+    }
+    releaseHeld(true);
+  }, ms);
+}
+
+function releaseHeld(play: boolean): void {
+  clearTimeout(flushTimer);
+  flushTimer = undefined;
+  const due = held.splice(0);
+  if (play) for (const shot of due) fire(shot);
+}
+
+function fire(shot: Shot): void {
+  if (volume === 0) return;
+  shotLog.push({ key: shot.key, bus: shot.bus, gain: shot.gain, heldMs: Math.round(nowMs() - shot.at) });
+  if (shotLog.length > 64) shotLog.shift();
+  const prev = currentShot;
+  currentShot = shot;
+  try {
+    shot.body();
+  } catch {
+    /* audio must never throw into the UI */
+  } finally {
+    currentShot = prev;
+  }
+}
+
+/** The per-shot GainNode (created on first use) that feeds the shot's bus. */
+function shotOut(c: AudioContext, shot: Shot | null): AudioNode | null {
+  if (!buses) return null;
+  if (!shot) return buses.ui;
+  if (!shot.node) {
+    const g = c.createGain();
+    g.gain.value = shot.gain;
+    g.connect(buses[shot.bus]);
+    shot.node = g;
+  }
+  return shot.node;
+}
+
+interface SfxOpts {
+  bus: 'sfx' | 'ui';
+  /** Reward or outcome sound: waits out a listening prompt. */
+  critical?: boolean;
+  /** Base gain before any duck. */
+  base?: number;
+}
+
+function trigger(key: string, level: number | undefined, opts: SfxOpts, body: () => void): void {
+  if (volume === 0) return;
+  const gain = (opts.base ?? 1) * Math.max(0, level ?? 1);
+  const at = nowMs();
+  if (opts.bus === 'sfx') {
+    const last = recent.get(key);
+    if (last && at - last.at <= MIX.mergeWindowMs) {
+      // Rule 3: one sound at the loudest requested level.
+      if (gain > last.gain) {
+        last.gain = gain;
+        if (last.node && ctx) {
+          last.node.gain.cancelScheduledValues(ctx.currentTime);
+          last.node.gain.setValueAtTime(gain, ctx.currentTime);
+        }
+      }
+      return;
+    }
+  }
+  const shot: Shot = { key, bus: opts.bus, gain, at, node: null, body };
+  if (opts.bus === 'sfx') {
+    recent.set(key, shot);
+    if (recent.size > 32) recent.delete(recent.keys().next().value!);
+  }
+  if (opts.critical && promptActive() && duckingEnabled()) {
+    if (!held.length) heldSince = at;
+    held.push(shot);
+    if (!flushTimer) scheduleFlush(MIX.holdMaxMs);
+    return;
+  }
+  fire(shot);
+}
+
+/** Test seam: the live mix (bus targets, limiter, held and played sounds). */
+export function getMixSnapshot(): {
+  voiceActive: boolean;
+  promptActive: boolean;
+  ducking: boolean;
+  buses: Record<Bus, number> | null;
+  busTargets: Record<Bus, number>;
+  limiter: { threshold: number; ratio: number; attack: number; release: number } | null;
+  held: string[];
+  shots: Array<{ key: string; bus: Bus; gain: number; heldMs: number }>;
+} {
+  const targets = {} as Record<Bus, number>;
+  for (const name of BUS_NAMES) targets[name] = busTarget(name);
+  return {
+    voiceActive: voiceActive(),
+    promptActive: promptActive(),
+    ducking: voiceActive() && duckingEnabled(),
+    buses: buses
+      ? (Object.fromEntries(BUS_NAMES.map((n) => [n, buses![n].gain.value])) as Record<Bus, number>)
+      : null,
+    busTargets: targets,
+    limiter: limiter
+      ? {
+          threshold: limiter.threshold.value,
+          ratio: limiter.ratio.value,
+          attack: limiter.attack.value,
+          release: limiter.release.value,
+        }
+      : null,
+    held: held.map((s) => s.key),
+    shots: shotLog.map((s) => ({ ...s })),
+  };
+}
+
+/** Test seam: forget voice activity, held and recent sounds. */
+export function resetMixForTests(): void {
+  speaking.clear();
+  releaseHeld(false);
+  recent.clear();
+  shotLog.length = 0;
+  for (const bus of BUS_NAMES) busMuted[bus] = false;
+  applyDuck();
 }
 
 type ClipKey = 'ding' | 'gold';
 
 const CLIP_URLS: Record<ClipKey, string> = { ding: DING_URL, gold: GOLD_URL };
-/** Resolves to the decoded clip, or null once loading/decoding has failed (never rejects). */
+/**
+ * Resolves to the decoded clip, or null when loading/decoding failed (never
+ * rejects). A failed load is forgotten, so a later play tries the file again.
+ */
 const clipLoads = new Map<ClipKey, Promise<AudioBuffer | null>>();
 
 function loadClip(c: AudioContext, key: ClipKey): Promise<AudioBuffer | null> {
   let load = clipLoads.get(key);
   if (!load) {
-    load = (async () => {
+    const attempt: Promise<AudioBuffer | null> = (async () => {
       try {
         if (typeof fetch !== 'function') return null;
         const res = await fetch(CLIP_URLS[key]);
@@ -127,31 +464,42 @@ function loadClip(c: AudioContext, key: ClipKey): Promise<AudioBuffer | null> {
       } catch {
         return null;
       }
-    })();
+    })().then((buffer) => {
+      if (!buffer && clipLoads.get(key) === attempt) clipLoads.delete(key);
+      return buffer;
+    });
+    load = attempt;
     clipLoads.set(key, load);
   }
   return load;
 }
 
-/** Play a decoded clip at unity gain through masterGain, else the procedural recipe. */
-function playClip(key: ClipKey, fallback: (c: AudioContext, dest: AudioNode) => void): void {
-  if (volume === 0) return;
-  void resume().then(async (c) => {
-    try {
-      if (!c || !masterGain) return;
-      const buffer = await loadClip(c, key);
-      if (volume === 0 || !masterGain) return;
-      if (!buffer) {
-        fallback(c, masterGain);
-        return;
+/**
+ * A bundled clip at MIX.clipBaseGain on the sfx bus, else its procedural recipe
+ * at the same gain. Prompt-critical: it waits out a listening prompt.
+ */
+function playClip(key: ClipKey, level: number | undefined, fallback: (c: AudioContext, dest: AudioNode) => void): void {
+  trigger(key, level, { bus: 'sfx', critical: true, base: MIX.clipBaseGain }, () => {
+    const shot = currentShot;
+    void resume().then(async (c) => {
+      try {
+        if (!c) return;
+        const buffer = await loadClip(c, key);
+        if (volume === 0) return;
+        const dest = shotOut(c, shot);
+        if (!dest) return;
+        if (!buffer) {
+          fallback(c, dest);
+          return;
+        }
+        const src = c.createBufferSource();
+        src.buffer = buffer;
+        src.connect(dest);
+        src.start();
+      } catch {
+        /* audio must never throw into the UI */
       }
-      const src = c.createBufferSource();
-      src.buffer = buffer;
-      src.connect(masterGain);
-      src.start();
-    } catch {
-      /* audio must never throw into the UI */
-    }
+    });
   });
 }
 
@@ -166,7 +514,8 @@ export function warmAudio(): void {
 
 /**
  * PLACEHOLDER procedural fallback for ding_A.mp3 (叮！ star-bead glass bell).
- * Ported from the sfx_ding manifest recipe, variant A; level is for masterGain = 1.
+ * Ported from the sfx_ding manifest recipe, variant A; level is for unity gain
+ * (playClip applies the same MIX.clipBaseGain as the clip).
  */
 function playDingFallback(c: BaseAudioContext, dest: AudioNode): void {
   const t0 = c.currentTime;
@@ -202,7 +551,8 @@ function playDingFallback(c: BaseAudioContext, dest: AudioNode): void {
 
 /**
  * PLACEHOLDER procedural fallback for gold_A.mp3 (warm coin bell, single G5).
- * Ported from the sfx_gold manifest recipe, variant A; level is for masterGain = 1.
+ * Ported from the sfx_gold manifest recipe, variant A; level is for unity gain
+ * (playClip applies the same MIX.clipBaseGain as the clip).
  */
 function playGoldFallback(c: BaseAudioContext, dest: AudioNode): void {
   const t0 = c.currentTime;
@@ -257,8 +607,10 @@ interface ToneOpts {
 
 function tone(opts: ToneOpts): void {
   if (volume === 0) return;
+  const shot = currentShot;
   void resume().then((c) => {
-    if (!c || !masterGain) return;
+    const dest = c ? shotOut(c, shot) : null;
+    if (!c || !dest) return;
     const t0 = c.currentTime + (opts.when ?? 0);
     const dur = opts.dur ?? 0.12;
     const g0 = (opts.gain ?? 0.08) * 0.9;
@@ -275,7 +627,7 @@ function tone(opts: ToneOpts): void {
     g.gain.exponentialRampToValueAtTime(g0, t0 + 0.012);
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
     osc.connect(g);
-    g.connect(masterGain);
+    g.connect(dest);
     osc.start(t0);
     osc.stop(t0 + dur + 0.02);
   });
@@ -284,8 +636,10 @@ function tone(opts: ToneOpts): void {
 /** Filtered noise burst (fizzle / whoosh) */
 function noiseBurst(dur: number, gain = 0.05, when = 0): void {
   if (volume === 0) return;
+  const shot = currentShot;
   void resume().then((c) => {
-    if (!c || !masterGain) return;
+    const dest = c ? shotOut(c, shot) : null;
+    if (!c || !dest) return;
     const t0 = c.currentTime + when;
     const n = Math.floor(c.sampleRate * dur);
     const buf = c.createBuffer(1, n, c.sampleRate);
@@ -303,7 +657,7 @@ function noiseBurst(dur: number, gain = 0.05, when = 0): void {
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
     src.connect(filter);
     filter.connect(g);
-    g.connect(masterGain);
+    g.connect(dest);
     src.start(t0);
     src.stop(t0 + dur + 0.02);
   });
@@ -322,7 +676,7 @@ export function stopMusic(): void {
   /* intentionally empty */
 }
 
-export const sfx = {
+const sfxBodies = {
   click: () => tone({ freq: 720, dur: 0.04, type: 'sine', gain: 0.04 }),
 
   spellKey: () => tone({ freq: 480 + Math.random() * 80, dur: 0.06, type: 'triangle', gain: 0.05 }),
@@ -461,10 +815,10 @@ export const sfx = {
   fork: () => tone({ freq: 494, dur: 0.12, type: 'triangle', gain: 0.05 }),
 
   /** Gold award — PLACEHOLDER clip gold_A (G5 coin bell); no longer the B5→E6 coin motif. */
-  gold: () => playClip('gold', playGoldFallback),
+  gold: (level?: number) => playClip('gold', level, playGoldFallback),
 
   /** 叮！ the player gained 星星 — PLACEHOLDER clip ding_A (E6 glass bell). One call per gain event. */
-  ding: () => playClip('ding', playDingFallback),
+  ding: (level?: number) => playClip('ding', level, playDingFallback),
 
   shopBuy: () => {
     tone({ freq: 587, dur: 0.08, type: 'triangle', gain: 0.05 });
@@ -486,6 +840,25 @@ export const sfx = {
     noiseBurst(0.08, 0.03, 0.02);
   },
 };
+
+type SfxName = keyof typeof sfxBodies;
+
+/** UI taps: never ducked, never merged (DUCK_SPEC table). */
+const UI_SFX: ReadonlySet<SfxName> = new Set<SfxName>(['click', 'spellKey', 'cardPlay']);
+/** Reward and outcome sounds that wait out a listening prompt (rule 2). */
+const CRITICAL_SFX: ReadonlySet<SfxName> = new Set<SfxName>(['win']);
+
+function routed(name: SfxName): (level?: number) => void {
+  const body = sfxBodies[name] as (level?: number) => void;
+  if (name === 'ding' || name === 'gold') return (level) => body(level); // playClip routes itself
+  const bus = UI_SFX.has(name) ? 'ui' : 'sfx';
+  const critical = CRITICAL_SFX.has(name);
+  return (level) => trigger(name, level, { bus, critical }, () => body());
+}
+
+export const sfx = Object.fromEntries(
+  (Object.keys(sfxBodies) as SfxName[]).map((name) => [name, routed(name)]),
+) as { readonly [K in SfxName]: (level?: number) => void };
 
 export function volumeIcon(): string {
   if (volume === 0) return '🔇';

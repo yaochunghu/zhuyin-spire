@@ -19,8 +19,21 @@ interface FakeSource {
   connect: (to: unknown) => void;
 }
 
+interface FakeParam {
+  value: number;
+  ramps: Array<[number, number]>;
+  cancelScheduledValues: () => void;
+  setValueAtTime: (v: number) => void;
+  setTargetAtTime: () => void;
+  linearRampToValueAtTime: (v: number, t: number) => void;
+}
+interface FakeGain { gain: FakeParam; connectedTo: unknown[]; connect: (to: unknown) => void }
+
 let sources: FakeSource[] = [];
+/** Every GainNode: [0] masterGain, [1..4] voice / sfx / music / ui buses, then per-clip gains. */
+const gains: FakeGain[] = [];
 let master: unknown = null;
+const voiceBus = () => gains[1];
 let spoken: Array<{ text: string; onend?: () => void }> = [];
 const synth = { getVoices: () => [{ lang: 'zh-TW', name: 'Mandarin', default: false }], cancel: vi.fn(), speak: vi.fn() };
 
@@ -30,8 +43,17 @@ class FakeAudioContext {
   destination = {};
   resume = async (): Promise<void> => {};
   decodeAudioData = async (data: ArrayBuffer): Promise<unknown> => ({ decoded: data.byteLength });
-  createGain(): unknown {
-    const gain = { gain: { setTargetAtTime: () => {} }, connect: () => {} };
+  createGain(): FakeGain {
+    const param: FakeParam = {
+      value: 1,
+      ramps: [],
+      cancelScheduledValues: () => {},
+      setValueAtTime(v) { this.value = v; },
+      setTargetAtTime: () => {},
+      linearRampToValueAtTime(v, t) { this.ramps.push([v, t]); this.value = v; },
+    };
+    const gain: FakeGain = { gain: param, connectedTo: [], connect(to) { this.connectedTo.push(to); } };
+    gains.push(gain);
     master ??= gain;
     return gain;
   }
@@ -61,6 +83,7 @@ vi.stubGlobal('window', Object.assign(events, {
 }));
 vi.stubGlobal('SpeechSynthesisUtterance', class {
   onend?: () => void;
+  volume = 1;
   constructor(public text: string) {}
 });
 
@@ -103,14 +126,17 @@ const fetchedUrls = () => okFetch.mock.calls.map(([url]) => String(url));
 const endClip = (source: FakeSource) => source.onended?.();
 
 describe('playVoiceLine', () => {
-  it('plays a recorded clip through masterGain instead of Web Speech', async () => {
+  it('plays a recorded clip through its own gain on the voice bus instead of Web Speech', async () => {
     const onEnd = vi.fn();
     voice.playVoiceLine('zy.listen', { onEnd });
     await settle();
     expect(fetchedUrls()).toHaveLength(1);
     expect(fetchedUrls()[0]).toMatch(/zy\.listen.*\.mp3$/u);
     expect(sources).toHaveLength(1);
-    expect(sources[0]!.connectedTo).toEqual([master]);
+    const clipGain = sources[0]!.connectedTo[0] as FakeGain;
+    expect(gains.indexOf(clipGain)).toBeGreaterThan(4);
+    expect(clipGain.connectedTo).toEqual([voiceBus()]);
+    expect(voiceBus()!.connectedTo).toEqual([master]);
     expect(sources[0]!.start).toHaveBeenCalledTimes(1);
     expect(spoken).toHaveLength(0);
     expect(onEnd).not.toHaveBeenCalled();
@@ -283,5 +309,96 @@ describe('playVoiceLine', () => {
     await settle();
     expect(okFetch).toHaveBeenCalledTimes(1);
     expect(sources).toHaveLength(2);
+  });
+
+  it('fades a stopped clip out over 30 ms instead of cutting it', async () => {
+    voice.playVoiceLine('p.great');
+    await settle();
+    voice.playVoiceLine('p.correct');
+    const clipGain = sources[0]!.connectedTo[0] as FakeGain;
+    expect(clipGain.gain.ramps.at(-1)).toEqual([0, voice.VOICE_STOP_FADE_S]);
+    expect(sources[0]!.stop).toHaveBeenCalledWith(voice.VOICE_STOP_FADE_S);
+    expect(voice.VOICE_STOP_FADE_S).toBe(0.03);
+  });
+
+  it('reports the playing clip as voice activity, and prompts as prompts', async () => {
+    voice.playVoiceLine('zy.listen', { prompt: true });
+    await settle();
+    expect(audio.getMixSnapshot()).toMatchObject({ voiceActive: true, promptActive: true });
+    endClip(sources[0]!);
+    expect(audio.getMixSnapshot().voiceActive).toBe(false);
+    voice.playVoiceLine('p.great');
+    await settle();
+    expect(audio.getMixSnapshot()).toMatchObject({ voiceActive: true, promptActive: false });
+  });
+
+  // N1
+  it('muting cancels a Web Speech fallback line that is speaking', async () => {
+    const onEnd = vi.fn();
+    voice.playVoiceLine('m.make10.sum.10_0', { fallbackText: '十和零合起來是幾', onEnd });
+    await settle();
+    expect(spoken).toHaveLength(1);
+    synth.cancel.mockClear();
+    audio.setVolume(0);
+    expect(synth.cancel).toHaveBeenCalled();
+    expect(voice.isVoiceBusy()).toBe(false);
+    spoken[0]!.onend?.(); // a late end event from the cancelled utterance
+    expect(onEnd).not.toHaveBeenCalled();
+  });
+
+  it('muting the voice bus also cancels the fallback line', async () => {
+    voice.playVoiceLine('m.make10.sum.10_0', { fallbackText: '十和零合起來是幾' });
+    await settle();
+    synth.cancel.mockClear();
+    audio.setBusMuted('voice', true);
+    expect(synth.cancel).toHaveBeenCalled();
+    audio.setBusMuted('voice', false);
+  });
+
+  it('the Web Speech fallback speaks at the game volume', async () => {
+    audio.setVolume(0.45);
+    voice.playVoiceLine('m.make10.sum.10_0', { fallbackText: '十和零合起來是幾' });
+    await settle();
+    expect((spoken[0] as unknown as { volume: number }).volume).toBe(0.45);
+  });
+
+  it('volume changes that do not mute leave the fallback line alone', async () => {
+    voice.playVoiceLine('m.make10.sum.10_0', { fallbackText: '十和零合起來是幾' });
+    await settle();
+    synth.cancel.mockClear();
+    audio.setVolume(0.45);
+    expect(synth.cancel).not.toHaveBeenCalled();
+  });
+
+  // N2
+  it('retries a clip whose load failed on the next play; Web Speech covers the failed one', async () => {
+    let fail = true;
+    vi.stubGlobal('fetch', vi.fn(async () => {
+      if (fail) throw new Error('offline');
+      return { ok: true, arrayBuffer: async () => new ArrayBuffer(4) };
+    }));
+    voice.playVoiceLine('p.correct');
+    await settle();
+    expect(sources).toHaveLength(0);
+    expect(spoken.map((u) => u.text)).toEqual(['答對了，好棒！']);
+    spoken[0]!.onend?.();
+    fail = false;
+    voice.playVoiceLine('p.correct');
+    await settle();
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(sources).toHaveLength(1);
+    expect(sources[0]!.start).toHaveBeenCalled();
+  });
+
+  it('retries after a non-ok response too', async () => {
+    let ok = false;
+    vi.stubGlobal('fetch', vi.fn(async () => (ok ? { ok: true, arrayBuffer: async () => new ArrayBuffer(4) } : { ok: false })));
+    voice.playVoiceLine('p.great');
+    await settle();
+    expect(sources).toHaveLength(0);
+    ok = true;
+    voice.playVoiceLine('p.great');
+    await settle();
+    expect(sources).toHaveLength(1);
   });
 });
