@@ -6,6 +6,13 @@ import { sfx, startMusic, warmAudio } from '../game/audio';
 import { getActiveProfile, getCharacterCardProgress } from '../game/profiles';
 import { warmSpeech } from '../game/speech';
 import {
+  voiceButton,
+  voiceCardRead,
+  voiceRestChosen,
+  voiceSmithDone,
+  voiceWarm,
+} from './voiceDirector';
+import {
   PRACTICE_BADGE_THRESHOLD,
   SHOP_REMOVE_PRICE,
   applyRestHeal,
@@ -110,10 +117,12 @@ export function renderTitle(): HTMLElement {
     cont.addEventListener('click', () => {
       warmAudio();
       warmSpeech();
+      voiceWarm();
       startMusic();
       sfx.click();
       session.coachCollapsed = false;
       session.goldSfxForPending = -1;
+      voiceButton('u.continue');
       if (!resumeSavedRun(run())) {
         showFlash('💨');
         startRun(run());
@@ -129,6 +138,7 @@ export function renderTitle(): HTMLElement {
     fresh.addEventListener('click', () => {
       warmAudio();
       warmSpeech();
+      voiceWarm();
       startMusic();
       sfx.click();
       session.coachCollapsed = false;
@@ -145,6 +155,7 @@ export function renderTitle(): HTMLElement {
     start.addEventListener('click', () => {
       warmAudio();
       warmSpeech();
+      voiceWarm();
       startMusic();
       sfx.click();
       session.coachCollapsed = false;
@@ -162,6 +173,7 @@ export function renderTitle(): HTMLElement {
   practice.addEventListener('click', () => {
     warmAudio();
     warmSpeech();
+    voiceWarm();
     startMusic();
     sfx.click();
     session.coachCollapsed = false;
@@ -274,6 +286,7 @@ export function renderCharacterPick(): HTMLElement {
     btn.setAttribute('aria-label', `選擇${character.name}，起始遺物${relic.name}`);
     btn.addEventListener('click', () => {
       sfx.relic();
+      voiceButton('u.start');
       pickCharacter(run(), id);
       render();
     });
@@ -310,6 +323,7 @@ export function renderRest(): HTMLElement {
     sfx.heal();
     const ok = applyRestHeal(run());
     if (!ok) return;
+    voiceRestChosen();
     const msg = run().flash ?? '❤️✨';
     // Must re-render so map / HP bars pick up new heroHp (and leave rest UI)
     render();
@@ -384,6 +398,8 @@ export function renderSmith(): HTMLElement {
     btn.disabled = !eligible;
     btn.innerHTML = cardFaceHtml(current);
     btn.addEventListener('click', () => {
+      // Picking a card to preview is the inspect moment: 老師 reads it.
+      if (session.smithSelectedUid !== card.uid) voiceCardRead(card.defId);
       session.smithSelectedUid = card.uid;
       render();
     });
@@ -408,6 +424,7 @@ export function renderSmith(): HTMLElement {
       session.smithSelectedUid = null;
       if (ok) {
         sfx.cardPlay();
+        voiceSmithDone();
         render();
         showFlash('🔨✨');
       }
@@ -421,6 +438,7 @@ export function renderSmith(): HTMLElement {
   cancel.textContent = '↩️ 回營火';
   cancel.addEventListener('click', () => {
     session.smithSelectedUid = null;
+    voiceButton('u.campback');
     cancelSmith(run());
     render();
   });
@@ -485,6 +503,7 @@ function renderRemovePicker(mode: 'rest' | 'shop'): HTMLElement {
   skip.setAttribute('aria-label', isShop ? '回商店' : '回營火再選');
   skip.addEventListener('click', () => {
     sfx.click();
+    voiceButton(isShop ? 'u.back' : 'u.campback');
     if (isShop) cancelShopRemove(run());
     else skipRemoveCard(run());
     render();
@@ -539,6 +558,8 @@ export function renderShop(): HTMLElement {
       render();
       if (ok) sfx.shopBuy();
       else if (flash === '🪙×' || flash === '🧪滿') sfx.shopDeny();
+      if (ok) voiceButton('u.buy');
+      else if (flash === '🪙×') voiceButton('u.poor');
       if (flash) showFlash(flash);
     });
     potionRow.appendChild(button);
@@ -564,6 +585,8 @@ export function renderShop(): HTMLElement {
       render();
       if (f === '🛒✨') sfx.shopBuy();
       else if (f === '🪙×') sfx.shopDeny();
+      if (f === '🛒✨') voiceButton('u.buy');
+      else if (f === '🪙×') voiceButton('u.poor');
       if (f) showFlash(f);
     });
     row.appendChild(btn);
@@ -594,6 +617,7 @@ export function renderShop(): HTMLElement {
     if (!ok) {
       const f = run().flash;
       if (f === '🪙×') sfx.shopDeny();
+      if (f === '🪙×') voiceButton('u.poor');
       if (f) showFlash(f);
       return;
     }
@@ -752,6 +776,8 @@ export function renderReward(): HTMLElement {
   skip.disabled = rewardBlocked;
   skip.addEventListener('click', () => {
     sfx.click();
+    // 收下 is read; 先不要 (u.notnow) is not recorded and stays silent.
+    if (run().rewardOptions.length === 0) voiceButton('u.take');
     pickReward(run(), null);
     const flash = run().flash;
     render();

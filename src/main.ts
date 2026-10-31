@@ -29,6 +29,7 @@ import { applyGameSettingsToDocument, loadGameSettings } from './game/settings';
 import { bindUi, session } from './ui/runtime';
 import { openDeckViewer } from './ui/deckViewer';
 import { teachingTimers } from './ui/pauseTimers';
+import { voiceAfterRender, voiceOutcome } from './ui/voiceDirector';
 import { openPhoneMenu } from './ui/phoneMenu';
 import { isPhoneLayout } from './ui/responsive';
 import {
@@ -273,7 +274,8 @@ function render(): void {
     appEl.appendChild(f);
   }
 
-  switch (battleOutro ? 'combat' : runState.screen) {
+  const shownScreen = battleOutro ? 'combat' : runState.screen;
+  switch (shownScreen) {
     case 'title':
       appEl.appendChild(renderTitle());
       break;
@@ -336,6 +338,7 @@ function render(): void {
       break;
   }
   hydrateArtImages(appEl);
+  voiceAfterRender(runState, shownScreen);
 }
 
 bindUi({
@@ -345,7 +348,11 @@ bindUi({
   showFlash,
   appendCoach,
   clearFloatSoon,
-  playOutcomeOverlay,
+  playOutcomeOverlay: (kind, opts, onDone) => {
+    // 點燈人's poof / faint line rides on the overlay (one overlay at a time).
+    if (!session.outcomeAnimPlaying) voiceOutcome(runState, kind, opts);
+    playOutcomeOverlay(kind, opts, onDone);
+  },
   submitSpell,
   playBattleEnding: presentBattleEnding,
 });

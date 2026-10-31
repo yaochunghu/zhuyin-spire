@@ -14,6 +14,7 @@ import { openDeckViewer } from './deckViewer';
 import { renderPotionBelt } from './potionBelt';
 import { renderRelicBadges } from './relicBadges';
 import { appendCoach, render, run, session } from './runtime';
+import { voiceMapPick } from './voiceDirector';
 
 const SELECT_FLASH_MS = 480;
 
@@ -182,6 +183,7 @@ export function renderMap(): HTMLElement {
         sfx.mapStep();
         if (n.kind === 'elite' || n.kind === 'boss') sfx.elite();
         session.deckViewerOpen = false;
+        voiceMapPick(run(), n);
         btn.classList.add('selected-flash');
         window.setTimeout(() => {
           selectMapNode(run(), n.id);

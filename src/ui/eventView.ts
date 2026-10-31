@@ -14,7 +14,6 @@ import {
   currentPickCards,
   currentPickPrompt,
 } from '../game/eventEngine';
-import { speakCue } from '../game/speech';
 import {
   cancelEventChoice,
   chooseEventChoice,
@@ -27,6 +26,7 @@ import {
 } from '../game/state';
 import { cardFaceHtml } from './cards';
 import { appendCoach, render, run, session } from './runtime';
+import { voiceButton, voiceCardRead, voiceEventChoice, voiceEventOpened } from './voiceDirector';
 
 function cardButton(defId: string, selected: boolean, onClick: () => void): HTMLButtonElement {
   const button = document.createElement('button');
@@ -57,7 +57,8 @@ export function renderEvent(): HTMLElement {
 
   if (session.eventSpokenId !== event.id) {
     session.eventSpokenId = event.id;
-    speakCue(event.presentation);
+    // 老師 reads the title and the line (Web Speech keeps the line if a clip fails).
+    voiceEventOpened(state, event);
   }
 
   const icon = document.createElement('div');
@@ -96,7 +97,7 @@ export function renderEvent(): HTMLElement {
   if (active.phase === 'choose') {
     const choices = document.createElement('div');
     choices.className = 'event-choices';
-    for (const choice of event.choices) {
+    for (const [choiceIndex, choice] of event.choices.entries()) {
       if (choiceIsHidden(state, choice)) continue;
       const reason = choiceReason(state, choice);
       const button = document.createElement('button');
@@ -122,6 +123,7 @@ export function renderEvent(): HTMLElement {
       button.addEventListener('click', () => {
         if (button.disabled) return;
         sfx.click();
+        voiceEventChoice(event.id, choiceIndex);
         chooseEventChoice(run(), choice.id);
         render();
       });
@@ -155,7 +157,10 @@ export function renderEvent(): HTMLElement {
     actions.className = 'event-choices';
     actions.append(
       actionButton('確定', () => confirmEventChoice(run())),
-      actionButton('回去', () => cancelEventChoice(run())),
+      actionButton('回去', () => {
+        voiceButton('u.back');
+        cancelEventChoice(run());
+      }),
     );
     body.append(note, chips, names, actions);
     return el;
@@ -168,10 +173,15 @@ export function renderEvent(): HTMLElement {
     const grid = document.createElement('div');
     grid.className = 'event-card-grid';
     for (const card of currentPickCards(state)) {
+      const selected = active.draftUids.includes(card.uid);
       grid.appendChild(cardButton(
         card.defId,
-        active.draftUids.includes(card.uid),
-        () => toggleEventCard(run(), card.uid),
+        selected,
+        () => {
+          // Selecting (not committing) is the inspect moment: 老師 reads the card.
+          if (!selected) voiceCardRead(card.defId);
+          toggleEventCard(run(), card.uid);
+        },
       ));
     }
     const actions = document.createElement('div');
@@ -179,7 +189,10 @@ export function renderEvent(): HTMLElement {
     const confirm = actionButton('確定', () => confirmEventCard(run()));
     const stepNeed = active.pickSteps[active.pickIndex]?.need ?? 1;
     confirm.disabled = active.draftUids.length < stepNeed;
-    actions.append(confirm, actionButton('回去', () => cancelEventChoice(run())));
+    actions.append(confirm, actionButton('回去', () => {
+      voiceButton('u.back');
+      cancelEventChoice(run());
+    }));
     body.append(prompt, grid, actions);
     return el;
   }
@@ -193,7 +206,10 @@ export function renderEvent(): HTMLElement {
     for (const defId of active.offerIds) {
       grid.appendChild(cardButton(defId, false, () => takeEventOfferCard(run(), defId)));
     }
-    const skip = actionButton('不拿也很好', () => takeEventOfferCard(run(), null));
+    const skip = actionButton('不拿也很好', () => {
+      voiceButton('u.skipok');
+      takeEventOfferCard(run(), null);
+    });
     body.append(prompt, grid, skip);
     return el;
   }
@@ -206,7 +222,10 @@ export function renderEvent(): HTMLElement {
     const prompt = document.createElement('p');
     prompt.className = 'kid-prompt';
     prompt.textContent = names ? `要跟${names}打招呼` : '要開始了';
-    body.append(prompt, actionButton('開始', () => startEventCombat(run())));
+    body.append(prompt, actionButton('開始', () => {
+      voiceButton('u.start');
+      startEventCombat(run());
+    }));
     return el;
   }
 
@@ -218,7 +237,10 @@ export function renderEvent(): HTMLElement {
     row.textContent = result;
     results.appendChild(row);
   }
-  body.append(results, actionButton('繼續', () => continueEventResult(run())));
+  body.append(results, actionButton('繼續', () => {
+    voiceButton('u.continue');
+    continueEventResult(run());
+  }));
   return el;
 }
 

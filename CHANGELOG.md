@@ -8,6 +8,22 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+### Recorded voice lines (PLACEHOLDER)
+
+- 老師 and 點燈人 now speak with recorded clips: 550 MP3s for 578 line ids (老師 prompts, feedback, praise and buttons; every 留里克 and 琉 card name and desc; every event title, text and choice; 點燈人's live story lines). All are placeholder ElevenLabs TTS for the first playtest; see THIRD_PARTY_NOTICES.md
+- A cast opens with 老師's frame (仔細聽，拼拼看。/ 這個怎麼拼呢？ / 選一個答案。), then the word cue as before. 湊十 questions and 答案是 0–20 have whole-sentence clips; other math questions keep the device voice
+- Praise and gentle retries rotate and never repeat back to back. Button and screen reads play the first time per session
+- 點燈人 tells the story: a first-launch prologue (any tap skips it), run and act starts, room picks (at most one in three), one mid-fight line plus the win line, boss entries and phases, act clears, and the run end. Lines he should say only once (the prologue, the first clear of an act per hero, the first win per hero) are remembered on the learner profile; older profiles start fresh
+- 老師 reads a card's name and desc when you pick it at the smith or in an event's card pick. Upgraded cards use the base card's line
+- Any line without a clip, or whose clip cannot load, falls back to the device voice. Mute silences every clip. One voice plays at a time, and a cast, the pause menu or a hidden page stops it
+- `u.notnow` (先不要) is held by Design and is not shipped; that button stays silent
+
+### Dev / ops
+
+- Clips load only when first played: the registry is its own small chunk, each MP3 is a separate hashed file, and Vite never inlines an MP3 (a `data:` URL would break the `connect-src 'self'` CSP). The CSP is unchanged
+- `scripts/import-voice-clips.mjs` copies a QA-passed batch and regenerates `src/data/voiceLines.ts`
+- Saves stay version 4. Learner profiles gain an optional `voiceMemory` field
+
 ---
 
 ## [0.4.12] — 2026-10-30
