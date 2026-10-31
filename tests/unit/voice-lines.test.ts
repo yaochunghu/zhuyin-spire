@@ -106,15 +106,12 @@ describe('voice-line registry', () => {
   });
 
   it('reads each event exactly as the event screen shows it', () => {
-    // Design's copy fix 趁近聽 → 湊近聽 was recorded before it shipped on screen.
-    const pendingCopy = new Set(['ev.event_shared_humming_well.c2']);
     for (const event of EVENTS) {
       expect(VOICE_LINES[`ev.${event.id}.title`]?.[2], event.id).toBe(event.title);
       expect(VOICE_LINES[`ev.${event.id}.text`]?.[2], event.id).toBe(event.presentation);
       event.choices.forEach((choice, index) => {
         const key = `ev.${event.id}.c${index + 1}`;
-        if (pendingCopy.has(key)) expect(VOICE_LINES[key]).toBeDefined();
-        else expect(VOICE_LINES[key]?.[2], key).toBe(choice.label);
+        expect(VOICE_LINES[key]?.[2], key).toBe(choice.label);
       });
       expect(VOICE_LINES[`ev.${event.id}.c${event.choices.length + 1}`], event.id).toBeUndefined();
     }
