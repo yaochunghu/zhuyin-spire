@@ -6,16 +6,22 @@
  *
  * - Loading: the registry chunk (voiceClips.ts) and each MP3 load on first use.
  *   Clips are same-origin assets: fetch → decodeAudioData → AudioBufferSource
- *   → masterGain, like the sfx clips, so the CSP keeps media-src 'none'.
+ *   → the voice bus, like the sfx clips, so the CSP keeps media-src 'none'.
+ *   A failed load is not cached: the next play of that clip tries again.
  * - Fallback: a key without a clip, or a clip that cannot load in time, is
- *   spoken by speakCue() with the line text (or `fallbackText`).
- * - One voice at a time: a new line stops the current clip and Web Speech;
- *   cancelSpeech() and speakCue() stop a clip. `queue: true` waits instead.
- * - Settings: muted (volume 0) plays nothing. A hidden page or paused teaching
+ *   spoken by speakCue() with the line text (or `fallbackText`), at the
+ *   current volume.
+ * - One voice at a time: a new line stops the current clip (30 ms fade-out)
+ *   and Web Speech; cancelSpeech() and speakCue() stop a clip. `queue: true`
+ *   waits instead.
+ * - Mixing: a playing clip ducks the sfx and music buses (audio.ts); `prompt`
+ *   lines also hold reward sounds until they end.
+ * - Settings: muted (volume 0) plays nothing, and muting stops the clip or the
+ *   Web Speech fallback that is playing. A hidden page or paused teaching
  *   timers start nothing, exactly like speakCue().
  */
 import { teachingTimers } from '../ui/pauseTimers';
-import { audioOutput, isMuted } from './audio';
+import { audioOutput, getVolume, isVoiceMuted, setVoiceActivity } from './audio';
 import { cancelSpeech, setSpeechInterruptHook, speakCue } from './speech';
 import type { ResolvedVoiceLine } from './voiceClips';
 
@@ -28,6 +34,8 @@ export interface VoiceLineOpts {
   queue?: boolean;
   /** Silence before a queued line starts. */
   gapMs?: number;
+  /** Part of a listening prompt (a 注音 or math question): reward sounds wait for it. */
+  prompt?: boolean;
   /**
    * The line finished, or was skipped because sound is off. Not called when a
    * newer line, cancelSpeech(), a hidden page or a pause stopped it.
@@ -44,6 +52,8 @@ const QUEUE_MAX_AGE_MS = 20_000;
 const MAX_QUEUE = 4;
 /** Decoded clips kept in memory (each is a few seconds of mono PCM). */
 const MAX_CACHED_CLIPS = 24;
+/** A clip cut short by a newer line fades out over this long (DUCK_SPEC rule 1). */
+export const VOICE_STOP_FADE_S = 0.03;
 
 interface Pending {
   key: string;
@@ -58,7 +68,9 @@ const queue: Pending[] = [];
 /** Bumps whenever a line starts or is stopped, so stale loads never play. */
 let token = 0;
 let busy = false;
-let source: AudioBufferSourceNode | null = null;
+let source: { node: AudioBufferSourceNode; gain: GainNode; ctx: AudioContext } | null = null;
+/** True while this module's Web Speech fallback line is speaking. */
+let fallbackSpeaking = false;
 let gapTimer: ReturnType<typeof setTimeout> | undefined;
 let stallTimer: ReturnType<typeof setTimeout> | undefined;
 /** True while this module itself drives speech.ts, so its hook ignores us. */
@@ -77,7 +89,7 @@ function loadBuffer(ctx: AudioContext, url: string): Promise<AudioBuffer | null>
   if (load) {
     buffers.delete(url); // keep recently used clips at the end
   } else {
-    load = (async () => {
+    const attempt: Promise<AudioBuffer | null> = (async () => {
       try {
         if (typeof fetch !== 'function') return null;
         const res = await fetch(url);
@@ -86,7 +98,12 @@ function loadBuffer(ctx: AudioContext, url: string): Promise<AudioBuffer | null>
       } catch {
         return null;
       }
-    })();
+    })().then((buffer) => {
+      // Never keep a failure: the fallback covers this play, the next one retries.
+      if (!buffer && buffers.get(url) === attempt) buffers.delete(url);
+      return buffer;
+    });
+    load = attempt;
   }
   buffers.set(url, load);
   while (buffers.size > MAX_CACHED_CLIPS) buffers.delete(buffers.keys().next().value!);
@@ -109,11 +126,21 @@ function stopSource(): void {
   const playing = source;
   source = null;
   if (!playing) return;
-  playing.onended = null;
+  setVoiceActivity('clip', false);
+  playing.node.onended = null;
   try {
-    playing.stop();
+    const now = playing.ctx.currentTime;
+    const g = playing.gain.gain;
+    g.cancelScheduledValues(now);
+    g.setValueAtTime(g.value, now);
+    g.linearRampToValueAtTime(0, now + VOICE_STOP_FADE_S);
+    playing.node.stop(now + VOICE_STOP_FADE_S);
   } catch {
-    /* already stopped */
+    try {
+      playing.node.stop();
+    } catch {
+      /* already stopped */
+    }
   }
 }
 
@@ -128,9 +155,17 @@ function clearTimers(): void {
 function interrupt(): void {
   token += 1;
   busy = false;
+  fallbackSpeaking = false;
   queue.length = 0;
   clearTimers();
   stopSource();
+}
+
+/** interrupt(), and also silence this module's Web Speech fallback line. */
+function interruptWithSpeech(): void {
+  const speaking = fallbackSpeaking;
+  interrupt();
+  if (speaking) driveSpeech(() => cancelSpeech());
 }
 
 setSpeechInterruptHook(() => {
@@ -169,13 +204,14 @@ function begin(key: string, opts: VoiceLineOpts): void {
   clearTimers();
   stopSource();
   driveSpeech(() => cancelSpeech());
+  fallbackSpeaking = false;
   const mine = ++token;
   if (blocked()) {
     busy = false;
     queue.length = 0;
     return;
   }
-  if (isMuted() || !userHasInteracted()) {
+  if (isVoiceMuted() || !userHasInteracted()) {
     busy = false;
     queue.length = 0;
     opts.onEnd?.();
@@ -200,10 +236,10 @@ function begin(key: string, opts: VoiceLineOpts): void {
       const out = line?.url ? await audioOutput() : null;
       const buffer = out && line?.url ? await loadBuffer(out.ctx, line.url) : null;
       if (mine !== token || settled) return;
-      if (!out || !buffer || blocked() || isMuted()) {
+      if (!out || !buffer || blocked() || isVoiceMuted()) {
         if (settle()) {
           clearTimeout(deadline);
-          if (blocked() || isMuted()) finishSilently(mine);
+          if (blocked() || isVoiceMuted()) finishSilently(mine);
           else fallBack(mine, line, opts);
         }
         return;
@@ -211,13 +247,20 @@ function begin(key: string, opts: VoiceLineOpts): void {
       if (!settle()) return;
       clearTimeout(deadline);
       const node = out.ctx.createBufferSource();
+      const gain = out.ctx.createGain(); // per-clip gain, for the 30 ms stop fade
       node.buffer = buffer;
-      node.connect(out.dest);
+      node.connect(gain);
+      gain.connect(out.dest);
+      const playing = { node, gain, ctx: out.ctx };
       node.onended = () => {
-        if (source === node) source = null;
+        if (source === playing) {
+          source = null;
+          setVoiceActivity('clip', false);
+        }
         if (mine === token) finish(mine, opts);
       };
-      source = node;
+      source = playing;
+      setVoiceActivity('clip', true, !!opts.prompt);
       node.start();
     } catch {
       if (settle()) {
@@ -234,9 +277,20 @@ function fallBack(mine: number, line: ResolvedVoiceLine | null, opts: VoiceLineO
     finish(mine, opts);
     return;
   }
+  if (isVoiceMuted()) {
+    finishSilently(mine);
+    return;
+  }
   // Web Speech gives no end event on some failures; never let the queue stall.
   stallTimer = setTimeout(() => finish(mine, opts), 1_500 + text.length * 320);
-  driveSpeech(() => speakCue(text, { onEnd: () => finish(mine, opts) }));
+  fallbackSpeaking = true;
+  driveSpeech(() =>
+    speakCue(text, {
+      volume: getVolume(),
+      prompt: !!opts.prompt,
+      onEnd: () => finish(mine, opts),
+    }),
+  );
 }
 
 function finishSilently(mine: number): void {
@@ -247,6 +301,7 @@ function finishSilently(mine: number): void {
 
 function finish(mine: number, opts: VoiceLineOpts): void {
   if (mine !== token) return;
+  fallbackSpeaking = false;
   token += 1; // late end events from this line are now stale
   clearTimers();
   busy = false;
@@ -273,7 +328,7 @@ function advanceQueue(): void {
  * Call from a user gesture (it may create the AudioContext).
  */
 export function prefetchVoiceLines(keys: readonly string[]): void {
-  if (isMuted() || !userHasInteracted()) return;
+  if (isVoiceMuted() || !userHasInteracted()) return;
   void (async () => {
     const reg = await loadRegistry();
     if (!reg || keys.length === 0) return;
@@ -293,13 +348,15 @@ export function warmVoice(): void {
 
 if (typeof window !== 'undefined') {
   window.addEventListener('zhuyin-volume-change', () => {
-    if (isMuted() && busy) interrupt();
+    // Muting silences the clip and any Web Speech fallback line mid-sentence.
+    if (isVoiceMuted() && (busy || fallbackSpeaking)) interruptWithSpeech();
   });
 }
 
 /** Test seam: forget decoded clips and queued lines. */
 export function resetVoiceForTests(): void {
   interrupt();
+  setVoiceActivity('clip', false);
   buffers.clear();
   registry = null;
 }

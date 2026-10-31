@@ -1,4 +1,5 @@
 import { teachingTimers } from '../ui/pauseTimers';
+import { setVoiceActivity } from './audio';
 
 /** Web Speech API helpers for cue-word listening (zh-TW). */
 
@@ -8,6 +9,18 @@ let speechRequest = 0;
 let speechWatchdog: number | undefined;
 /** Recorded voice clips (voice.ts) register here so speech and clips never overlap. */
 let interruptHook: (() => void) | null = null;
+/** Clears the 'speech' voice activity if no end event ever arrives. */
+let activityTimer: ReturnType<typeof setTimeout> | undefined;
+
+/** Web Speech is speaking (or about to): duck the sfx and music buses meanwhile. */
+function speechActive(active: boolean, prompt = false, text = ''): void {
+  clearTimeout(activityTimer);
+  activityTimer = undefined;
+  setVoiceActivity('speech', active, prompt);
+  if (active) {
+    activityTimer = setTimeout(() => setVoiceActivity('speech', false), 1_500 + text.length * 320);
+  }
+}
 
 export function setSpeechInterruptHook(hook: (() => void) | null): void {
   interruptHook = hook;
@@ -67,6 +80,7 @@ export function cancelSpeech(): void {
   speakGen += 1;
   speechRequest += 1;
   globalThis.clearTimeout(speechWatchdog);
+  speechActive(false);
   if (!isSpeechAvailable()) return;
   window.speechSynthesis.cancel();
 }
@@ -74,6 +88,13 @@ export function cancelSpeech(): void {
 export interface SpeakOpts {
   /** Slightly slower for preschool listening (default 0.82) */
   rate?: number;
+  /** 0–1, from the game volume (Web Speech cannot change it mid-utterance). Default 1. */
+  volume?: number;
+  /**
+   * A listening prompt (a 注音 word or math question): reward sounds wait for
+   * it to end. Default true; voice.ts passes false for ordinary lines.
+   */
+  prompt?: boolean;
   onEnd?: () => void;
 }
 
@@ -95,6 +116,7 @@ export function speakCue(text: string, opts?: SpeakOpts): void {
   try {
     window.clearTimeout(speechWatchdog);
     window.speechSynthesis.cancel();
+    speechActive(false);
     const voice = pickVoice();
     // Never silently substitute a non-Mandarin default voice for a lesson.
     if (!voice) {
@@ -105,6 +127,7 @@ export function speakCue(text: string, opts?: SpeakOpts): void {
     u.lang = voice.lang;
     u.rate = opts?.rate ?? 0.82;
     u.pitch = 1.08;
+    if (opts?.volume != null) u.volume = Math.min(1, Math.max(0, opts.volume));
     u.voice = voice;
     const gen = speakGen;
     u.onstart = () => {
@@ -113,18 +136,24 @@ export function speakCue(text: string, opts?: SpeakOpts): void {
     u.onend = () => {
       if (request !== speechRequest) return;
       window.clearTimeout(speechWatchdog);
+      speechActive(false);
       if (gen === speakGen) opts?.onEnd?.();
     };
     u.onerror = (event) => {
       if (request !== speechRequest) return;
       window.clearTimeout(speechWatchdog);
+      speechActive(false);
       if (gen === speakGen && event.error !== 'canceled' && event.error !== 'interrupted') {
         reportSpeechFallback(text);
       }
     };
     speechWatchdog = window.setTimeout(() => {
-      if (gen === speakGen && request === speechRequest) reportSpeechFallback(text);
+      if (gen === speakGen && request === speechRequest) {
+        speechActive(false);
+        reportSpeechFallback(text);
+      }
     }, 2_000);
+    speechActive(true, opts?.prompt ?? true, text);
     window.speechSynthesis.speak(u);
   } catch {
     reportSpeechFallback(text);

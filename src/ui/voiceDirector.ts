@@ -13,6 +13,8 @@
  *   mid-fight line plus the end line; a boss fight saves that slot for its phase.
  * - First-time story lines (prologue, wake lines) are remembered per learner
  *   profile; per-run and per-act caps are remembered for this page session.
+ * - Frames, questions and word cues are listening prompts (`prompt: true`):
+ *   reward sounds wait for them to end (DUCK_SPEC rule 2).
  * - u.notnow is not recorded (held pending Yao's decision, Q100) and is never played here.
  */
 import { MATH_WARMUP_STREAK } from '../data/balance';
@@ -452,13 +454,14 @@ export function voiceCastOpen(state: RunState, prompt: CastPrompt): void {
     teachingTimers.set(() => {
       say(prompt.mode === 'listen' ? 'zy.listen' : 'zy.listenHard', {
         fallback: 'none',
+        prompt: true,
         onEnd: () => speakCueWithAutoReplay(cue, 750, speakerTip()),
       });
     }, 220);
     return;
   }
   teachingTimers.set(() => {
-    say('zy.recognize', { fallback: 'none', onEnd: () => speakCue(cue) });
+    say('zy.recognize', { fallback: 'none', prompt: true, onEnd: () => speakCue(cue) });
   }, 150);
 }
 
@@ -488,20 +491,20 @@ function mathOpen(state: RunState, prompt: CastPrompt): void {
   }
   const question = (): void => {
     const key = mathQuestionVoiceKey(prompt.cue.text);
-    const thenPick = (): void => say('m.pick', { fallback: 'none' });
-    if (key) say(key, { fallbackText: prompt.cue.speechText, onEnd: thenPick });
+    const thenPick = (): void => say('m.pick', { fallback: 'none', prompt: true });
+    if (key) say(key, { fallbackText: prompt.cue.speechText, prompt: true, onEnd: thenPick });
     else speakCue(prompt.cue.speechText, { onEnd: thenPick });
   };
   if (intro.length === 0) {
     question();
     return;
   }
-  say(intro[0]!, { fallback: 'none', onEnd: question });
+  say(intro[0]!, { fallback: 'none', prompt: true, onEnd: question });
 }
 
 /** 🔊 再聽: 「再聽一次。」 then the word. */
 export function voiceReplayCue(prompt: CastPrompt): void {
-  say('zy.again', { fallback: 'none', onEnd: () => speakCue(prompt.cue.speechText) });
+  say('zy.again', { fallback: 'none', prompt: true, onEnd: () => speakCue(prompt.cue.speechText) });
 }
 
 /** 💡 the answer is on screen. */
