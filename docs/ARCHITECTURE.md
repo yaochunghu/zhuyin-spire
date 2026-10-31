@@ -7,7 +7,7 @@
 | Build | Vite 8 + TypeScript 7 |
 | UI | Imperative DOM (no React/Vue) |
 | Persist | `localStorage` only |
-| Audio | Procedural Web Audio (`game/audio.ts`) + Web Speech `zh-TW` (`game/speech.ts`) |
+| Audio | Web Audio (`game/audio.ts`): procedural tones plus two placeholder clips in `src/assets/audio/sfx/` (procedural fallback) + Web Speech `zh-TW` (`game/speech.ts`) |
 
 Entry: `index.html` → `src/main.ts` → styles + render switch.
 

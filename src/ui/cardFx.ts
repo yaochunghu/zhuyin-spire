@@ -451,6 +451,10 @@ async function playPlayerResource(
   await sleep(220);
 }
 
+function playPlayerBeads(_fx: Extract<CombatFx, { type: 'playerBeads' }>): void {
+  sfx.ding(); // 叮！ once per gain event, however many stars it adds
+}
+
 async function playPlayerTempo(
   fx: Extract<CombatFx, { type: 'playerTempo' }>,
 ): Promise<void> {
@@ -665,6 +669,8 @@ export async function playCombatFxBatch(
         await playPlayerPower(fx);
       } else if (fx.type === 'playerResource') {
         await playPlayerResource(fx);
+      } else if (fx.type === 'playerBeads') {
+        playPlayerBeads(fx);
       } else if (fx.type === 'playerTempo') {
         await playPlayerTempo(fx);
       } else if (fx.type === 'enemyStatus') {

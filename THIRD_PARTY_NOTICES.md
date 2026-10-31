@@ -17,6 +17,16 @@ with the built-in GenerateImage tool, also from text-only prompts, on
 Enemy sprites, the hero portrait, and the older plates these files replace
 are separate from this notice.
 
+## Original audio
+
+`src/assets/audio/sfx/ding_A.mp3` (叮！ star-bead sound) and
+`gold_A.mp3` (gold award) are fully procedural original work created for
+zhuyin-spire: numpy synthesis of sine partials, encoded with ffmpeg/libmp3lame.
+They use no samples, downloads, or third-party audio, and carry no separate
+license. Both are placeholder sound design pending a final audio pass. The same
+sounds can be synthesised at runtime from their recipes in `src/game/audio.ts`
+(used as a fallback if a clip fails to load).
+
 ## Slay-the-Spire-style map-generation reference
 
 The procedural map pipeline was informed by the open-source project

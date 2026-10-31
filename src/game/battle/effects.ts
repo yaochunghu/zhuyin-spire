@@ -12,6 +12,7 @@ import {
   MAKE_TEN_SIZE,
   TENS_CAP,
 } from '../../data/balance';
+import { pushFx } from './fx';
 import { resolveCard, type CardDef, type CardType, type EffectDef, type TargetType } from '../../data/cards';
 import type {
   CombatCard,
@@ -700,6 +701,7 @@ export function addBeads(state: CombatState, amount: number, preferredEnemyId?: 
   }
   let fired = 0;
   state.beads += amount;
+  pushFx(state, { type: 'playerBeads', amount, value: state.beads });
   while (state.beads >= MAKE_TEN_SIZE) {
     state.beads -= MAKE_TEN_SIZE;
     fireMakeTen(state, preferredEnemyId);
