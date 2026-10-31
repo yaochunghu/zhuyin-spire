@@ -22,7 +22,12 @@ const PRODUCTION_CSP = [
 
 export default defineConfig(({ command, mode }) => ({
   define: { __APP_VERSION__: JSON.stringify(pkg.version) },
-  build: { target: ['chrome120', 'edge120', 'firefox121', 'safari17'] },
+  build: {
+    target: ['chrome120', 'edge120', 'firefox121', 'safari17'],
+    // Audio clips are fetched with connect-src 'self', which blocks data: URLs,
+    // so an MP3 must always stay a separate file however small it is.
+    assetsInlineLimit: (filePath: string) => (filePath.endsWith('.mp3') ? false : undefined),
+  },
   base: command === 'build' || mode === 'production' ? '/zhuyin-spire/' : '/',
   plugins:
     command === 'build'

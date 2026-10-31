@@ -56,6 +56,22 @@ export interface LearnerProfileV1 {
   /** Absent on profiles saved before math casting. Readers use the defaults. */
   mathCasting?: MathCastingPreferences;
   mathInsights?: MathInsights;
+  /** Absent on profiles saved before recorded voice lines. Readers use the defaults. */
+  voiceMemory?: VoiceMemory;
+}
+
+/** Voice lines this learner has already heard, so first-time lines stay first-time. */
+export interface VoiceMemory {
+  /** The first-launch prologue (n.pro.1–3) has started once. */
+  prologueHeard: boolean;
+  /** 老師's 「想再聽，就點喇叭。」 after the first listen cast (zy.speaker). */
+  speakerTipHeard: boolean;
+  /** Runs started with any hero (n.start.again from the second run). */
+  runsStarted: number;
+  /** Acts each hero has cleared at least once (n.wake.1 / n.wake.2, then n.clear.*). */
+  actClears: Partial<Record<CharacterId, number[]>>;
+  /** Won runs per hero (n.wake.3 the first time, then n.wake.more). */
+  runWins: Partial<Record<CharacterId, number>>;
 }
 
 export interface CharacterProgress {
@@ -347,14 +363,44 @@ function sanitizeProfile(value: unknown, index: number): LearnerProfileV1 | null
     characterProgress: sanitizeCharacterProgress(data.characterProgress, !hasProgressField),
     casting: parseCastingPreferences(data.casting),
     castingHistory: sanitizeHistory(data.castingHistory),
-    ...mathFields(data),
+    ...optionalProfileFields(data),
   };
 }
 
-function mathFields(
+export function defaultVoiceMemory(): VoiceMemory {
+  return { prologueHeard: false, speakerTipHeard: false, runsStarted: 0, actClears: {}, runWins: {} };
+}
+
+export function parseVoiceMemory(value: unknown): VoiceMemory {
+  const memory = defaultVoiceMemory();
+  if (!value || typeof value !== 'object') return memory;
+  const data = value as Partial<Record<keyof VoiceMemory, unknown>>;
+  memory.prologueHeard = data.prologueHeard === true;
+  memory.speakerTipHeard = data.speakerTipHeard === true;
+  memory.runsStarted = Math.min(1_000_000, Math.max(0, Math.floor(Number(data.runsStarted) || 0)));
+  const clears = data.actClears && typeof data.actClears === 'object'
+    ? data.actClears as Record<string, unknown>
+    : {};
+  const wins = data.runWins && typeof data.runWins === 'object'
+    ? data.runWins as Record<string, unknown>
+    : {};
+  for (const characterId of CHARACTER_IDS) {
+    const acts = clears[characterId];
+    if (Array.isArray(acts)) {
+      const clean = [...new Set(acts.filter((act): act is number => act === 1 || act === 2 || act === 3))]
+        .sort((a, b) => a - b);
+      if (clean.length) memory.actClears[characterId] = clean;
+    }
+    const won = Math.min(1_000_000, Math.max(0, Math.floor(Number(wins[characterId]) || 0)));
+    if (won > 0) memory.runWins[characterId] = won;
+  }
+  return memory;
+}
+
+function optionalProfileFields(
   data: Partial<LearnerProfileV1>,
-): Pick<LearnerProfileV1, 'mathCasting' | 'mathInsights'> {
-  const fields: Pick<LearnerProfileV1, 'mathCasting' | 'mathInsights'> = {};
+): Pick<LearnerProfileV1, 'mathCasting' | 'mathInsights' | 'voiceMemory'> {
+  const fields: Pick<LearnerProfileV1, 'mathCasting' | 'mathInsights' | 'voiceMemory'> = {};
   if (Object.prototype.hasOwnProperty.call(data, 'mathCasting')) {
     const parsed = parseMathCastingPreferences(data.mathCasting);
     if (parsed) fields.mathCasting = parsed;
@@ -362,6 +408,9 @@ function mathFields(
   if (Object.prototype.hasOwnProperty.call(data, 'mathInsights')) {
     const parsed = parseMathInsights(data.mathInsights);
     if (parsed) fields.mathInsights = parsed;
+  }
+  if (Object.prototype.hasOwnProperty.call(data, 'voiceMemory')) {
+    fields.voiceMemory = parseVoiceMemory(data.voiceMemory);
   }
   return fields;
 }
@@ -493,6 +542,19 @@ export function deleteProfile(profileId: string): boolean {
   }
   announceProfileChange();
   return true;
+}
+
+export function getVoiceMemory(): VoiceMemory {
+  return parseVoiceMemory(getActiveProfile().voiceMemory);
+}
+
+export function updateVoiceMemory(
+  updater: (memory: VoiceMemory) => VoiceMemory,
+): VoiceMemory {
+  return updateActiveProfile((profile) => ({
+    ...profile,
+    voiceMemory: parseVoiceMemory(updater(parseVoiceMemory(profile.voiceMemory))),
+  })).voiceMemory ?? defaultVoiceMemory();
 }
 
 export function getCastingPreferences(): CastingPreferences {

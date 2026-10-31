@@ -54,7 +54,8 @@ On a representative iPad/iPhone and Android phone: play the tutorial with castin
 on; listen using a zh-TW voice; test audio interruption, background/resume, device
 rotation, large text/pinch zoom, hand scrolling, and VoiceOver/TalkBack focus.
 Record device, OS/browser version, and observed result. Desktop emulation cannot
-supply this evidence. No new network speech service, recorded media, or service
-worker is introduced. CSP remains unchanged.
+supply this evidence. No network speech service or service worker is introduced.
+Recorded voice lines are bundled same-origin MP3s played through Web Audio
+(fetch + decode), with Web Speech as the fallback; the CSP remains unchanged.
 
 Use the [device checklist](playtest/DEVICE_CHECKLIST.md) and the [family session](playtest/FAMILY_SESSION.md) to record human evidence. The release rules stay in [PLAYTEST_GATE.md](PLAYTEST_GATE.md). Simulated browser coverage does not mark those steps complete.

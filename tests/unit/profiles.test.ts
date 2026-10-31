@@ -4,10 +4,12 @@ import {
   getActiveProfile,
   getCastingPreferences,
   getProfiles,
+  getVoiceMemory,
   recordCastingResult,
   saveCastingPreferences,
   switchProfile,
   updateActiveProfile,
+  updateVoiceMemory,
 } from '../../src/game/profiles';
 import {
   createNewRun,
@@ -128,5 +130,45 @@ describe('learner profiles', () => {
 
     switchProfile(firstId);
     expect(hasSavedRun()).toBe(true);
+  });
+
+  it('reads voice memory from profiles saved before it existed, and keeps it per child', () => {
+    const first = getActiveProfile();
+    const stored = JSON.parse(localStorage.getItem('zhuyin-spire-learner-profiles-v1')!) as {
+      profiles: Array<Record<string, unknown>>;
+    };
+    expect(stored.profiles[0]).not.toHaveProperty('voiceMemory');
+    expect(getVoiceMemory()).toEqual({
+      prologueHeard: false, speakerTipHeard: false, runsStarted: 0, actClears: {}, runWins: {},
+    });
+
+    updateVoiceMemory((memory) => ({
+      ...memory,
+      prologueHeard: true,
+      runsStarted: 2,
+      actClears: { echoMage: [2, 1, 1] },
+      runWins: { abacusFist: 1 },
+    }));
+    expect(getVoiceMemory()).toMatchObject({
+      prologueHeard: true, runsStarted: 2, actClears: { echoMage: [1, 2] }, runWins: { abacusFist: 1 },
+    });
+
+    createProfile('安安', '🐣');
+    expect(getVoiceMemory().prologueHeard).toBe(false);
+    switchProfile(first.id);
+    expect(getVoiceMemory().prologueHeard).toBe(true);
+  });
+
+  it('drops malformed voice memory instead of failing the profile', () => {
+    updateActiveProfile((profile) => ({
+      ...profile,
+      voiceMemory: {
+        prologueHeard: 'yes', runsStarted: -4, actClears: { echoMage: [9, 'x'], ghost: [1] }, runWins: { echoMage: 'many' },
+      } as unknown as NonNullable<typeof profile.voiceMemory>,
+    }));
+    expect(getVoiceMemory()).toEqual({
+      prologueHeard: false, speakerTipHeard: false, runsStarted: 0, actClears: {}, runWins: {},
+    });
+    expect(getActiveProfile().practiceCorrect).toBe(0);
   });
 });

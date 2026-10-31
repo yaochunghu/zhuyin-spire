@@ -6,6 +6,12 @@ import { teachingTimers } from '../ui/pauseTimers';
 let speakGen = 0;
 let speechRequest = 0;
 let speechWatchdog: number | undefined;
+/** Recorded voice clips (voice.ts) register here so speech and clips never overlap. */
+let interruptHook: (() => void) | null = null;
+
+export function setSpeechInterruptHook(hook: (() => void) | null): void {
+  interruptHook = hook;
+}
 
 export function isSpeechAvailable(): boolean {
   return typeof window !== 'undefined' && 'speechSynthesis' in window;
@@ -57,6 +63,7 @@ export function warmSpeech(): void {
 }
 
 export function cancelSpeech(): void {
+  interruptHook?.();
   speakGen += 1;
   speechRequest += 1;
   globalThis.clearTimeout(speechWatchdog);
@@ -78,6 +85,8 @@ function reportSpeechFallback(text: string): void {
 
 export function speakCue(text: string, opts?: SpeakOpts): void {
   if (typeof document !== 'undefined' && (document.hidden || teachingTimers.isPaused())) return;
+  // A new line always stops a recorded clip, even when this device cannot speak it.
+  interruptHook?.();
   if (!isSpeechAvailable()) {
     reportSpeechFallback(text);
     return;
@@ -126,14 +135,18 @@ export function speakCue(text: string, opts?: SpeakOpts): void {
  * Play cue once, then auto-replay once after a short pause.
  * `cancelSpeech()` aborts the pending replay.
  */
-export function speakCueWithAutoReplay(text: string, replayDelayMs = 750): void {
+export function speakCueWithAutoReplay(
+  text: string,
+  replayDelayMs = 750,
+  onReplayEnd?: () => void,
+): void {
   const gen = speakGen;
   speakCue(text, {
     onEnd: () => {
       if (gen !== speakGen) return;
       window.setTimeout(() => {
         if (gen !== speakGen) return;
-        speakCue(text, { rate: 0.78 });
+        speakCue(text, { rate: 0.78, ...(onReplayEnd ? { onEnd: onReplayEnd } : {}) });
       }, replayDelayMs);
     },
   });

@@ -563,7 +563,7 @@ export const EVENTS: EventDef[] = [
     ],
     choices: [
       choice('coin', '丟硬幣', [pay(25), { op: 'remove', count: 1 }], [pay(35), { op: 'remove', count: 1 }]),
-      choice('listen', '趁近聽', [{ op: 'gainPotion', count: 1 }], [loseHp(2), { op: 'gainPotion', count: 1 }]),
+      choice('listen', '湊近聽', [{ op: 'gainPotion', count: 1 }], [loseHp(2), { op: 'gainPotion', count: 1 }]),
       leave(),
     ],
   },

@@ -9,7 +9,8 @@
  *   PLACEHOLDER audio: both clips are procedural, original, and pending final
  *   sound design.
  * - No continuous background music (SFX + speech only)
- * - Speech: handled separately in speech.ts
+ * - Speech: Web Speech in speech.ts; recorded voice clips in voice.ts, which
+ *   plays through the same masterGain via audioOutput()
  *
  * Volume: 0 | 0.45 | 1  (cycle via UI)
  */
@@ -96,6 +97,16 @@ async function resume(): Promise<AudioContext | null> {
   } catch {
     return null;
   }
+}
+
+/**
+ * The running context and masterGain for other bundled clips (voice.ts).
+ * Null when muted or when Web Audio is unavailable. Never rejects.
+ */
+export async function audioOutput(): Promise<{ ctx: AudioContext; dest: AudioNode } | null> {
+  const c = await resume();
+  if (!c || !masterGain) return null;
+  return { ctx: c, dest: masterGain };
 }
 
 type ClipKey = 'ding' | 'gold';

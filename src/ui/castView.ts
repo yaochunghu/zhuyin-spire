@@ -1,7 +1,7 @@
 import { ENEMIES } from '../data/enemies';
 import { getEnemy, livingEnemies } from '../game/combat';
 import { sfx } from '../game/audio';
-import { cancelSpeech, speakCue, speakCueWithAutoReplay } from '../game/speech';
+import { cancelSpeech } from '../game/speech';
 import { isCastAnswerCorrect } from '../game/castCheck';
 import {
   LEARNING_REVEAL_CONTINUE_MS,
@@ -18,6 +18,15 @@ import {
 } from '../game/state';
 import { playPendingCombatFx, presentBattleEnding } from './combatView';
 import { teachingTimers } from './pauseTimers';
+import {
+  combatVoiceSnapshot,
+  voiceAnswerShown,
+  voiceButton,
+  voiceCardResolved,
+  voiceCastAnswered,
+  voiceCastOpen,
+  voiceReplayCue,
+} from './voiceDirector';
 import {
   appendCoach,
   playOutcomeOverlay,
@@ -112,6 +121,7 @@ export function playSpellReveal(
   };
   continueButton.addEventListener('click', () => {
     sfx.click();
+    voiceButton('u.continue');
     finish();
   });
   revealContinueTimer = teachingTimers.set(() => {
@@ -134,6 +144,7 @@ export function submitSpell(): void {
   const correct = isCastAnswerCorrect(cast.prompt, attempt);
 
   // Capture cue + foe before combat/cast is cleared
+  const prompt = cast.prompt;
   const cue = cast.prompt.cue;
   const spell = cast.prompt.correctionText;
   const isPractice = run().screen === 'practice';
@@ -153,6 +164,7 @@ export function submitSpell(): void {
       sfx.fizzle();
       showFlash('💨');
     }
+    voiceCastAnswered(run(), prompt, correct ? 'correct' : 'fizzle', 'practice');
 
     const afterPractice = (): void => {
       nextPracticePrompt(run());
@@ -178,6 +190,7 @@ export function submitSpell(): void {
     session.castLocked = false;
     if (correct) sfx.castOk();
     else sfx.fizzle();
+    voiceCastAnswered(run(), prompt, correct ? 'correct' : 'fizzle', 'shrine');
     const afterShrine = (): void => render();
     if (run().screen === 'defeat') {
       afterShrine();
@@ -207,15 +220,19 @@ export function submitSpell(): void {
   const isBoss = !!foeDef?.isBoss;
   const isElite = !!foeDef?.isElite;
 
+  const voiceBefore = combatVoiceSnapshot(run().combat);
   const outcome = answerCast(run(), attempt);
   session.spellAttempt = [];
   session.spellUsedBankIdx = [];
   session.hintSpell = null;
   if (outcome === 'retry') {
+    voiceCastAnswered(run(), prompt, 'retry', 'combat');
     session.castLocked = false;
     render();
     return;
   }
+  voiceCastAnswered(run(), prompt, correct ? 'correct' : 'fizzle', 'combat');
+  if (correct) voiceCardResolved(run(), cast.cardDef.id, voiceBefore);
   session.castSpeechPlayedForOpen = false;
   session.speechFallbackText = null;
 
@@ -353,7 +370,8 @@ export function renderCastCheck(isPractice = false): HTMLElement {
   if (mode === 'listen' || mode === 'listenHard') {
     if (!session.castSpeechPlayedForOpen) {
       sfx.listenOpen();
-      teachingTimers.set(() => speakCueWithAutoReplay(cast.prompt.cue.speechText), 220);
+      // 老師's frame, then the word cue with its auto-replay (220 ms after the chime).
+      voiceCastOpen(run(), cast.prompt);
       session.castSpeechPlayedForOpen = true;
     }
     const replay = document.createElement('button');
@@ -363,12 +381,12 @@ export function renderCastCheck(isPractice = false): HTMLElement {
     replay.addEventListener('click', () => {
       sfx.click();
       cancelSpeech();
-      speakCue(cast.prompt.cue.speechText);
+      voiceReplayCue(cast.prompt);
     });
     cuePane.appendChild(replay);
   } else if (!session.castSpeechPlayedForOpen) {
-    // Recognize: soft read-aloud once (helps adult + kid pairing)
-    teachingTimers.set(() => speakCue(cast.prompt.cue.speechText), 150);
+    // Recognize: 老師's frame, then a soft read-aloud once (helps adult + kid pairing)
+    voiceCastOpen(run(), cast.prompt);
     session.castSpeechPlayedForOpen = true;
   }
 
@@ -541,6 +559,7 @@ export function renderCastCheck(isPractice = false): HTMLElement {
     if (ans) {
       sfx.click();
       session.hintSpell = ans;
+      voiceAnswerShown();
       render();
     }
   });

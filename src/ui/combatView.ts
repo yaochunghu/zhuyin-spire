@@ -64,6 +64,7 @@ import {
   showFlash,
 } from './runtime';
 import { artImageHtml, enemyArtKeyFor } from './assets';
+import { combatVoiceSnapshot, voiceButton, voiceEnemyTurnResolved } from './voiceDirector';
 
 function activePowerLabels(ids: string[]): string {
   return ids.map((id) => {
@@ -313,7 +314,10 @@ function playCardFromUi(uid: string, targetIds: string[] = [], chosenHandUid?: s
     const cancel = document.createElement('button');
     cancel.className = 'btn-secondary';
     cancel.textContent = '取消';
-    cancel.addEventListener('click', close);
+    cancel.addEventListener('click', () => {
+      close();
+      voiceButton('u.back');
+    });
     panel.appendChild(cancel);
     dialog.appendChild(panel);
     showModalShell(dialog, close);
@@ -837,7 +841,10 @@ export function renderCombat(): HTMLElement {
     sfx.click();
     const live = run().combat;
     if (!live || live.status !== 'playing') return;
+    voiceButton('u.endturn');
+    const voiceBefore = combatVoiceSnapshot(live);
     playerEndTurn(run());
+    voiceEnemyTurnResolved(run(), voiceBefore);
     if (endTurnShouldPlayOutro(run().screen)) {
       void presentBattleEnding();
       return;
