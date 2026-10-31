@@ -18,7 +18,13 @@ interface Node {
   connectedTo: Node[];
   connect: (n: Node) => Node;
   frequency: { value: number; setValueAtTime: () => void };
-  gain: { value: number; setValueAtTime: () => void; linearRampToValueAtTime: () => void; setTargetAtTime: () => void };
+  gain: {
+    value: number;
+    setValueAtTime: () => void;
+    linearRampToValueAtTime: () => void;
+    setTargetAtTime: () => void;
+    cancelScheduledValues: () => void;
+  };
   Q: { value: number };
   type?: string;
   buffer?: unknown;
@@ -29,6 +35,8 @@ interface Node {
 let created: Node[] = [];
 let decode: () => Promise<unknown>;
 let master: Node | null = null;
+/** performance.now() for the merge window; tests advance it by hand. */
+let clock = 0;
 
 function makeNode(kind: string): Node {
   const n: Node = {
@@ -37,7 +45,13 @@ function makeNode(kind: string): Node {
     connectedTo: [],
     connect(to) { this.connectedTo.push(to); return to; },
     frequency: { value: 0, setValueAtTime: () => {} },
-    gain: { value: 1, setValueAtTime: () => {}, linearRampToValueAtTime: () => {}, setTargetAtTime: () => {} },
+    gain: {
+      value: 1,
+      setValueAtTime: () => {},
+      linearRampToValueAtTime: () => {},
+      setTargetAtTime: () => {},
+      cancelScheduledValues: () => {},
+    },
     Q: { value: 0 },
     start: vi.fn(),
     stop: vi.fn(),
@@ -78,6 +92,8 @@ async function loadAudio(vol: string | null, fetchImpl: () => Promise<unknown>) 
   vi.stubGlobal('localStorage', store);
   vi.stubGlobal('AudioContext', FakeAudioContext);
   vi.stubGlobal('fetch', vi.fn(fetchImpl));
+  clock = 1_000;
+  vi.stubGlobal('performance', { now: () => clock });
   return import('../../src/game/audio');
 }
 
@@ -101,7 +117,7 @@ describe('bundled sfx clips', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it('plays the decoded clip through masterGain at unity gain', async () => {
+  it('plays the decoded clip at gain 0.4 through the sfx bus', async () => {
     const { sfx } = await loadAudio('1', okFetch);
     sfx.ding();
     await flush();
@@ -109,16 +125,24 @@ describe('bundled sfx clips', () => {
     expect(url).toMatch(/ding_A.*\.mp3$/u);
     const src = created.find((n) => n.kind === 'source')!;
     expect(src.buffer).toEqual({ fake: 'buffer' });
-    expect(src.connectedTo).toEqual([master]);
+    const gains = created.filter((n) => n.kind === 'gain');
+    // masterGain, then the voice / sfx / music / ui buses, then this shot's gain.
+    expect(gains).toHaveLength(6);
+    const [, , sfxBus] = gains;
+    const shotGain = src.connectedTo[0]!;
+    expect(shotGain).toBe(gains[5]);
+    expect(shotGain.gain.value).toBeCloseTo(0.4);
+    expect(shotGain.connectedTo).toEqual([sfxBus]);
+    expect(sfxBus!.connectedTo).toEqual([master]);
     expect(src.start).toHaveBeenCalledTimes(1);
     expect(created.filter((n) => n.kind === 'osc')).toHaveLength(0);
-    expect(created.filter((n) => n.kind === 'gain')).toHaveLength(1); // only masterGain: no extra gain stage
   });
 
   it('loads the gold clip from gold_A and reuses the decoded buffer', async () => {
     const { sfx } = await loadAudio('0.45', okFetch);
     sfx.gold();
     await flush();
+    clock += 500; // outside the 70 ms merge window
     sfx.gold();
     await flush();
     expect(fetch).toHaveBeenCalledTimes(1);
@@ -163,6 +187,23 @@ describe('bundled sfx clips', () => {
     const b = await import('../../src/game/audio');
     expect(() => { b.sfx.ding(); b.sfx.gold(); b.warmAudio(); }).not.toThrow();
     await flush();
+  });
+
+  it('retries a clip whose load failed, while the recipe covers the failed play', async () => {
+    let fail = true;
+    const { sfx } = await loadAudio('1', async () => {
+      if (fail) throw new Error('offline');
+      return { ok: true, arrayBuffer: async () => new ArrayBuffer(8) };
+    });
+    sfx.ding();
+    await flush();
+    expect(freqs()).toHaveLength(2); // the recipe played
+    fail = false;
+    clock += 500;
+    sfx.ding();
+    await flush();
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(created.filter((n) => n.kind === 'source')).toHaveLength(1);
   });
 
   it('sfx.gold no longer plays the 988/1319 Hz coin motif', async () => {
