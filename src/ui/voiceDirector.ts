@@ -13,7 +13,7 @@
  *   mid-fight line plus the end line; a boss fight saves that slot for its phase.
  * - First-time story lines (prologue, wake lines) are remembered per learner
  *   profile; per-run and per-act caps are remembered for this page session.
- * - u.notnow is not recorded (held by Design) and is never played here.
+ * - u.notnow is not recorded (held pending Yao's decision, Q100) and is never played here.
  */
 import { MATH_WARMUP_STREAK } from '../data/balance';
 import type { CharacterId } from '../data/characters';

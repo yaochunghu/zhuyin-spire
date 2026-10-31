@@ -16,7 +16,7 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - 點燈人 tells the story: a first-launch prologue (any tap skips it), run and act starts, room picks (at most one in three), one mid-fight line plus the win line, boss entries and phases, act clears, and the run end. Lines he should say only once (the prologue, the first clear of an act per hero, the first win per hero) are remembered on the learner profile; older profiles start fresh
 - 老師 reads a card's name and desc when you pick it at the smith or in an event's card pick. Upgraded cards use the base card's line
 - Any line without a clip, or whose clip cannot load, falls back to the device voice. Mute silences every clip. One voice plays at a time, and a cast, the pause menu or a hidden page stops it
-- `u.notnow` (先不要) is held by Design and is not shipped; that button stays silent
+- `u.notnow` (先不要) is held pending Yao's decision (Q100) and is not shipped; that button stays silent
 
 ### Dev / ops
 

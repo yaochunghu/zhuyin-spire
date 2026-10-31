@@ -54,7 +54,7 @@ describe('voice-line registry', () => {
     expect(clipFiles.every((file) => file.endsWith('.mp3'))).toBe(true);
   });
 
-  it('never ships or registers u.notnow (held by Design)', () => {
+  it('never ships or registers u.notnow (held pending a decision by Yao, Q100)', () => {
     expect(VOICE_LINES['u.notnow']).toBeUndefined();
     expect(resolveVoiceLine('u.notnow')).toBeNull();
     const repoClips = filesUnder(join(process.cwd(), 'src')).filter((path) => /notnow/iu.test(path));

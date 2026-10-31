@@ -5,7 +5,7 @@
 //
 // <audio-root> holds batch2_teacher/, batch2b_teacher_cards/ and
 // batch1_narrator/. Every clip is PLACEHOLDER audio for the first playtest.
-// u.notnow is held by Design (Q100) and is never imported.
+// u.notnow is held pending Yao's decision (Q100) and is never imported.
 import { copyFile, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -107,7 +107,7 @@ await writeFile('src/data/voiceLines.ts', `/**
  * PLACEHOLDER audio for the first playtest: ElevenLabs eleven_v4 TTS generated for this
  * project with synthetic Voice Design voices (老師 and 點燈人). See THIRD_PARTY_NOTICES.md.
  * The display text is what the clip says. It is also the Web Speech fallback text.
- * u.notnow is held by Design and is deliberately absent.
+ * u.notnow is held pending Yao's decision (Q100) and is deliberately absent.
  */
 
 export type VoiceSpeaker = 'teacher' | 'narrator';

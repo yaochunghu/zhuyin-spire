@@ -6,7 +6,7 @@
  * PLACEHOLDER audio for the first playtest: ElevenLabs eleven_v4 TTS generated for this
  * project with synthetic Voice Design voices (老師 and 點燈人). See THIRD_PARTY_NOTICES.md.
  * The display text is what the clip says. It is also the Web Speech fallback text.
- * u.notnow is held by Design and is deliberately absent.
+ * u.notnow is held pending Yao's decision (Q100) and is deliberately absent.
  */
 
 export type VoiceSpeaker = 'teacher' | 'narrator';
