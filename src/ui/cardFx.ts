@@ -9,6 +9,8 @@
 import type { CombatCard, CombatFx } from '../game/combat';
 import { sfx } from '../game/audio';
 import { getRelic } from '../data/relics';
+import type { TransientHeroPose } from './damageStage';
+import { flashHeroPose } from './heroPose';
 import {
   gameplayMs,
   loadGameSettings,
@@ -645,6 +647,26 @@ async function playShuffle(anchors: CardFxAnchors, count: number): Promise<void>
   anchors.drawPile.classList.remove('pile-deal-pulse');
 }
 
+/** Hero pose for one FX beat, or null when the hero is not the actor. */
+export function heroPoseForFx(fx: CombatFx): TransientHeroPose | null {
+  switch (fx.type) {
+    case 'playerStrike':
+      return 'attack';
+    case 'playerBlock':
+      return 'defend';
+    case 'playerEnergy':
+    case 'playerPower':
+    case 'playerResource':
+    case 'playerTempo':
+      return 'cast';
+    case 'enemyStrike':
+      if (fx.damage > 0) return 'hurt';
+      return fx.blocked > 0 ? 'defend' : null;
+    default:
+      return null;
+  }
+}
+
 /**
  * Play a batch of combat FX in order.
  * Strike FX still runs if pile anchors are missing (e.g. kill → reward screen).
@@ -659,6 +681,8 @@ export async function playCombatFxBatch(
   activeBatchSpeed = loadGameSettings().animationSpeed;
   try {
     for (const fx of batch) {
+      const pose = heroPoseForFx(fx);
+      if (pose) flashHeroPose(pose);
       if (fx.type === 'playerStrike') {
         await playPlayerStrike(fx, anchors);
       } else if (fx.type === 'playerBlock') {

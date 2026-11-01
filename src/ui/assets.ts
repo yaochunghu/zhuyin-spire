@@ -9,6 +9,13 @@ export type ArtAssetKey =
   | 'transitionGardenLibrary'
   | 'transitionLibraryObservatory'
   | 'heroMartialArtist'
+  | 'heroMartialArtistScuffed'
+  | 'heroMartialArtistBeaten'
+  | 'heroMartialArtistAttack'
+  | 'heroMartialArtistCast'
+  | 'heroMartialArtistDefend'
+  | 'heroMartialArtistHurt'
+  | 'heroMartialArtistFaint'
   | 'enemySlime'
   | 'enemyRock'
   | 'enemyBat'
@@ -45,6 +52,14 @@ export type ArtAssetKey =
   | 'enemyBoss1'
   | 'enemyBoss2'
   | 'enemyBoss3'
+  | 'enemyBoss1Scuffed'
+  | 'enemyBoss1Beaten'
+  | 'enemyBoss2Scuffed'
+  | 'enemyBoss2Beaten'
+  | 'enemyBoss3Scuffed'
+  | 'enemyBoss3Beaten'
+  | 'enemyTempoGolemScuffed'
+  | 'enemyTempoGolemBeaten'
   | 'tokenGarden'
   | 'tokenLibrary'
   | 'tokenObservatory'
@@ -97,6 +112,43 @@ export const ART_ASSETS = {
     src: new URL('../assets/art/hero-martial-artist.webp', import.meta.url).href,
     fallback: '🧒🥋',
     alt: '共鳴武者玩具角色',
+  },
+  // Damage stages and combat poses share the idle's 512² canvas (feet y=492),
+  // so they swap in the same box with no offset. See src/ui/damageStage.ts.
+  heroMartialArtistScuffed: {
+    src: new URL('../assets/art/hero-martial-artist-scuffed.webp', import.meta.url).href,
+    fallback: '🧒🥋',
+    alt: '有點累的共鳴武者玩具角色',
+  },
+  heroMartialArtistBeaten: {
+    src: new URL('../assets/art/hero-martial-artist-beaten.webp', import.meta.url).href,
+    fallback: '🧒🥋',
+    alt: '很累的共鳴武者玩具角色',
+  },
+  heroMartialArtistAttack: {
+    src: new URL('../assets/art/hero-martial-artist-attack.webp', import.meta.url).href,
+    fallback: '🧒🥋',
+    alt: '出拳的共鳴武者玩具角色',
+  },
+  heroMartialArtistCast: {
+    src: new URL('../assets/art/hero-martial-artist-cast.webp', import.meta.url).href,
+    fallback: '🧒🥋',
+    alt: '施展招式的共鳴武者玩具角色',
+  },
+  heroMartialArtistDefend: {
+    src: new URL('../assets/art/hero-martial-artist-defend.webp', import.meta.url).href,
+    fallback: '🧒🥋',
+    alt: '舉手防守的共鳴武者玩具角色',
+  },
+  heroMartialArtistHurt: {
+    src: new URL('../assets/art/hero-martial-artist-hurt.webp', import.meta.url).href,
+    fallback: '🧒🥋',
+    alt: '被打到的共鳴武者玩具角色',
+  },
+  heroMartialArtistFaint: {
+    src: new URL('../assets/art/hero-martial-artist-faint.webp', import.meta.url).href,
+    fallback: '🧒🥋',
+    alt: '累倒休息的共鳴武者玩具角色',
   },
   enemySlime: {
     src: new URL('../assets/art/enemy-slime.webp', import.meta.url).href,
@@ -277,6 +329,48 @@ export const ART_ASSETS = {
     src: new URL('../assets/art/enemies/boss-3.webp', import.meta.url).href,
     fallback: '👑',
     alt: '被星環包圍的終焉王玩具',
+  },
+  // Boss damage stages share each fresh boss canvas and ground line.
+  enemyBoss1Scuffed: {
+    src: new URL('../assets/art/enemies/boss-1-scuffed.webp', import.meta.url).href,
+    fallback: '🐉',
+    alt: `有點受傷的${ACT_PLACE_NAMES[0]}守護龍玩具`,
+  },
+  enemyBoss1Beaten: {
+    src: new URL('../assets/art/enemies/boss-1-beaten.webp', import.meta.url).href,
+    fallback: '🐉',
+    alt: `快要撐不住的${ACT_PLACE_NAMES[0]}守護龍玩具`,
+  },
+  enemyBoss2Scuffed: {
+    src: new URL('../assets/art/enemies/boss-2-scuffed.webp', import.meta.url).href,
+    fallback: '🦅',
+    alt: '有點受傷的雙翼監守玩具',
+  },
+  enemyBoss2Beaten: {
+    src: new URL('../assets/art/enemies/boss-2-beaten.webp', import.meta.url).href,
+    fallback: '🦅',
+    alt: '快要撐不住的雙翼監守玩具',
+  },
+  enemyBoss3Scuffed: {
+    src: new URL('../assets/art/enemies/boss-3-scuffed.webp', import.meta.url).href,
+    fallback: '👑',
+    alt: '有點受傷的終焉王玩具',
+  },
+  enemyBoss3Beaten: {
+    src: new URL('../assets/art/enemies/boss-3-beaten.webp', import.meta.url).href,
+    fallback: '👑',
+    alt: '快要撐不住的終焉王玩具',
+  },
+  // Dormant: no TempoGolem enemy or fresh idle exists yet (768² canvas, ground y=740).
+  enemyTempoGolemScuffed: {
+    src: new URL('../assets/art/enemies/boss-tempoGolem-scuffed.webp', import.meta.url).href,
+    fallback: '🗿',
+    alt: '有點受傷的節拍石像玩具',
+  },
+  enemyTempoGolemBeaten: {
+    src: new URL('../assets/art/enemies/boss-tempoGolem-beaten.webp', import.meta.url).href,
+    fallback: '🗿',
+    alt: '快要撐不住的節拍石像玩具',
   },
   tokenGarden: {
     src: new URL('../assets/art/token-garden.webp', import.meta.url).href,
@@ -579,22 +673,36 @@ function artMarkup(
   asset: ArtAsset,
   className: string,
   decorative: boolean,
+  fallbackSrc = '',
 ): string {
   const classes = ['art-image', className].filter(Boolean).join(' ');
+  const fallbackAttr =
+    fallbackSrc && fallbackSrc !== asset.src ? ` data-fallback-src="${fallbackSrc}"` : '';
   return `<span class="${classes}" data-art-key="${key}">
     <span class="art-image-fallback" aria-hidden="true">${asset.fallback}</span>
     <img src="${asset.src}" alt="${decorative ? '' : asset.alt}" decoding="async" draggable="false"${
       decorative ? ' aria-hidden="true"' : ''
-    }>
+    }${fallbackAttr}>
   </span>`;
 }
 
+/**
+ * `fallbackKey` names the still to try when `key` fails to load (for example
+ * the fresh hero behind a pose or damage stage); the emoji covers both.
+ */
 export function artImageHtml(
   key: ArtAssetKey,
   className = '',
   decorative = false,
+  fallbackKey?: ArtAssetKey,
 ): string {
-  return artMarkup(key, ART_ASSETS[key], className, decorative);
+  return artMarkup(
+    key,
+    ART_ASSETS[key],
+    className,
+    decorative,
+    fallbackKey ? ART_ASSETS[fallbackKey].src : '',
+  );
 }
 
 /** Painted relic face, or the emoji when this relic has no icon. */
@@ -623,22 +731,30 @@ export function hydrateArtImages(root: ParentNode): void {
       return;
     }
 
+    // Listeners stay bound: combat swaps pose and damage-stage art in place.
+    if (wrapper.dataset.artHydrated === '1') return;
+    wrapper.dataset.artHydrated = '1';
+
     const markLoaded = () => {
       wrapper.classList.remove('is-error');
       wrapper.classList.add('is-loaded');
     };
     const markError = () => {
+      const fallbackSrc = image.dataset.fallbackSrc;
+      if (fallbackSrc && image.getAttribute('src') !== fallbackSrc) {
+        image.src = fallbackSrc;
+        return;
+      }
       wrapper.classList.remove('is-loaded');
       wrapper.classList.add('is-error');
     };
 
+    image.addEventListener('load', markLoaded);
+    image.addEventListener('error', markError);
     if (image.complete) {
       if (image.naturalWidth > 0) markLoaded();
       else markError();
-      return;
     }
-    image.addEventListener('load', markLoaded, { once: true });
-    image.addEventListener('error', markError, { once: true });
   });
 }
 

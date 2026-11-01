@@ -17,6 +17,23 @@ with the built-in GenerateImage tool, also from text-only prompts, on
 Enemy sprites, the hero portrait, and the older plates these files replace
 are separate from this notice.
 
+### Hero poses and hero/boss damage stills (Spire Art batch-01 and batch-damage-01)
+
+These are original art made for zhuyin-spire by Spire Art with Grok Bot's
+built-in GenerateImage tool, then cleaned up locally (Pillow, scipy, and
+rembg background removal). No outside or paid image service and no
+third-party artwork were used. Like the rest of the original art above, they
+are not third-party assets and carry no separate license. Sources are as
+listed in each batch manifest; both batches passed the Spire QA-045 gate (r2).
+
+| file in `src/assets/art/` | batch | source |
+|---|---|---|
+| `hero-martial-artist.webp` (idle, replaces the older portrait) | batch-01 | Locked approved ref `hero-echo-crimson-idle.png`, rembg re-cut |
+| `hero-martial-artist-attack.webp`, `-cast`, `-defend`, `-hurt`, `-faint` | batch-01 (attack and faint r2) | GenerateImage edits from the locked idle ref |
+| `hero-martial-artist-scuffed.webp`, `-beaten` | batch-damage-01 (scuffed r2) | GenerateImage edits from the locked idle ref, plus local retouch |
+| `enemies/boss-1-scuffed.webp`, `boss-1-beaten`, `boss-2-*`, `boss-3-*` | batch-damage-01 (boss-2 r2) | GenerateImage edits from the repo's `enemies/boss-{1,2,3}.webp`, plus local tone/edge retouch |
+| `enemies/boss-tempoGolem-scuffed.webp`, `-beaten` | batch-damage-01 | GenerateImage edits from the Yao-approved TempoGolem pose-swap demo idle |
+
 ## Original audio
 
 `src/assets/audio/sfx/ding_A.mp3` (叮！ star-bead sound) and

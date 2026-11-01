@@ -43,7 +43,7 @@ Product pitch and parent/child how-to-play: [README.md](../README.md).
 | [sim/CHILD_MODEL.md](./sim/CHILD_MODEL.md) | Debug-only child-error model and the Act I headless sim |
 | [ROADMAP.md](./ROADMAP.md) | Shipped systems, next work, known pitfalls |
 | [NEXT_PHASE.md](./NEXT_PHASE.md) | v0.4.12 current release, and what comes next |
-| [ART_INVENTORY.md](./ART_INVENTORY.md) | Scene plates, transitions, tokens, props, and relic icons: sizes, what is on screen, and what is only registered |
+| [ART_INVENTORY.md](./ART_INVENTORY.md) | Scene plates, transitions, tokens, props, relic icons, and hero / boss damage-stage and pose art: sizes, what is on screen, and what is only registered |
 
 Root companions:
 
@@ -99,7 +99,7 @@ The previous release is v0.4.11 at `e92afb7` (#88), 2026-10-29 15:46 UTC. Two ch
   give one. See [NEXT_PHASE.md](./NEXT_PHASE.md).
 - **Shop:** on a phone, each offer keeps its card, price, and the remove-card
   button on screen. The remove button is disabled when gold is short.
-- **Art:** Act I–III plates are 1920×1080, transitions are 4:3, and fifteen relic badges are painted. Extra plates and the Act IV token are registered only. See [ART_INVENTORY.md](./ART_INVENTORY.md).
+- **Art:** Act I–III plates are 1920×1080, transitions are 4:3, and fifteen relic badges are painted. The hero and bosses swap to scuffed / beaten stills by HP, and the hero flashes attack / cast / defend / hurt poses. Extra plates and the Act IV token are registered only. See [ART_INVENTORY.md](./ART_INVENTORY.md).
 - **Layout:** the parent coach no longer covers map dots. Campfire choices
   fit on screen. The math cast and the 注音 cast dock fit at the checked
   phone sizes. A hinted answer keeps 送出 and 家長協助 inside the dock, and
