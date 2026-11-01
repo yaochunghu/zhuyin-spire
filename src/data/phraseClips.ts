@@ -6,7 +6,7 @@
  * (src/data/voiceLines.ts), whose text is the same word.
  *
  * The initial is the PHRASES_BY_INITIAL bucket; the first syllable of the 注音 is
- * that pool entry's spell. core.387 reads 裡 (Design 11-01; index.json says 里).
+ * that pool entry's spell.
  * PLACEHOLDER audio for the first playtest. See THIRD_PARTY_NOTICES.md.
  */
 
@@ -260,7 +260,7 @@ export const PHRASE_CLIPS: Readonly<Record<string, readonly [string, string, str
   "w.core.371": ["ㄌ", "來", "ㄌㄞˊ"],
   "w.core.372": ["ㄌ", "藍", "ㄌㄢˊ"],
   "w.core.385": ["ㄌ", "離", "ㄌㄧˊ"],
-  "w.core.387": ["ㄌ", "裡", "ㄌㄧˇ"],
+  "w.core.387": ["ㄌ", "里", "ㄌㄧˇ"],
   "w.core.390": ["ㄌ", "麗", "ㄌㄧˋ"],
   "w.core.391": ["ㄌ", "連", "ㄌㄧㄢˊ"],
   "w.core.398": ["ㄌ", "聊", "ㄌㄧㄠˊ"],

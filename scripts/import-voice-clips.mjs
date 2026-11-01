@@ -114,9 +114,8 @@ function add(key, speaker, file, text) {
 }
 
 // 老師 batch 3: Act I phrase-pool words, one clip per word.
-// Design's 11-01 ruling renames core.387 里 → 裡 (same sound, clip kept); the
-// clip's index.json still says 里, so the registry carries the pool's glyph.
-const PHRASE_WORD_FIXES = new Map([['core/core.387.mp3', { from: '里', to: '裡' }]]);
+// Per-clip word overrides (none now: Design reverted core.387 to 里 on 11-01).
+const PHRASE_WORD_FIXES = new Map();
 {
   const dir = join(root, 'batch3_phrases_act1');
   const manifest = await readFile(join(dir, 'MANIFEST.md'), 'utf8');
@@ -204,7 +203,7 @@ await writeFile('src/data/phraseClips.ts', `/**
  * (src/data/voiceLines.ts), whose text is the same word.
  *
  * The initial is the PHRASES_BY_INITIAL bucket; the first syllable of the 注音 is
- * that pool entry's spell. core.387 reads 裡 (Design 11-01; index.json says 里).
+ * that pool entry's spell.
  * PLACEHOLDER audio for the first playtest. See THIRD_PARTY_NOTICES.md.
  */
 

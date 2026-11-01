@@ -835,7 +835,7 @@ export const VOICE_LINES: Readonly<Record<string, readonly [VoiceSpeaker, string
   "w.core.371": [T, "teacher/phrases_act1/core/core.371.mp3", "來"],
   "w.core.372": [T, "teacher/phrases_act1/core/core.372.mp3", "藍"],
   "w.core.385": [T, "teacher/phrases_act1/core/core.385.mp3", "離"],
-  "w.core.387": [T, "teacher/phrases_act1/core/core.387.mp3", "裡"],
+  "w.core.387": [T, "teacher/phrases_act1/core/core.387.mp3", "里"],
   "w.core.390": [T, "teacher/phrases_act1/core/core.390.mp3", "麗"],
   "w.core.391": [T, "teacher/phrases_act1/core/core.391.mp3", "連"],
   "w.core.398": [T, "teacher/phrases_act1/core/core.398.mp3", "聊"],

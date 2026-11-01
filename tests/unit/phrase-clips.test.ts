@@ -61,9 +61,10 @@ describe('batch 3 phrase clips', () => {
       PHRASES_BY_INITIAL[initial].filter((phrase) => phrase.word === word);
     expect(PHRASE_CLIPS['w.body.016']).toEqual(['ㄅ', '背', 'ㄅㄟˋ']);
     expect(find('ㄅ', '背').map((phrase) => phrase.spell)).toEqual(['ㄅㄟˋ']);
-    expect(PHRASE_CLIPS['w.core.387']).toEqual(['ㄌ', '裡', 'ㄌㄧˇ']);
-    expect(find('ㄌ', '裡').map((phrase) => phrase.spell)).toEqual(['ㄌㄧˇ']);
-    expect(Object.values(PHRASES_BY_INITIAL).flat().filter((phrase) => phrase.word.includes('里'))).toEqual([]);
+    // core.387 stays 里 (neighborhood, 🏘️): Design reverted the 裡 change on 11-01 after QA.
+    expect(PHRASE_CLIPS['w.core.387']).toEqual(['ㄌ', '里', 'ㄌㄧˇ']);
+    expect(find('ㄌ', '里').map((phrase) => [phrase.emoji, phrase.spell])).toEqual([['🏘️', 'ㄌㄧˇ']]);
+    expect(Object.values(PHRASES_BY_INITIAL).flat().filter((phrase) => phrase.word === '裡')).toEqual([]);
   });
 
   it('keeps the 21 cut words out of the pool and the audio', () => {
