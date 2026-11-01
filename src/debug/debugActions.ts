@@ -279,6 +279,10 @@ export interface VisualReviewOptions {
   enemyCount?: number;
   enemyDefIds?: string[];
   handCount?: number;
+  /** Combat only: hero HP for the fight (clamped to 0..max). */
+  heroHp?: number;
+  /** Combat only: HP per enemy slot, in order (clamped to 0..max). */
+  enemyHp?: number[];
 }
 
 /**
@@ -375,6 +379,16 @@ export function debugPrepareVisualReview(
           weakTurns: 0,
         });
       }
+      if (options.heroHp !== undefined) {
+        state.heroHp = Math.max(0, Math.min(state.heroMaxHp, options.heroHp));
+        state.combat.heroHp = state.heroHp;
+      }
+      options.enemyHp?.forEach((hp, index) => {
+        const unit = state.combat?.enemies[index];
+        if (!unit) return;
+        unit.hp = Math.max(0, Math.min(unit.maxHp, hp));
+        unit.alive = unit.hp > 0;
+      });
       const handCount = Math.max(5, Math.min(10, options.handCount ?? 5));
       drawCards(state.combat, handCount - state.combat.hand.length);
       state.screen = 'combat';

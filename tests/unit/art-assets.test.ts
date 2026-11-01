@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
   ART_ASSETS,
@@ -13,7 +15,7 @@ import { RELICS } from '../../src/data/relics';
 
 describe('magical toy-board art registry', () => {
   it('defines a local WebP source, fallback, and accessible label for every required asset', () => {
-    expect(REQUIRED_ART_ASSET_KEYS).toHaveLength(49);
+    expect(REQUIRED_ART_ASSET_KEYS).toHaveLength(64);
     expect(REQUIRED_ART_ASSET_KEYS).not.toContain('propStar');
     expect(new Set(REQUIRED_ART_ASSET_KEYS).size).toBe(
       REQUIRED_ART_ASSET_KEYS.length,
@@ -24,6 +26,26 @@ describe('magical toy-board art registry', () => {
       expect(asset.src).toMatch(/\.webp(?:$|\?)/);
       expect(asset.fallback.trim().length).toBeGreaterThan(0);
       expect(asset.alt.trim().length).toBeGreaterThan(0);
+    }
+  });
+
+  it('ships the hero pose / damage-stage stills and boss damage stages on disk', () => {
+    const files = [
+      'hero-martial-artist.webp',
+      ...['scuffed', 'beaten', 'attack', 'cast', 'defend', 'hurt', 'faint'].map(
+        (name) => `hero-martial-artist-${name}.webp`,
+      ),
+      ...['1', '2', '3', 'tempoGolem'].flatMap((boss) =>
+        ['scuffed', 'beaten'].map((stage) => `enemies/boss-${boss}-${stage}.webp`),
+      ),
+    ];
+    for (const file of files) {
+      const url = new URL(`../../src/assets/art/${file}`, import.meta.url);
+      expect(existsSync(fileURLToPath(url)), file).toBe(true);
+      expect(
+        Object.values(ART_ASSETS).some((asset) => asset.src.endsWith(file)),
+        file,
+      ).toBe(true);
     }
   });
 

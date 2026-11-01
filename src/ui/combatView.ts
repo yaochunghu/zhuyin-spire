@@ -63,7 +63,15 @@ import {
   session,
   showFlash,
 } from './runtime';
-import { artImageHtml, enemyArtKeyFor } from './assets';
+import { artImageHtml } from './assets';
+import {
+  enemyArtKeyForHp,
+  enemyStageArtKeys,
+  freshArtKeyFor,
+  heroBaseArtKey,
+  heroCombatArtKeys,
+} from './damageStage';
+import { flashHeroPose, preloadArt, takeQueuedHeroPose } from './heroPose';
 import { combatVoiceSnapshot, voiceButton, voiceEnemyTurnResolved } from './voiceDirector';
 
 function activePowerLabels(ids: string[]): string {
@@ -139,8 +147,12 @@ export async function playPendingCombatFx(): Promise<void> {
   // A render can be requested by a timer during FX; consuming first would
   // silently drop the queued animation.
   if (session.combatFxPlaying) return;
+  const leadPose = takeQueuedHeroPose();
   const batch = consumeCombatFx(run());
-  if (batch.length === 0) return;
+  if (batch.length === 0) {
+    if (leadPose) requestAnimationFrame(() => flashHeroPose(leadPose, app()));
+    return;
+  }
 
   session.combatFxPlaying = true;
   syncCombatInteractionState();
@@ -151,6 +163,8 @@ export async function playPendingCombatFx(): Promise<void> {
     requestAnimationFrame(() => requestAnimationFrame(() => r()));
   });
   const anchors = queryCombatAnchors(app());
+  // The card's pose leads; strike / block / hurt FX re-pose as they play.
+  if (leadPose) flashHeroPose(leadPose, app());
 
   try {
     await playCombatFxBatch(batch, anchors, (defId) => cardFaceHtml(getCard(defId)));
@@ -451,11 +465,13 @@ function renderEnemySlot(
     );
   }
 
-  const enemyArtKey = enemyArtKeyFor(unit.defId);
+  // Bosses swap to scuffed / beaten stills by HP; other enemies keep one still.
+  const enemyArtKey = enemyArtKeyForHp(unit.defId, unit.hp, unit.maxHp);
+  const freshEnemyArtKey = freshArtKeyFor(unit.defId) ?? undefined;
   const poofNow = dead && !holdPortrait;
   const debutPoof = poofNow && justSlain;
   const portrait = enemyArtKey
-    ? artImageHtml(enemyArtKey, 'enemy-miniature-art')
+    ? artImageHtml(enemyArtKey, 'enemy-miniature-art', false, freshEnemyArtKey)
     : def.emoji;
   // Small corner badges stay visible on phones, where the 下回合 pill is hidden.
   const leftBadges = [
@@ -694,10 +710,16 @@ export function renderCombat(): HTMLElement {
     (c.block <= 0 ? ' shield-bar-empty' : '') +
     (blockGained ? ' shield-bar-pulse' : '');
 
+  const heroHasArt = run().characterId === 'echoMage';
+  const heroArtKey = heroBaseArtKey(c.heroHp, c.heroMaxHp);
+  preloadArt([
+    ...(heroHasArt ? heroCombatArtKeys() : []),
+    ...c.enemies.flatMap((unit) => enemyStageArtKeys(unit.defId)),
+  ]);
   heroZone.innerHTML = `
     <div class="hero-actor" aria-hidden="true">${
-      run().characterId === 'echoMage'
-        ? artImageHtml('heroMartialArtist', 'combat-hero-art', true)
+      heroHasArt
+        ? artImageHtml(heroArtKey, 'combat-hero-art', true, 'heroMartialArtist')
         : '🧒'
     }</div>
     <div class="hero-vitals">
@@ -721,6 +743,13 @@ export function renderCombat(): HTMLElement {
       </div>
     </div>
   `;
+
+  const heroArt = heroZone.querySelector<HTMLElement>('.combat-hero-art');
+  if (heroArt) {
+    heroArt.dataset.heroArt = '';
+    heroArt.dataset.heroBase = c.heroHp > 0 ? 'stage' : 'faint';
+    heroArt.dataset.baseSrc = heroArt.querySelector('img')?.getAttribute('src') ?? '';
+  }
 
   battlefield.append(heroZone, enemyRow);
   stage.appendChild(battlefield);

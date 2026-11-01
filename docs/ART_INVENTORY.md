@@ -5,8 +5,9 @@ What is on screen, and what is only stored. The loader is `src/ui/assets.ts`
 `src/assets/art/backdrops/` or `token-heart.webp` is not imported, so the
 build does not ship it and the game does not show it.
 
-Enemy sprites and the hero portrait stay on their existing `ART_ASSETS` keys.
-This drop did not change them.
+Regular and elite enemy sprites stay on their existing `ART_ASSETS` keys.
+The hero and the three bosses now also have damage-stage stills, and the hero
+has combat poses. See [Hero and boss damage stages](#hero-and-boss-damage-stages).
 
 Sizes below are the file on disk. KB is bytes ÷ 1024, to one decimal.
 
@@ -100,6 +101,75 @@ Emoji placeholders that stay, because this drop has no file for them:
 
 - Legacy: `shieldCharm`, `coinPouch`, `morningSpark`, `luckyDraw`
 - Any relic added later that is not listed above
+
+## Hero and boss damage stages
+
+Ruling 25A. The rule is `damageStageFor(hp, maxHp)` in `src/ui/damageStage.ts`:
+
+| HP % (`hp / maxHp × 100`, hp clamped to max) | Stage |
+|---|---|
+| above 66 | `fresh` (the existing still) |
+| above 33, up to 66 inclusive | `scuffed` |
+| 33 or below, hp ≤ 0, or maxHp ≤ 0 | `beaten` |
+
+Fractions between 33 and 34 count as scuffed: 66 → scuffed, 66.01 → fresh,
+34 → scuffed, 33.5 → scuffed, 33 → beaten. 1/3 HP (33.33%) is scuffed.
+
+`stageArtKeyFor(actor, stage)` maps the stage to art. It covers `hero`,
+`boss1`, `boss2`, `boss3`, the `boss` alias (boss1 art), and `tempoGolem`.
+Every other enemy, and any stage with no file, falls back to the fresh still.
+If a stage or pose image fails to load, the `<img>` retries the fresh still
+(`data-fallback-src`), then shows the emoji.
+
+Hero poses (`src/ui/heroPose.ts`, `flashHeroPose`). The img `src` is swapped in
+place, never by a remount. A pose shows for 600 ms (scaled by game speed),
+then the HP still returns:
+
+- **attack:** an attack card resolves, or a `playerStrike` FX
+- **cast:** a skill or power card resolves, or energy / 練功 / 勁 / 轉拍 FX
+- **defend:** a shield card resolves, a `playerBlock` FX, or a shield soaks the whole hit
+- **hurt:** an enemy hit gets through to HP
+- **faint:** held as the still at 0 HP (the battle outro before the defeat screen).
+  Transient poses are skipped while fainted.
+
+Under `prefers-reduced-motion: reduce` the transient poses are skipped. Damage
+stages still apply, because they are state.
+
+All hero stills share the idle's 512×512 canvas with the feet at y=492. Boss
+stages share each fresh boss canvas (512×512, ground y=489). They render in
+the same `.combat-hero-art` / `.enemy-miniature-art` box with no per-image
+offset. Combat preloads the hero and boss stills.
+
+Only 共鳴武者 (`echoMage`) has hero art. 珠算武者 stays on its emoji.
+
+| File | Key | Use | px | Bytes | KB |
+|---|---|---|---|---|---|
+| `hero-martial-artist.webp` | `heroMartialArtist` | fresh still (new batch-01 idle) | 512×512 | 19,862 | 19.4 |
+| `hero-martial-artist-scuffed.webp` | `heroMartialArtistScuffed` | scuffed still | 512×512 | 17,020 | 16.6 |
+| `hero-martial-artist-beaten.webp` | `heroMartialArtistBeaten` | beaten still | 512×512 | 16,776 | 16.4 |
+| `hero-martial-artist-attack.webp` | `heroMartialArtistAttack` | attack pose | 512×512 | 34,116 | 33.3 |
+| `hero-martial-artist-cast.webp` | `heroMartialArtistCast` | cast pose | 512×512 | 25,426 | 24.8 |
+| `hero-martial-artist-defend.webp` | `heroMartialArtistDefend` | defend pose | 512×512 | 22,512 | 22.0 |
+| `hero-martial-artist-hurt.webp` | `heroMartialArtistHurt` | hurt pose | 512×512 | 25,156 | 24.6 |
+| `hero-martial-artist-faint.webp` | `heroMartialArtistFaint` | faint still at 0 HP (lying flat, bottom y=492) | 512×512 | 16,872 | 16.5 |
+| `enemies/boss-1-scuffed.webp` | `enemyBoss1Scuffed` | boss1 / boss | 512×512 | 48,754 | 47.6 |
+| `enemies/boss-1-beaten.webp` | `enemyBoss1Beaten` | boss1 / boss | 512×512 | 40,600 | 39.6 |
+| `enemies/boss-2-scuffed.webp` | `enemyBoss2Scuffed` | boss2 | 512×512 | 50,710 | 49.5 |
+| `enemies/boss-2-beaten.webp` | `enemyBoss2Beaten` | boss2 | 512×512 | 46,184 | 45.1 |
+| `enemies/boss-3-scuffed.webp` | `enemyBoss3Scuffed` | boss3 | 512×512 | 53,156 | 51.9 |
+| `enemies/boss-3-beaten.webp` | `enemyBoss3Beaten` | boss3 | 512×512 | 51,468 | 50.3 |
+| `enemies/boss-tempoGolem-scuffed.webp` | `enemyTempoGolemScuffed` | dormant | 768×768 | 53,502 | 52.2 |
+| `enemies/boss-tempoGolem-beaten.webp` | `enemyTempoGolemBeaten` | dormant | 768×768 | 46,706 | 45.6 |
+
+Paths are under `src/assets/art/`. The fresh boss stills (`boss-1/2/3.webp`)
+did not change.
+
+**TempoGolem is dormant.** The two TempoGolem stills (768×768, ground y=740)
+are registered so they ship, and `stageArtKeyFor('tempoGolem', …)` resolves
+them. But there is no TempoGolem enemy and no fresh TempoGolem idle yet, so
+nothing shows them. When the boss lands, add its enemy def, a fresh idle key,
+and `tempoGolem.fresh` in `STAGE_ART`. Also map the def id to `tempoGolem` if
+the id differs.
 
 ## Registered, not shown
 

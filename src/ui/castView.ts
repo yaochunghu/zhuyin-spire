@@ -17,6 +17,7 @@ import {
   useParentHint,
 } from '../game/state';
 import { playPendingCombatFx, presentBattleEnding } from './combatView';
+import { heroPoseForCardType, queueHeroPose } from './heroPose';
 import { teachingTimers } from './pauseTimers';
 import {
   combatVoiceSnapshot,
@@ -233,6 +234,7 @@ export function submitSpell(): void {
   }
   voiceCastAnswered(run(), prompt, correct ? 'correct' : 'fizzle', 'combat');
   if (correct) voiceCardResolved(run(), cast.cardDef.id, voiceBefore);
+  if (correct) queueHeroPose(heroPoseForCardType(cast.cardDef.type));
   session.castSpeechPlayedForOpen = false;
   session.speechFallbackText = null;
 

@@ -380,6 +380,8 @@ if (import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEBUG_TOOLS === 'true') {
         enemyCount?: number;
         enemyDefIds?: string[];
         handCount?: number;
+        heroHp?: number;
+        enemyHp?: number[];
       },
     ) => Promise<void>;
   };
