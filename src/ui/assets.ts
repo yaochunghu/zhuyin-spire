@@ -1,11 +1,67 @@
-import { ACT_PLACE_NAMES, TOWER_SUMMIT_NAME } from '../data/map';
+import {
+  ACT_PLACE_NAMES,
+  CLIMB_ROWS,
+  TOWER_SUMMIT_NAME,
+  UPPER_FIRST_ROW,
+  findNode,
+  type MapNode,
+  type NodeKind,
+} from '../data/map';
 import { RELICS } from '../data/relics';
-import type { Screen } from '../game/state';
+import type { RunState, Screen } from '../game/state';
 
 export type ArtAssetKey =
   | 'sceneGarden'
   | 'sceneLibrary'
   | 'sceneObservatory'
+  | 'sceneGardenUpper'
+  | 'sceneGardenBoss'
+  | 'sceneGardenCamp'
+  | 'sceneGardenShop'
+  | 'sceneLibraryUpper'
+  | 'sceneLibraryBoss'
+  | 'sceneLibraryCamp'
+  | 'sceneLibraryShop'
+  | 'sceneObservatoryUpper'
+  | 'sceneObservatoryBoss'
+  | 'sceneObservatoryCamp'
+  | 'sceneObservatoryShop'
+  | 'sceneHeartCamp'
+  | 'sceneHeartShop'
+  | 'sceneHeartRehearsal'
+  | 'sceneHeartBoss'
+  | 'sceneHeartBossOpen'
+  | 'sceneFoyer'
+  | 'sceneEventWhisperingDoor'
+  | 'sceneEventTuningFountain'
+  | 'sceneEventLostMetronome'
+  | 'sceneEventBellRope'
+  | 'sceneEventDustyScore'
+  | 'sceneEventSleepingChime'
+  | 'sceneEventLanternChoir'
+  | 'sceneEventHeatedOrgan'
+  | 'sceneEventBrokenBridge'
+  | 'sceneEventEchoMarket'
+  | 'sceneEventMothRehearsal'
+  | 'sceneEventMoonMusicBox'
+  | 'sceneEventDrippingRhythm'
+  | 'sceneEventSilentClassroom'
+  | 'sceneEventRainTube'
+  | 'sceneEventMirrorStage'
+  | 'sceneEventLastRehearsal'
+  | 'sceneEventStarBell'
+  | 'sceneEventBackwardSong'
+  | 'sceneEventEmptyAudience'
+  | 'sceneEventWindHall'
+  | 'sceneEventPhoneticShrine'
+  | 'sceneEventHummingWell'
+  | 'sceneEventLuthier'
+  | 'sceneEventMemoryAlbum'
+  | 'sceneEventThreeDoors'
+  | 'sceneEventTinyConductor'
+  | 'sceneEventMoonGong'
+  | 'sceneEventResonantAnvil'
+  | 'sceneEventQuietLibrary'
   | 'transitionGardenLibrary'
   | 'transitionLibraryObservatory'
   | 'heroMartialArtist'
@@ -63,12 +119,13 @@ export type ArtAssetKey =
   | 'tokenGarden'
   | 'tokenLibrary'
   | 'tokenObservatory'
+  | 'tokenHeart'
   | 'propBlossom'
   | 'propLantern'
   | 'propBooks'
   | 'propTelescope';
 
-export type VisualTheme = 'foyer' | 'garden' | 'library' | 'observatory';
+export type VisualTheme = 'foyer' | 'garden' | 'library' | 'observatory' | 'heart';
 
 export interface ArtAsset {
   src: string;
@@ -91,6 +148,247 @@ export const ART_ASSETS = {
     src: new URL('../assets/art/act-observatory.webp', import.meta.url).href,
     fallback: '🔭',
     alt: `${ACT_PLACE_NAMES[2]}塔樓房間`,
+  },
+  // Backdrops are CSS backgrounds (see sceneKeysFor); alt is for the registry only.
+  sceneGardenUpper: {
+    src: new URL('../assets/art/backdrops/act-garden-upper.webp', import.meta.url).href,
+    fallback: '🌿',
+    alt: `${ACT_PLACE_NAMES[0]}塔樓上層房間`,
+  },
+  sceneGardenBoss: {
+    src: new URL('../assets/art/backdrops/act-garden-boss.webp', import.meta.url).href,
+    fallback: '🌿',
+    alt: `${ACT_PLACE_NAMES[0]}塔樓頂層房間`,
+  },
+  sceneGardenCamp: {
+    src: new URL('../assets/art/backdrops/scene-garden-camp.webp', import.meta.url).href,
+    fallback: '🔥',
+    alt: `${ACT_PLACE_NAMES[0]}營火房間`,
+  },
+  sceneGardenShop: {
+    src: new URL('../assets/art/backdrops/scene-garden-shop.webp', import.meta.url).href,
+    fallback: '🏪',
+    alt: `${ACT_PLACE_NAMES[0]}商店房間`,
+  },
+  sceneLibraryUpper: {
+    src: new URL('../assets/art/backdrops/act-library-upper.webp', import.meta.url).href,
+    fallback: '📚',
+    alt: `${ACT_PLACE_NAMES[1]}塔樓上層房間`,
+  },
+  sceneLibraryBoss: {
+    src: new URL('../assets/art/backdrops/act-library-boss.webp', import.meta.url).href,
+    fallback: '📚',
+    alt: `${ACT_PLACE_NAMES[1]}塔樓頂層房間`,
+  },
+  sceneLibraryCamp: {
+    src: new URL('../assets/art/backdrops/scene-library-camp.webp', import.meta.url).href,
+    fallback: '🔥',
+    alt: `${ACT_PLACE_NAMES[1]}營火房間`,
+  },
+  sceneLibraryShop: {
+    src: new URL('../assets/art/backdrops/scene-library-shop.webp', import.meta.url).href,
+    fallback: '🏪',
+    alt: `${ACT_PLACE_NAMES[1]}商店房間`,
+  },
+  sceneObservatoryUpper: {
+    src: new URL('../assets/art/backdrops/act-observatory-upper.webp', import.meta.url).href,
+    fallback: '🔭',
+    alt: `${ACT_PLACE_NAMES[2]}塔樓上層房間`,
+  },
+  sceneObservatoryBoss: {
+    src: new URL('../assets/art/backdrops/act-observatory-boss.webp', import.meta.url).href,
+    fallback: '🔭',
+    alt: `${ACT_PLACE_NAMES[2]}塔樓頂層房間`,
+  },
+  sceneObservatoryCamp: {
+    src: new URL('../assets/art/backdrops/scene-observatory-camp.webp', import.meta.url).href,
+    fallback: '🔥',
+    alt: `${ACT_PLACE_NAMES[2]}營火房間`,
+  },
+  sceneObservatoryShop: {
+    src: new URL('../assets/art/backdrops/scene-observatory-shop.webp', import.meta.url).href,
+    fallback: '🏪',
+    alt: `${ACT_PLACE_NAMES[2]}商店房間`,
+  },
+  sceneHeartCamp: {
+    src: new URL('../assets/art/backdrops/act-heart-camp.webp', import.meta.url).href,
+    fallback: '🔥',
+    alt: `${TOWER_SUMMIT_NAME}營火房間`,
+  },
+  sceneHeartShop: {
+    src: new URL('../assets/art/backdrops/act-heart-shop.webp', import.meta.url).href,
+    fallback: '🏪',
+    alt: `${TOWER_SUMMIT_NAME}商店房間`,
+  },
+  sceneHeartRehearsal: {
+    src: new URL('../assets/art/backdrops/act-heart-rehearsal.webp', import.meta.url).href,
+    fallback: '🎼',
+    alt: `${TOWER_SUMMIT_NAME}彩排房間`,
+  },
+  sceneHeartBoss: {
+    src: new URL('../assets/art/backdrops/act-heart-boss.webp', import.meta.url).href,
+    fallback: '💎',
+    alt: `${TOWER_SUMMIT_NAME}水晶圓頂`,
+  },
+  sceneHeartBossOpen: {
+    src: new URL('../assets/art/backdrops/scene-heart-boss-victory.webp', import.meta.url).href,
+    fallback: '💎',
+    alt: `${TOWER_SUMMIT_NAME}打開的塔頂門`,
+  },
+  sceneFoyer: {
+    src: new URL('../assets/art/backdrops/foyer.webp', import.meta.url).href,
+    fallback: '🏮',
+    alt: '塔樓大廳',
+  },
+  sceneEventWhisperingDoor: {
+    src: new URL('../assets/art/backdrops/scene-event-whispering-door.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '和聲門房間',
+  },
+  sceneEventTuningFountain: {
+    src: new URL('../assets/art/backdrops/scene-event-tuning-fountain.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '調音噴泉房間',
+  },
+  sceneEventLostMetronome: {
+    src: new URL('../assets/art/backdrops/scene-event-lost-metronome.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '迷路的節拍器房間',
+  },
+  sceneEventBellRope: {
+    src: new URL('../assets/art/backdrops/scene-event-bell-rope.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '低垂的鐘繩房間',
+  },
+  sceneEventDustyScore: {
+    src: new URL('../assets/art/backdrops/scene-event-dusty-score.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '灰塵樂譜房間',
+  },
+  sceneEventSleepingChime: {
+    src: new URL('../assets/art/backdrops/scene-event-sleeping-chime.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '睡著的風鈴房間',
+  },
+  sceneEventLanternChoir: {
+    src: new URL('../assets/art/backdrops/scene-event-lantern-choir.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '燈籠合唱房間',
+  },
+  sceneEventHeatedOrgan: {
+    src: new URL('../assets/art/backdrops/scene-event-heated-organ.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '發熱風琴房間',
+  },
+  sceneEventBrokenBridge: {
+    src: new URL('../assets/art/backdrops/scene-event-broken-bridge.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '斷掉的音橋房間',
+  },
+  sceneEventEchoMarket: {
+    src: new URL('../assets/art/backdrops/scene-event-echo-market.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '回音小集房間',
+  },
+  sceneEventMothRehearsal: {
+    src: new URL('../assets/art/backdrops/scene-event-moth-rehearsal.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '鐘蛾彩排房間',
+  },
+  sceneEventMoonMusicBox: {
+    src: new URL('../assets/art/backdrops/scene-event-moon-music-box.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '月光音樂盒房間',
+  },
+  sceneEventDrippingRhythm: {
+    src: new URL('../assets/art/backdrops/scene-event-dripping-rhythm.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '滴滴節拍房間',
+  },
+  sceneEventSilentClassroom: {
+    src: new URL('../assets/art/backdrops/scene-event-silent-classroom.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '寧靜教室房間',
+  },
+  sceneEventRainTube: {
+    src: new URL('../assets/art/backdrops/scene-event-rain-tube.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '靜電雨聲筒房間',
+  },
+  sceneEventMirrorStage: {
+    src: new URL('../assets/art/backdrops/scene-event-mirror-stage.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '鏡子舞台房間',
+  },
+  sceneEventLastRehearsal: {
+    src: new URL('../assets/art/backdrops/scene-event-last-rehearsal.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '最後彩排房間',
+  },
+  sceneEventStarBell: {
+    src: new URL('../assets/art/backdrops/scene-event-star-bell.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '星光鐘房間',
+  },
+  sceneEventBackwardSong: {
+    src: new URL('../assets/art/backdrops/scene-event-backward-song.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '倒放的歌房間',
+  },
+  sceneEventEmptyAudience: {
+    src: new URL('../assets/art/backdrops/scene-event-empty-audience.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '空空觀眾席房間',
+  },
+  sceneEventWindHall: {
+    src: new URL('../assets/art/backdrops/scene-event-wind-hall.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '塔頂長風房間',
+  },
+  sceneEventPhoneticShrine: {
+    src: new URL('../assets/art/backdrops/scene-event-phonetic-shrine.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '注音神龕房間',
+  },
+  sceneEventHummingWell: {
+    src: new URL('../assets/art/backdrops/scene-event-humming-well.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '哼唱井房間',
+  },
+  sceneEventLuthier: {
+    src: new URL('../assets/art/backdrops/scene-event-luthier.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '旅行調音師房間',
+  },
+  sceneEventMemoryAlbum: {
+    src: new URL('../assets/art/backdrops/scene-event-memory-album.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '回憶相簿房間',
+  },
+  sceneEventThreeDoors: {
+    src: new URL('../assets/art/backdrops/scene-event-three-doors.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '三扇彩門房間',
+  },
+  sceneEventTinyConductor: {
+    src: new URL('../assets/art/backdrops/scene-event-tiny-conductor.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '小小合唱房間',
+  },
+  sceneEventMoonGong: {
+    src: new URL('../assets/art/backdrops/scene-event-moon-gong.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '月光鑼房間',
+  },
+  sceneEventResonantAnvil: {
+    src: new URL('../assets/art/backdrops/scene-event-resonant-anvil.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '共鳴鐵砧房間',
+  },
+  sceneEventQuietLibrary: {
+    src: new URL('../assets/art/backdrops/scene-event-quiet-library.webp', import.meta.url).href,
+    fallback: '❓',
+    alt: '靜音圖書室房間',
   },
   transitionGardenLibrary: {
     src: new URL(
@@ -387,6 +685,11 @@ export const ART_ASSETS = {
     fallback: '✨',
     alt: `${ACT_PLACE_NAMES[2]}房間圓牌`,
   },
+  tokenHeart: {
+    src: new URL('../assets/art/token-heart.webp', import.meta.url).href,
+    fallback: '💎',
+    alt: `${TOWER_SUMMIT_NAME}房間圓牌`,
+  },
   propBlossom: {
     src: new URL('../assets/art/prop-blossom.webp', import.meta.url).href,
     fallback: '🌸',
@@ -593,9 +896,7 @@ export function actTransitionArtKeyFor(
   return null;
 }
 
-const ACT_THEMES = ['garden', 'library', 'observatory'] as const;
-
-/** Three act slots only. Per-floor, shop, camp, event, foyer, and Act IV plates are not wired. */
+const ACT_THEMES = ['garden', 'library', 'observatory', 'heart'] as const;
 
 const THEME_ASSETS: Record<
   Exclude<VisualTheme, 'foyer'>,
@@ -616,6 +917,12 @@ const THEME_ASSETS: Record<
     token: 'tokenObservatory',
     prop: 'propTelescope',
   },
+  // Act IV has no prop of its own yet; it borrows the observatory telescope.
+  heart: {
+    scene: 'sceneHeartBoss',
+    token: 'tokenHeart',
+    prop: 'propTelescope',
+  },
 };
 
 const FOYER_SCREENS: ReadonlySet<Screen> = new Set([
@@ -626,37 +933,212 @@ const FOYER_SCREENS: ReadonlySet<Screen> = new Set([
 
 export function visualThemeFor(screen: Screen, actIndex: number): VisualTheme {
   if (FOYER_SCREENS.has(screen)) return 'foyer';
-  if (screen === 'victory') return 'observatory';
+  if (screen === 'victory') return 'heart';
   const index = Math.max(0, Math.min(ACT_THEMES.length - 1, actIndex));
   return ACT_THEMES[index]!;
+}
+
+/*
+ * Backdrop routing. Each act room is lower (rows 0..UPPER_FIRST_ROW-1),
+ * upper (UPPER_FIRST_ROW..14) or the boss chamber (row 15).
+ * See docs/ART_INVENTORY.md "Which screen shows which backdrop".
+ */
+
+/** Fight launched from an event (鐘蛾彩排): 'eventRoom' keeps the event's room; 'floor' uses the floor scene. */
+export const EVENT_FIGHT_SCENE: 'eventRoom' | 'floor' = 'eventRoom';
+/** Map: 'nextRow' shows the floor the kid is about to enter (capped at upper); 'currentRow' shows the last room's floor. */
+export const MAP_SCENE_ROW: 'nextRow' | 'currentRow' = 'nextRow';
+/** Act clear: 'nextActLower' shows the act just reached; 'clearedActBoss' shows the boss chamber just cleared. */
+export const ACT_CLEAR_SCENE: 'nextActLower' | 'clearedActBoss' = 'nextActLower';
+
+const ACT_ROOMS = [
+  { lower: 'sceneGarden', upper: 'sceneGardenUpper', boss: 'sceneGardenBoss', camp: 'sceneGardenCamp', shop: 'sceneGardenShop' },
+  { lower: 'sceneLibrary', upper: 'sceneLibraryUpper', boss: 'sceneLibraryBoss', camp: 'sceneLibraryCamp', shop: 'sceneLibraryShop' },
+  { lower: 'sceneObservatory', upper: 'sceneObservatoryUpper', boss: 'sceneObservatoryBoss', camp: 'sceneObservatoryCamp', shop: 'sceneObservatoryShop' },
+] as const satisfies readonly Record<'lower' | 'upper' | 'boss' | 'camp' | 'shop', ArtAssetKey>[];
+
+/** Act events have their own room; shared events use one act-neutral room. */
+export const EVENT_SCENE_BY_ID: Readonly<Record<string, ArtAssetKey>> = {
+  event_a1_whispering_door: 'sceneEventWhisperingDoor',
+  event_a1_tuning_fountain: 'sceneEventTuningFountain',
+  event_a1_lost_metronome: 'sceneEventLostMetronome',
+  event_a1_bell_rope: 'sceneEventBellRope',
+  event_a1_dusty_score: 'sceneEventDustyScore',
+  event_a1_sleeping_chime: 'sceneEventSleepingChime',
+  event_a1_lantern_choir: 'sceneEventLanternChoir',
+  event_a2_heated_organ: 'sceneEventHeatedOrgan',
+  event_a2_broken_bridge: 'sceneEventBrokenBridge',
+  event_a2_echo_market: 'sceneEventEchoMarket',
+  event_a2_moth_rehearsal: 'sceneEventMothRehearsal',
+  event_a2_glass_fork: 'sceneEventMoonMusicBox',
+  event_a2_dripping_rhythm: 'sceneEventDrippingRhythm',
+  event_a2_silent_classroom: 'sceneEventSilentClassroom',
+  event_a3_static_crown: 'sceneEventRainTube',
+  event_a3_mirror_stage: 'sceneEventMirrorStage',
+  event_a3_last_rehearsal: 'sceneEventLastRehearsal',
+  event_a3_star_bell: 'sceneEventStarBell',
+  event_a3_backward_song: 'sceneEventBackwardSong',
+  event_a3_empty_audience: 'sceneEventEmptyAudience',
+  event_a3_roof_wind: 'sceneEventWindHall',
+  event_shared_phonetic_shrine: 'sceneEventPhoneticShrine',
+  event_shared_humming_well: 'sceneEventHummingWell',
+  event_shared_traveling_luthier: 'sceneEventLuthier',
+  event_shared_memory_album: 'sceneEventMemoryAlbum',
+  event_shared_three_doors: 'sceneEventThreeDoors',
+  event_shared_tiny_conductor: 'sceneEventTinyConductor',
+  event_shared_moon_gong: 'sceneEventMoonGong',
+  event_shared_resonant_anvil: 'sceneEventResonantAnvil',
+  event_shared_quiet_library: 'sceneEventQuietLibrary',
+};
+
+/** Saved run fields the backdrop reads. Nothing here is new save data. */
+export type SceneState = Pick<
+  RunState,
+  'actIndex' | 'activeNodeId' | 'currentNodeId' | 'runMap'
+> & {
+  eventTrack: Pick<RunState['eventTrack'], 'resolutions' | 'active'>;
+};
+
+export type SceneRegistryHas = (key: ArtAssetKey) => boolean;
+
+const registeredArt: SceneRegistryHas = (key) =>
+  Object.prototype.hasOwnProperty.call(ART_ASSETS, key);
+
+const CAMP_SCREENS: ReadonlySet<Screen> = new Set(['rest', 'smith', 'removeCard']);
+const SHOP_SCREENS: ReadonlySet<Screen> = new Set(['shop', 'shopRemove']);
+const EVENT_SCREENS: ReadonlySet<Screen> = new Set(['event', 'eventCast']);
+const HEART_ACT_INDEX = 3;
+const HEART_FALLBACK: ArtAssetKey[] = ['sceneHeartBoss', 'sceneObservatory'];
+const HEART_ROOM_BY_KIND: Partial<Record<NodeKind, ArtAssetKey>> = {
+  rest: 'sceneHeartCamp',
+  shop: 'sceneHeartShop',
+  elite: 'sceneHeartRehearsal',
+  boss: 'sceneHeartBoss',
+};
+
+/** A node id from the run map, ignoring stale ids from another act. */
+function actNode(state: SceneState, nodeId: string | null): MapNode | null {
+  const node = findNode(state.runMap, nodeId);
+  return node && node.act === state.actIndex + 1 ? node : null;
+}
+
+function mapRow(state: SceneState): number {
+  const current = actNode(state, state.currentNodeId);
+  if (MAP_SCENE_ROW === 'currentRow') return current?.row ?? 0;
+  // The map never shows the boss chamber: row 14 → 15 stays upper.
+  return Math.min(current ? current.row + 1 : 0, CLIMB_ROWS - 1);
+}
+
+function actChain(
+  act: number,
+  screen: Screen,
+  state: SceneState,
+): ArtAssetKey[] {
+  const rooms = ACT_ROOMS[act]!;
+  const floor = (row: number): ArtAssetKey[] =>
+    row >= UPPER_FIRST_ROW ? [rooms.upper, rooms.lower] : [rooms.lower];
+
+  if (screen === 'actClear' && ACT_CLEAR_SCENE === 'clearedActBoss' && act > 0) {
+    const cleared = ACT_ROOMS[act - 1]!;
+    return [cleared.boss, cleared.lower];
+  }
+  const node = screen === 'map' || screen === 'actClear'
+    ? null
+    : actNode(state, state.activeNodeId);
+  if (!node) {
+    // No room on record (should not happen in play): keep camp and shop in their rooms.
+    const room = floor(mapRow(state));
+    if (CAMP_SCREENS.has(screen)) return [rooms.camp, ...room];
+    if (SHOP_SCREENS.has(screen)) return [rooms.shop, ...room];
+    return room;
+  }
+
+  const room = floor(node.row);
+  const resolution = node.kind === 'unknown'
+    ? state.eventTrack.resolutions[node.id]
+    : undefined;
+  const eventId = state.eventTrack.active?.nodeId === node.id
+    ? state.eventTrack.active.eventId
+    : resolution?.eventId;
+  const eventRoom = eventId ? EVENT_SCENE_BY_ID[eventId] : undefined;
+  const eventChain = eventRoom ? [eventRoom, ...room] : room;
+
+  if (CAMP_SCREENS.has(screen)) return [rooms.camp, ...room];
+  if (SHOP_SCREENS.has(screen)) return [rooms.shop, ...room];
+  if (EVENT_SCREENS.has(screen)) return eventChain;
+  if (node.kind === 'boss') return [rooms.boss, rooms.lower];
+  if (resolution?.outcome === 'event') {
+    return EVENT_FIGHT_SCENE === 'eventRoom' ? eventChain : room;
+  }
+  return room;
+}
+
+function heartChain(screen: Screen, state: SceneState): ArtAssetKey[] {
+  let node = screen === 'map' ? null : findNode(state.runMap, state.activeNodeId);
+  if (!node) {
+    // The map pictures the next room on the route; before the first room, the camp.
+    const current = findNode(state.runMap, state.currentNodeId);
+    node = current ? findNode(state.runMap, current.nextIds[0]) : null;
+  }
+  const room = CAMP_SCREENS.has(screen)
+    ? 'sceneHeartCamp'
+    : SHOP_SCREENS.has(screen)
+      ? 'sceneHeartShop'
+      : HEART_ROOM_BY_KIND[node?.kind ?? 'rest'] ?? 'sceneHeartCamp';
+  return [room, ...HEART_FALLBACK.filter((key) => key !== room)];
+}
+
+/**
+ * Backdrops for one screen, best first; every later key is a fallback.
+ * Only keys `has` reports as registered are returned. Empty means no image
+ * (the foyer then paints its gradients).
+ */
+export function sceneKeysFor(
+  state: SceneState,
+  screen: Screen,
+  has: SceneRegistryHas = registeredArt,
+): ArtAssetKey[] {
+  let chain: ArtAssetKey[];
+  if (FOYER_SCREENS.has(screen)) chain = ['sceneFoyer'];
+  else if (screen === 'victory') chain = ['sceneHeartBossOpen', ...HEART_FALLBACK];
+  else if (state.actIndex >= HEART_ACT_INDEX) chain = heartChain(screen, state);
+  else chain = actChain(Math.max(0, state.actIndex), screen, state);
+  return chain.filter(has);
 }
 
 function cssUrl(src: string): string {
   return `url("${src.replaceAll('"', '\\"')}")`;
 }
 
+/** The first two scenes, stacked, so a failed load still shows the next one. */
+export function sceneImageCss(keys: readonly ArtAssetKey[]): string {
+  if (keys.length === 0) return 'none';
+  return keys
+    .slice(0, 2)
+    .map((key) => cssUrl(ART_ASSETS[key].src))
+    .join(', ');
+}
+
 export function applyVisualTheme(
   root: HTMLElement,
   screen: Screen,
-  actIndex: number,
+  state: SceneState,
 ): VisualTheme {
-  const theme = visualThemeFor(screen, actIndex);
+  const theme = visualThemeFor(screen, state.actIndex);
   root.dataset.visualTheme = theme;
-  root.dataset.actIndex = String(Math.max(0, Math.min(2, actIndex)));
+  root.dataset.actIndex = String(
+    Math.max(0, Math.min(ACT_THEMES.length - 1, state.actIndex)),
+  );
   document.documentElement.dataset.visualTheme = theme;
+  root.style.setProperty('--scene-image', sceneImageCss(sceneKeysFor(state, screen)));
 
   if (theme === 'foyer') {
-    root.style.setProperty('--scene-image', 'none');
     root.style.setProperty('--room-token-image', cssUrl(ART_ASSETS.tokenGarden.src));
     root.style.setProperty('--theme-prop-image', cssUrl(ART_ASSETS.propLantern.src));
     return theme;
   }
 
   const themeAssets = THEME_ASSETS[theme];
-  root.style.setProperty(
-    '--scene-image',
-    cssUrl(ART_ASSETS[themeAssets.scene].src),
-  );
   root.style.setProperty(
     '--room-token-image',
     cssUrl(ART_ASSETS[themeAssets.token].src),
@@ -761,9 +1243,11 @@ export function hydrateArtImages(root: ParentNode): void {
 export function actAmbienceElement(theme: VisualTheme): HTMLElement | null {
   if (theme === 'foyer') return null;
   const layer = document.createElement('div');
-  layer.className = `act-ambience act-ambience-${theme}`;
+  // Act IV has no ambience of its own yet; it reuses the observatory stars.
+  const ambience = theme === 'heart' ? 'observatory' : theme;
+  layer.className = `act-ambience act-ambience-${ambience}`;
   layer.setAttribute('aria-hidden', 'true');
-  const count = theme === 'observatory' ? 6 : 5;
+  const count = ambience === 'observatory' ? 6 : 5;
   for (let index = 0; index < count; index += 1) {
     const particle = document.createElement('span');
     particle.className = 'act-ambience-particle';

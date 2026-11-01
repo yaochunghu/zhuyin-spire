@@ -260,7 +260,7 @@ function render(): void {
   const visualTheme = applyVisualTheme(
     appEl,
     showBoard ? 'combat' : runState.screen,
-    runState.actIndex,
+    runState,
   );
   appEl.appendChild(globalControls());
   appEl.appendChild(towerProgressElement(runState.screen, runState.actIndex));
@@ -382,6 +382,11 @@ if (import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEBUG_TOOLS === 'true') {
         handCount?: number;
         heroHp?: number;
         enemyHp?: number[];
+        nodeKind?: import('./data/map').NodeKind;
+        row?: number;
+        eventId?: string;
+        /** Write the run checkpoint, as if the kid stopped here. */
+        save?: boolean;
       },
     ) => Promise<void>;
   };
@@ -391,6 +396,7 @@ if (import.meta.env.DEV || import.meta.env.VITE_ENABLE_DEBUG_TOOLS === 'true') {
   ) => {
     const { debugPrepareVisualReview } = await import('./debug/debugActions');
     debugPrepareVisualReview(runState, screen, options);
+    if (options?.save) saveRunCheckpoint(runState);
     render();
   };
 

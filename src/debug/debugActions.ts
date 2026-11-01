@@ -5,6 +5,7 @@
 import { FIRST_CHARACTER_ID, getPlayableCharacter, type PlayableCharacterId } from '../data/characters';
 import { ENCOUNTERS } from '../data/encounters';
 import { ENEMIES } from '../data/enemies';
+import { CLIMB_ROWS, type NodeKind } from '../data/map';
 import { getEvent } from '../data/events';
 import { openEvent } from '../game/eventEngine';
 import { saveRunCheckpoint } from '../game/save';
@@ -283,6 +284,11 @@ export interface VisualReviewOptions {
   heroHp?: number;
   /** Combat only: HP per enemy slot, in order (clamped to 0..max). */
   enemyHp?: number[];
+  /** Stand in the lowest current-act room of this kind at or above `row`: its backdrop shows. */
+  nodeKind?: NodeKind;
+  row?: number;
+  /** Event only: the event to open in that room. */
+  eventId?: string;
 }
 
 /**
@@ -314,6 +320,26 @@ export function debugPrepareVisualReview(
     ...card,
     uid: `visual-offer-${index}`,
   }));
+  let reviewNode = options.nodeKind !== undefined || options.row !== undefined
+    ? getCurrentActNodes(state)
+        .filter(
+          (node) =>
+            (options.nodeKind === undefined || node.kind === options.nodeKind) &&
+            node.row >= (options.row ?? 0),
+        )
+        .sort((a, b) => a.row - b.row)[0] ?? null
+    : null;
+  // This run's map may have no room of that kind (shops can be rare): repaint the nearest one.
+  if (!reviewNode && options.nodeKind !== undefined) {
+    const stand = getCurrentActNodes(state)
+      .filter((node) => node.row >= (options.row ?? 0) && node.row < CLIMB_ROWS)
+      .sort((a, b) => a.row - b.row)[0];
+    if (stand) {
+      stand.kind = options.nodeKind;
+      reviewNode = stand;
+    }
+  }
+  state.activeNodeId = reviewNode?.id ?? null;
   const enemyIdsByAct = [
     ['rock', 'bat', 'ember', 'fang', 'eliteArmor'],
     ['armor', 'spike', 'fangHard', 'toad', 'eliteStorm'],
@@ -322,6 +348,8 @@ export function debugPrepareVisualReview(
 
   switch (screen) {
     case 'map':
+      state.currentNodeId = state.activeNodeId;
+      state.activeNodeId = null;
       state.screen = 'map';
       return;
     case 'rest':
@@ -330,7 +358,7 @@ export function debugPrepareVisualReview(
       const restNode = state.runMap.acts[state.actIndex]?.nodes.find(
         (node) => node.kind === 'rest',
       );
-      state.activeNodeId = restNode?.id ?? null;
+      state.activeNodeId = reviewNode?.id ?? restNode?.id ?? null;
       state.screen = screen;
       return;
     }
@@ -417,7 +445,7 @@ export function debugPrepareVisualReview(
     case 'reward':
       state.rewardOptions = reviewOffers;
       state.rewardTier = 'normal';
-      state.rewardSource = 'fight';
+      state.rewardSource = reviewNode?.kind === 'treasure' ? 'treasure' : 'fight';
       state.pendingRelicId = null;
       state.pendingPotionId = null;
       state.pendingPotionUnplaced = false;
@@ -433,6 +461,11 @@ export function debugPrepareVisualReview(
     case 'defeat':
       state.heroHp = 0;
       state.screen = 'defeat';
+      return;
+    case 'event':
+    case 'eventCast':
+      if (reviewNode && options.eventId) openEvent(state, reviewNode.id, options.eventId);
+      state.screen = screen;
       return;
     case 'victory':
       state.actIndex = 2;

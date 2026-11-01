@@ -92,6 +92,8 @@ const KIND_EMOJI: Record<NodeKind, string> = {
 export const CLIMB_ROWS = 15;
 export const MAP_COLS = 7;
 export const TREASURE_FLOOR = 8;
+/** First upper-room row: rows 0–7 (floors 1–8) are the lower room, 8–14 the upper, 15 the boss. */
+export const UPPER_FIRST_ROW = 8;
 
 const WEIGHT_FIGHT = 10;
 const WEIGHT_UNKNOWN = 6;
