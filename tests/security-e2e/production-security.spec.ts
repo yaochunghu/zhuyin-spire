@@ -34,7 +34,7 @@ test('privacy control clears game keys but preserves unrelated storage', async (
   // Register before the action: waitForLoadState can resolve against the old page.
   await Promise.all([
     page.waitForEvent('domcontentloaded'),
-    page.getByRole('button', { name: '清除這台裝置的所有遊戲資料' }).click(),
+    page.getByRole('button', { name: '清除這臺裝置的所有遊戲資料' }).click(),
   ]);
   expect(await page.evaluate(() => localStorage.getItem('zhuyin-spire-test-private'))).toBeNull();
   expect(await page.evaluate(() => localStorage.getItem('unrelated-test-key'))).toBe('keep');

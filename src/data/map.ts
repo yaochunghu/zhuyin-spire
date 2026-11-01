@@ -34,7 +34,7 @@ export type CastStage = 'early' | 'mid' | 'elite' | 'boss';
 export type ActNumber = 1 | 2 | 3;
 
 /** Child-facing place names. Map titles, combat, tower progress, and art labels read these. */
-export const ACT_PLACE_NAMES = ['魔法花園', '燈籠書庫', '星空觀星台'] as const;
+export const ACT_PLACE_NAMES = ['魔法花園', '燈籠書庫', '星空觀星臺'] as const;
 
 /** The top of the tower, after the three acts. */
 export const TOWER_SUMMIT_NAME = '塔頂之心';

@@ -417,7 +417,7 @@ export const EVENTS: EventDef[] = [
   {
     id: 'event_a3_mirror_stage',
     act: 3,
-    title: '鏡子舞台',
+    title: '鏡子舞臺',
     icon: '🪞',
     presentation: '鏡子裡有另一張一樣的牌。',
     rationale: '模仿少一點心，複製一張不是基礎牌的牌，複本沒有升級。轉身把兩張牌換成新的。',
@@ -439,7 +439,7 @@ export const EVENTS: EventDef[] = [
     act: 3,
     title: '最後彩排',
     icon: '🎭',
-    presentation: '上台前可以再練一次，或先睡飽。',
+    presentation: '上臺前可以再練一次，或先睡飽。',
     rationale: '練到底少很多心，把每一張還沒升級的基礎牌都升級。睡到飽補心，但會得到兩張失聲。',
     eligibility: [[{ op: 'unupgradedBasic' }], [{ op: 'damaged' }]],
     choices: [
@@ -730,12 +730,6 @@ function typeLabel(type: CardTypeGroup): string {
   return '能力';
 }
 
-function rarityLabel(rarity: EventRelicRarity): string {
-  if (rarity === 'common') return '普通';
-  if (rarity === 'uncommon') return '進階';
-  return '稀有';
-}
-
 export function effectChips(effects: readonly EventEffect[], quizVerb: '拼' | '算' = '拼'): string[] {
   const chips: string[] = [];
   for (const effect of effects) {
@@ -766,7 +760,7 @@ export function effectChips(effects: readonly EventEffect[], quizVerb: '拼' | '
         chips.push(`-${effect.amount}🪙`);
         break;
       case 'upgrade':
-        if (effect.allBasics) chips.push('基礎牌都升級');
+        if (effect.allBasics) chips.push('基本牌都升級');
         else if (effect.cardType) chips.push(`升級 ${effect.count} 張${typeLabel(effect.cardType)}`);
         else chips.push(`升級 ${effect.count} 張`);
         break;
@@ -780,7 +774,7 @@ export function effectChips(effects: readonly EventEffect[], quizVerb: '拼' | '
         chips.push(effect.upgradeResult ? `改寫 ${effect.count} 張並升級` : `改寫 ${effect.count} 張`);
         break;
       case 'gainCard':
-        chips.push(`${rarityLabel(effect.rarity)}牌 ${effect.count} 張`);
+        chips.push(`新牌 ${effect.count} 張`);
         break;
       case 'copy':
         chips.push('複製 1 張');
@@ -789,7 +783,7 @@ export function effectChips(effects: readonly EventEffect[], quizVerb: '拼' | '
         chips.push('獲得 🎁遺物');
         break;
       case 'gainRandomRelic':
-        chips.push(`獲得${rarityLabel(effect.rarity)}🎁`);
+        chips.push('獲得 🎁遺物');
         break;
       case 'gainCurse':
         chips.push(`得到 ${curseName(effect.curseId)}${(effect.count ?? 1) > 1 ? ` ×${effect.count}` : ''}`);
@@ -805,7 +799,7 @@ export function effectChips(effects: readonly EventEffect[], quizVerb: '拼' | '
         chips.push(...effectChips(effect.reward, quizVerb).map((chip) => `贏了${chip}`));
         break;
       case 'bossEnergy':
-        chips.push(`Boss 第1回合 +${effect.amount}⚡`);
+        chips.push(`頭目第一回合能量加${effect.amount}`);
         break;
       case 'futureNormalHp':
         chips.push(STURDIER_MONSTERS_LINE);

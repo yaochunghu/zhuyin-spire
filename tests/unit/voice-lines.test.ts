@@ -105,6 +105,14 @@ describe('voice-line registry', () => {
     }
   });
 
+  it('shows each base card desc exactly as 老師 reads it', () => {
+    const descKeys = entries.map(([key]) => key).filter((key) => /^c\..+\.desc$/u.test(key));
+    expect(descKeys).toHaveLength(102);
+    for (const key of descKeys) {
+      expect(CARDS[key.slice(2, -5)]!.description, key).toBe(VOICE_LINES[key]![2]);
+    }
+  });
+
   it('reads each event exactly as the event screen shows it', () => {
     for (const event of EVENTS) {
       expect(VOICE_LINES[`ev.${event.id}.title`]?.[2], event.id).toBe(event.title);
