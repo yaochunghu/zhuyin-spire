@@ -18,6 +18,14 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - Any line without a clip, or whose clip cannot load, falls back to the device voice. Mute silences every clip. One voice plays at a time, and a cast, the pause menu or a hidden page stops it
 - `u.notnow` (先不要) is held pending Yao's decision (Q100) and is not shipped; that button stays silent
 
+### Room backdrops
+
+- Each part of a run now shows its own painted room: the lower floors (第 1–8 層) keep the act plate, the upper floors (第 9–15 層) and the boss chamber (第 16 層) have their own, and every camp, shop and event has its room. The map shows the floor you are about to enter
+- The title, character select and practice screens show the tower foyer under a light tint
+- The victory screen shows the top room of 塔頂之心 with its door open
+- A missing or failed backdrop shows the next room in its chain (in the end, the act plate), never a blank board. Acts I–III never show the glass-dome rooms
+- Act IV (塔頂之心) has its visual theme and rooms ready for when the act lands
+
 ### Dev / ops
 
 - Clips load only when first played: the registry is its own small chunk, each MP3 is a separate hashed file, and Vite never inlines an MP3 (a `data:` URL would break the `connect-src 'self'` CSP). The CSP is unchanged

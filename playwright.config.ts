@@ -28,6 +28,11 @@ export default defineConfig({
       },
     },
     {
+      name: 'backdrop-wiring-desktop',
+      testMatch: /backdrop-wiring\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 720 } },
+    },
+    {
       name: 'events-desktop',
       testMatch: /events\.spec\.ts/,
       use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 720 } },

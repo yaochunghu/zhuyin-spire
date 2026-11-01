@@ -15,7 +15,7 @@ import { RELICS } from '../../src/data/relics';
 
 describe('magical toy-board art registry', () => {
   it('defines a local WebP source, fallback, and accessible label for every required asset', () => {
-    expect(REQUIRED_ART_ASSET_KEYS).toHaveLength(64);
+    expect(REQUIRED_ART_ASSET_KEYS).toHaveLength(113);
     expect(REQUIRED_ART_ASSET_KEYS).not.toContain('propStar');
     expect(new Set(REQUIRED_ART_ASSET_KEYS).size).toBe(
       REQUIRED_ART_ASSET_KEYS.length,
@@ -53,7 +53,9 @@ describe('magical toy-board art registry', () => {
     expect(visualThemeFor('map', 0)).toBe('garden');
     expect(visualThemeFor('combat', 1)).toBe('library');
     expect(visualThemeFor('reward', 2)).toBe('observatory');
-    expect(visualThemeFor('victory', 0)).toBe('observatory');
+    expect(visualThemeFor('map', 3)).toBe('heart');
+    // Victory is the open top room of 塔頂之心 (Q80 A), never the observatory.
+    expect(visualThemeFor('victory', 0)).toBe('heart');
   });
 
   it('keeps non-run learning and selection screens in the shared foyer', () => {

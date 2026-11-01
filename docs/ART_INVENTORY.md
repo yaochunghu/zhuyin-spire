@@ -1,9 +1,9 @@
 # Art inventory
 
 What is on screen, and what is only stored. The loader is `src/ui/assets.ts`
-(`ART_ASSETS`, `THEME_ASSETS`, `RELIC_ART`). A file in
-`src/assets/art/backdrops/` or `token-heart.webp` is not imported, so the
-build does not ship it and the game does not show it.
+(`ART_ASSETS`, `THEME_ASSETS`, `RELIC_ART`, and `sceneKeysFor` for room
+backdrops). A file that no `ART_ASSETS` entry imports is not shipped by the
+build and the game does not show it.
 
 Regular and elite enemy sprites stay on their existing `ART_ASSETS` keys.
 The hero and the three bosses now also have damage-stage stills, and the hero
@@ -13,9 +13,11 @@ Sizes below are the file on disk. KB is bytes ÷ 1024, to one decimal.
 
 ## How the live slots draw
 
-- **Plates.** 1920×1080 opaque WebP. `THEME_ASSETS` points each act at one
-  plate (`sceneGarden`, `sceneLibrary`, `sceneObservatory`). CSS paints
-  `--scene-image` with `background-size: cover`.
+- **Plates.** 1920×1080 opaque WebP. `sceneKeysFor(state, screen)` picks
+  the room for each screen (see [Which screen shows which backdrop](#which-screen-shows-which-backdrop)).
+  `applyVisualTheme` sets `--scene-image` to the first two keys of that chain,
+  stacked (`url(primary), url(next)`), so a failed load shows the next room.
+  CSS paints it with `background-size: cover`.
 - **Transitions.** 1536×1152 (4:3), opaque WebP. `.act-transition-art img`
   uses `object-fit: cover`. Phone portrait
   (`max-width: 760px` and `orientation: portrait`) uses
@@ -35,8 +37,11 @@ Sizes below are the file on disk. KB is bytes ÷ 1024, to one decimal.
   with no file keeps its emoji. The inspect dialog and the character-pick
   starter use the same face.
 
-There is no per-floor, shop, camp, event, foyer, or Act IV theme. Those plates
-wait on a separate design spec.
+The four visual themes (`data-visual-theme`) are `garden`, `library`,
+`observatory` and `heart` (Act IV and the victory screen), plus `foyer`. A
+theme sets the tint, token and prop; the backdrop comes from the resolver.
+`heart` uses `tokenHeart`, borrows `propTelescope` and the observatory
+ambience until Design picks its own.
 
 ## Plates in use
 
@@ -171,11 +176,43 @@ nothing shows them. When the boss lands, add its enemy def, a fresh idle key,
 and `tempoGolem.fresh` in `STAGE_ART`. Also map the def id to `tempoGolem` if
 the id differs.
 
-## Registered, not shown
+## Which screen shows which backdrop
 
-Same 1920×1080 opaque WebP spec as the plates in use. Nothing in
-`THEME_ASSETS` or the screen code points at these. `sceneEventAbacusShrine`
-was not in this drop.
+All of this lives in `sceneKeysFor` in `src/ui/assets.ts`. It reads only saved
+run fields (`screen`, `actIndex`, `activeNodeId`, `currentNodeId`, the node's
+`row` and `kind`, `eventTrack.resolutions[nodeId]`, `eventTrack.active`), so a
+reloaded save comes back in the same room. The lower/upper boundary is
+`UPPER_FIRST_ROW = 8` in `src/data/map.ts`: rows 0–7 (第 1–8 層) are lower,
+rows 8–14 (第 9–15 層) upper, row 15 the boss chamber.
+
+| Screen / room (Acts I–III) | Scene | Falls back to |
+|---|---|---|
+| ⚔️ fight, 💀 elite, ❓ rolled as fight, 💎 treasure (`reward`), and their `castCheck` / `defeat` | lower plate (rows 0–7) or `scene<Act>Upper` (8–14) | lower plate |
+| 🐉 boss, its reward, cast and defeat | `scene<Act>Boss` | lower plate |
+| 🔥 `rest` / `smith` / `removeCard` (every camp, row 14 too) | `scene<Act>Camp` | floor scene, lower plate |
+| 🏪 `shop` / `shopRemove` (map shop or ❓ shop) | `scene<Act>Shop` | floor scene, lower plate |
+| ❓ `event` / `eventCast`, and a fight launched from the event | that event's `sceneEvent*` (`EVENT_SCENE_BY_ID`) | floor scene, lower plate |
+| `map` | floor scene of the next row, capped at upper | lower plate |
+| `actClear` | the next act's lower plate | — |
+
+| Act IV / foyer / end | Scene | Falls back to |
+|---|---|---|
+| Act IV (`actIndex` 3) camp, shop, rehearsal (elite), boss | `sceneHeartCamp` / `sceneHeartShop` / `sceneHeartRehearsal` / `sceneHeartBoss` | `sceneHeartBoss`, `sceneObservatory` |
+| Act IV map | the next room on the route; `sceneHeartCamp` before the first | same |
+| `title`, `relicPick`, `practice` | `sceneFoyer` under a light tint | the foyer gradients |
+| `victory` (after 萬音之心, or an Act III clear without keys) | `sceneHeartBossOpen` (open top door) | `sceneHeartBoss`, `sceneObservatory` |
+
+No Acts I–III chain contains `sceneHeartBoss` or `sceneHeartBossOpen`
+(Q81 A); `tests/unit/backdrop-wiring.test.ts` checks every context.
+
+Three Design calls are one-line switches next to the resolver:
+`EVENT_FIGHT_SCENE` (event room or floor scene), `MAP_SCENE_ROW` (next or
+current row) and `ACT_CLEAR_SCENE` (next act's lower plate or the cleared
+boss chamber).
+
+Act IV is not in the game yet (`ActNumber` is 1–3), so its rows are tested on
+synthetic state only. `sceneEventAbacusShrine` has no file and is not
+registered; if that event ships first, it uses the floor scene.
 
 The five Act III fixes are already these files: `scene-event-last-rehearsal`,
 `scene-event-wind-hall`, `scene-event-empty-audience`,
@@ -184,48 +221,46 @@ The five Act III fixes are already these files: `scene-event-last-rehearsal`,
 
 ### Act IV token
 
-| File | Asset | px | Bytes | KB |
+| File | Key | px | Bytes | KB |
 |---|---|---|---|---|
 | `src/assets/art/token-heart.webp` | `tokenHeart` (塔頂之心) | 320×320 | 7,534 | 7.4 |
 
 ### Per-floor rooms, foyer, camps, shops, victory
 
-| File | Asset id | Bytes | KB |
+| File | Key | Bytes | KB |
 |---|---|---|---|
-| `backdrops/act-garden-upper.webp` | `act-garden-upper` | 200,704 | 196.0 |
-| `backdrops/act-garden-boss.webp` | `act-garden-boss` | 212,672 | 207.7 |
-| `backdrops/act-library-upper.webp` | `act-library-upper` | 219,858 | 214.7 |
-| `backdrops/act-library-boss.webp` | `act-library-boss` | 157,344 | 153.7 |
-| `backdrops/act-observatory-upper.webp` | `act-observatory-upper` | 130,986 | 127.9 |
-| `backdrops/act-observatory-boss.webp` | `act-observatory-boss` | 169,338 | 165.4 |
-| `backdrops/act-heart-boss.webp` | `act-heart-boss` | 216,402 | 211.3 |
-| `backdrops/act-heart-camp.webp` | `act-heart-camp` | 131,372 | 128.3 |
-| `backdrops/act-heart-rehearsal.webp` | `act-heart-rehearsal` | 100,158 | 97.8 |
-| `backdrops/act-heart-shop.webp` | `act-heart-shop` | 219,720 | 214.6 |
-| `backdrops/foyer.webp` | `foyer` | 163,622 | 159.8 |
-| `backdrops/scene-garden-camp.webp` | `scene-garden-camp` | 222,872 | 217.6 |
-| `backdrops/scene-library-camp.webp` | `scene-library-camp` | 217,430 | 212.3 |
-| `backdrops/scene-observatory-camp.webp` | `scene-observatory-camp` | 188,530 | 184.1 |
+| `backdrops/act-garden-upper.webp` | `sceneGardenUpper` | 200,704 | 196.0 |
+| `backdrops/act-garden-boss.webp` | `sceneGardenBoss` | 212,672 | 207.7 |
+| `backdrops/act-library-upper.webp` | `sceneLibraryUpper` | 219,858 | 214.7 |
+| `backdrops/act-library-boss.webp` | `sceneLibraryBoss` | 157,344 | 153.7 |
+| `backdrops/act-observatory-upper.webp` | `sceneObservatoryUpper` | 130,986 | 127.9 |
+| `backdrops/act-observatory-boss.webp` | `sceneObservatoryBoss` | 169,338 | 165.4 |
+| `backdrops/act-heart-boss.webp` | `sceneHeartBoss` | 216,402 | 211.3 |
+| `backdrops/act-heart-camp.webp` | `sceneHeartCamp` | 131,372 | 128.3 |
+| `backdrops/act-heart-rehearsal.webp` | `sceneHeartRehearsal` | 100,158 | 97.8 |
+| `backdrops/act-heart-shop.webp` | `sceneHeartShop` | 219,720 | 214.6 |
+| `backdrops/foyer.webp` | `sceneFoyer` | 163,622 | 159.8 |
+| `backdrops/scene-garden-camp.webp` | `sceneGardenCamp` | 222,872 | 217.6 |
+| `backdrops/scene-library-camp.webp` | `sceneLibraryCamp` | 217,430 | 212.3 |
+| `backdrops/scene-observatory-camp.webp` | `sceneObservatoryCamp` | 188,530 | 184.1 |
 | `backdrops/scene-garden-shop.webp` | `sceneGardenShop` | 202,908 | 198.2 |
 | `backdrops/scene-library-shop.webp` | `sceneLibraryShop` | 215,972 | 210.9 |
 | `backdrops/scene-observatory-shop.webp` | `sceneObservatoryShop` | 203,582 | 198.8 |
-| `backdrops/scene-heart-boss-victory.webp` | `sceneHeartBoss` victory variant | 216,338 | 211.3 |
-
-The victory screen still uses `sceneObservatory`.
+| `backdrops/scene-heart-boss-victory.webp` | `sceneHeartBossOpen` (open top door) | 216,338 | 211.3 |
 
 ### Event rooms
 
-| File | Asset id | Bytes | KB |
+| File | Key | Bytes | KB |
 |---|---|---|---|
-| `backdrops/scene-event-humming-well.webp` | `scene-event-humming-well` | 222,330 | 217.1 |
-| `backdrops/scene-event-luthier.webp` | `scene-event-luthier` | 216,934 | 211.8 |
-| `backdrops/scene-event-memory-album.webp` | `scene-event-memory-album` | 200,872 | 196.2 |
-| `backdrops/scene-event-moon-gong.webp` | `scene-event-moon-gong` | 207,892 | 203.0 |
-| `backdrops/scene-event-phonetic-shrine.webp` | `scene-event-phonetic-shrine` | 211,928 | 207.0 |
-| `backdrops/scene-event-quiet-library.webp` | `scene-event-quiet-library` | 215,490 | 210.4 |
-| `backdrops/scene-event-resonant-anvil.webp` | `scene-event-resonant-anvil` | 220,724 | 215.6 |
-| `backdrops/scene-event-three-doors.webp` | `scene-event-three-doors` | 194,488 | 189.9 |
-| `backdrops/scene-event-tiny-conductor.webp` | `scene-event-tiny-conductor` | 210,984 | 206.0 |
+| `backdrops/scene-event-humming-well.webp` | `sceneEventHummingWell` | 222,330 | 217.1 |
+| `backdrops/scene-event-luthier.webp` | `sceneEventLuthier` | 216,934 | 211.8 |
+| `backdrops/scene-event-memory-album.webp` | `sceneEventMemoryAlbum` | 200,872 | 196.2 |
+| `backdrops/scene-event-moon-gong.webp` | `sceneEventMoonGong` | 207,892 | 203.0 |
+| `backdrops/scene-event-phonetic-shrine.webp` | `sceneEventPhoneticShrine` | 211,928 | 207.0 |
+| `backdrops/scene-event-quiet-library.webp` | `sceneEventQuietLibrary` | 215,490 | 210.4 |
+| `backdrops/scene-event-resonant-anvil.webp` | `sceneEventResonantAnvil` | 220,724 | 215.6 |
+| `backdrops/scene-event-three-doors.webp` | `sceneEventThreeDoors` | 194,488 | 189.9 |
+| `backdrops/scene-event-tiny-conductor.webp` | `sceneEventTinyConductor` | 210,984 | 206.0 |
 | `backdrops/scene-event-whispering-door.webp` | `sceneEventWhisperingDoor` | 217,754 | 212.7 |
 | `backdrops/scene-event-tuning-fountain.webp` | `sceneEventTuningFountain` | 201,814 | 197.1 |
 | `backdrops/scene-event-lost-metronome.webp` | `sceneEventLostMetronome` | 214,940 | 209.9 |
