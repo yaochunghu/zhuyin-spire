@@ -60,7 +60,8 @@ describe('Zhuyin casting provider', () => {
     const rows = Object.entries(PHRASES_BY_INITIAL).flatMap(([family, phrases]) =>
       phrases.map((phrase) => ({ family, phrase })),
     );
-    expect(rows.length).toBeGreaterThanOrEqual(1_295);
+    // 1,295 before Design cut 21 words on 2026-11-01 (batch 3 audio).
+    expect(rows.length).toBeGreaterThanOrEqual(1_274);
     const wrongFamilies: string[] = [];
     for (const { family, phrase } of rows) {
       expect(phrase.word.trim()).not.toBe('');
@@ -91,7 +92,8 @@ describe('Zhuyin casting provider', () => {
     const coverage = getZhuyinCardCoverage(defaultCastingPreferences());
     const deficits = coverage.flatMap((item) => {
       const starter = item.cardId === 'bo' || item.cardId === 'po' || item.cardId === 'mo';
-      const promptFloor = starter ? 24 : 16;
+      // ㄇ dropped from 24 to 23 prompts when Design cut 罵 on 2026-11-01.
+      const promptFloor = item.cardId === 'mo' ? 23 : starter ? 24 : 16;
       const answerFloor = starter ? 12 : 8;
       return item.promptCount < promptFloor || item.distinctAnswerCount < answerFloor
         ? [`${item.cardId}/${item.displayGlyph}: ${item.promptCount} prompts, ${item.distinctAnswerCount} answers`]
@@ -150,7 +152,8 @@ describe('Zhuyin casting provider', () => {
         .filter((phrase) => phrase.word === word && phrase.emoji === emoji)
         .map((phrase) => phrase.spell);
 
-    expect(spells('幹', '🪵')).toEqual(['ㄍㄢˋ']);
+    // 幹 was cut from the pool (Design 11-01, batch 3 audio); 干 must not stand in for it.
+    expect(spells('幹', '🪵')).toEqual([]);
     expect(spells('干', '🪵')).toEqual([]);
     expect(spells('更', '📈')).toEqual(['ㄍㄥˋ']);
     expect(spells('還', '↩️')).toEqual(['ㄏㄨㄢˊ']);
@@ -169,7 +172,8 @@ describe('Zhuyin casting provider', () => {
     expect(spells('余', '➕')).toEqual([]);
 
     // Round 3: the revised dictionary's reading for each pictured phrase.
-    expect(spells('背', '🎒')).toEqual(['ㄅㄟ']);
+    // Design 11-01 moved 背 to ㄅㄟˋ to match its batch 3 clip (body.016).
+    expect(spells('背', '🎒')).toEqual(['ㄅㄟˋ']);
     expect(spells('表', '⌚')).toEqual(['ㄅㄧㄠˇ']);
     expect(spells('鋪', '🛏️')).toEqual(['ㄆㄨˋ']);
     expect(spells('量', '⚖️')).toEqual(['ㄌㄧㄤˋ']);

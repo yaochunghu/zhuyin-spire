@@ -153,12 +153,14 @@ describe('cast prompt stream', () => {
 
   it('pins practice question bytes for existing seeds', () => {
     // Four prompts each, for seeds 0, 1, 17665, and 0xc0ffee.
+    // Re-pinned when Design cut 21 words and fixed 背/裡 on 2026-11-01: a smaller pool
+    // changes which question a seed draws. Saves keep only castSeed and castCounter.
     const payload = [0, 1, 17665, 0xc0ffee].map((seed) => ({
       seed,
       sequence: practiceSequence(seed, 4),
     }));
     const digest = createHash('sha256').update(JSON.stringify(payload)).digest('hex');
-    expect(digest).toBe('91e23d3c86c44b7846f4702ac529b768f4c30476b68f9be6068b46eb86ffb41d');
+    expect(digest).toBe('a1fc51774f2c8b5e90d6aed9afef9457ad18eb1c65924a42d7d0a8b77c7f9fb9');
   });
 
   it('repeats a practice prompt sequence for the same seed', () => {
