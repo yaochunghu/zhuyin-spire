@@ -492,7 +492,7 @@ export const VOICE_LINES: Readonly<Record<string, readonly [VoiceSpeaker, string
   "n.act1.b": [N, "narrator/batch1/n.act1.b.mp3", "花園的燈，我先點好了。"],
   "n.act2.a": [N, "narrator/batch1/n.act2.a.mp3", "往上，是燈籠書庫。書在發光。"],
   "n.act2.b": [N, "narrator/batch1/n.act2.b.mp3", "書庫好安靜，書在說悄悄話。"],
-  "n.act3.a": [N, "narrator/batch1/n.act3.a.mp3", "再往上，是星空觀星台。"],
+  "n.act3.a": [N, "narrator/batch1/n.act3.a.mp3", "再往上，是星空觀星臺。"],
   "n.act3.b": [N, "narrator/batch1/n.act3.b.mp3", "好高了。抬頭，就是星星。"],
   "n.boss.near.a": [N, "narrator/batch1/n.boss.near.a.mp3", "前面，有個大守衛在睡覺。"],
   "n.boss.near.b": [N, "narrator/batch1/n.boss.near.b.mp3", "樓梯上，傳來好大的呼嚕聲。"],
