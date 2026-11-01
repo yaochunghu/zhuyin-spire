@@ -52,10 +52,15 @@ function isCoachStrip(file: string): boolean {
   return file.split(path.sep).join('/').endsWith('/src/game/coach.ts');
 }
 
-/** 死, 秒, and 歲 are lesson headwords in the phrase bank, not interface sentences. */
+/**
+ * 死, 秒, and 歲 are lesson headwords in the phrase bank, not interface sentences.
+ * The generated phrase-clip tables (phraseClips.ts, and the w.* rows in voiceLines.ts)
+ * carry the same headwords as the bank.
+ */
 function isLessonHeadword(file: string, text: string): boolean {
   const rel = file.split(path.sep).join('/');
-  return rel.endsWith('/src/data/phrases.ts') && (text === '死' || text === '秒' || text === '歲');
+  const bank = ['/src/data/phrases.ts', '/src/data/phraseClips.ts', '/src/data/voiceLines.ts'];
+  return bank.some((suffix) => rel.endsWith(suffix)) && (text === '死' || text === '秒' || text === '歲');
 }
 
 interface Snippet {

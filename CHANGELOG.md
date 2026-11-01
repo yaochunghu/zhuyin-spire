@@ -17,6 +17,8 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 - 老師 reads a card's name and desc when you pick it at the smith or in an event's card pick. Upgraded cards use the base card's line
 - Any line without a clip, or whose clip cannot load, falls back to the device voice. Mute silences every clip. One voice plays at a time, and a cast, the pause menu or a hidden page stops it
 - `u.notnow` (先不要) is held pending Yao's decision (Q100) and is not shipped; that button stays silent
+- Batch 3: 老師's clips for 604 Act I phrase-pool words (`voice/teacher/phrases_act1/`, keys `w.<pack>.<NNN>`) and 點燈人's `n.lore.ry` pick-up are imported and registered, 605 files in all. `src/data/phraseClips.ts` maps each clip to its pool word and 注音. Placeholder ElevenLabs TTS; playback in battle is not wired yet
+- Phrase pool, per Design (11-01): 背 is cast as ㄅㄟˋ, 里 is now 裡 (ㄌㄧˇ), and 21 words are cut with no audio shipped: 搞 扔 煞 幹 篩 腎 審 婦 儒 億 亦 翼 氧 宴 括 款 府 史 恨 罵 傻. The pool goes from 1,295 to 1,274 entries. Saves are unchanged; a run's seed just draws from the new pool
 
 ### Room backdrops
 
