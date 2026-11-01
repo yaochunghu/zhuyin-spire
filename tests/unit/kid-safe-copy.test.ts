@@ -190,12 +190,12 @@ describe('kid-safe child-facing copy', () => {
   });
 
   it('uses one set of act names and shows the last boss as 終焉王', () => {
-    expect([...ACT_PLACE_NAMES]).toEqual(['魔法花園', '燈籠書庫', '星空觀星台']);
+    expect([...ACT_PLACE_NAMES]).toEqual(['魔法花園', '燈籠書庫', '星空觀星臺']);
     expect(TOWER_SUMMIT_NAME).toBe('塔頂之心');
     expect([actTitle(1), actTitle(2), actTitle(3)]).toEqual([
       '第一幕 · 魔法花園',
       '第二幕 · 燈籠書庫',
-      '第三幕 · 星空觀星台',
+      '第三幕 · 星空觀星臺',
     ]);
     expect(generateRunMap(() => 0.4).acts.map((act) => act.title)).toEqual([
       actTitle(1),

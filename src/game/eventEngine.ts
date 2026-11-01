@@ -225,7 +225,7 @@ function conditionReason(state: EventRun, condition: EventCondition): string | n
     case 'nonBasic':
       return state.deck.some((card) => isNonBasic(card.defId)) ? null : '沒有可複製的牌';
     case 'unupgradedBasic':
-      return state.deck.some((card) => isUnupgradedBasic(card)) ? null : '沒有可升級的基礎牌';
+      return state.deck.some((card) => isUnupgradedBasic(card)) ? null : '沒有可升級的基本牌';
     case 'unlocked':
       return unlockedIds(state).filter((id) => (getCard(id).rarity ?? 'common') === condition.rarity).length
         >= (condition.count ?? 1)
@@ -310,7 +310,7 @@ function effectReason(state: EventRun, effect: EventEffect): string | null {
     }
     case 'upgrade':
       if (effect.allBasics) {
-        return state.deck.some((card) => isUnupgradedBasic(card)) ? null : '沒有可升級的基礎牌';
+        return state.deck.some((card) => isUnupgradedBasic(card)) ? null : '沒有可升級的基本牌';
       }
       return upgradeableCards(state, effect.cardType).length >= effect.count
         ? null
@@ -825,7 +825,7 @@ function applyEffect(state: EventRun, effect: EventEffect): void {
           card.upgradeLevel = 1;
           names.push(getCard(card.defId).name);
         }
-        lines.push(names.length ? `升級了 ${names.join('、')}` : '沒有基礎牌要升級');
+        lines.push(names.length ? `升級了 ${names.join('、')}` : '沒有基本牌要升級');
       } else {
         for (let count = 0; count < effect.count; count += 1) {
           const uid = takeUid(active);

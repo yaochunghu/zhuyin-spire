@@ -25,7 +25,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     target: 'singleEnemy',
     cast: { gateId: 'math', family: 'add10' },
     effects: [{ kind: 'damage', amount: 3 }, { kind: 'beads', amount: 2 }],
-    description: '造成 3 點傷害。數 2 顆星。',
+    description: '打三點，數兩顆星。',
     upgrade: {
       effects: [{ kind: 'damage', amount: 5 }, { kind: 'beads', amount: 2 }],
       description: '造成 5 點傷害。數 2 顆星。',
@@ -48,7 +48,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     target: 'self',
     cast: { gateId: 'math', family: 'make10' },
     effects: [{ kind: 'block', amount: 4 }, { kind: 'beads', amount: 2 }],
-    description: '獲得 4 點護盾。數 2 顆星。',
+    description: '擋四點，數兩顆星。',
     upgrade: {
       effects: [{ kind: 'block', amount: 6 }, { kind: 'beads', amount: 2 }],
       description: '獲得 6 點護盾。數 2 顆星。',
@@ -71,7 +71,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     target: 'singleEnemy',
     cast: { gateId: 'math', family: 'count' },
     effects: [{ kind: 'damage', amount: 5 }],
-    description: '造成 5 點傷害。消耗 1 星座：再造成 5 點傷害。',
+    description: '打五點。用一個星座，再打五點。',
     upgrade: {
       effects: [{ kind: 'damage', amount: 7 }],
       description: '造成 7 點傷害。消耗 1 星座：再造成 5 點傷害。',
@@ -95,7 +95,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     target: 'self',
     cast: { gateId: 'math', family: 'make10' },
     effects: [],
-    description: '補星：把星星補到 10（最多補 5 顆星）。消耗。',
+    description: '把星星補到十，最多補五顆。這場只用一次。',
     upgrade: {
       cost: 0,
       effects: [],
@@ -120,7 +120,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     target: 'singleEnemy',
     cast: { gateId: 'math', family: 'add20' },
     effects: [{ kind: 'damage', amount: 2, hits: 2 }, { kind: 'beads', amount: 2 }],
-    description: '造成 2 點傷害，兩次。數 2 顆星。',
+    description: '打兩次，每次兩點。數兩顆星。',
     upgrade: {
       value: 3,
       effects: [{ kind: 'damage', amount: 3, hits: 2 }, { kind: 'beads', amount: 2 }],
@@ -144,7 +144,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     target: 'self',
     cast: { gateId: 'math', family: 'make10' },
     effects: [{ kind: 'beads', amount: 5 }, { kind: 'draw', amount: 1 }],
-    description: '數 5 顆星。抽 1 張牌。',
+    description: '數五顆星，抽一張牌。',
     upgrade: {
       effects: [{ kind: 'beads', amount: 5 }, { kind: 'draw', amount: 2 }],
       description: '數 5 顆星。抽 2 張牌。',
@@ -166,7 +166,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     target: 'self',
     cast: { gateId: 'math', family: 'word' },
     effects: [{ kind: 'block', amount: 7 }],
-    description: '獲得 7 點護盾。',
+    description: '擋七點。',
     upgrade: {
       effects: [{ kind: 'block', amount: 9 }],
       description: '獲得 9 點護盾。',
@@ -190,7 +190,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     unlockScore: 300,
     cast: { gateId: 'math', family: 'add20' },
     effects: [{ kind: 'damage', amount: 3 }, { kind: 'beads', amount: 1 }],
-    description: '對所有怪物造成 3 點傷害。數 1 顆星。',
+    description: '每隻都打三點，數一顆星。',
     upgrade: {
       effects: [{ kind: 'damage', amount: 5 }, { kind: 'beads', amount: 1 }],
       description: '對所有怪物造成 5 點傷害。數 1 顆星。',
@@ -217,7 +217,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
       { kind: 'vulnerable', amount: 2 },
       { kind: 'beads', amount: 1 },
     ],
-    description: '造成 2 點傷害。附上 2 層易傷。數 1 顆星。',
+    description: '打兩點，加兩回合易傷，數一顆星。',
     upgrade: {
       effects: [
         { kind: 'damage', amount: 4 },
@@ -244,7 +244,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     target: 'singleEnemy',
     cast: { gateId: 'math', family: 'ordinal' },
     effects: [{ kind: 'damage', amount: 4 }],
-    description: '造成 4 點傷害。第 3 招起：再造成 4 點傷害。',
+    description: '打四點。第三招起，再打四點。',
     upgrade: {
       value: 6,
       effects: [{ kind: 'damage', amount: 6 }],
@@ -268,7 +268,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     target: 'self',
     cast: { gateId: 'math', family: 'count' },
     effects: [{ kind: 'draw', amount: 1 }, { kind: 'beads', amount: 1 }],
-    description: '抽 1 張牌。數 1 顆星。',
+    description: '抽一張牌，數一顆星。',
     upgrade: {
       effects: [{ kind: 'draw', amount: 1 }, { kind: 'beads', amount: 2 }],
       description: '抽 1 張牌。數 2 顆星。',
@@ -291,7 +291,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     unlockScore: 300,
     cast: { gateId: 'math', family: 'clock' },
     effects: [{ kind: 'damage', amount: 6 }],
-    description: '造成 6 點傷害。',
+    description: '打六點。',
     upgrade: {
       effects: [{ kind: 'damage', amount: 8 }],
       description: '造成 8 點傷害。',
@@ -315,7 +315,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     unlockScore: 300,
     cast: { gateId: 'math', family: 'add20' },
     effects: [{ kind: 'damage', amount: 4 }, { kind: 'beads', amount: 3 }],
-    description: '造成 4 點傷害。數 3 顆星。若這次數星湊十，再造成 4 點傷害。',
+    description: '打四點，數三顆星。這次湊十，再打四點。',
     upgrade: {
       value: 6,
       effects: [{ kind: 'damage', amount: 6 }, { kind: 'beads', amount: 3 }],
@@ -340,7 +340,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     unlockScore: 300,
     cast: { gateId: 'math', family: 'placeValue' },
     effects: [{ kind: 'block', amount: 5 }],
-    description: '獲得 5 點護盾。消耗 1 星座：再獲得 6 點護盾。',
+    description: '擋五點。用一個星座，再擋六點。',
     upgrade: {
       value: 7,
       effects: [{ kind: 'block', amount: 7 }],
@@ -365,7 +365,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     unlockScore: 300,
     cast: { gateId: 'math', family: 'compare' },
     effects: [{ kind: 'damage', amount: 5 }],
-    description: '造成 5 點傷害。若目標要打的傷害比你的護盾大：先附上 1 層易傷；否則再造成 3 點傷害。',
+    description: '攻擊比盾大，加易傷再打五點；不然打八點。',
     upgrade: {
       value: 7,
       effects: [{ kind: 'damage', amount: 7 }],
@@ -390,7 +390,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     unlockScore: 300,
     cast: { gateId: 'math', family: 'ordinal' },
     effects: [],
-    description: '第 1 招：抽 2 張牌；否則抽 1 張牌。',
+    description: '是第一招，抽兩張牌；沒有，抽一張牌。',
     upgrade: {
       effects: [{ kind: 'beads', amount: 2 }],
       description: '第 1 招：抽 2 張牌；否則抽 1 張牌。數 2 顆星。',
@@ -415,7 +415,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     // Comparing amounts stays inside 一年級. 公分 lives on the tier-5 length generator.
     cast: { gateId: 'math', family: 'compare' },
     effects: [{ kind: 'damage', amount: 5 }, { kind: 'beads', amount: 3 }],
-    description: '對所有怪物造成 5 點傷害。數 3 顆星。',
+    description: '每隻都打五點，數三顆星。',
     upgrade: {
       effects: [{ kind: 'damage', amount: 7 }, { kind: 'beads', amount: 3 }],
       description: '對所有怪物造成 7 點傷害。數 3 顆星。',
@@ -439,7 +439,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     unlockScore: 1000,
     cast: { gateId: 'math', family: 'make10' },
     effects: [],
-    description: '能力：每次湊十時，獲得 4 點護盾。',
+    description: '每次湊十，擋四點。',
     upgrade: {
       value: 6,
       effects: [],
@@ -464,7 +464,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     unlockScore: 1000,
     cast: { gateId: 'math', family: 'add20' },
     effects: [],
-    description: '能力：每回合開始時，數 2 顆星。',
+    description: '每回合開始，數兩顆星。',
     upgrade: {
       cost: 0,
       effects: [],
@@ -490,7 +490,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     unlockScore: 1000,
     cast: { gateId: 'math', family: 'money' },
     effects: [{ kind: 'draw', amount: 2 }],
-    description: '抽 2 張牌。若有星座，數 2 顆星。',
+    description: '抽兩張牌。有星座就數兩顆星。',
     upgrade: {
       value: 3,
       draw: 3,
@@ -516,7 +516,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     unlockScore: 1000,
     cast: { gateId: 'math', family: 'placeValue' },
     effects: [{ kind: 'damage', amount: 6 }],
-    description: '自動消耗最多 2 星座。造成 6 點傷害，每消耗 1 星座再多造成 5 點。',
+    description: '最多用兩個星座。打六點，每個再打五點。',
     upgrade: {
       value: 8,
       effects: [{ kind: 'damage', amount: 8 }],
@@ -541,7 +541,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     unlockScore: 1000,
     cast: { gateId: 'math', family: 'add100' },
     effects: [{ kind: 'damage', amount: 6 }],
-    description: '造成 6 點傷害。本回合此牌之前每成功出 1 招，多造成 2 點（最多 +10）。',
+    description: '打六點。前面每出一招，多打兩點，最多加十點。',
     upgrade: {
       value: 8,
       effects: [{ kind: 'damage', amount: 8 }],
@@ -566,7 +566,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     unlockScore: 2000,
     cast: { gateId: 'math', family: 'word' },
     effects: [],
-    description: '能力：每次湊十時，對所有怪物造成 2 點直傷（無視護盾）。',
+    description: '每次湊十，每隻都直接打兩點。',
     upgrade: {
       value: 3,
       effects: [],
@@ -592,7 +592,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     unlockScore: 2000,
     cast: { gateId: 'math', family: 'money' },
     effects: [],
-    description: '自動消耗最多 2 星座，每消耗 1 星座獲得 1 能量。消耗。',
+    description: '最多用兩個星座，每個能量加一。這場只用一次。',
     upgrade: {
       cost: 0,
       effects: [],
@@ -622,7 +622,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
       gradeTwoFallbackFamily: 'add100',
     },
     effects: [{ kind: 'damage', amount: 2 }],
-    description: '造成 2 點傷害，次數等於星座數（至少 1、最多 5）。不消耗星座。',
+    description: '每次兩點，星座幾個打幾次，一到五次，星座留著。',
     upgrade: {
       value: 3,
       effects: [{ kind: 'damage', amount: 3 }],
@@ -646,7 +646,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     target: 'singleEnemy',
     cast: { gateId: 'math', family: 'placeValue' },
     effects: [{ kind: 'damage', amount: 4 }],
-    description: '造成 4 點傷害。消耗 1 星座：獲得 6 點護盾。',
+    description: '打四點。用一個星座，擋六點。',
     upgrade: {
       value: 6,
       effects: [{ kind: 'damage', amount: 6 }],
@@ -670,7 +670,7 @@ export const ABACUS_CARDS: Record<string, CardDef> = {
     target: 'self',
     cast: { gateId: 'math', family: 'ordinal' },
     effects: [{ kind: 'block', amount: 5 }, { kind: 'beads', amount: 1 }],
-    description: '獲得 5 點護盾。數 1 顆星。第 2 招起：再獲得 3 點護盾。',
+    description: '擋五點，數一顆星。第二招起，再擋三點。',
     upgrade: {
       value: 7,
       effects: [{ kind: 'block', amount: 7 }, { kind: 'beads', amount: 1 }],

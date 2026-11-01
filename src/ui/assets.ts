@@ -318,7 +318,7 @@ export const ART_ASSETS = {
   sceneEventMirrorStage: {
     src: new URL('../assets/art/backdrops/scene-event-mirror-stage.webp', import.meta.url).href,
     fallback: '❓',
-    alt: '鏡子舞台房間',
+    alt: '鏡子舞臺房間',
   },
   sceneEventLastRehearsal: {
     src: new URL('../assets/art/backdrops/scene-event-last-rehearsal.webp', import.meta.url).href,

@@ -418,7 +418,7 @@ function renderCurriculum(): HTMLElement {
 }
 
 function renderPrivacy(): HTMLElement {
-  const box = section('🔒 隱私與這台裝置的資料');
+  const box = section('🔒 隱私與這臺裝置的資料');
   box.classList.add('privacy-options-section');
   box.tabIndex = -1;
 
@@ -460,7 +460,7 @@ function renderPrivacy(): HTMLElement {
   const erase = document.createElement('button');
   erase.type = 'button';
   erase.className = 'btn-secondary options-wide-btn privacy-erase-btn';
-  erase.textContent = '清除這台裝置的所有遊戲資料';
+  erase.textContent = '清除這臺裝置的所有遊戲資料';
   erase.addEventListener('click', () => {
     const confirmed = window.confirm(
       '這會刪除所有小玩家、學習紀錄、設定和爬塔存檔，無法復原。確定要清除嗎？',

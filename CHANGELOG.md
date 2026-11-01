@@ -8,6 +8,14 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+### Copy: the screen says what 老師 says
+
+- All 102 留里克 and 琉 card faces now show the short line 老師 reads (e.g. 打三點。這是基本招。). Upgraded (+) cards keep their current text until Design writes + lines
+- 臺, not 台, in kid-facing text: 鏡子舞臺, 上臺前…, 星空觀星臺 (map, combat HUD, act title), and 這臺裝置 in parent settings. Runs saved before this keep 星空觀星台 until a new run
+- Tutorial step 1 reads 牠要攻擊了！點發亮的 🛡️ 盾牌。 and the wrong-answer hint reads 沒關係，照著亮圈再試一次！, matching the clips
+- Event chips: 新牌 N 張, 獲得 🎁遺物, 基本牌都升級, 頭目第一回合能量加N; 基礎牌 → 基本牌 in the upgrade-event messages
+- No mechanics, numbers or save-format change
+
 ### Recorded voice lines (PLACEHOLDER)
 
 - 老師 and 點燈人 now speak with recorded clips: 550 MP3s for 578 line ids (老師 prompts, feedback, praise and buttons; every 留里克 and 琉 card name and desc; every event title, text and choice; 點燈人's live story lines). All are placeholder ElevenLabs TTS for the first playtest; see THIRD_PARTY_NOTICES.md

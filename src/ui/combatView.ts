@@ -594,7 +594,7 @@ export function renderCombat(): HTMLElement {
     guide.className = `tutorial-guide tutorial-step-${tutorial.step}`;
     guide.setAttribute('role', 'status');
     const copy = {
-      shield: ['1 / 3　先看怪物', '牠要攻擊！點亮起來的 🛡️ 牌，再完成注音。'],
+      shield: ['1 / 3　先看怪物', '牠要攻擊了！點發亮的 🛡️ 盾牌。'],
       endTurn: [
         '2 / 3　試試護盾',
         '還有能量可以出牌。準備好就按 ✋，看護盾擋住攻擊。',
@@ -604,7 +604,7 @@ export function renderCombat(): HTMLElement {
     }[tutorial.step];
     guide.innerHTML = `<strong>${copy[0]}</strong><span>${copy[1]}</span>`;
     if (tutorial.wrongAttempts > 0 && tutorial.step !== 'free') {
-      guide.innerHTML += '<small>沒關係，答案已經給你看了。照著亮圈再試一次！</small>';
+      guide.innerHTML += '<small>沒關係，照著亮圈再試一次！</small>';
     }
     stage.appendChild(guide);
   }
