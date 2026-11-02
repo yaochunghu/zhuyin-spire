@@ -639,8 +639,8 @@ const RESONANCE_LIVE_PRESENTATION: Record<string, Partial<CardDef>> = {
   },
   rw_b123: {
     icon: '🐔',
-    description: '打兩次，每次兩點。接在技能後，練功點數算兩次。',
-    upgrade: { description: '造成 3 點傷害，兩次。若此牌觸發轉拍，每次命中再加一次練功加成。' },
+    description: '打兩次，每次兩點。接在技能後，基本招多的點數算兩次。',
+    upgrade: { description: '造成 3 點傷害，兩次。若此牌觸發轉拍，每次命中再加一次基本招的加成。' },
   },
   rw_b124: {
     icon: '🎈',
