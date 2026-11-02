@@ -289,7 +289,7 @@ const RESONANCE_LIVE_PRESENTATION: Record<string, Partial<CardDef>> = {
   bo: {
     icon: '💫',
     description: '打三點。這是基本招。',
-    upgrade: { description: '造成 5 點傷害。這是基礎攻擊。' },
+    upgrade: { description: '造成 5 點傷害。這是基本招。' },
   },
   mo: {
     icon: '🛡️',
@@ -324,7 +324,7 @@ const RESONANCE_LIVE_PRESENTATION: Record<string, Partial<CardDef>> = {
   te: {
     icon: '🥁',
     description: '打兩次，每次兩點。這是基本招。',
-    upgrade: { description: '造成 3 點傷害，兩次。這是基礎攻擊。' },
+    upgrade: { description: '造成 3 點傷害，兩次。這是基本招。' },
   },
   le: {
     icon: '📖',
@@ -384,27 +384,27 @@ const RESONANCE_LIVE_PRESENTATION: Record<string, Partial<CardDef>> = {
   zi: {
     icon: '👟',
     description: '抽一張基本招。這場只用一次。',
-    upgrade: { description: '從抽牌堆拿出 1 張基礎攻擊到手牌。抽 1 張牌。消耗。' },
+    upgrade: { description: '從抽牌堆拿出 1 張基本招到手牌。抽 1 張牌。消耗。' },
   },
   ci: {
     icon: '🪵',
     description: '打四點，擋兩點。這是基本招。',
-    upgrade: { description: '造成 6 點傷害，獲得 2 點護盾。這是基礎攻擊。' },
+    upgrade: { description: '造成 6 點傷害，獲得 2 點護盾。這是基本招。' },
   },
   wu: {
     icon: '🌊',
     description: '每隻都打五點。這是基本招。',
-    upgrade: { description: '對所有怪物造成 7 點傷害。這是基礎攻擊。' },
+    upgrade: { description: '對所有怪物造成 7 點傷害。這是基本招。' },
   },
   yu: {
     icon: '♻️',
     description: '拿回用過的基本招，這回合免費。',
-    upgrade: { description: '花費 0。從棄牌堆把 1 張基礎攻擊拿回手牌。本回合花費 0。' },
+    upgrade: { description: '花費 0。從棄牌堆把 1 張基本招拿回手牌。本回合花費 0。' },
   },
   si: {
     icon: '🏯',
     description: '擋五點。這回合出過基本招，再擋兩點。',
-    upgrade: { description: '獲得 7 點護盾。若本回合打過基礎攻擊，再獲得 2 點。' },
+    upgrade: { description: '獲得 7 點護盾。若本回合打過基本招，再獲得 2 點。' },
   },
   a: {
     icon: '🔀',
@@ -446,24 +446,24 @@ const RESONANCE_LIVE_PRESENTATION: Record<string, Partial<CardDef>> = {
   rw_b040: {
     icon: '✈️',
     description: '每出三張基本招，基本招多一點。',
-    upgrade: { description: '打出 3 張基礎攻擊後，練功 2，並重算次數。' },
+    upgrade: { description: '打出 3 張基本招後，練功 2，並重算次數。' },
   },
   rw_b041: {
     icon: '🐘',
     description: '選一張攻擊，變成基本招。抽一張牌。',
-    upgrade: { description: '選手牌中 1 張攻擊牌，這場戰鬥變成基礎攻擊。抽 2 張牌。' },
+    upgrade: { description: '選手牌中 1 張攻擊牌，這場戰鬥變成基本招。抽 2 張牌。' },
   },
   rw_b042: {
     icon: '🐰',
     description: '每有一張基本招，打兩點，最多六次。',
     upgrade: {
-      description: '抽牌堆、手牌、棄牌堆每有 1 張基礎攻擊，造成 4 點傷害 1 次，最多 6 次。',
+      description: '抽牌堆、手牌、棄牌堆每有 1 張基本招，造成 4 點傷害 1 次，最多 6 次。',
     },
   },
   rw_b049: {
     icon: '🥛',
     description: '這回合下兩張基本招免費。這場只用一次。',
-    upgrade: { description: '花費 0。本回合接下來 2 張基礎攻擊花費 0。消耗。' },
+    upgrade: { description: '花費 0。本回合接下來 2 張基本招花費 0。消耗。' },
   },
   rw_b053: {
     icon: '🐯',
@@ -589,17 +589,17 @@ const RESONANCE_LIVE_PRESENTATION: Record<string, Partial<CardDef>> = {
   rw_b102: {
     icon: '🐱',
     description: '打三點，有易傷就再打兩點。這是基本招。',
-    upgrade: { description: '造成 5 點傷害。這是基礎攻擊。若目標有易傷，再造成 2 點傷害。' },
+    upgrade: { description: '造成 5 點傷害。這是基本招。若目標有易傷，再造成 2 點傷害。' },
   },
   rw_b107: {
     icon: '✈️',
     description: '加一回合易傷。這回合下一張基本招免費。',
-    upgrade: { description: '附上 2 層易傷。本回合下一張基礎攻擊花費 0。' },
+    upgrade: { description: '附上 2 層易傷。本回合下一張基本招花費 0。' },
   },
   rw_b108: {
     icon: '🐘',
     description: '打三點。接在技能後，抽一張牌。這是基本招。',
-    upgrade: { description: '造成 5 點傷害。這是基礎攻擊。轉拍：抽 1 張牌。' },
+    upgrade: { description: '造成 5 點傷害。這是基本招。轉拍：抽 1 張牌。' },
   },
   rw_b113: {
     icon: '🐰',
@@ -610,21 +610,21 @@ const RESONANCE_LIVE_PRESENTATION: Record<string, Partial<CardDef>> = {
     icon: '🥛',
     description: '基本招打到有易傷的，易傷多一回合。',
     upgrade: {
-      description: '花費 0。基礎攻擊打中有易傷的怪物時，延長該易傷 1 層，每張牌各一次，最多 9 層。',
+      description: '花費 0。基本招打中有易傷的怪物時，延長該易傷 1 層，每張牌各一次，最多 9 層。',
     },
   },
   rw_b115: {
     icon: '🐯',
     description: '每回合一次：基本招轉拍，剛用的技能放回牌堆頂。',
     upgrade: {
-      description: '花費 1。每回合第一次用基礎攻擊完成轉拍時，把最近棄掉的技能牌放到抽牌堆頂。',
+      description: '花費 1。每回合第一次用基本招完成轉拍時，把最近棄掉的技能牌放到抽牌堆頂。',
     },
   },
   rw_b119: {
     icon: '🐶',
     description: '擋五點。剛拿到勁，拿回用過的基本招，這回合免費。',
     upgrade: {
-      description: '獲得 7 點護盾。若上個怪物階段獲得勁，從棄牌堆拿 1 張基礎攻擊到手牌，本回合花費 0。',
+      description: '獲得 7 點護盾。若上個怪物階段獲得勁，從棄牌堆拿 1 張基本招到手牌，本回合花費 0。',
     },
   },
   rw_b120: {
@@ -639,8 +639,8 @@ const RESONANCE_LIVE_PRESENTATION: Record<string, Partial<CardDef>> = {
   },
   rw_b123: {
     icon: '🐔',
-    description: '打兩次，每次兩點。接在技能後，練功點數算兩次。',
-    upgrade: { description: '造成 3 點傷害，兩次。若此牌觸發轉拍，每次命中再加一次練功加成。' },
+    description: '打兩次，每次兩點。接在技能後，基本招多的點數算兩次。',
+    upgrade: { description: '造成 3 點傷害，兩次。若此牌觸發轉拍，每次命中再加一次基本招的加成。' },
   },
   rw_b124: {
     icon: '🎈',
@@ -650,7 +650,7 @@ const RESONANCE_LIVE_PRESENTATION: Record<string, Partial<CardDef>> = {
   rw_b127: {
     icon: '🍉',
     description: '每回合第二張基本招，再打一次，抽一張牌。',
-    upgrade: { description: '每回合第一次打出第二張基礎攻擊時，再造成一次該牌傷害並抽 2 張牌。' },
+    upgrade: { description: '每回合第一次打出第二張基本招時，再造成一次該牌傷害並抽 2 張牌。' },
   },
   rw_b128: {
     icon: '🐷',

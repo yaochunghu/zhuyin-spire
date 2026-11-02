@@ -253,7 +253,7 @@ export function renderCharacterPick(): HTMLElement {
       ? artImageHtml('heroMartialArtist', 'character-hero-art')
       : character.emoji;
     const starterAria = character.id === 'echoMage'
-      ? '起始牌組：五張基礎攻擊、四張防守、一張易傷攻擊'
+      ? '起始牌組：五張基本招、四張防守、一張易傷攻擊'
       : '起始牌組';
     const starterSummary = character.starterSummary
       .map((item) => `<span>${item.icon} ${item.label}</span>`)
