@@ -60,7 +60,7 @@ export const POTIONS: Record<string, PotionDef> = {
     emoji: '💫',
     name: '音波小石',
     blurb: '對一隻怪物造成 6 點傷害',
-    adultNote: '先點一隻怪物。護盾會擋下這 6 點。這不是攻擊，不會吃到易傷、練功或遺物加傷，也不是直傷。取消瞄準不會喝掉。',
+    adultNote: '先點一隻怪物。護盾會擋下這 6 點。這不是攻擊，不會吃到易傷、基本招加成或遺物加傷，也不是直傷。取消瞄準不會喝掉。',
     where: 'combat',
     target: 'enemy',
     damage: 6,

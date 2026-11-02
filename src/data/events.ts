@@ -420,7 +420,7 @@ export const EVENTS: EventDef[] = [
     title: '鏡子舞臺',
     icon: '🪞',
     presentation: '鏡子裡有另一張一樣的牌。',
-    rationale: '模仿少一點心，複製一張不是基礎牌的牌，複本沒有升級。轉身把兩張牌換成新的。',
+    rationale: '模仿少一點心，複製一張不是基本牌的牌，複本沒有升級。轉身把兩張牌換成新的。',
     eligibility: [[{ op: 'nonBasic' }], [{ op: 'removable', count: 2 }]],
     choices: [
       choice('mimic', '模仿', [loseHp(6), { op: 'copy' }], [loseHp(9), { op: 'copy' }], [{ op: 'nonBasic' }]),
@@ -440,7 +440,7 @@ export const EVENTS: EventDef[] = [
     title: '最後彩排',
     icon: '🎭',
     presentation: '上臺前可以再練一次，或先睡飽。',
-    rationale: '練到底少很多心，把每一張還沒升級的基礎牌都升級。睡到飽補心，但會得到兩張失聲。',
+    rationale: '練到底少很多心，把每一張還沒升級的基本牌都升級。睡到飽補心，但會得到兩張失聲。',
     eligibility: [[{ op: 'unupgradedBasic' }], [{ op: 'damaged' }]],
     choices: [
       choice(
@@ -596,7 +596,7 @@ export const EVENTS: EventDef[] = [
     title: '回憶相簿',
     icon: '📖',
     presentation: '相簿可以記住一張牌，或放下另一張。',
-    rationale: '記住會複製一張不是基礎牌的牌，並少一點心。放下拿掉一張牌，也少一點心。',
+    rationale: '記住會複製一張不是基本牌的牌，並少一點心。放下拿掉一張牌，也少一點心。',
     eligibility: [[{ op: 'nonBasic' }], [{ op: 'removable', count: 1 }]],
     choices: [
       choice('keep', '記住', [{ op: 'copy' }, loseHp(4)], [{ op: 'copy' }, loseHp(7)], [{ op: 'nonBasic' }]),

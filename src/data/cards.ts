@@ -334,7 +334,7 @@ const RESONANCE_LIVE_PRESENTATION: Record<string, Partial<CardDef>> = {
   shi: {
     icon: '🥋',
     description: '基本招多兩點。',
-    upgrade: { description: '這場戰鬥：練功 3。' },
+    upgrade: { description: '這場戰鬥：基本招多3點。' },
   },
   yi: {
     icon: '🔄',
@@ -379,7 +379,7 @@ const RESONANCE_LIVE_PRESENTATION: Record<string, Partial<CardDef>> = {
   chi: {
     icon: '💪',
     description: '基本招多一點。這場只用一次。',
-    upgrade: { description: '練功 2。消耗。' },
+    upgrade: { description: '基本招多2點。消耗。' },
   },
   zi: {
     icon: '👟',
@@ -446,7 +446,7 @@ const RESONANCE_LIVE_PRESENTATION: Record<string, Partial<CardDef>> = {
   rw_b040: {
     icon: '✈️',
     description: '每出三張基本招，基本招多一點。',
-    upgrade: { description: '打出 3 張基本招後，練功 2，並重算次數。' },
+    upgrade: { description: '打出 3 張基本招後，基本招多2點，並重算次數。' },
   },
   rw_b041: {
     icon: '🐘',
@@ -604,7 +604,7 @@ const RESONANCE_LIVE_PRESENTATION: Record<string, Partial<CardDef>> = {
   rw_b113: {
     icon: '🐰',
     description: '擋三點。接在攻擊後，基本招多一點。這場只用一次。',
-    upgrade: { description: '獲得 5 點護盾。轉拍：練功 1。消耗。' },
+    upgrade: { description: '獲得 5 點護盾。轉拍：基本招多1點。消耗。' },
   },
   rw_b114: {
     icon: '🥛',
@@ -655,7 +655,7 @@ const RESONANCE_LIVE_PRESENTATION: Record<string, Partial<CardDef>> = {
   rw_b128: {
     icon: '🐷',
     description: '擋十點。下次沒掉心，基本招多一點。這場只用一次。',
-    upgrade: { description: '獲得 12 點護盾。若下個怪物階段沒扣生命，練功 1。消耗。' },
+    upgrade: { description: '獲得 12 點護盾。若下個怪物階段沒扣生命，基本招多1點。消耗。' },
   },
   rw_b129: {
     icon: '🚗',
@@ -667,7 +667,7 @@ const RESONANCE_LIVE_PRESENTATION: Record<string, Partial<CardDef>> = {
   rw_b131: {
     icon: '🦁',
     description: '每回合：第一次轉拍，基本招多一點；第二次，勁加一。',
-    upgrade: { description: '每回合第一次轉拍：練功 2；第二次轉拍：獲得 1 勁。' },
+    upgrade: { description: '每回合第一次轉拍：基本招多2點；第二次轉拍：獲得 1 勁。' },
   },
   rw_b132: {
     icon: '🌞',
