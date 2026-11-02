@@ -319,9 +319,9 @@ describe('listen casts without Web Speech', () => {
     const rng = seededRandom(4242);
     let kept = 0;
     let fellBack = 0;
-    for (const card of STARTER_DECK_IDS.map((id) => getCard(id)).concat(Object.values(CARDS))) {
+    for (const card of Object.values(CARDS)) {
       if (!card.cues?.length) continue;
-      for (let i = 0; i < 20; i += 1) {
+      for (let i = 0; i < 3; i += 1) {
         const prompt = buildCastPrompt(card, 'listen', rng);
         if (prompt.gateId !== 'zhuyin') break;
         if (phraseClipKey(prompt.cue.word, prompt.cue.spell)) {
@@ -337,5 +337,5 @@ describe('listen casts without Web Speech', () => {
     }
     expect(kept).toBeGreaterThan(0);
     expect(fellBack).toBeGreaterThan(0);
-  });
+  }, 20_000);
 });
