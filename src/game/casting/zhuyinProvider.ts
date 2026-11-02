@@ -9,6 +9,7 @@ import {
   splitSpell,
 } from '../../data/cards';
 import { isSpeechAvailable } from '../speech';
+import { phraseClipKey } from '../phraseClipLookup';
 import {
   getCastingPreferences,
   getLessonProgress,
@@ -343,11 +344,17 @@ export const zhuyinProvider: CastingGateProvider = {
   createPrompt(context): CastingPrompt {
     let mode = context.mode;
     let speechFallback = false;
-    if ((mode === 'listen' || mode === 'listenHard') && !isSpeechAvailable()) {
+    const item = drawItem(context, filteredItems(context));
+    // A word with a recorded 老師 clip stays a listen cast without Web Speech;
+    // only words with no clip fall back to recognize.
+    if (
+      (mode === 'listen' || mode === 'listenHard') &&
+      !isSpeechAvailable() &&
+      !phraseClipKey(item.word, item.spell)
+    ) {
       mode = 'recognize';
       speechFallback = true;
     }
-    const item = drawItem(context, filteredItems(context));
     const preferences = getCastingPreferences();
     const bank = buildZhuyinTokenBank(
       item.parts,

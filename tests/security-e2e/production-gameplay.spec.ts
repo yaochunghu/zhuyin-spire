@@ -107,7 +107,8 @@ test('save denial is visible and unavailable speech keeps a full answer gate', a
   await expect(page.locator('.checkpoint-status')).toContainText('無法儲存');
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: '注音 ㄇ', exact: true }).click();
-  await expect(page.locator('.speech-fallback-note')).toContainText('請大人念');
+  // Every tutorial ㄇ word has a 老師 clip, so the cast stays a listen cast and plays the
+  // clip; the 請大人念 note is only for words with no clip.
   await expect(page.locator('.cast-screen')).toBeVisible();
   await expect(page.locator('.spell-submit')).toBeDisabled();
 });

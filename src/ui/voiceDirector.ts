@@ -6,8 +6,10 @@
  *
  * Rules, from Spire Audio's manifests and HERO_NARRATOR_LINES_v2 / VOICEOVER_BRIEF_v1:
  * - 老師 reads the cast frame, then the existing word cue plays. Praise and
- *   retries rotate and never repeat back to back. UI lines (u.*) play the first
- *   time per session only (Q61). Cards are read on inspect, not on play.
+ *   retries rotate and never repeat back to back. A 注音 word with a batch 3
+ *   clip plays that clip instead of Web Speech (phraseClipLookup.ts). UI lines
+ *   (u.*) play the first time per session only (Q61). Cards are read on
+ *   inspect, not on play.
  * - 點燈人 speaks at most once per screen change, queued after 老師 (never over
  *   a question: a cast cancels him). Variants rotate. In a fight: at most one
  *   mid-fight line plus the end line; a boss fight saves that slot for its phase.
@@ -23,6 +25,7 @@ import type { MapNode } from '../data/map';
 import type { CombatState } from '../game/battle/types';
 import type { CastPrompt } from '../game/castCheck';
 import { speakableMathQuestion } from '../game/casting/math/speech';
+import { phraseClipKey } from '../game/phraseClipLookup';
 import { getVoiceMemory, updateVoiceMemory } from '../game/profiles';
 import { speakCue, speakCueWithAutoReplay } from '../game/speech';
 import { getActiveNode, getAvailableMapNodes, type RunState } from '../game/state';
@@ -382,15 +385,22 @@ function victoryLines(state: RunState): void {
 
 // ── events ──────────────────────────────────────────────────────────────────
 
-/** First show of an event: 老師 reads the title and the line, then 留里克's lore remark once per run. */
+const LORE_LINES: Partial<Record<CharacterId, string>> = {
+  echoMage: 'n.lore.rk', // 留里克
+  abacusFist: 'n.lore.ry', // 琉
+};
+
+/** First show of an event: 老師 reads the title and the line, then the hero's lore remark once per run. */
 export function voiceEventOpened(state: RunState, event: { id: string; presentation: string }): void {
   sayQueued(`ev.${event.id}.title`, { fallback: 'none' });
   // The line kept its Web Speech read before clips; keep that as the fallback.
   sayQueued(`ev.${event.id}.text`, { fallbackText: event.presentation, gapMs: 300 });
   const memory = runMem(state);
-  if (heroId(state) === 'echoMage' && !memory.loreDone) {
+  const hero = heroId(state);
+  const lore = hero ? LORE_LINES[hero] : undefined;
+  if (lore && !memory.loreDone) {
     memory.loreDone = true;
-    sayQueued('n.lore.rk');
+    sayQueued(lore);
   }
 }
 
@@ -439,13 +449,42 @@ export function mathQuestionVoiceKey(question: string): string | null {
   return null;
 }
 
+/** The recorded 老師 clip for a 注音 cast word, or null to keep Web Speech. */
+export function cueWordVoiceKey(prompt: CastPrompt): string | null {
+  if (prompt.gateId !== 'zhuyin') return null;
+  return phraseClipKey(prompt.cue.word, prompt.cue.spell);
+}
+
 /**
- * The cast opened. 老師's frame first, then the existing cue read.
+ * The cast word itself. A word with a batch 3 clip plays that clip (Web Speech
+ * of the same word if it cannot load); any other word keeps its Web Speech read.
+ * The auto-replay is queued behind the first read, so nothing slips in between.
+ */
+function sayCueWord(prompt: CastPrompt, autoReplay: boolean, onReplayEnd?: () => void): void {
+  const cue = prompt.cue.speechText;
+  const key = cueWordVoiceKey(prompt);
+  if (!key) {
+    if (autoReplay) speakCueWithAutoReplay(cue, 750, onReplayEnd);
+    else speakCue(cue);
+    return;
+  }
+  say(key, { fallbackText: cue, prompt: true });
+  if (autoReplay) {
+    sayQueued(key, { fallbackText: cue, prompt: true, gapMs: 750, ...(onReplayEnd ? { onEnd: onReplayEnd } : {}) });
+  }
+}
+
+/** Resuming from the pause menu reads the word again. */
+export function voiceCueAgain(prompt: CastPrompt): void {
+  sayCueWord(prompt, false);
+}
+
+/**
+ * The cast opened. 老師's frame first, then the word (its clip, or Web Speech).
  * Frames never fall back to Web Speech, so the cue keeps its old timing and
  * its speech-fallback note when a frame cannot play.
  */
 export function voiceCastOpen(state: RunState, prompt: CastPrompt): void {
-  const cue = prompt.cue.speechText;
   if (prompt.gateId === 'math') {
     teachingTimers.set(() => mathOpen(state, prompt), 150);
     return;
@@ -455,13 +494,13 @@ export function voiceCastOpen(state: RunState, prompt: CastPrompt): void {
       say(prompt.mode === 'listen' ? 'zy.listen' : 'zy.listenHard', {
         fallback: 'none',
         prompt: true,
-        onEnd: () => speakCueWithAutoReplay(cue, 750, speakerTip()),
+        onEnd: () => sayCueWord(prompt, true, speakerTip()),
       });
     }, 220);
     return;
   }
   teachingTimers.set(() => {
-    say('zy.recognize', { fallback: 'none', prompt: true, onEnd: () => speakCue(cue) });
+    say('zy.recognize', { fallback: 'none', prompt: true, onEnd: () => sayCueWord(prompt, false) });
   }, 150);
 }
 
@@ -504,7 +543,7 @@ function mathOpen(state: RunState, prompt: CastPrompt): void {
 
 /** 🔊 再聽: 「再聽一次。」 then the word. */
 export function voiceReplayCue(prompt: CastPrompt): void {
-  say('zy.again', { fallback: 'none', prompt: true, onEnd: () => speakCue(prompt.cue.speechText) });
+  say('zy.again', { fallback: 'none', prompt: true, onEnd: () => sayCueWord(prompt, false) });
 }
 
 /** 💡 the answer is on screen. */
