@@ -155,12 +155,13 @@ describe('cast prompt stream', () => {
     // Four prompts each, for seeds 0, 1, 17665, and 0xc0ffee.
     // Re-pinned when Design cut 21 words and fixed 背/裡 on 2026-11-01: a smaller pool
     // changes which question a seed draws. Saves keep only castSeed and castCounter.
+    // Re-pinned 2026-11-02: without Web Speech, words with a 老師 clip now stay listen casts.
     const payload = [0, 1, 17665, 0xc0ffee].map((seed) => ({
       seed,
       sequence: practiceSequence(seed, 4),
     }));
     const digest = createHash('sha256').update(JSON.stringify(payload)).digest('hex');
-    expect(digest).toBe('a1fc51774f2c8b5e90d6aed9afef9457ad18eb1c65924a42d7d0a8b77c7f9fb9');
+    expect(digest).toBe('9823b0b045a62bbf4a3db9085f3137b55be670031df28da50010b9d45db3d703');
   });
 
   it('repeats a practice prompt sequence for the same seed', () => {

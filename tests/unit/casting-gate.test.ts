@@ -8,6 +8,7 @@ import { CHARACTERS } from '../../src/data/characters';
 import { ABACUS_CARDS, ABACUS_STARTER_DECK_IDS } from '../../src/data/abacusCards';
 import { PHRASES_BY_INITIAL } from '../../src/data/phrases';
 import { buildCastPrompt, isCastAnswerCorrect } from '../../src/game/castCheck';
+import { phraseClipKey } from '../../src/game/phraseClipLookup';
 import {
   chooseZhuyinMode,
   countEligibleZhuyinPhrases,
@@ -309,5 +310,32 @@ describe('Zhuyin casting provider', () => {
     const unavailable = findUnavailableZhuyinCards(preferences);
     expect(unavailable.length).toBeGreaterThan(0);
     expect(unavailable.some((item) => item.cardId === 'mo')).toBe(true);
+  });
+});
+
+describe('listen casts without Web Speech', () => {
+  it('keeps listen for words with a 老師 clip and falls back to recognize only without one', () => {
+    // The node test environment has no speechSynthesis.
+    const rng = seededRandom(4242);
+    let kept = 0;
+    let fellBack = 0;
+    for (const card of STARTER_DECK_IDS.map((id) => getCard(id)).concat(Object.values(CARDS))) {
+      if (!card.cues?.length) continue;
+      for (let i = 0; i < 20; i += 1) {
+        const prompt = buildCastPrompt(card, 'listen', rng);
+        if (prompt.gateId !== 'zhuyin') break;
+        if (phraseClipKey(prompt.cue.word, prompt.cue.spell)) {
+          expect(prompt.mode).toBe('listen');
+          expect(prompt.speechFallback).toBe(false);
+          kept += 1;
+        } else {
+          expect(prompt.mode).toBe('recognize');
+          expect(prompt.speechFallback).toBe(true);
+          fellBack += 1;
+        }
+      }
+    }
+    expect(kept).toBeGreaterThan(0);
+    expect(fellBack).toBeGreaterThan(0);
   });
 });
