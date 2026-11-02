@@ -24,12 +24,12 @@ import { renderActClear, renderMap } from './ui/mapView';
 import { renderEvent } from './ui/eventView';
 import { playOutcomeOverlay } from './ui/outcome';
 import { openOptions } from './ui/options';
-import { cancelSpeech, speakCue } from './game/speech';
+import { cancelSpeech } from './game/speech';
 import { applyGameSettingsToDocument, loadGameSettings } from './game/settings';
 import { bindUi, session } from './ui/runtime';
 import { openDeckViewer } from './ui/deckViewer';
 import { teachingTimers } from './ui/pauseTimers';
-import { voiceAfterRender, voiceOutcome } from './ui/voiceDirector';
+import { voiceAfterRender, voiceCueAgain, voiceOutcome } from './ui/voiceDirector';
 import { openPhoneMenu } from './ui/phoneMenu';
 import { isPhoneLayout } from './ui/responsive';
 import {
@@ -125,7 +125,7 @@ function globalControls(): HTMLElement {
           (runState.screen === 'castCheck' || runState.screen === 'practice') &&
           runState.cast
         ) {
-          speakCue(runState.cast.prompt.cue.speechText);
+          voiceCueAgain(runState.cast.prompt);
         }
       },
       onOpenOptions: (onClose) =>

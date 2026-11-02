@@ -166,6 +166,32 @@ describe('voice director', () => {
     expect(keys()).toEqual(['m.answer.7', 'r.shown', 'm.count.again', 'r.fizzle', 'r.shown']);
   });
 
+  it('plays each hero\'s lore remark once per run after the first event', () => {
+    const event = { id: 'lantern', presentation: '一盞燈。' };
+    const lore = () => keys().filter((key) => key.startsWith('n.lore.'));
+
+    const ry = runFor('abacusFist');
+    director.voiceEventOpened(ry, event);
+    director.voiceEventOpened(ry, event);
+    expect(lore()).toEqual(['n.lore.ry']);
+    expect(played.find((line) => line.key === 'n.lore.ry')?.queue).toBe(true);
+
+    played.length = 0;
+    const rk = runFor('echoMage');
+    director.voiceEventOpened(rk, event);
+    director.voiceEventOpened(rk, event);
+    expect(lore()).toEqual(['n.lore.rk']);
+
+    // A new run of 琉 hears it again; no hero hears none.
+    played.length = 0;
+    director.voiceEventOpened(runFor('abacusFist'), event);
+    const none = createNewRun();
+    none.characterId = null as unknown as string;
+    none.castSeed = 1;
+    director.voiceEventOpened(none, event);
+    expect(lore()).toEqual(['n.lore.ry']);
+  });
+
   it('never plays u.notnow', () => {
     const state = runFor('echoMage');
     for (const screen of ['relicPick', 'map', 'reward', 'shop', 'rest', 'event', 'victory', 'defeat']) {
