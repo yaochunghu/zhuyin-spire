@@ -439,7 +439,7 @@ async function playPlayerPower(
 ): Promise<void> {
   const hero = document.querySelector<HTMLElement>('.hero-actor');
   sfx.relic();
-  spawnFloat(hero, `👊 練功 +${fx.amount}`, 'strike-float-energy');
+  spawnFloat(hero, `👊 基本招 +${fx.amount}`, 'strike-float-energy');
   await sleep(220);
 }
 
