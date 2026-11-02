@@ -182,7 +182,7 @@ export const VOICE_LINES: Readonly<Record<string, readonly [VoiceSpeaker, string
   "c.rw_b120.name": [T, "teacher/cards_rk/c.rw_b120.name.mp3", "勁貫破綻"],
   "c.rw_b122.desc": [T, "teacher/cards_rk/c.rw_b122.desc.mp3", "抽兩張牌。剛好一張是攻擊，加一回合易傷。"],
   "c.rw_b122.name": [T, "teacher/cards_rk/c.rw_b122.name.mp3", "聽拍尋隙"],
-  "c.rw_b123.desc": [T, "teacher/cards_rk/c.rw_b123.desc.mp3", "打兩次，每次兩點。接在技能後，練功點數算兩次。"],
+  "c.rw_b123.desc": [T, "teacher/cards_rk/c.rw_b123.desc.mp3", "打兩次，每次兩點。接在技能後，基本招多的點數算兩次。"],
   "c.rw_b123.name": [T, "teacher/cards_rk/c.rw_b123.name.mp3", "短橋連拳"],
   "c.rw_b124.desc": [T, "teacher/cards_rk/c.rw_b124.desc.mp3", "收走最多兩回合易傷。每收一回合，勁加一。"],
   "c.rw_b124.name": [T, "teacher/cards_rk/c.rw_b124.name.mp3", "破綻借力"],

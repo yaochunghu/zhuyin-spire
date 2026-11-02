@@ -42,7 +42,7 @@ const TARGET_LABELS: Record<string, string> = {
 };
 
 const RARITY_LABELS: Record<CardRarity, string> = {
-  basic: '基礎',
+  basic: '基本招',
   common: '普通',
   uncommon: '罕見',
   rare: '稀有',
@@ -56,7 +56,7 @@ function rarityLabel(rarity?: CardRarity): string {
 function effectText(effect: EffectDef): string {
   switch (effect.kind) {
     case 'makeBasic':
-      return '選取的攻擊牌在本場戰鬥變成基礎攻擊';
+      return '選取的攻擊牌在本場戰鬥變成基本招';
     case 'damage':
       return `造成 ${effect.amount} 傷害${(effect.hits ?? 1) > 1 ? ` × ${effect.hits}` : ''}`;
     case 'block':
@@ -331,7 +331,7 @@ export function renderDeckViewer(onClose: () => void): HTMLElement {
     rarity.setAttribute('aria-label', '按稀有度篩選');
     rarity.append(
       option('all', '全部稀有度'),
-      option('basic', '基礎'),
+      option('basic', '基本招'),
       option('common', '普通'),
       option('uncommon', '罕見'),
       option('rare', '稀有'),

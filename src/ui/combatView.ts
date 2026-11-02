@@ -733,7 +733,7 @@ export function renderCombat(): HTMLElement {
       </div>
       <div class="hero-combat-powers">
         ${c.firstAttackBonusDamage > 0 ? `<span class="combat-power relic-ready${c.firstAttackBonusReady ? '' : ' status-used'}" title="初心音叉：每回合第一次攻擊 +${c.firstAttackBonusDamage}">🎵 首擊 +${c.firstAttackBonusDamage}${c.firstAttackBonusReady ? '' : ' ✓'}</span>` : ''}
-        ${c.training > 0 ? `<span class="combat-power" title="練功：基礎攻擊每一下追加傷害">🥋 基礎攻擊 +${c.training}</span>` : ''}
+        ${c.training > 0 ? `<span class="combat-power" title="每張基本招每一下多打 ${c.training}">🥋 基本招 +${c.training}</span>` : ''}
         ${c.rules?.beadsEnabled ? `<span class="combat-power" title="星星">⭐ 星星 ${c.beads}</span>` : ''}
         ${c.rules?.beadsEnabled ? `<span class="combat-power" title="星座">🌟 星座 ${c.tens}</span>` : ''}
         ${c.rules?.beadsEnabled ? `<span class="combat-power" title="第幾招">🏅 第 ${c.castsThisTurn} 招</span>` : ''}

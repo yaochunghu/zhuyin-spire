@@ -367,7 +367,7 @@ test('phone menu opens the current deck without changing the run', async ({ page
   );
   await page.getByRole('button', { name: '🧰 設計檢視' }).click();
   await expect(page.locator('#zhuyin-deck-viewer-root .deck-viewer-card')).toHaveCount(75);
-  await page.getByRole('button', { name: /音波擊，攻擊，基礎，查看完整資料/ }).click({ force: true });
+  await page.getByRole('button', { name: /音波擊，攻擊，基本招，查看完整資料/ }).click({ force: true });
   await expect(page.getByText('結算順序')).toBeVisible();
   await expect(page.getByText('設計 ID')).toBeVisible();
   await expect(page.getByText('B001', { exact: true })).toBeVisible();

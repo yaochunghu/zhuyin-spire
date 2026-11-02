@@ -137,7 +137,7 @@ export function createCombat(
     state.log.push(`尋隙指套：易傷目標的第一下 +${mods.firstVulnerableHitBonus}`);
   }
   if (mods.firstBasicHitBonus > 0) {
-    state.log.push(`練功護腕：基礎攻擊第一下 +${mods.firstBasicHitBonus}`);
+    state.log.push(`練功護腕：基本招第一下 +${mods.firstBasicHitBonus}`);
   }
   if (mods.firstTempoBlock > 0) {
     state.log.push(`換拍木魚：第一次換拍護盾 +${mods.firstTempoBlock}`);
