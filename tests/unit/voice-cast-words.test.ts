@@ -4,6 +4,7 @@ interface Played {
   key: string;
   queue: boolean;
   prompt: boolean;
+  slowReplay?: boolean;
   gapMs?: number;
   fallbackText?: string;
   onEnd?: () => void;
@@ -99,6 +100,8 @@ describe('cast word clips', () => {
     const [, first, replay] = played;
     expect(first).toMatchObject({ queue: false, prompt: true, fallbackText: '貓' });
     expect(replay).toMatchObject({ queue: true, prompt: true, fallbackText: '貓', gapMs: 750 });
+    expect(first?.slowReplay).toBeUndefined();
+    expect(replay?.slowReplay).toBeUndefined();
     // First listen cast: the speaker tip follows the replay.
     replay!.onEnd!();
     expect(keys().at(-1)).toBe('zy.speaker');
@@ -125,9 +128,13 @@ describe('cast word clips', () => {
 
   it('🔊 再聽 and resume play the clip once after 再聽一次', () => {
     director.voiceReplayCue(prompt('貓', 'ㄇㄠ', 'listen'));
+    expect(keys()).toEqual(['zy.again']);
+    expect(played[0]?.slowReplay).toBeUndefined();
     endLine('zy.again');
+    expect(played[1]?.slowReplay).toBe(true);
     director.voiceCueAgain(prompt('貓', 'ㄇㄠ', 'listen'));
     expect(keys()).toEqual(['zy.again', 'w.animals.065', 'w.animals.065']);
+    expect(played[2]?.slowReplay).toBeUndefined();
     expect(speakCue).not.toHaveBeenCalled();
   });
 

@@ -460,7 +460,7 @@ export function cueWordVoiceKey(prompt: CastPrompt): string | null {
  * of the same word if it cannot load); any other word keeps its Web Speech read.
  * The auto-replay is queued behind the first read, so nothing slips in between.
  */
-function sayCueWord(prompt: CastPrompt, autoReplay: boolean, onReplayEnd?: () => void): void {
+function sayCueWord(prompt: CastPrompt, autoReplay: boolean, onReplayEnd?: () => void, slowReplay = false): void {
   const cue = prompt.cue.speechText;
   const key = cueWordVoiceKey(prompt);
   if (!key) {
@@ -468,7 +468,7 @@ function sayCueWord(prompt: CastPrompt, autoReplay: boolean, onReplayEnd?: () =>
     else speakCue(cue);
     return;
   }
-  say(key, { fallbackText: cue, prompt: true });
+  say(key, { fallbackText: cue, prompt: true, ...(slowReplay ? { slowReplay: true } : {}) });
   if (autoReplay) {
     sayQueued(key, { fallbackText: cue, prompt: true, gapMs: 750, ...(onReplayEnd ? { onEnd: onReplayEnd } : {}) });
   }
@@ -543,7 +543,7 @@ function mathOpen(state: RunState, prompt: CastPrompt): void {
 
 /** 🔊 再聽: 「再聽一次。」 then the word. */
 export function voiceReplayCue(prompt: CastPrompt): void {
-  say('zy.again', { fallback: 'none', prompt: true, onEnd: () => sayCueWord(prompt, false) });
+  say('zy.again', { fallback: 'none', prompt: true, onEnd: () => sayCueWord(prompt, false, undefined, true) });
 }
 
 /** 💡 the answer is on screen. */

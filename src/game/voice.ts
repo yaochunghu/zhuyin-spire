@@ -6,7 +6,8 @@
  *
  * - Loading: the registry chunk (voiceClips.ts) and each MP3 load on first use.
  *   Clips are same-origin assets: fetch → decodeAudioData → AudioBufferSource
- *   → the voice bus, like the sfx clips, so the CSP keeps media-src 'none'.
+ *   → the voice bus, like the sfx clips. Manual word replays use a pitch-kept
+ *   HTMLAudioElement on that same bus (same-origin media allowed by CSP).
  *   A failed load is not cached: the next play of that clip tries again.
  * - Fallback: a key without a clip, or a clip that cannot load in time, is
  *   spoken by speakCue() with the line text (or `fallbackText`), at the
@@ -26,6 +27,8 @@ import { cancelSpeech, setSpeechInterruptHook, speakCue } from './speech';
 import type { ResolvedVoiceLine } from './voiceClips';
 
 export interface VoiceLineOpts {
+  /** Manual word replay only: 0.85× with pitch preserved; failure retries at 1×. */
+  slowReplay?: boolean;
   /** Web Speech text when the key has no clip. Defaults to the registry text. */
   fallbackText?: string;
   /** 'none' skips Web Speech: the line is silent if its clip cannot play. */
@@ -71,6 +74,7 @@ let busy = false;
 let source: { node: AudioBufferSourceNode; gain: GainNode; ctx: AudioContext } | null = null;
 /** True while this module's Web Speech fallback line is speaking. */
 let fallbackSpeaking = false;
+let stopMedia: (() => void) | null = null;
 let gapTimer: ReturnType<typeof setTimeout> | undefined;
 let stallTimer: ReturnType<typeof setTimeout> | undefined;
 /** True while this module itself drives speech.ts, so its hook ignores us. */
@@ -123,6 +127,8 @@ function userHasInteracted(): boolean {
 }
 
 function stopSource(): void {
+  stopMedia?.();
+  stopMedia = null;
   const playing = source;
   source = null;
   if (!playing) return;
@@ -234,6 +240,56 @@ function begin(key: string, opts: VoiceLineOpts): void {
     try {
       line = (await loadRegistry())?.resolveVoiceLine(key) ?? null;
       const out = line?.url ? await audioOutput() : null;
+      if (out && line?.url && opts.slowReplay && mine === token && !settled) {
+        if (blocked() || isVoiceMuted()) {
+          if (settle()) { clearTimeout(deadline); finishSilently(mine); }
+          return;
+        }
+        // Keep the element on the voice bus: live volume and bus mute still apply.
+        let media: HTMLAudioElement & { webkitPreservesPitch?: boolean; mozPreservesPitch?: boolean };
+        try { media = new Audio(line.url); } catch {
+          if (settle()) { clearTimeout(deadline); begin(key, { ...opts, slowReplay: false }); }
+          return;
+        }
+        let mediaNode: MediaElementAudioSourceNode | undefined;
+        const cleanup = (): void => {
+          clearTimeout(stallTimer);
+          media.onended = null;
+          media.onerror = null;
+          media.pause();
+          media.removeAttribute('src');
+          media.load();
+          mediaNode?.disconnect();
+          stopMedia = null;
+          setVoiceActivity('clip', false);
+        };
+        stopMedia = cleanup;
+        const retry = (): void => {
+          if (mine !== token) return;
+          cleanup();
+          begin(key, { ...opts, slowReplay: false });
+        };
+        if (!settle()) { cleanup(); return; }
+        clearTimeout(deadline);
+        try {
+          media.playbackRate = 0.85;
+          media.preservesPitch = true;
+          media.webkitPreservesPitch = true;
+          media.mozPreservesPitch = true;
+          mediaNode = out.ctx.createMediaElementSource(media);
+          mediaNode.connect(out.dest);
+          media.onended = () => { cleanup(); finish(mine, opts); };
+          media.onerror = retry;
+          setVoiceActivity('clip', true, !!opts.prompt);
+          stallTimer = setTimeout(retry, VOICE_LOAD_TIMEOUT_MS);
+          void media.play().then(() => {
+            if (mine === token) { clearTimeout(stallTimer); stallTimer = undefined; }
+          }, retry);
+        } catch {
+          retry();
+        }
+        return;
+      }
       const buffer = out && line?.url ? await loadBuffer(out.ctx, line.url) : null;
       if (mine !== token || settled) return;
       if (!out || !buffer || blocked() || isVoiceMuted()) {
