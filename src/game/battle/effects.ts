@@ -336,7 +336,7 @@ export function executeEffects(
     state.log.push(`${def.zhuyin} 成功！能量 +${totalEnergy}`);
   }
   if (state.training > trainingBefore) {
-    state.log.push(`練功 +${state.training - trainingBefore}（共 ${state.training}）`);
+    state.log.push(`基本招 +${state.training - trainingBefore}（共 +${state.training}）`);
   }
   if (state.jin < jinBefore) {
     state.log.push(`消耗 ${jinBefore - state.jin} 勁（剩 ${state.jin}）`);

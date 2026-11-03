@@ -124,7 +124,7 @@ export function createCombat(
   if (mods.firstTurnTraining > 0) {
     state.training += mods.firstTurnTraining;
     state.firstTurnTraining = mods.firstTurnTraining;
-    state.log.push(`練功起勢：第 1 回合練功 +${mods.firstTurnTraining}`);
+    state.log.push(`第 1 回合，基本招 +${mods.firstTurnTraining}`);
   }
   if (startBlock > 0) state.log.push(`遺物護盾 +${startBlock}`);
   if (turn1Energy > maxEnergy) {

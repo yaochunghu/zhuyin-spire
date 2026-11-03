@@ -70,7 +70,7 @@ function effectText(effect: EffectDef): string {
     case 'weak':
       return `施加 ${effect.amount} 回合虛弱`;
     case 'training':
-      return `獲得 ${effect.amount} 練功`;
+      return `基本招多 ${effect.amount} 點`;
     case 'jin':
       return `獲得 ${effect.amount} 勁`;
     case 'beads':
