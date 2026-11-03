@@ -98,8 +98,7 @@ function drinkSlot(slot: number): void {
     render();
     return;
   }
-  if (potion.heal) sfx.heal();
-  else sfx.click();
+  sfx.potionUse();
   finishDrink(result.endedFight);
 }
 
@@ -114,7 +113,7 @@ export function drinkAimedPotion(targetId: string): boolean {
     render();
     return true;
   }
-  sfx.click();
+  sfx.potionUse();
   finishDrink(result.endedFight);
   return true;
 }

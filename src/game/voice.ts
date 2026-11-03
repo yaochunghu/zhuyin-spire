@@ -26,6 +26,8 @@ import { cancelSpeech, setSpeechInterruptHook, speakCue } from './speech';
 import type { ResolvedVoiceLine } from './voiceClips';
 
 export interface VoiceLineOpts {
+  /** Optional sound that must finish before this queued voice starts. */
+  beforeStart?: () => Promise<void>;
   /** Web Speech text when the key has no clip. Defaults to the registry text. */
   fallbackText?: string;
   /** 'none' skips Web Speech: the line is silent if its clip cannot play. */
@@ -218,6 +220,15 @@ function begin(key: string, opts: VoiceLineOpts): void {
     return;
   }
   busy = true;
+
+  if (opts.beforeStart) {
+    void opts.beforeStart().then(() => {
+      if (mine !== token) return;
+      if (blocked() || isVoiceMuted()) { finishSilently(mine); return; }
+      begin(key, { ...opts, beforeStart: undefined });
+    }).catch(() => { if (mine === token) finishSilently(mine); });
+    return;
+  }
 
   let settled = false;
   let line: ResolvedVoiceLine | null = null;

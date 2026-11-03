@@ -17,13 +17,14 @@ interface Node {
   opts: Record<string, unknown>;
   connectedTo: Node[];
   connect: (n: Node) => Node;
-  frequency: { value: number; setValueAtTime: () => void };
+  frequency: { value: number; setValueAtTime: (v: number) => void; exponentialRampToValueAtTime: () => void };
   gain: {
     value: number;
     setValueAtTime: () => void;
     linearRampToValueAtTime: () => void;
     setTargetAtTime: () => void;
     cancelScheduledValues: () => void;
+    exponentialRampToValueAtTime: () => void;
   };
   Q: { value: number };
   type?: string;
@@ -44,13 +45,14 @@ function makeNode(kind: string): Node {
     opts: {},
     connectedTo: [],
     connect(to) { this.connectedTo.push(to); return to; },
-    frequency: { value: 0, setValueAtTime: () => {} },
+    frequency: { value: 0, setValueAtTime(v: number) { this.value = v; }, exponentialRampToValueAtTime: () => {} },
     gain: {
       value: 1,
       setValueAtTime: () => {},
       linearRampToValueAtTime: () => {},
       setTargetAtTime: () => {},
       cancelScheduledValues: () => {},
+      exponentialRampToValueAtTime: () => {},
     },
     Q: { value: 0 },
     start: vi.fn(),
@@ -261,4 +263,63 @@ describe('bead gain triggers one ding per event', () => {
     expect(ding).toHaveBeenCalledTimes(1);
     vi.doUnmock('../../src/game/audio');
   });
+});
+
+
+describe('batch 1 clips', () => {
+  it('uses the recipe while loading, then the decoded clip on the next play', async () => {
+    const { sfx } = await loadAudio('1', okFetch);
+    sfx.click();
+    await flush();
+    expect(freqs()).toEqual([720]);
+    expect(created.filter(n => n.kind === 'source')).toHaveLength(0);
+    sfx.click();
+    await flush();
+    expect(created.filter(n => n.kind === 'source')).toHaveLength(1);
+  });
+
+  it('keeps the recipe when decoding fails', async () => {
+    decode = async () => { throw new Error('bad mp3'); };
+    const { sfx } = await loadAudio('1', okFetch);
+    sfx.click();
+    await flush();
+    sfx.click();
+    await flush();
+    expect(freqs()).toEqual([720, 720]);
+  });
+
+  it('rotates all three fork variants without an immediate repeat', async () => {
+    const { sfx } = await loadAudio('1', okFetch);
+    for (let i = 0; i < 6; i++) { sfx.fork(); clock += 100; await flush(); }
+    const urls = vi.mocked(fetch).mock.calls.map(call => String(call[0]));
+    expect(urls.map(url => url.match(/fork_[ABC]/u)?.[0])).toEqual(['fork_A', 'fork_B', 'fork_C']);
+    expect(created.filter(n => n.kind === 'source')).toHaveLength(3);
+  });
+
+  it('skips lose during heroFaint including its asynchronous startup', async () => {
+    const audio = await loadAudio('1', okFetch);
+    audio.sfx.heroFaint();
+    audio.sfx.lose();
+    await flush();
+    expect(audio.getMixSnapshot().shots.map(s => s.key)).toEqual(['heroFaint']);
+    clock += 700;
+    audio.sfx.lose();
+    expect(audio.getMixSnapshot().shots.map(s => s.key)).toEqual(['heroFaint', 'lose']);
+  });
+});
+
+
+it('bossIntro completion waits for the decoded source end event', async () => {
+  const audio = await loadAudio('1', okFetch);
+  audio.sfx.bossIntro();
+  await flush();
+  clock += 2000;
+  const done = vi.fn();
+  const barrier = audio.playBossIntro().then(done);
+  await flush();
+  expect(done).not.toHaveBeenCalled();
+  const src = created.find(n => n.kind === 'source')!;
+  (src as unknown as { onended: () => void }).onended();
+  await barrier;
+  expect(done).toHaveBeenCalledOnce();
 });

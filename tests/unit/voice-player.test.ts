@@ -402,3 +402,28 @@ describe('playVoiceLine', () => {
     expect(sources).toHaveLength(1);
   });
 });
+
+
+describe('boss intro voice barrier', () => {
+  it('waits for bossIntro to finish before loading or starting the boss voice', async () => {
+    let finishIntro!: () => void;
+    const beforeStart = vi.fn(() => new Promise<void>(resolve => { finishIntro = resolve; }));
+    voice.playVoiceLine('n.boss1.in', { queue: true, beforeStart });
+    await vi.advanceTimersByTimeAsync(1500);
+    expect(beforeStart).toHaveBeenCalledOnce();
+    expect(sources).toHaveLength(0);
+    finishIntro();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(sources).toHaveLength(1);
+  });
+
+  it.each(['cancel', 'mute'])('does not start the boss voice after %s during the intro', async action => {
+    let finishIntro!: () => void;
+    voice.playVoiceLine('n.boss1.in', { queue: true, beforeStart: () => new Promise<void>(resolve => { finishIntro = resolve; }) });
+    if (action === 'cancel') speech.cancelSpeech();
+    else audio.setVolume(0);
+    finishIntro();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(sources).toHaveLength(0);
+  });
+});

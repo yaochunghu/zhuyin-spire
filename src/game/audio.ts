@@ -1,13 +1,10 @@
 /**
- * Sound design (Web Audio API) — procedural tones plus two small bundled clips.
+ * Sound design (Web Audio API) — procedural fallbacks plus bundled same-origin clips.
  *
  * Layers:
- * - SFX: short one-shots with distinct envelopes. Almost all are synthesised
- *   here; `ding` (星星 gain) and `gold` play small same-origin MP3 clips from
- *   src/assets/audio/sfx/ at gain 0.4 on the sfx bus, and fall back to the same sound
- *   synthesised from its recipe if the file cannot be loaded or decoded.
- *   PLACEHOLDER audio: both clips are procedural, original, and pending final
- *   sound design.
+ * - SFX: bundled original MP3 one-shots with procedural fallbacks. Batch 1
+ *   clips load lazily; their recipes cover loading and decoding failures.
+ *   ding and gold retain their original loading, routing and gain behavior.
  * - No continuous background music (SFX + speech only)
  * - Speech: Web Speech in speech.ts; recorded voice clips in voice.ts, which
  *   plays through the voice bus via audioOutput()
@@ -443,9 +440,45 @@ export function resetMixForTests(): void {
   applyDuck();
 }
 
-type ClipKey = 'ding' | 'gold';
+type ClipKey = keyof typeof CLIP_URLS;
 
-const CLIP_URLS: Record<ClipKey, string> = { ding: DING_URL, gold: GOLD_URL };
+const CLIP_URLS = { ding: DING_URL, gold: GOLD_URL,
+  elite: new URL('../assets/audio/sfx/elite_A.mp3', import.meta.url).href,
+  removeCard: new URL('../assets/audio/sfx/removeCard_A.mp3', import.meta.url).href,
+  hit: new URL('../assets/audio/sfx/hit_A.mp3', import.meta.url).href,
+  mapStep: new URL('../assets/audio/sfx/mapStep_A.mp3', import.meta.url).href,
+  heal: new URL('../assets/audio/sfx/heal_A.mp3', import.meta.url).href,
+  fizzle: new URL('../assets/audio/sfx/fizzle_A.mp3', import.meta.url).href,
+  bossIntro: new URL('../assets/audio/sfx/bossIntro_A.mp3', import.meta.url).href,
+  monsterPoof: new URL('../assets/audio/sfx/monsterPoof_A.mp3', import.meta.url).href,
+  block: new URL('../assets/audio/sfx/block_A.mp3', import.meta.url).href,
+  enemyShieldClang: new URL('../assets/audio/sfx/enemyShieldClang_A.mp3', import.meta.url).href,
+  relic: new URL('../assets/audio/sfx/relic_A.mp3', import.meta.url).href,
+  cardPlay: new URL('../assets/audio/sfx/cardPlay_A.mp3', import.meta.url).href,
+  lose: new URL('../assets/audio/sfx/lose_A.mp3', import.meta.url).href,
+  shopDeny: new URL('../assets/audio/sfx/shopDeny_A.mp3', import.meta.url).href,
+  fork_A: new URL('../assets/audio/sfx/fork_A.mp3', import.meta.url).href,
+  castOk: new URL('../assets/audio/sfx/castOk_A.mp3', import.meta.url).href,
+  enemyHit: new URL('../assets/audio/sfx/enemyHit_A.mp3', import.meta.url).href,
+  fork_B: new URL('../assets/audio/sfx/fork_B.mp3', import.meta.url).href,
+  fork_C: new URL('../assets/audio/sfx/fork_C.mp3', import.meta.url).href,
+  listenOpen: new URL('../assets/audio/sfx/listenOpen_A.mp3', import.meta.url).href,
+  win: new URL('../assets/audio/sfx/win_A.mp3', import.meta.url).href,
+  shieldHit: new URL('../assets/audio/sfx/shieldHit_A.mp3', import.meta.url).href,
+  heroFaint: new URL('../assets/audio/sfx/heroFaint_A.mp3', import.meta.url).href,
+  spellKey: new URL('../assets/audio/sfx/spellKey_A.mp3', import.meta.url).href,
+  shieldBreak: new URL('../assets/audio/sfx/shieldBreak_A.mp3', import.meta.url).href,
+  enemyShieldBreak: new URL('../assets/audio/sfx/enemyShieldBreak_A.mp3', import.meta.url).href,
+  shopBuy: new URL('../assets/audio/sfx/shopBuy_A.mp3', import.meta.url).href,
+  enemyShieldCrack: new URL('../assets/audio/sfx/enemyShieldCrack_A.mp3', import.meta.url).href,
+  heavyHit: new URL('../assets/audio/sfx/heavyHit_A.mp3', import.meta.url).href,
+  potionUse: new URL('../assets/audio/sfx/potionUse_A.mp3', import.meta.url).href,
+  click: new URL('../assets/audio/sfx/click_A.mp3', import.meta.url).href,
+  enemyHitHeavy: new URL('../assets/audio/sfx/enemyHitHeavy_A.mp3', import.meta.url).href,
+};
+const decodedClips = new Map<ClipKey, AudioBuffer>();
+let forkIndex = 0;
+let faintUntil = 0;
 /**
  * Resolves to the decoded clip, or null when loading/decoding failed (never
  * rejects). A failed load is forgotten, so a later play tries the file again.
@@ -466,6 +499,7 @@ function loadClip(c: AudioContext, key: ClipKey): Promise<AudioBuffer | null> {
       }
     })().then((buffer) => {
       if (!buffer && clipLoads.get(key) === attempt) clipLoads.delete(key);
+      if (buffer) decodedClips.set(key, buffer);
       return buffer;
     });
     load = attempt;
@@ -677,6 +711,8 @@ export function stopMusic(): void {
 }
 
 const sfxBodies = {
+  potionUse: () => { tone({ freq: 260, dur: 0.2, slideTo: 420 }); },
+  bossIntro: () => { chord([261.63, 329.63, 392], 1.36, 0.04, 'sine'); },
   click: () => tone({ freq: 720, dur: 0.04, type: 'sine', gain: 0.04 }),
 
   spellKey: () => tone({ freq: 480 + Math.random() * 80, dur: 0.06, type: 'triangle', gain: 0.05 }),
@@ -853,7 +889,34 @@ function routed(name: SfxName): (level?: number) => void {
   if (name === 'ding' || name === 'gold') return (level) => body(level); // playClip routes itself
   const bus = UI_SFX.has(name) ? 'ui' : 'sfx';
   const critical = CRITICAL_SFX.has(name);
-  return (level) => trigger(name, level, { bus, critical }, () => body());
+  return (level) => {
+    if (name === 'lose' && nowMs() < faintUntil) return;
+    if (name === 'heroFaint' && volume !== 0) faintUntil = nowMs() + 650;
+    const key: ClipKey = name === 'fork'
+      ? (['fork_A', 'fork_B', 'fork_C'] as const)[forkIndex++ % 3]!
+      : name;
+    trigger(name, level, { bus, critical }, () => {
+      const shot = currentShot;
+      void resume().then((c) => {
+        if (!c || volume === 0) return;
+        void loadClip(c, key);
+        const buffer = decodedClips.get(key);
+        if (!buffer) {
+          const previous = currentShot;
+          currentShot = shot;
+          try { body(); } finally { currentShot = previous; }
+          return;
+        }
+        const dest = shotOut(c, shot);
+        if (!dest) return;
+        const src = c.createBufferSource();
+        src.buffer = buffer;
+        src.connect(dest);
+        if (name === 'heroFaint') faintUntil = nowMs() + buffer.duration * 1000;
+        src.start();
+      }).catch(() => { /* audio never interrupts play */ });
+    });
+  };
 }
 
 export const sfx = Object.fromEntries(
@@ -864,4 +927,28 @@ export function volumeIcon(): string {
   if (volume === 0) return '🔇';
   if (volume === 0.45) return '🔉';
   return '🔊';
+}
+
+/** Completion barrier for the boss entry voice; pending loads use the recipe now. */
+export async function playBossIntro(): Promise<void> {
+  const c = await resume();
+  if (!c || busMuted.sfx || volume === 0) return;
+  void loadClip(c, 'bossIntro');
+  const buffer = decodedClips.get('bossIntro');
+  if (!buffer) {
+    sfx.bossIntro();
+    await new Promise<void>((resolve) => setTimeout(resolve, 1410));
+    return;
+  }
+  await new Promise<void>((resolve) => {
+    trigger('bossIntro', undefined, { bus: 'sfx' }, () => {
+      const dest = shotOut(c, currentShot);
+      if (!dest) { resolve(); return; }
+      const src = c.createBufferSource();
+      src.buffer = buffer;
+      src.connect(dest);
+      src.onended = () => resolve();
+      src.start();
+    });
+  });
 }
