@@ -11,6 +11,7 @@ class MemoryStorage implements Storage {
 }
 
 interface FakeSource {
+  playbackRate: { value: number };
   buffer: unknown;
   connectedTo: unknown[];
   onended: (() => void) | null;
@@ -57,8 +58,12 @@ class FakeAudioContext {
     master ??= gain;
     return gain;
   }
+  createMediaElementSource() {
+    return { connect: vi.fn(), disconnect: vi.fn() };
+  }
   createBufferSource(): FakeSource {
     const source: FakeSource = {
+      playbackRate: { value: 1 },
       buffer: null,
       connectedTo: [],
       onended: null,
@@ -400,5 +405,100 @@ describe('playVoiceLine', () => {
     voice.playVoiceLine('p.great');
     await settle();
     expect(sources).toHaveLength(1);
+  });
+});
+
+class FakeMedia {
+  static instances: FakeMedia[] = [];
+  static rejectPlay = false;
+  playbackRate = 1;
+  preservesPitch = false;
+  webkitPreservesPitch = false;
+  mozPreservesPitch = false;
+  onended: (() => void) | null = null;
+  onerror: (() => void) | null = null;
+  pause = vi.fn();
+  load = vi.fn();
+  removeAttribute = vi.fn();
+  play = vi.fn(() => FakeMedia.rejectPlay ? Promise.reject(new Error('blocked')) : Promise.resolve());
+  constructor(public src: string) { FakeMedia.instances.push(this); }
+}
+
+describe('pitch-kept manual replay', () => {
+  beforeEach(() => {
+    FakeMedia.instances = [];
+    FakeMedia.rejectPlay = false;
+    vi.stubGlobal('Audio', FakeMedia);
+  });
+
+  it('uses 0.85× and all pitch preservation flags, then completes the queue', async () => {
+    const onEnd = vi.fn();
+    voice.playVoiceLine('w.animals.065', { slowReplay: true, prompt: true, onEnd });
+    voice.playVoiceLine('p.great', { queue: true });
+    await settle();
+    const media = FakeMedia.instances[0]!;
+    expect(media).toMatchObject({ playbackRate: 0.85, preservesPitch: true, webkitPreservesPitch: true, mozPreservesPitch: true });
+    expect(media.play).toHaveBeenCalledOnce();
+    expect(sources).toHaveLength(0);
+    expect(audio.getMixSnapshot()).toMatchObject({ voiceActive: true, promptActive: true });
+    media.onended!();
+    expect(onEnd).toHaveBeenCalledOnce();
+    await settle(450);
+    expect(sources).toHaveLength(1);
+  });
+
+  it('keeps normal reads and queued automatic replays at 1× on buffer sources', async () => {
+    voice.playVoiceLine('w.animals.065');
+    voice.playVoiceLine('w.animals.065', { queue: true, gapMs: 750 });
+    await settle();
+    endClip(sources[0]!);
+    await settle(750);
+    expect(sources.map((s) => s.playbackRate.value)).toEqual([1, 1]);
+    expect(FakeMedia.instances).toHaveLength(0);
+  });
+
+  it('a new line stops the slowed replay', async () => {
+    voice.playVoiceLine('w.animals.065', { slowReplay: true });
+    await settle();
+    voice.playVoiceLine('p.great');
+    await settle();
+    expect(FakeMedia.instances[0]!.pause).toHaveBeenCalled();
+    expect(sources).toHaveLength(1);
+  });
+
+  it('cancelSpeech stops the element and drops queued lines', async () => {
+    const onEnd = vi.fn();
+    voice.playVoiceLine('w.animals.065', { slowReplay: true, onEnd });
+    await settle();
+    const media = FakeMedia.instances[0]!;
+    speech.cancelSpeech();
+    expect(media.pause).toHaveBeenCalled();
+    expect(media.onended).toBeNull();
+    expect(voice.isVoiceBusy()).toBe(false);
+    expect(onEnd).not.toHaveBeenCalled();
+    expect(audio.getMixSnapshot().voiceActive).toBe(false);
+  });
+
+  it.each(['rejection', 'load error'])('retries the normal buffer path on %s', async (failure) => {
+    FakeMedia.rejectPlay = failure === 'rejection';
+    voice.playVoiceLine('w.animals.065', { slowReplay: true });
+    await settle();
+    if (failure === 'load error') {
+      FakeMedia.instances[0]!.onerror!();
+      await settle();
+    }
+    expect(FakeMedia.instances[0]!.pause).toHaveBeenCalled();
+    expect(sources).toHaveLength(1);
+    expect(sources[0]!.start).toHaveBeenCalledOnce();
+    expect(sources[0]!.playbackRate.value).toBe(1);
+    expect(spoken).toHaveLength(0);
+  });
+
+  it('muting stops the element', async () => {
+    voice.playVoiceLine('w.animals.065', { slowReplay: true });
+    await settle();
+    audio.setVolume(0);
+    expect(FakeMedia.instances[0]!.pause).toHaveBeenCalled();
+    expect(voice.isVoiceBusy()).toBe(false);
   });
 });
