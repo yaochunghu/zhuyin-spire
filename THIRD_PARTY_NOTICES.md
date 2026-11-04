@@ -36,6 +36,8 @@ listed in each batch manifest; both batches passed the Spire QA-045 gate (r2).
 
 ## Original audio
 
+The `sfx_batch1` clips in `src/assets/audio/sfx/` are self-synthesized for this project, with no third-party sources.
+
 `src/assets/audio/sfx/ding_A.mp3` (叮！ star-bead sound) and
 `gold_A.mp3` (gold award) are fully procedural original work created for
 zhuyin-spire: numpy synthesis of sine partials, encoded with ffmpeg/libmp3lame.

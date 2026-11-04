@@ -19,6 +19,7 @@
  *   reward sounds wait for them to end (DUCK_SPEC rule 2).
  * - u.notnow is not recorded (held pending Yao's decision, Q100) and is never played here.
  */
+import { playBossIntro } from '../game/audio';
 import { MATH_WARMUP_STREAK } from '../data/balance';
 import type { CharacterId } from '../data/characters';
 import type { MapNode } from '../data/map';
@@ -332,7 +333,7 @@ function fightStartLines(state: RunState, combat: CombatState): void {
   const kind = getActiveNode(state)?.kind;
   const boss = bossLines(combat);
   if (kind === 'boss' && boss) {
-    sayQueued(boss.entry);
+    sayQueued(boss.entry, { beforeStart: playBossIntro });
     return;
   }
   if (kind === 'elite') {
