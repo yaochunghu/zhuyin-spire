@@ -1,4 +1,5 @@
 import { getCard, type CardDef, type CardJob } from '../data/cards';
+import { cardArtHtml } from './assets';
 
 const JOB_LABELS: Record<CardJob, { icon: string; label: string }> = {
   frontload: { icon: '⚔️', label: '立刻攻擊' },
@@ -70,7 +71,8 @@ export function cardAriaLabel(def: CardDef): string {
 
 /**
  * StS-style card face: cost · type · 注音 art · name plate · description box.
- * Still text/emoji — sized for 1080p combat hand readability.
+ * Text/emoji, or a painted 4:3 window for cards in CARD_ART_BY_CARD_ID —
+ * sized for 1080p combat hand readability.
  */
 export function cardFaceHtml(
   def: CardDef | ReturnType<typeof getCard>,
@@ -79,16 +81,33 @@ export function cardFaceHtml(
   const emoji = def.icon ?? def.cues[0]?.emoji ?? '';
   const desc = formatCardDescription(def);
   const job = jobLabel(def.job);
+  const art = cardArtHtml(def.id);
+  // The hidden spacer keeps the art box the same size as the emoji face, so
+  // hand, reward and shop layouts do not move when a card gains art.
+  const artSlot = art
+    ? `<div class="card-art has-art">
+      <div class="card-art-spacer" aria-hidden="true">
+        <div class="zhuyin">${def.zhuyin}</div>
+        <div class="card-emoji">${emoji}</div>
+      </div>
+      <div class="card-art-window">
+        <div class="card-art-frame">
+          ${art}
+          <div class="card-art-badge">${def.zhuyin}</div>
+        </div>
+      </div>
+    </div>`
+    : `<div class="card-art">
+      <div class="zhuyin">${def.zhuyin}</div>
+      <div class="card-emoji" aria-hidden="true">${emoji}</div>
+    </div>`;
   return `
     ${'upgraded' in def && def.upgraded ? '<div class="card-upgrade-badge" aria-label="已升級">+</div>' : ''}
     <div class="card-top">
       <div class="cost" aria-hidden="true">${cost}</div>
       <div class="card-type-badge" aria-hidden="true" title="${typeLabel(def.type)}">${typeIcon(def.type)}</div>
     </div>
-    <div class="card-art">
-      <div class="zhuyin">${def.zhuyin}</div>
-      <div class="card-emoji" aria-hidden="true">${emoji}</div>
-    </div>
+    ${artSlot}
     <div class="card-name">${def.name}</div>
     <div class="card-desc-box">
       ${job ? `<div class="card-job">${job}</div>` : ''}

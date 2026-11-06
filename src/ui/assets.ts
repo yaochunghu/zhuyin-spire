@@ -7,6 +7,7 @@ import {
   type MapNode,
   type NodeKind,
 } from '../data/map';
+import { ABACUS_CARDS } from '../data/abacusCards';
 import { RELICS } from '../data/relics';
 import type { RunState, Screen } from '../game/state';
 
@@ -812,6 +813,75 @@ export const RELIC_ART = {
   },
 } as const satisfies Record<string, ArtAsset>;
 
+function abacusCardArt(cardId: string, src: string): ArtAsset {
+  const card = ABACUS_CARDS[cardId];
+  return { src, fallback: card.icon ?? '🃏', alt: card.name };
+}
+
+/**
+ * Painted 4:3 card windows. The game still draws cost, type, 注音 and text
+ * around and over the art. A card missing from CARD_ART_BY_CARD_ID keeps
+ * its emoji face.
+ */
+export const CARD_ART = {
+  cardAbM001: abacusCardArt(
+    'ab_m001',
+    new URL('../assets/art/cards/card-ab-m001.webp', import.meta.url).href,
+  ),
+  cardAbM002: abacusCardArt(
+    'ab_m002',
+    new URL('../assets/art/cards/card-ab-m002.webp', import.meta.url).href,
+  ),
+  cardAbM003: abacusCardArt(
+    'ab_m003',
+    new URL('../assets/art/cards/card-ab-m003.webp', import.meta.url).href,
+  ),
+  cardAbM004: abacusCardArt(
+    'ab_m004',
+    new URL('../assets/art/cards/card-ab-m004.webp', import.meta.url).href,
+  ),
+  cardAbM005: abacusCardArt(
+    'ab_m005',
+    new URL('../assets/art/cards/card-ab-m005.webp', import.meta.url).href,
+  ),
+  cardAbM006: abacusCardArt(
+    'ab_m006',
+    new URL('../assets/art/cards/card-ab-m006.webp', import.meta.url).href,
+  ),
+  cardAbM007: abacusCardArt(
+    'ab_m007',
+    new URL('../assets/art/cards/card-ab-m007.webp', import.meta.url).href,
+  ),
+  cardAbM008: abacusCardArt(
+    'ab_m008',
+    new URL('../assets/art/cards/card-ab-m008.webp', import.meta.url).href,
+  ),
+  cardAbM009: abacusCardArt(
+    'ab_m009',
+    new URL('../assets/art/cards/card-ab-m009.webp', import.meta.url).href,
+  ),
+} as const satisfies Record<string, ArtAsset>;
+
+export type CardArtKey = keyof typeof CARD_ART;
+
+export const CARD_ART_BY_CARD_ID: Readonly<Record<string, CardArtKey>> = {
+  ab_m001: 'cardAbM001',
+  ab_m002: 'cardAbM002',
+  ab_m003: 'cardAbM003',
+  ab_m004: 'cardAbM004',
+  ab_m005: 'cardAbM005',
+  ab_m006: 'cardAbM006',
+  ab_m007: 'cardAbM007',
+  ab_m008: 'cardAbM008',
+  ab_m009: 'cardAbM009',
+};
+
+export function cardArtKeyFor(cardId: string): CardArtKey | null {
+  return Object.prototype.hasOwnProperty.call(CARD_ART_BY_CARD_ID, cardId)
+    ? CARD_ART_BY_CARD_ID[cardId]
+    : null;
+}
+
 export const REQUIRED_ART_ASSET_KEYS = Object.freeze(
   Object.keys(ART_ASSETS) as ArtAssetKey[],
 );
@@ -1210,6 +1280,30 @@ export function relicFaceHtml(relicId: string, emoji: string): string {
   if (!Object.prototype.hasOwnProperty.call(RELIC_ART, relicId)) return emoji;
   const asset = RELIC_ART[relicId as keyof typeof RELIC_ART];
   return artMarkup(`relic:${relicId}`, asset, 'relic-art', true);
+}
+
+/** Painted card window, or null when this card keeps its emoji face. */
+export function cardArtHtml(cardId: string): string | null {
+  const key = cardArtKeyFor(cardId);
+  if (!key) return null;
+  return artMarkup(`card:${key}`, CARD_ART[key], 'card-art-image', true);
+}
+
+const preloadedCardArt = new Set<string>();
+
+/** Warm the cache so drawn cards show their art on the first frame. */
+export function preloadCardArt(cardIds: Iterable<string>): void {
+  if (typeof Image === 'undefined') return;
+  for (const cardId of cardIds) {
+    const key = cardArtKeyFor(cardId);
+    if (!key) continue;
+    const src = CARD_ART[key].src;
+    if (preloadedCardArt.has(src)) continue;
+    preloadedCardArt.add(src);
+    const image = new Image();
+    image.decoding = 'async';
+    image.src = src;
+  }
 }
 
 /** Replace the node's contents with the relic face. */
