@@ -6,7 +6,7 @@
 import { gameplayMs } from '../game/settings';
 import type { CardType } from '../data/cards';
 import { ART_ASSETS, type ArtAssetKey } from './assets';
-import { HERO_POSE_ART, HERO_POSE_MS, type TransientHeroPose } from './damageStage';
+import { heroPoseArtKey, HERO_POSE_MS, type TransientHeroPose } from './damageStage';
 
 const HERO_ART_SELECTOR = '.hero-actor [data-hero-art]';
 
@@ -50,7 +50,7 @@ export function flashHeroPose(pose: TransientHeroPose, root: ParentNode = docume
 
   window.clearTimeout(poseTimer);
   wrapper.dataset.heroPose = pose;
-  image.src = ART_ASSETS[HERO_POSE_ART[pose]].src;
+  image.src = ART_ASSETS[heroPoseArtKey(pose, wrapper.dataset.baseKey as ArtAssetKey, wrapper.dataset.characterId)].src;
   poseTimer = window.setTimeout(() => {
     if (wrapper.dataset.heroPose !== pose) return;
     delete wrapper.dataset.heroPose;
