@@ -9,11 +9,14 @@
  * u.notnow is held pending Yao's decision (Q100) and is deliberately absent.
  */
 
+import { VOICE_EXTRAS } from './voiceExtras';
+
 export type VoiceSpeaker = 'teacher' | 'narrator';
 const T = 'teacher' as const;
 const N = 'narrator' as const;
 
 export const VOICE_LINES: Readonly<Record<string, readonly [VoiceSpeaker, string, string]>> = {
+  ...VOICE_EXTRAS,
   "c.a.desc": [T, "teacher/cards_rk/c.a.desc.mp3", "擋五點。接在攻擊後，直接打三點。"],
   "c.a.name": [T, "teacher/cards_rk/c.a.name.mp3", "守攻換拍"],
   "c.ab_m001.desc": [T, "teacher/cards_ry/c.ab_m001.desc.mp3", "打三點，數兩顆星。"],
