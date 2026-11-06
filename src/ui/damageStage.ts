@@ -24,7 +24,7 @@ export function damageStageFor(hp: number, maxHp: number): DamageStage {
 }
 
 /** Actors with damage-stage art. `boss` is the deprecated alias of boss1. */
-export type StagedActorKey = 'hero' | 'boss1' | 'boss2' | 'boss3' | 'boss' | 'tempoGolem';
+export type StagedActorKey = 'hero' | 'abacusFist' | 'boss1' | 'boss2' | 'boss3' | 'boss' | 'tempoGolem';
 
 type StageArt = Partial<Record<DamageStage, ArtAssetKey>>;
 
@@ -33,6 +33,11 @@ const STAGE_ART: Record<StagedActorKey, StageArt> = {
     fresh: 'heroMartialArtist',
     scuffed: 'heroMartialArtistScuffed',
     beaten: 'heroMartialArtistBeaten',
+  },
+  abacusFist: {
+    fresh: 'heroBeadFighter',
+    scuffed: 'heroBeadFighterScuffed',
+    beaten: 'heroBeadFighterBeaten',
   },
   boss1: { fresh: 'enemyBoss1', scuffed: 'enemyBoss1Scuffed', beaten: 'enemyBoss1Beaten' },
   boss2: { fresh: 'enemyBoss2', scuffed: 'enemyBoss2Scuffed', beaten: 'enemyBoss2Beaten' },
@@ -83,14 +88,23 @@ export const HERO_POSE_ART: Record<HeroPose, ArtAssetKey> = {
 /** How long a transient pose shows before the HP still returns (before speed scaling). */
 export const HERO_POSE_MS = 600;
 
-/** Resting hero still: faint at 0 HP, otherwise the HP damage stage. */
-export function heroBaseArtKey(hp: number, maxHp: number): ArtAssetKey {
+/** Resting hero still: HP stage, or faint at 0 HP when that hero has a faint pose. */
+export function heroBaseArtKey(hp: number, maxHp: number, characterId?: string | null): ArtAssetKey {
+  if (characterId === 'abacusFist') {
+    return stageArtKeyFor('abacusFist', damageStageFor(hp, maxHp)) ?? 'heroBeadFighter';
+  }
   if (!(hp > 0)) return HERO_POSE_ART.faint;
   return stageArtKeyFor('hero', damageStageFor(hp, maxHp)) ?? 'heroMartialArtist';
 }
 
-/** Every still the hero can show in a fight, for preloading. */
-export function heroCombatArtKeys(): ArtAssetKey[] {
+/** Heroes without pose frames keep their current damage-stage still. */
+export function heroPoseArtKey(pose: HeroPose, baseKey: ArtAssetKey, characterId?: string | null): ArtAssetKey {
+  return characterId === 'abacusFist' ? baseKey : HERO_POSE_ART[pose];
+}
+
+/** Every still the selected hero can show in a fight, for preloading. */
+export function heroCombatArtKeys(characterId?: string | null): ArtAssetKey[] {
+  if (characterId === 'abacusFist') return Object.values(STAGE_ART.abacusFist);
   const keys = Object.values(STAGE_ART.hero);
   return [...new Set([...keys, ...Object.values(HERO_POSE_ART)])];
 }

@@ -710,16 +710,17 @@ export function renderCombat(): HTMLElement {
     (c.block <= 0 ? ' shield-bar-empty' : '') +
     (blockGained ? ' shield-bar-pulse' : '');
 
-  const heroHasArt = run().characterId === 'echoMage';
-  const heroArtKey = heroBaseArtKey(c.heroHp, c.heroMaxHp);
+  const characterId = run().characterId;
+  const heroHasArt = characterId === 'echoMage' || characterId === 'abacusFist';
+  const heroArtKey = heroBaseArtKey(c.heroHp, c.heroMaxHp, characterId);
   preloadArt([
-    ...(heroHasArt ? heroCombatArtKeys() : []),
+    ...(heroHasArt ? heroCombatArtKeys(characterId) : []),
     ...c.enemies.flatMap((unit) => enemyStageArtKeys(unit.defId)),
   ]);
   heroZone.innerHTML = `
     <div class="hero-actor" aria-hidden="true">${
       heroHasArt
-        ? artImageHtml(heroArtKey, 'combat-hero-art', true, 'heroMartialArtist')
+        ? artImageHtml(heroArtKey, 'combat-hero-art', true, heroBaseArtKey(c.heroMaxHp, c.heroMaxHp, characterId))
         : '🧒'
     }</div>
     <div class="hero-vitals">
@@ -747,6 +748,8 @@ export function renderCombat(): HTMLElement {
   const heroArt = heroZone.querySelector<HTMLElement>('.combat-hero-art');
   if (heroArt) {
     heroArt.dataset.heroArt = '';
+    heroArt.dataset.characterId = characterId ?? '';
+    heroArt.dataset.baseKey = heroArtKey;
     heroArt.dataset.heroBase = c.heroHp > 0 ? 'stage' : 'faint';
     heroArt.dataset.baseSrc = heroArt.querySelector('img')?.getAttribute('src') ?? '';
   }

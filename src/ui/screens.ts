@@ -251,7 +251,9 @@ export function renderCharacterPick(): HTMLElement {
     const relic = getRelic(character.startingRelicId);
     const portrait = character.id === 'echoMage'
       ? artImageHtml('heroMartialArtist', 'character-hero-art')
-      : character.emoji;
+      : character.id === 'abacusFist'
+        ? artImageHtml('heroBeadFighter', 'character-hero-art')
+        : character.emoji;
     const starterAria = character.id === 'echoMage'
       ? '起始牌組：五張基本招、四張防守、一張易傷攻擊'
       : '起始牌組';

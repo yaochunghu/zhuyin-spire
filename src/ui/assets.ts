@@ -64,6 +64,9 @@ export type ArtAssetKey =
   | 'sceneEventQuietLibrary'
   | 'transitionGardenLibrary'
   | 'transitionLibraryObservatory'
+  | 'heroBeadFighter'
+  | 'heroBeadFighterScuffed'
+  | 'heroBeadFighterBeaten'
   | 'heroMartialArtist'
   | 'heroMartialArtistScuffed'
   | 'heroMartialArtistBeaten'
@@ -405,6 +408,21 @@ export const ART_ASSETS = {
     ).href,
     fallback: '📚🔭',
     alt: `${ACT_PLACE_NAMES[1]}書架變成${ACT_PLACE_NAMES[2]}的塔樓場景`,
+  },
+  heroBeadFighter: {
+    src: new URL('../assets/art/hero-bead-fighter.webp', import.meta.url).href,
+    fallback: '🧒🥋',
+    alt: '琉玩具角色',
+  },
+  heroBeadFighterScuffed: {
+    src: new URL('../assets/art/hero-bead-fighter-scuffed.webp', import.meta.url).href,
+    fallback: '🧒🥋',
+    alt: '有點累的琉玩具角色',
+  },
+  heroBeadFighterBeaten: {
+    src: new URL('../assets/art/hero-bead-fighter-beaten.webp', import.meta.url).href,
+    fallback: '🧒🥋',
+    alt: '很累的琉玩具角色',
   },
   heroMartialArtist: {
     src: new URL('../assets/art/hero-martial-artist.webp', import.meta.url).href,

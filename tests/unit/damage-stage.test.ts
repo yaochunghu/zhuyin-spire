@@ -8,6 +8,8 @@ import {
   enemyStageArtKeys,
   freshArtKeyFor,
   heroBaseArtKey,
+  heroCombatArtKeys,
+  heroPoseArtKey,
   stageArtKeyFor,
 } from '../../src/ui/damageStage';
 import { heroPoseForCardType } from '../../src/ui/heroPose';
@@ -81,6 +83,30 @@ describe('damage-stage art resolver', () => {
     expect(heroBaseArtKey(40, 80)).toBe('heroMartialArtistScuffed');
     expect(heroBaseArtKey(10, 80)).toBe('heroMartialArtistBeaten');
     expect(heroBaseArtKey(0, 80)).toBe('heroMartialArtistFaint');
+  });
+
+  it.each([
+    [100, 'heroBeadFighter'],
+    [67, 'heroBeadFighter'],
+    [66, 'heroBeadFighterScuffed'],
+    [34, 'heroBeadFighterScuffed'],
+    [33, 'heroBeadFighterBeaten'],
+    [0, 'heroBeadFighterBeaten'],
+  ] as const)('uses Ryuu art at %s%% HP, including all missing poses', (hp, key) => {
+    const base = heroBaseArtKey(hp, 100, 'abacusFist');
+    expect(base).toBe(key);
+    expect(ART_ASSETS[base].src).toContain('hero-bead-fighter');
+    for (const pose of ['attack', 'cast', 'defend', 'hurt', 'faint'] as const) {
+      expect(heroPoseArtKey(pose, base, 'abacusFist')).toBe(key);
+      expect(heroPoseArtKey(pose, base, 'echoMage')).toBe(HERO_POSE_ART[pose]);
+    }
+  });
+
+  it('preloads only Ryuu stills for Ryuu', () => {
+    expect(heroCombatArtKeys('abacusFist')).toEqual([
+      'heroBeadFighter', 'heroBeadFighterScuffed', 'heroBeadFighterBeaten',
+    ]);
+    expect(heroCombatArtKeys('echoMage')).toEqual(heroCombatArtKeys());
   });
 
   it('points every pose at a registered WebP', () => {

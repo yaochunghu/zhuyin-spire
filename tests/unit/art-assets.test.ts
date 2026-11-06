@@ -15,7 +15,7 @@ import { RELICS } from '../../src/data/relics';
 
 describe('magical toy-board art registry', () => {
   it('defines a local WebP source, fallback, and accessible label for every required asset', () => {
-    expect(REQUIRED_ART_ASSET_KEYS).toHaveLength(113);
+    expect(REQUIRED_ART_ASSET_KEYS).toHaveLength(116);
     expect(REQUIRED_ART_ASSET_KEYS).not.toContain('propStar');
     expect(new Set(REQUIRED_ART_ASSET_KEYS).size).toBe(
       REQUIRED_ART_ASSET_KEYS.length,
@@ -32,6 +32,9 @@ describe('magical toy-board art registry', () => {
   it('ships the hero pose / damage-stage stills and boss damage stages on disk', () => {
     const files = [
       'hero-martial-artist.webp',
+      'hero-bead-fighter.webp',
+      'hero-bead-fighter-scuffed.webp',
+      'hero-bead-fighter-beaten.webp',
       ...['scuffed', 'beaten', 'attack', 'cast', 'defend', 'hurt', 'faint'].map(
         (name) => `hero-martial-artist-${name}.webp`,
       ),
