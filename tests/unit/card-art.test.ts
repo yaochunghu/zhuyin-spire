@@ -17,8 +17,8 @@ import {
 } from '../../src/ui/cards';
 
 const RYUU_ART_CARD_IDS = Array.from(
-  { length: 9 },
-  (_, i) => `ab_m00${i + 1}`,
+  { length: 15 },
+  (_, i) => `ab_m${String(i + 1).padStart(3, '0')}`,
 );
 
 /** The card face as it was before card art: every card without art must match it. */
@@ -45,7 +45,7 @@ function emojiCardFaceHtml(def: CardDef | ReturnType<typeof getCard>, cost = def
 }
 
 describe('card art', () => {
-  it('maps exactly the nine Ryuu cards ab_m001..ab_m009, one art key each', () => {
+  it('maps exactly the fifteen Ryuu cards ab_m001..ab_m015, one art key each', () => {
     expect(Object.keys(CARD_ART_BY_CARD_ID).sort()).toEqual(RYUU_ART_CARD_IDS);
     const keys = Object.values(CARD_ART_BY_CARD_ID);
     expect(new Set(keys).size).toBe(keys.length);
