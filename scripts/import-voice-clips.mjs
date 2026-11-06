@@ -160,7 +160,16 @@ const PHRASE_WORD_FIXES = new Map();
   if (missing.length) throw new Error(`batch3: MANIFEST rows neither handed off nor CUT: ${missing.join(', ')}`);
 }
 
-await rm(OUT_DIR, { recursive: true, force: true });
+// Extras are already copied and registered separately; never remove their MP3s.
+for (const entry of await readdir(OUT_DIR)) {
+  if (entry === 'teacher') {
+    for (const batch of await readdir(join(OUT_DIR, entry))) {
+      if (batch !== 'extras_b3') await rm(join(OUT_DIR, entry, batch), { recursive: true, force: true });
+    }
+  } else {
+    await rm(join(OUT_DIR, entry), { recursive: true, force: true });
+  }
+}
 for (const [from, to] of copies) {
   const target = join(OUT_DIR, to);
   await mkdir(target.replace(/\/[^/]+$/u, ''), { recursive: true });
@@ -182,11 +191,14 @@ await writeFile('src/data/voiceLines.ts', `/**
  * u.notnow is held pending Yao's decision (Q100) and is deliberately absent.
  */
 
+import { VOICE_EXTRAS } from './voiceExtras';
+
 export type VoiceSpeaker = 'teacher' | 'narrator';
 const T = 'teacher' as const;
 const N = 'narrator' as const;
 
 export const VOICE_LINES: Readonly<Record<string, readonly [VoiceSpeaker, string, string]>> = {
+  ...VOICE_EXTRAS,
 ${body}
 };
 `);

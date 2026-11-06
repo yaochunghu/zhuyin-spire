@@ -5,6 +5,7 @@ import { CARDS } from '../../src/data/cards';
 import { EVENTS } from '../../src/data/events';
 import { VOICE_LINES } from '../../src/data/voiceLines';
 import { resolveVoiceLine } from '../../src/game/voiceClips';
+import { mathQuestionVoiceKeys } from '../../src/game/casting/math/voice';
 import { mathQuestionVoiceKey } from '../../src/ui/voiceDirector';
 
 const VOICE_DIR = join(process.cwd(), 'src/assets/audio/voice');
@@ -89,6 +90,13 @@ describe('voice-line registry', () => {
     expect(entries.every(([key, [speaker]]) => (speaker === 'narrator') === key.startsWith('n.'))).toBe(true);
   });
 
+  it('registers exactly 462 batch 3 extras and leaves 七音晶 to its fallback', () => {
+    expect(keysIn('teacher/extras_b3')).toHaveLength(462);
+    expect(filesIn('teacher/extras_b3')).toHaveLength(462);
+    expect(VOICE_LINES['e.elitePrism.name']).toBeUndefined();
+    expect(resolveVoiceLine('e.elitePrism.name')).toBeNull();
+  });
+
   it('names real cards: a name and a desc line for each recorded card', () => {
     const cardKeys = entries.map(([key]) => key).filter((key) => key.startsWith('c.'));
     for (const key of cardKeys) {
@@ -125,6 +133,12 @@ describe('voice-line registry', () => {
     }
   });
 
+  it('reads recorded math questions and number pieces, retaining unsupported speech', () => {
+    expect(mathQuestionVoiceKeys('今天 18 號，明天是幾號？')).toEqual(['m.date.next.18']);
+    expect(mathQuestionVoiceKeys('18 有幾個十？')).toEqual(['m.num.18', 'm.tens.q']);
+    expect(mathQuestionVoiceKeys('沒有錄音的問題')).toBeNull();
+  });
+
   it('maps every generated 湊十 question to its whole-sentence clip', () => {
     expect(mathQuestionVoiceKey('3 和 4 合起來是幾？')).toBe('m.make10.sum.3_4');
     expect(mathQuestionVoiceKey('0 和 7 合起來是幾？')).toBe('m.make10.sum.0_7');
@@ -137,8 +151,8 @@ describe('voice-line registry', () => {
         expect(VOICE_LINES[mathQuestionVoiceKey(`${left} 和 ${right} 合起來是幾？`)!], `${left}+${right}`).toBeDefined();
       }
     }
-    // 10 和 0 has no clip; the question keeps Web Speech.
-    expect(VOICE_LINES[mathQuestionVoiceKey('10 和 0 合起來是幾？')!]).toBeUndefined();
+    // Batch 3 extras fills the two edge sums.
+    expect(VOICE_LINES[mathQuestionVoiceKey('10 和 0 合起來是幾？')!]).toBeDefined();
     for (let n = 0; n <= 20; n += 1) expect(VOICE_LINES[`m.answer.${n}`]).toBeDefined();
   });
 });
