@@ -860,6 +860,30 @@ export const CARD_ART = {
     'ab_m009',
     new URL('../assets/art/cards/card-ab-m009.webp', import.meta.url).href,
   ),
+  cardAbM010: abacusCardArt(
+    'ab_m010',
+    new URL('../assets/art/cards/card-ab-m010.webp', import.meta.url).href,
+  ),
+  cardAbM011: abacusCardArt(
+    'ab_m011',
+    new URL('../assets/art/cards/card-ab-m011.webp', import.meta.url).href,
+  ),
+  cardAbM012: abacusCardArt(
+    'ab_m012',
+    new URL('../assets/art/cards/card-ab-m012.webp', import.meta.url).href,
+  ),
+  cardAbM013: abacusCardArt(
+    'ab_m013',
+    new URL('../assets/art/cards/card-ab-m013.webp', import.meta.url).href,
+  ),
+  cardAbM014: abacusCardArt(
+    'ab_m014',
+    new URL('../assets/art/cards/card-ab-m014.webp', import.meta.url).href,
+  ),
+  cardAbM015: abacusCardArt(
+    'ab_m015',
+    new URL('../assets/art/cards/card-ab-m015.webp', import.meta.url).href,
+  ),
 } as const satisfies Record<string, ArtAsset>;
 
 export type CardArtKey = keyof typeof CARD_ART;
@@ -874,6 +898,12 @@ export const CARD_ART_BY_CARD_ID: Readonly<Record<string, CardArtKey>> = {
   ab_m007: 'cardAbM007',
   ab_m008: 'cardAbM008',
   ab_m009: 'cardAbM009',
+  ab_m010: 'cardAbM010',
+  ab_m011: 'cardAbM011',
+  ab_m012: 'cardAbM012',
+  ab_m013: 'cardAbM013',
+  ab_m014: 'cardAbM014',
+  ab_m015: 'cardAbM015',
 };
 
 export function cardArtKeyFor(cardId: string): CardArtKey | null {
