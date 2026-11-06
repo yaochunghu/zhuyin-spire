@@ -5,6 +5,11 @@ export default defineConfig({
   outputDir: 'test-results/responsive',
   timeout: 30_000,
   workers: 3,
+  // On CI, retry a failed test once. Since 2026-11-06 the Tablet job has hit one-off
+  // timeouts under load (math-cast-fit:78, damage-stage-art:77, layout-fit:140), each
+  // passing repeatedly locally. A test that fails twice still fails the job, and
+  // first-try failures stay visible as "flaky" in the report.
+  retries: process.env.CI ? 1 : 0,
   expect: { timeout: 6_000 },
   fullyParallel: false,
   reporter: 'line',
