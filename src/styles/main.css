@@ -703,6 +703,71 @@ button:disabled {
   line-height: 1;
 }
 
+/*
+ * Painted card art. The invisible spacer holds the emoji face's box, and the
+ * 4:3 window fills that box, so a card with art keeps the same size as one
+ * without. The game draws the 注音 / number badge over the art's lower centre.
+ */
+.card-art.has-art {
+  position: relative;
+}
+
+.card-art-spacer {
+  display: contents;
+  visibility: hidden;
+}
+
+.card-art-window {
+  position: absolute;
+  inset: 0;
+  container-type: size;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.card-art-frame {
+  position: relative;
+  width: min(100cqw, 133.333cqh);
+  height: min(100cqh, 75cqw);
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255, 244, 226, 0.92);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28), 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.card-art-frame .art-image {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  font-size: clamp(1.1rem, 40cqh, 2.2rem);
+}
+
+.card-art-frame .art-image img {
+  object-fit: cover;
+  opacity: 1;
+}
+
+.card-art-badge {
+  position: absolute;
+  left: 50%;
+  bottom: 3%;
+  transform: translateX(-50%);
+  min-width: 1.6em;
+  height: 1.6em;
+  padding: 0 0.3em;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: clamp(0.95rem, min(24cqh, 18cqw), 1.6rem);
+  font-weight: 900;
+  line-height: 1;
+  color: #fff8e8;
+  background: rgba(70, 40, 18, 0.9);
+  border: 2px solid #f0c75e;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+
 .card-name {
   font-size: 1.05rem;
   font-weight: 800;

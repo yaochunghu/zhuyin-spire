@@ -63,7 +63,7 @@ import {
   session,
   showFlash,
 } from './runtime';
-import { artImageHtml } from './assets';
+import { artImageHtml, preloadCardArt } from './assets';
 import {
   enemyArtKeyForHp,
   enemyStageArtKeys,
@@ -717,6 +717,7 @@ export function renderCombat(): HTMLElement {
     ...(heroHasArt ? heroCombatArtKeys(characterId) : []),
     ...c.enemies.flatMap((unit) => enemyStageArtKeys(unit.defId)),
   ]);
+  preloadCardArt([...c.hand, ...c.drawPile, ...c.discardPile].map((card) => card.defId));
   heroZone.innerHTML = `
     <div class="hero-actor" aria-hidden="true">${
       heroHasArt
