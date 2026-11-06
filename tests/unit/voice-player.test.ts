@@ -145,10 +145,28 @@ describe('playVoiceLine', () => {
   });
 
   it('falls back to speakCue with the given text when the key has no clip', async () => {
-    voice.playVoiceLine('m.make10.sum.10_0', { fallbackText: '十和零合起來是幾' });
+    voice.playVoiceLine('e.elitePrism.name', { fallbackText: '十和零合起來是幾' });
     await settle();
     expect(okFetch).not.toHaveBeenCalled();
     expect(spoken.map((u) => u.text)).toEqual(['十和零合起來是幾']);
+  });
+
+  it('keeps 七音晶 on speech without requesting a missing clip', async () => {
+    voice.playVoiceLine('e.elitePrism.name', { fallbackText: '七音晶' });
+    await settle();
+    expect(okFetch).not.toHaveBeenCalled();
+    expect(spoken.map((u) => u.text)).toEqual(['七音晶']);
+  });
+
+  it('plays an extras clip and falls back to its text on failure', async () => {
+    voice.playVoiceLine('e.bat.name');
+    await settle();
+    expect(fetchedUrls()[0]).toContain('extras_b3/enemy/e.bat.name');
+    expect(sources).toHaveLength(1);
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false })));
+    voice.playVoiceLine('m.num.18');
+    await settle();
+    expect(spoken.map((u) => u.text)).toEqual(['十八']);
   });
 
   it('falls back to the line text when the clip cannot be fetched', async () => {
@@ -261,7 +279,7 @@ describe('playVoiceLine', () => {
     audio.setVolume(0);
     const onEnd = vi.fn();
     voice.playVoiceLine('p.correct', { onEnd });
-    voice.playVoiceLine('m.make10.sum.10_0', { fallbackText: '十和零' });
+    voice.playVoiceLine('e.elitePrism.name', { fallbackText: '十和零' });
     await settle();
     expect(okFetch).not.toHaveBeenCalled();
     expect(sources).toHaveLength(0);
@@ -335,7 +353,7 @@ describe('playVoiceLine', () => {
   // N1
   it('muting cancels a Web Speech fallback line that is speaking', async () => {
     const onEnd = vi.fn();
-    voice.playVoiceLine('m.make10.sum.10_0', { fallbackText: '十和零合起來是幾', onEnd });
+    voice.playVoiceLine('e.elitePrism.name', { fallbackText: '十和零合起來是幾', onEnd });
     await settle();
     expect(spoken).toHaveLength(1);
     synth.cancel.mockClear();
@@ -347,7 +365,7 @@ describe('playVoiceLine', () => {
   });
 
   it('muting the voice bus also cancels the fallback line', async () => {
-    voice.playVoiceLine('m.make10.sum.10_0', { fallbackText: '十和零合起來是幾' });
+    voice.playVoiceLine('e.elitePrism.name', { fallbackText: '十和零合起來是幾' });
     await settle();
     synth.cancel.mockClear();
     audio.setBusMuted('voice', true);
@@ -357,13 +375,13 @@ describe('playVoiceLine', () => {
 
   it('the Web Speech fallback speaks at the game volume', async () => {
     audio.setVolume(0.45);
-    voice.playVoiceLine('m.make10.sum.10_0', { fallbackText: '十和零合起來是幾' });
+    voice.playVoiceLine('e.elitePrism.name', { fallbackText: '十和零合起來是幾' });
     await settle();
     expect((spoken[0] as unknown as { volume: number }).volume).toBe(0.45);
   });
 
   it('volume changes that do not mute leave the fallback line alone', async () => {
-    voice.playVoiceLine('m.make10.sum.10_0', { fallbackText: '十和零合起來是幾' });
+    voice.playVoiceLine('e.elitePrism.name', { fallbackText: '十和零合起來是幾' });
     await settle();
     synth.cancel.mockClear();
     audio.setVolume(0.45);

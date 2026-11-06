@@ -1,3 +1,4 @@
+import { mathQuestionVoiceKeys } from '../game/casting/math/voice';
 /**
  * When 老師 and 點燈人 speak. Views call these hooks; voice.ts plays the lines.
  *
@@ -533,7 +534,24 @@ function mathOpen(state: RunState, prompt: CastPrompt): void {
     const key = mathQuestionVoiceKey(prompt.cue.text);
     const thenPick = (): void => say('m.pick', { fallback: 'none', prompt: true });
     if (key) say(key, { fallbackText: prompt.cue.speechText, prompt: true, onEnd: thenPick });
-    else speakCue(prompt.cue.speechText, { onEnd: thenPick });
+    else {
+      const pieces = mathQuestionVoiceKeys(prompt.cue.text);
+      if (!pieces) speakCue(prompt.cue.speechText, { onEnd: thenPick });
+      else {
+        const read = (index: number): void => {
+          const piece = pieces[index];
+          if (!piece) { thenPick(); return; }
+          say(piece, {
+            queue: index > 0, gapMs: 200, prompt: true,
+            onEnd: () => {
+              if (index + 1 === pieces.length) thenPick();
+              else teachingTimers.set(() => read(index + 1), 200);
+            },
+          });
+        };
+        read(0);
+      }
+    }
   };
   if (intro.length === 0) {
     question();

@@ -69,12 +69,16 @@ may be replaced. Spire Audio's QA-passed batches, as shipped:
 | `voice/narrator/batch1/` | 點燈人 batch 1: live story lines | 54 | 54 |
 | `voice/teacher/phrases_act1/` | 老師 batch 3: Act I phrase-pool words (21 words cut by Design are not included) | 604 | 604 |
 | `voice/narrator/batch1b/` | 點燈人 batch 1b pick-up: `n.lore.ry` | 1 | 1 |
-| **total** | | **1,155** | **1,183** |
+| `voice/teacher/extras_b3/` | 老師 batch 3 extras: enemy, math, potion, and relic lines (七音晶 intentionally absent) | 462 | 462 |
+| **total** | | **1,617** | **1,645** |
 
 Batch 3 (`voice/teacher/phrases_act1/`) is ElevenLabs `eleven_v4`, Starter plan
 commercial license, synthetic voice `A9pcHkZ8h5qkhGo5oBc4` (老師), PLACEHOLDER.
 The `n.lore.ry` pick-up was handed off with batch 3 but is a 點燈人 line in the
 narrator voice `nEsUPAkAtglCHxVUeXMk`, same plan and model, PLACEHOLDER.
+
+Batch 3 extras are QA-passed ElevenLabs `eleven_v4` speech generated for this
+project, with no outside sounds, under the same Starter commercial-use license.
 
 ## Slay-the-Spire-style map-generation reference
 
