@@ -8,6 +8,10 @@ Format: human-readable summary per version. For code archaeology use `git log` a
 
 ## [Unreleased]
 
+---
+
+## [0.4.13] — 2026-11-10
+
 ### Copy: the screen says what 老師 says
 
 - All 102 留里克 and 琉 card faces now show the short line 老師 reads (e.g. 打三點。這是基本招。). Upgraded (+) cards keep their current text until Design writes + lines
